@@ -7,7 +7,11 @@ This repository contains a **114-module, `sorry`-free Lean 4.19.0 + Mathlib v4.1
 - **Unconditional Finiteness in Restricted Regimes:** Time-independent bounded-block escape ceilings (`TimeIndependentDeficiencySqueeze.lean`), linear subword-complexity cutoffs on repeated subwords (`RepeatedSubwordComplexity.lean`), Two-Sided Chinese Remainder Sieves (`Mod256CompleteSieve.lean`, `Mod2304CombinedSieve.lean`, `Mod216TwoSidedQuotientFloor.lean`), and 3-adic valuation conservation (`ThreeAdicValuationConservation.lean`).
 - **Certified Transcendence & Diophantine Barriers (Dead Ends 1–18):** Machine-checked proofs of the exact algebraic conservation laws explaining why determinant interpolation (`DeterminantFactorization.lean`), Baker–Matveev linear forms in logarithms (`BakerMatveevFramework.lean`, `MultiStepQuotientGCD.lean`), Ridout's theorem (`RidoutSubspaceFramework.lean`), Schlickewei's $p$-adic Subspace Theorem (`MultiOriginSubspaceSyzygy.lean`), and Padé–Hankel approximants (`MahlerSeriesHankelFramework.lean`) stall on the general aperiodic case.
 
-For a complete, human-readable mathematical exposition of our results and barrier analyses, see **[MAHLER_FORMALIZATION_PAPER.pdf](./MAHLER_FORMALIZATION_PAPER.pdf)** (and the Markdown source **[MAHLER_FORMALIZATION_PAPER.md](./MAHLER_FORMALIZATION_PAPER.md)**).
+For a complete, human-readable mathematical exposition of our results and barrier analyses, see **[MAHLER_FORMALIZATION_PAPER.pdf](./MAHLER_FORMALIZATION_PAPER.pdf)** (and the Markdown/LaTeX sources **[MAHLER_FORMALIZATION_PAPER.md](./MAHLER_FORMALIZATION_PAPER.md)** / **[MAHLER_FORMALIZATION_PAPER.tex](./MAHLER_FORMALIZATION_PAPER.tex)**).
+
+## Acknowledgments
+
+Developed by Joshua Coon with the assistance of the **Astra** and **Argon** AI models in GitHub Copilot.
 
 ## Building & Verifying
 

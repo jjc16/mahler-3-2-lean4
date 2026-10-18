@@ -1,0 +1,19 @@
+{
+  "title": "Formalizing the Reduced Mahler 3/2 Dynamical System in Lean 4: Exact 1D Slack Reduction, Constructive Coasting Survivors, Conditional Finiteness Theorems, and Certified Transcendence Barriers",
+  "description": "A 114-module, sorry-free Lean 4.19.0 + Mathlib v4.19.0 formalization of the reduced Mahler 3/2 dynamical system (Z-numbers), developed by Joshua Coon with Astra and Argon AI assistance. Proves the exact 1D minSlack dynamical reduction, converse companion reconstruction, conditional finiteness theorems, the 113-step survival and 114-step death of the 55-bit record-holder seed 29871555608238677, and 18 certified transcendence and Diophantine barriers.",
+  "upload_type": "software",
+  "license": "Apache-2.0",
+  "creators": [
+    {
+      "name": "Coon, Joshua"
+    }
+  ],
+  "keywords": [
+    "Lean 4",
+    "Mahler 3/2 problem",
+    "Z-numbers",
+    "Diophantine approximation",
+    "formal verification",
+    "symbolic dynamics"
+  ]
+}

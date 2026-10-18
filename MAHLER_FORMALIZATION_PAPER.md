@@ -1,6 +1,6 @@
 # Formalizing the Reduced Mahler $3/2$ Dynamical System in Lean 4: Exact 1D Slack Reduction, Constructive Coasting Survivors, Conditional Finiteness Theorems, and Certified Transcendence Barriers
 
-**Authors:** Joshua Coon & GitHub Copilot  
+**Authors:** Joshua Coon (with Astra and Argon AI assistance via GitHub Copilot)  
 **Toolchain:** Lean 4.19.0 + Mathlib v4.19.0 (`114` compiled modules, `0` `sorry`s, `0` warnings, standard Lean axioms `[propext, Classical.choice, Quot.sound]`)
 
 ---
@@ -239,6 +239,12 @@ lake build
 lake env lean -DwarningAsError=true ThreeAdicValuationConservationChecks.lean
 lake env lean -DwarningAsError=true Mod216TwoSidedQuotientFloorChecks.lean
 ```
+
+---
+
+## Acknowledgments
+
+This research and its 114-module Lean 4 formalization were developed by Joshua Coon with the assistance of the **Astra** and **Argon** AI models in GitHub Copilot.
 
 ---
 
