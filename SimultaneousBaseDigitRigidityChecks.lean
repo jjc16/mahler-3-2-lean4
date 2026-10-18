@@ -1,0 +1,68 @@
+import SimultaneousBaseDigitRigidity
+
+open Mahler
+open Mahler.Pinch
+open Mahler.OddBlock
+open Mahler.SplitPinch
+open Mahler.ProductGraph
+open Mahler.BridgeOne
+open Mahler.BridgeTwo
+open Mahler.BridgeThree
+open Mahler.FormulationB
+open Mahler.JumpValuation
+open Mahler.EscapeBranchCap
+open Mahler.PhaseLock
+open Mahler.MasterReduction
+open Mahler.ModEightClassifier
+open Mahler.CoprimeSlack
+open Mahler.ShiftSlack
+open Mahler.KernelDuality
+open Mahler.Coasting
+open Mahler.TwoSidedSqueeze
+open Mahler.SharpenedSqueezes
+open Mahler.AperiodicCocycle
+open Mahler.MinSlackSystem
+open Mahler.GlobalStepRate
+open Mahler.BaseTwoLock
+open Mahler.CeilingSynthesis
+open Mahler.TelescopingDuality
+open Mahler.ConverseReconstruction
+open Mahler.ExplicitCutoffs
+open Mahler.DeficitAmplification
+open Mahler.TwoVisitSeparation
+open Mahler.MonotonicSeparation
+open Mahler.CeilingModTraps
+open Mahler.TwoAdicLTE
+open Mahler.FullStepValuation
+open Mahler.RemainderAdditionLaw
+open Mahler.TwoAdicCauchy
+open Mahler.AllHistoryRecovery
+open Mahler.ParametricCorridor
+open Mahler.AperiodicBoundedSqueeze
+open Mahler.TimeIndependentSqueeze
+open Mahler.SlackDeadEnds
+open Mahler.GrandSynthesis
+open Mahler.Mod256Sieve
+open Mahler.UnitRigidity
+open Mahler.DeterminantCollapse
+open Mahler.BakerMatveev
+open Mahler.RidoutSubspace
+open Mahler.MultiOriginSyzygy
+open Mahler.SubwordComplexity
+open Mahler.SimultaneousBaseDigits
+
+#check @scaled_quotient_base_three_shift_recurrence
+#check @unconditional_global_coprime_addition_identity
+#check @integerSlack_pos_iff_base_three_prefix_frozen
+#check @integerSlack_nonpos_iff_base_three_carry_overflow
+#check @minSlack_pos_iff_all_shifted_base_three_prefixes_frozen
+#check @dual_base_two_base_three_remainder_complement_law
+#check @exists_validCompanionUpTo_iff_base_three_prefixes_frozen
+
+#print axioms scaled_quotient_base_three_shift_recurrence
+#print axioms unconditional_global_coprime_addition_identity
+#print axioms integerSlack_pos_iff_base_three_prefix_frozen
+#print axioms integerSlack_nonpos_iff_base_three_carry_overflow
+#print axioms minSlack_pos_iff_all_shifted_base_three_prefixes_frozen
+#print axioms dual_base_two_base_three_remainder_complement_law
+#print axioms exists_validCompanionUpTo_iff_base_three_prefixes_frozen

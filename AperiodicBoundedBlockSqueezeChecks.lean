@@ -1,0 +1,61 @@
+import AperiodicBoundedBlockSqueeze
+
+open Mahler
+open Mahler.Pinch
+open Mahler.OddBlock
+open Mahler.SplitPinch
+open Mahler.ProductGraph
+open Mahler.BridgeOne
+open Mahler.BridgeTwo
+open Mahler.BridgeThree
+open Mahler.FormulationB
+open Mahler.JumpValuation
+open Mahler.EscapeBranchCap
+open Mahler.PhaseLock
+open Mahler.MasterReduction
+open Mahler.ModEightClassifier
+open Mahler.CoprimeSlack
+open Mahler.ShiftSlack
+open Mahler.KernelDuality
+open Mahler.Coasting
+open Mahler.TwoSidedSqueeze
+open Mahler.SharpenedSqueezes
+open Mahler.AperiodicCocycle
+open Mahler.MinSlackSystem
+open Mahler.GlobalStepRate
+open Mahler.BaseTwoLock
+open Mahler.CeilingSynthesis
+open Mahler.TelescopingDuality
+open Mahler.ConverseReconstruction
+open Mahler.ExplicitCutoffs
+open Mahler.DeficitAmplification
+open Mahler.TwoVisitSeparation
+open Mahler.MonotonicSeparation
+open Mahler.CeilingModTraps
+open Mahler.TwoAdicLTE
+open Mahler.FullStepValuation
+open Mahler.RemainderAdditionLaw
+open Mahler.TwoAdicCauchy
+open Mahler.AllHistoryRecovery
+open Mahler.ParametricCorridor
+open Mahler.AperiodicBoundedSqueeze
+
+#check @two_pow_mul_three_pow_le_three_pow_mul_two_pow
+#check @parametric_coprimeRemainder_lower_bound_tail
+#check @parametric_coprimeRemainder_lower_bound
+#check @slackDeficiency_step_drift
+#check @slackDeficiency_step_ge_of_le
+#check @slackDeficiency_step_le_of_ge
+#check @slackDeficiency_chain_ge_of_le
+#check @aperiodic_bounded_deficiency_squeeze
+#check @aperiodic_bounded_deficiency_linear_cutoff
+
+#print axioms two_pow_mul_three_pow_le_three_pow_mul_two_pow
+#print axioms parametric_coprimeRemainder_lower_bound_tail
+#print axioms parametric_coprimeRemainder_lower_bound
+#print axioms slackDeficiency_step_drift
+#print axioms slackDeficiency_step_ge_of_le
+#print axioms slackDeficiency_step_le_of_ge
+#print axioms slackDeficiency_chain_ge_of_le
+#print axioms aperiodic_bounded_deficiency_squeeze
+#print axioms aperiodic_bounded_deficiency_linear_cutoff

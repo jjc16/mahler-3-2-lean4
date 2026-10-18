@@ -1,0 +1,48 @@
+import TelescopingSeriesDuality
+
+open Mahler
+open Mahler.Pinch
+open Mahler.OddBlock
+open Mahler.SplitPinch
+open Mahler.ProductGraph
+open Mahler.BridgeOne
+open Mahler.BridgeTwo
+open Mahler.BridgeThree
+open Mahler.FormulationB
+open Mahler.JumpValuation
+open Mahler.EscapeBranchCap
+open Mahler.PhaseLock
+open Mahler.MasterReduction
+open Mahler.ModEightClassifier
+open Mahler.CoprimeSlack
+open Mahler.ShiftSlack
+open Mahler.KernelDuality
+open Mahler.Coasting
+open Mahler.TwoSidedSqueeze
+open Mahler.SharpenedSqueezes
+open Mahler.AperiodicCocycle
+open Mahler.MinSlackSystem
+open Mahler.GlobalStepRate
+open Mahler.BaseTwoLock
+open Mahler.CeilingSynthesis
+open Mahler.TelescopingDuality
+
+#check @blockDrainSum
+#check @slackSeries
+#check @slackSeries_eq_one_third_sub_blockDrainSum
+#check @integerSlack_eq_three_pow_mul_slackSeries
+#check @slackSeries_eq_integerSlack_div
+#check @dual_metric_series_identity
+#check @integerSlack_pos_iff_blockDrainSum_lt_one_third
+#check @minSlack_pos_iff_all_shifted_blockDrainSum_lt_one_third
+#check @blockDrainSum_lt_one_third_of_three_le
+#check @two_adic_residual_numerator_valuation
+
+#print axioms slackSeries_eq_one_third_sub_blockDrainSum
+#print axioms integerSlack_eq_three_pow_mul_slackSeries
+#print axioms slackSeries_eq_integerSlack_div
+#print axioms dual_metric_series_identity
+#print axioms integerSlack_pos_iff_blockDrainSum_lt_one_third
+#print axioms minSlack_pos_iff_all_shifted_blockDrainSum_lt_one_third
+#print axioms blockDrainSum_lt_one_third_of_three_le
+#print axioms two_adic_residual_numerator_valuation

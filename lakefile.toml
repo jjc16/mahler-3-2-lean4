@@ -1,0 +1,380 @@
+name = "mahler_demand_a"
+version = "0.1.0"
+defaultTargets = ["MahlerDemandA", "Adversarial", "Checks", "InfiniteChecks", "DeadEndsChecks", "PureIntegerPinchChecks", "OddBlockCouplingChecks", "ParitySplitPinchChecks", "CoupledProductGraphChecks", "BridgeOneArchimedeanChecks", "BridgeTwoBlockDrainChecks", "BridgeThreeMixedBlocksChecks", "FormulationBHighBitJumpChecks", "FormulationBJumpValuationChecks", "EscapeBranchTwoCapChecks", "CoprimeQuotientPhaseLockChecks", "MahlerMasterReductionChecks", "ModEightPhaseClassifierChecks", "CoprimeRemainderSlackChecks", "ShiftInvariantSlackChecks", "KernelFactorizationDualityChecks", "ZeroLiftCoastingChecks", "TwoSidedSqueezeChecks", "SharpenedSqueezesChecks", "AperiodicSlackCocycleChecks", "MinSlackDynamicalSystemChecks", "GlobalStepRateBoundsChecks", "BaseTwoDivModLockChecks", "CeilingSaturationSynthesisChecks", "TelescopingSeriesDualityChecks", "ConverseCompanionReconstructionChecks", "ExplicitHorizonCutoffsChecks", "CeilingDeficitAmplificationChecks", "UniversalTwoVisitSeparationChecks", "MonotonicStepSumSeparationChecks", "CeilingSaturatedModTrapsChecks", "TwoAdicLiftingExponentChecks", "FullStepSumValuationChecks", "CoprimeRemainderAdditionLawChecks", "TwoAdicCauchyConvergenceChecks", "AllHistoryQuotientRecoveryChecks", "ParametricRemainderCorridorChecks", "AperiodicBoundedBlockSqueezeChecks", "TimeIndependentDeficiencySqueezeChecks", "SlackDeadEndsAndWitnessesChecks", "MahlerGrandSynthesisChecks", "Mod256CompleteSieveChecks", "CoprimeUnitRigidityChecks", "DeterminantFactorizationChecks", "BakerMatveevFrameworkChecks"]
+
+[[require]]
+name = "mathlib"
+git = "https://github.com/leanprover-community/mathlib4.git"
+rev = "v4.19.0"
+
+[[lean_lib]]
+name = "MahlerDemandA"
+
+[[lean_lib]]
+name = "Checks"
+
+[[lean_lib]]
+name = "Adversarial"
+
+[[lean_lib]]
+name = "InfiniteEncoding"
+
+[[lean_lib]]
+name = "InfiniteSeries"
+
+[[lean_lib]]
+name = "InfiniteComplexity"
+
+[[lean_lib]]
+name = "InfiniteAdversarial"
+
+[[lean_lib]]
+name = "InfiniteChecks"
+
+[[lean_lib]]
+name = "DeadEnds"
+
+[[lean_lib]]
+name = "DeadEndsChecks"
+
+[[lean_lib]]
+name = "PureIntegerPinch"
+
+[[lean_lib]]
+name = "PureIntegerPinchChecks"
+
+[[lean_lib]]
+name = "OddBlockCoupling"
+
+[[lean_lib]]
+name = "OddBlockCouplingChecks"
+
+[[lean_lib]]
+name = "ParitySplitPinch"
+
+[[lean_lib]]
+name = "ParitySplitPinchChecks"
+
+[[lean_lib]]
+name = "CoupledProductGraph"
+
+[[lean_lib]]
+name = "CoupledProductGraphChecks"
+
+[[lean_lib]]
+name = "BridgeOneArchimedean"
+
+[[lean_lib]]
+name = "BridgeOneArchimedeanChecks"
+
+[[lean_lib]]
+name = "BridgeTwoBlockDrain"
+
+[[lean_lib]]
+name = "BridgeTwoBlockDrainChecks"
+
+[[lean_lib]]
+name = "BridgeThreeMixedBlocks"
+
+[[lean_lib]]
+name = "BridgeThreeMixedBlocksChecks"
+
+[[lean_lib]]
+name = "FormulationBHighBitJump"
+
+[[lean_lib]]
+name = "FormulationBHighBitJumpChecks"
+
+[[lean_lib]]
+name = "FormulationBJumpValuation"
+
+[[lean_lib]]
+name = "FormulationBJumpValuationChecks"
+
+[[lean_lib]]
+name = "EscapeBranchTwoCap"
+
+[[lean_lib]]
+name = "EscapeBranchTwoCapChecks"
+
+[[lean_lib]]
+name = "CoprimeQuotientPhaseLock"
+
+[[lean_lib]]
+name = "CoprimeQuotientPhaseLockChecks"
+
+[[lean_lib]]
+name = "MahlerMasterReduction"
+
+[[lean_lib]]
+name = "MahlerMasterReductionChecks"
+
+[[lean_lib]]
+name = "ModEightPhaseClassifier"
+
+[[lean_lib]]
+name = "ModEightPhaseClassifierChecks"
+
+[[lean_lib]]
+name = "CoprimeRemainderSlack"
+
+[[lean_lib]]
+name = "CoprimeRemainderSlackChecks"
+
+[[lean_lib]]
+name = "ShiftInvariantSlack"
+
+[[lean_lib]]
+name = "ShiftInvariantSlackChecks"
+
+[[lean_lib]]
+name = "KernelFactorizationDuality"
+
+[[lean_lib]]
+name = "KernelFactorizationDualityChecks"
+
+[[lean_lib]]
+name = "ZeroLiftCoasting"
+
+[[lean_lib]]
+name = "ZeroLiftCoastingChecks"
+
+[[lean_lib]]
+name = "TwoSidedSqueeze"
+
+[[lean_lib]]
+name = "TwoSidedSqueezeChecks"
+
+[[lean_lib]]
+name = "SharpenedSqueezes"
+
+[[lean_lib]]
+name = "SharpenedSqueezesChecks"
+
+[[lean_lib]]
+name = "AperiodicSlackCocycle"
+
+[[lean_lib]]
+name = "AperiodicSlackCocycleChecks"
+
+[[lean_lib]]
+name = "MinSlackDynamicalSystem"
+
+[[lean_lib]]
+name = "MinSlackDynamicalSystemChecks"
+
+[[lean_lib]]
+name = "GlobalStepRateBounds"
+
+[[lean_lib]]
+name = "GlobalStepRateBoundsChecks"
+
+[[lean_lib]]
+name = "BaseTwoDivModLock"
+
+[[lean_lib]]
+name = "BaseTwoDivModLockChecks"
+
+[[lean_lib]]
+name = "CeilingSaturationSynthesis"
+
+[[lean_lib]]
+name = "CeilingSaturationSynthesisChecks"
+
+[[lean_lib]]
+name = "TelescopingSeriesDuality"
+
+[[lean_lib]]
+name = "TelescopingSeriesDualityChecks"
+
+[[lean_lib]]
+name = "ConverseCompanionReconstruction"
+
+[[lean_lib]]
+name = "ConverseCompanionReconstructionChecks"
+
+[[lean_lib]]
+name = "ExplicitHorizonCutoffs"
+
+[[lean_lib]]
+name = "ExplicitHorizonCutoffsChecks"
+
+[[lean_lib]]
+name = "CeilingDeficitAmplification"
+
+[[lean_lib]]
+name = "CeilingDeficitAmplificationChecks"
+
+[[lean_lib]]
+name = "UniversalTwoVisitSeparation"
+
+[[lean_lib]]
+name = "UniversalTwoVisitSeparationChecks"
+
+[[lean_lib]]
+name = "MonotonicStepSumSeparation"
+
+[[lean_lib]]
+name = "MonotonicStepSumSeparationChecks"
+
+[[lean_lib]]
+name = "CeilingSaturatedModTraps"
+
+[[lean_lib]]
+name = "CeilingSaturatedModTrapsChecks"
+
+[[lean_lib]]
+name = "TwoAdicLiftingExponent"
+
+[[lean_lib]]
+name = "TwoAdicLiftingExponentChecks"
+
+[[lean_lib]]
+name = "FullStepSumValuation"
+
+[[lean_lib]]
+name = "FullStepSumValuationChecks"
+
+[[lean_lib]]
+name = "CoprimeRemainderAdditionLaw"
+
+[[lean_lib]]
+name = "CoprimeRemainderAdditionLawChecks"
+
+[[lean_lib]]
+name = "TwoAdicCauchyConvergence"
+
+[[lean_lib]]
+name = "TwoAdicCauchyConvergenceChecks"
+
+[[lean_lib]]
+name = "AllHistoryQuotientRecovery"
+
+[[lean_lib]]
+name = "AllHistoryQuotientRecoveryChecks"
+
+[[lean_lib]]
+name = "ParametricRemainderCorridor"
+
+[[lean_lib]]
+name = "ParametricRemainderCorridorChecks"
+
+[[lean_lib]]
+name = "AperiodicBoundedBlockSqueeze"
+
+[[lean_lib]]
+name = "AperiodicBoundedBlockSqueezeChecks"
+
+[[lean_lib]]
+name = "TimeIndependentDeficiencySqueeze"
+
+[[lean_lib]]
+name = "TimeIndependentDeficiencySqueezeChecks"
+
+[[lean_lib]]
+name = "SlackDeadEndsAndWitnesses"
+
+[[lean_lib]]
+name = "SlackDeadEndsAndWitnessesChecks"
+
+[[lean_lib]]
+name = "MahlerGrandSynthesis"
+
+[[lean_lib]]
+name = "MahlerGrandSynthesisChecks"
+
+[[lean_lib]]
+name = "Mod256CompleteSieve"
+
+[[lean_lib]]
+name = "Mod256CompleteSieveChecks"
+
+[[lean_lib]]
+name = "CoprimeUnitRigidity"
+
+[[lean_lib]]
+name = "CoprimeUnitRigidityChecks"
+
+[[lean_lib]]
+name = "DeterminantFactorization"
+
+[[lean_lib]]
+name = "DeterminantFactorizationChecks"
+
+[[lean_lib]]
+name = "BakerMatveevFramework"
+
+[[lean_lib]]
+name = "BakerMatveevFrameworkChecks"
+
+[[lean_lib]]
+name = "RidoutSubspaceFramework"
+
+[[lean_lib]]
+name = "RidoutSubspaceFrameworkChecks"
+
+[[lean_lib]]
+name = "MultiOriginSubspaceSyzygy"
+
+[[lean_lib]]
+name = "MultiOriginSubspaceSyzygyChecks"
+
+[[lean_lib]]
+name = "RepeatedSubwordComplexity"
+
+[[lean_lib]]
+name = "RepeatedSubwordComplexityChecks"
+
+[[lean_lib]]
+name = "SimultaneousBaseDigitRigidity"
+
+[[lean_lib]]
+name = "SimultaneousBaseDigitRigidityChecks"
+
+[[lean_lib]]
+name = "MultiStepQuotientGCD"
+
+[[lean_lib]]
+name = "MultiStepQuotientGCDChecks"
+
+[[lean_lib]]
+name = "MahlerSeriesHankelFramework"
+
+[[lean_lib]]
+name = "MahlerSeriesHankelFrameworkChecks"
+
+[[lean_lib]]
+name = "ThreeAdicAndSeedGCDLocks"
+
+[[lean_lib]]
+name = "ThreeAdicAndSeedGCDLocksChecks"
+
+[[lean_lib]]
+name = "CoupledFractionalPartDynamics"
+
+[[lean_lib]]
+name = "CoupledFractionalPartDynamicsChecks"
+
+[[lean_lib]]
+name = "Mod2304CombinedSieve"
+
+[[lean_lib]]
+name = "Mod2304CombinedSieveChecks"
+
+[[lean_lib]]
+name = "TwoSidedCRTAndBackwardObstructions"
+
+[[lean_lib]]
+name = "TwoSidedCRTAndBackwardObstructionsChecks"
+
+[[lean_lib]]
+name = "ThreeAdicValuationConservation"
+
+[[lean_lib]]
+name = "ThreeAdicValuationConservationChecks"
+
+[[lean_lib]]
+name = "Mod216TwoSidedQuotientFloor"
+
+[[lean_lib]]
+name = "Mod216TwoSidedQuotientFloorChecks"

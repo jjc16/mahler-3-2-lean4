@@ -1,0 +1,47 @@
+import MonotonicStepSumSeparation
+
+open Mahler
+open Mahler.Pinch
+open Mahler.OddBlock
+open Mahler.SplitPinch
+open Mahler.ProductGraph
+open Mahler.BridgeOne
+open Mahler.BridgeTwo
+open Mahler.BridgeThree
+open Mahler.FormulationB
+open Mahler.JumpValuation
+open Mahler.EscapeBranchCap
+open Mahler.PhaseLock
+open Mahler.MasterReduction
+open Mahler.ModEightClassifier
+open Mahler.CoprimeSlack
+open Mahler.ShiftSlack
+open Mahler.KernelDuality
+open Mahler.Coasting
+open Mahler.TwoSidedSqueeze
+open Mahler.SharpenedSqueezes
+open Mahler.AperiodicCocycle
+open Mahler.MinSlackSystem
+open Mahler.GlobalStepRate
+open Mahler.BaseTwoLock
+open Mahler.CeilingSynthesis
+open Mahler.TelescopingDuality
+open Mahler.ConverseReconstruction
+open Mahler.ExplicitCutoffs
+open Mahler.DeficitAmplification
+open Mahler.TwoVisitSeparation
+open Mahler.MonotonicSeparation
+
+#check @three_pow_mul_coprimeRemainder_le
+#check @three_pow_blockSteps_le_mul_coprimeRemainder
+#check @three_pow_blockSteps_le_mul_coprimeRemainder_two
+#check @universal_step_sum_separation_inequality
+#check @seven_le_step_sum_after_two_six
+#check @ten_le_step_sum_after_two_six_three
+
+#print axioms three_pow_mul_coprimeRemainder_le
+#print axioms three_pow_blockSteps_le_mul_coprimeRemainder
+#print axioms three_pow_blockSteps_le_mul_coprimeRemainder_two
+#print axioms universal_step_sum_separation_inequality
+#print axioms seven_le_step_sum_after_two_six
+#print axioms ten_le_step_sum_after_two_six_three
