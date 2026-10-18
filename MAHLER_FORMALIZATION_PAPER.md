@@ -49,10 +49,12 @@ To place this formalization in its proper mathematical context, we carefully dis
 
 ---
 
-### B. Novel Contributions Originating in This Work
+### B. Novel Contributions Originating in This Work (and Comparison with Prior Lean Formalizations)
 
-1. **First Formalization of Mahler's $3/2$ Problem in Any Proof Assistant:**
-   - As of October 2026, no prior formalization of Mahler's $3/2$ problem or the Flatto–Lagarias–Pollington symbolic dynamics existed in Lean, Coq, or Isabelle/HOL. Our 114-module Lean 4.19.0 library is the first machine-verified development of this theory.
+1. **Relationship to Prior Lean Repositories on Mahler's Work:**
+   - A direct search of all public Lean repositories on GitHub shows that **Google DeepMind's `formal-conjectures` project [15]** (`FormalConjectures/Wikipedia/Mahler32.lean`, `FormalConjectures/Books/BugeaudDistributionModuloOne/Problem10_9.lean`, and `FormalConjecturesForMathlib/NumberTheory/DiophantineApproximation/ZNumber.lean`, 2025–2026) previously formalized the *definition* `IsZNumber`, a 5-line sanity check `¬ IsZNumber 1`, and the *statements* (with `sorry` placeholders) of Mahler's conjecture, the consequence of $\Omega(3/2) > 1/2$, the Flatto–Lagarias–Pollington bound $\Omega(p/q) \ge 1/p$, Lebesgue measure zero, and Hausdorff dimension $< 1$.
+   - Other Lean 4 repositories bearing Mahler's name address distinct theorems of Kurt Mahler: `giuliocaflisch/mahler` (Mahler's theorem on $p$-adic continuous functions), `DiegoMarquesMath/MahlerLean` (Mahler's classification of Liouville numbers), and `baobingzhang/jsp-000025-lehmer-schinzel-lean` (polynomial Mahler measure).
+   - Thus, while `google-deepmind/formal-conjectures` [15] formalized the top-level conjecture statements for $Z$-numbers, our 114-module `sorry`-free library is the **first proved Lean 4 development of the discrete Mahler $3/2$ dynamical system**, the companion-interval reduction, the Flatto–Lagarias–Pollington symbolic forbidden-subword constraints in odd-block coordinates, and the transcendence/Diophantine barrier analyses.
 2. **The Reduced Coprime Quotient System & Exact 1D `minSlack` Dynamical Collapse (`CoprimeRemainderSlack.lean`, `MinSlackDynamicalSystem.lean`, `ConverseCompanionReconstruction.lean`, `CoupledFractionalPartDynamics.lean`):**
    - Formulating the dynamics in terms of the coprime odd quotients $2^{s(k+1)} u(k+1) = 3^{s(k)} u(k) + 1$ ($\gcd(u(k), 6) = 1$), the 3-adic block-boundary factorization $b_{k+1} = 3^{s(k)-1} u(k)$, and the polynomial $R(s, m)$.
    - Collapsing all $\binom{K}{2}$ shifted archimedean companion inequalities into the **single 1D recurrence** `minSlack s (m+1) = min (2^(T(m+1))) (3^(s m) * minSlack s m - 2^(T(m+1)+1))` and its autonomous 1D interval map $\mu_2(s, m+1) = \min\big(1,\, (3/2)^{s(m)} \mu_2(s, m) - 2\big)$ on the disjoint Lüroth–Markov partition $(0, 1] = \bigsqcup_{c=2}^\infty (2(2/3)^c, 3(2/3)^c] \cap (0, 1]$, together with the two-way **Converse Companion Reconstruction Theorem** (`(∃ ξ, ValidCompanionUpTo a_0 ξ (blockSteps s K)) ↔ 0 < minSlack s (K - 1)`).
@@ -256,3 +258,4 @@ lake env lean -DwarningAsError=true Mod216TwoSidedQuotientFloorChecks.lean
 12. **P. Corvaja and U. Zannier (2003),** *"On the greatest prime factor of $(a b + 1)(a c + 1)$,"* Proceedings of the American Mathematical Society **131**, 1705–1709.
 13. **B. Adamczewski and Y. Bugeaud (2007),** *"On the complexity of algebraic numbers I. Expansions in integer bases,"* Annals of Mathematics **165**, 547–565.
 14. **A. Dubickas (2006),** *"On the distance from a rational power to the nearest integer,"* Journal of Number Theory **117**, 222–239.
+15. **The Formal Conjectures Authors (Google DeepMind, 2025–2026),** *"Formal Conjectures in Lean 4: `Mahler32.lean`, `Problem10_9.lean`, and `ZNumber.lean`,"* `https://github.com/google-deepmind/formal-conjectures`.
