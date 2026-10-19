@@ -90,6 +90,34 @@ example {ξ : ℝ} {W : ℕ} (hξ1 : (1 : ℝ) ≤ ξ) (hξW : ξ < (2 : ℝ) ^ 
     ∃ n ≤ W + 12, ¬ InUnionSevenTwelfths (Int.fract (ξ * (3 / 2 : ℝ) ^ n)) :=
   union_seven_twelfths_explicit_and_infinite_escape.1 hξ1 hξW
 
+-- 6. Verify general-base log threshold, linear-in-W Dubickas (2009) escape, Base 4/3 [1/3, 5/8) escape, and 2/3 & 25/36 unions
+example {p q : ℕ} {kappa : ℝ}
+    (hq2 : 2 ≤ q) (hqp : q < p)
+    (hlog : kappa * Real.log ((p : ℝ) / (q : ℝ)) < Real.log (q : ℝ)) :
+    ∃ a b : ℕ, 1 ≤ b ∧ p ^ b < q ^ (a + b) ∧ (a : ℝ) * kappa < (b : ℝ) :=
+  exists_ab_of_lt_general_log_threshold hq2 hqp hlog
+
+example {ξ : ℝ} {W : ℕ} (hξ8 : (8 : ℝ) ≤ ξ) (hξW : ξ < (3 : ℝ) ^ W) :
+    ∃ n ≤ W + 8,
+      Int.fract (ξ * (4 / 3 : ℝ) ^ n) < (1 / 3 : ℝ) ∨
+        (5 / 8 : ℝ) ≤ Int.fract (ξ * (4 / 3 : ℝ) ^ n) :=
+  base_four_three_beyond_quarter_explicit_and_infinite_escape.1 hξ8 hξW
+
+example {ξ : ℝ} {W : ℕ} (hξ1 : (1 : ℝ) ≤ ξ) (hξW : ξ < (2 : ℝ) ^ W) :
+    (∃ n ≤ W + 14, ¬ InUnionTwoThirds (Int.fract (ξ * (3 / 2 : ℝ) ^ n))) ∧
+    (∃ n ≤ W + 16, ¬ InUnionTwentyFiveThirtySixths (Int.fract (ξ * (3 / 2 : ℝ) ^ n))) :=
+  ⟨union_two_thirds_explicit_and_infinite_escape.1 hξ1 hξW,
+    union_twenty_five_thirty_sixths_explicit_and_infinite_escape.1 hξ1 hξW⟩
+
+#print axioms Mahler.DubickasExtension.exists_ab_of_lt_general_log_threshold
+#print axioms Mahler.DubickasExtension.no_subcritical_general_log_threshold_dubBaseCarry
+#print axioms Mahler.DubickasExtension.dubickas2009_general_base_linear_in_W_escape
+#print axioms Mahler.DubickasExtension.base_four_three_carry_period_two
+#print axioms Mahler.DubickasExtension.base_four_three_beyond_quarter_explicit_and_infinite_escape
+#print axioms Mahler.DubickasExtension.inRatIntervalList_next_of_forwardStepOk
+#print axioms Mahler.DubickasExtension.union_two_thirds_explicit_and_infinite_escape
+#print axioms Mahler.DubickasExtension.union_twenty_five_thirty_sixths_explicit_and_infinite_escape
+
 #print axioms Mahler.DubickasExtension.dubBaseCarry_eq_fract_linear
 #print axioms Mahler.DubickasExtension.dubBaseY_multi_step_carry_identity
 #print axioms Mahler.DubickasExtension.dubBaseCarry_mem_two_letters

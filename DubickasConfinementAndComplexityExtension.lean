@@ -2913,4 +2913,828 @@ theorem union_seven_twelfths_explicit_and_infinite_escape :
     rw [pow_add, mul_assoc]
   rwa [← hmul]
 
+/-! ## 7. General-Base Logarithmic Threshold $\kappa < \log q / \log(p/q)$ & Linear-in-$W$ Dubickas (2009) Escape -/
+
+private theorem n_lt_q_pow {q : ℕ} (hq2 : 2 ≤ q) (n : ℕ) : n < q ^ n := by
+  induction n with
+  | zero => exact Nat.pow_pos (by omega)
+  | succ m ih =>
+      have hpos : 1 ≤ q ^ m := Nat.pow_pos (by omega)
+      rw [Nat.pow_succ]
+      nlinarith
+
+/-- **General-Base Real Logarithmic Threshold Rational Selection Bridge
+(`exists_ab_of_lt_general_log_threshold`)**:
+For **every** integer pair $2 \le q < p$ and **every** real complexity slope $\kappa$
+satisfying $\kappa \cdot \log(p / q) < \log q$ (i.e. $\kappa < \log q / \log(p / q)$),
+there exist natural numbers $a, b \in \mathbb{N}$ such that $1 \le b$, $p^b < q^{a + b}$,
+and $(a : \mathbb{R}) \cdot \kappa < (b : \mathbb{R})$. -/
+theorem exists_ab_of_lt_general_log_threshold {p q : ℕ} {kappa : ℝ}
+    (hq2 : 2 ≤ q) (hqp : q < p)
+    (hlog : kappa * Real.log ((p : ℝ) / (q : ℝ)) < Real.log (q : ℝ)) :
+    ∃ a b : ℕ, 1 ≤ b ∧ p ^ b < q ^ (a + b) ∧ (a : ℝ) * kappa < (b : ℝ) := by
+  by_cases hkap : kappa ≤ 0
+  · refine ⟨p, 1, le_rfl, ?_, ?_⟩
+    · have hlt := n_lt_q_pow hq2 p
+      have hle : q ^ p ≤ q ^ (p + 1) := Nat.pow_le_pow_right (by omega) (by omega)
+      simpa using lt_of_lt_of_le hlt hle
+    · have hp_nonneg : (0 : ℝ) ≤ (p : ℝ) := Nat.cast_nonneg p
+      have hmul : (p : ℝ) * kappa ≤ 0 := mul_nonpos_of_nonneg_of_nonpos hp_nonneg hkap
+      push_cast
+      linarith
+  · push_neg at hkap
+    have hq_gt1 : (1 : ℝ) < (q : ℝ) := by exact_mod_cast hq2
+    have hq_pos : (0 : ℝ) < (q : ℝ) := by linarith
+    have hqp_real : (q : ℝ) < (p : ℝ) := by exact_mod_cast hqp
+    have hpq_gt1 : (1 : ℝ) < (p : ℝ) / (q : ℝ) := (one_lt_div hq_pos).mpr hqp_real
+    have hlog_q : 0 < Real.log (q : ℝ) := Real.log_pos hq_gt1
+    have hlog_pq : 0 < Real.log ((p : ℝ) / (q : ℝ)) := Real.log_pos hpq_gt1
+    set γ : ℝ := Real.log ((p : ℝ) / (q : ℝ)) / Real.log (q : ℝ)
+    have hγ_pos : 0 < γ := div_pos hlog_pq hlog_q
+    have hγ_kap : γ * kappa < 1 := by
+      unfold γ
+      rw [div_mul_eq_mul_div, div_lt_one hlog_q]
+      linarith
+    set gap : ℝ := 1 - γ * kappa
+    have hgap_pos : 0 < gap := by unfold gap; linarith
+    obtain ⟨b, hb_gt⟩ := exists_nat_gt (kappa / gap + 1)
+    have hdiv_pos : 0 < kappa / gap := div_pos hkap hgap_pos
+    have hb_ge1 : 1 ≤ b := by
+      have h1 : (1 : ℝ) < (b : ℝ) := by linarith
+      exact_mod_cast (le_of_lt h1)
+    have hb_pos : (0 : ℝ) < (b : ℝ) := by exact_mod_cast hb_ge1
+    have hkap_lt : kappa < (b : ℝ) * gap := by
+      have h1 : kappa / gap < (b : ℝ) := by linarith
+      exact (div_lt_iff₀ hgap_pos).mp h1
+    set a : ℕ := Int.toNat (⌊γ * (b : ℝ)⌋ + 1)
+    have hγb_pos : 0 < γ * (b : ℝ) := mul_pos hγ_pos hb_pos
+    have hfl_nonneg : 0 ≤ ⌊γ * (b : ℝ)⌋ := Int.floor_nonneg.mpr (le_of_lt hγb_pos)
+    have ha_cast : (a : ℝ) = ((⌊γ * (b : ℝ)⌋ : ℤ) : ℝ) + 1 := by
+      have h : ((a : ℕ) : ℤ) = ⌊γ * (b : ℝ)⌋ + 1 := Int.toNat_of_nonneg (by omega)
+      exact_mod_cast h
+    have ha_gt : γ * (b : ℝ) < (a : ℝ) := by
+      rw [ha_cast]
+      exact Int.lt_floor_add_one (γ * (b : ℝ))
+    have ha_le : (a : ℝ) ≤ γ * (b : ℝ) + 1 := by
+      rw [ha_cast]
+      linarith [Int.floor_le (γ * (b : ℝ))]
+    have ha_kap : (a : ℝ) * kappa < (b : ℝ) := by
+      have h1 : (a : ℝ) * kappa ≤ (γ * (b : ℝ) + 1) * kappa :=
+        mul_le_mul_of_nonneg_right ha_le (le_of_lt hkap)
+      have h2 : (γ * (b : ℝ) + 1) * kappa < (b : ℝ) := by
+        unfold gap at hkap_lt
+        nlinarith
+      exact lt_of_le_of_lt h1 h2
+    have hlog_ineq : (b : ℝ) * Real.log ((p : ℝ) / (q : ℝ)) < (a : ℝ) * Real.log (q : ℝ) := by
+      have h1 : γ * (b : ℝ) * Real.log (q : ℝ) < (a : ℝ) * Real.log (q : ℝ) :=
+        mul_lt_mul_of_pos_right ha_gt hlog_q
+      have h2 : γ * (b : ℝ) * Real.log (q : ℝ) = (b : ℝ) * Real.log ((p : ℝ) / (q : ℝ)) := by
+        unfold γ
+        field_simp [ne_of_gt hlog_q]
+        ring
+      linarith
+    have hlog_p_eq : Real.log (p : ℝ) = Real.log ((p : ℝ) / (q : ℝ)) + Real.log (q : ℝ) := by
+      have hmul : (p : ℝ) = ((p : ℝ) / (q : ℝ)) * (q : ℝ) := by
+        field_simp [ne_of_gt hq_pos]
+      conv_lhs => rw [hmul]
+      exact Real.log_mul (ne_of_gt (div_pos (by linarith) hq_pos)) (ne_of_gt hq_pos)
+    have hlog_pow : Real.log ((p : ℝ) ^ b) < Real.log ((q : ℝ) ^ (a + b)) := by
+      rw [Real.log_pow, Real.log_pow, hlog_p_eq, Nat.cast_add]
+      linarith
+    have hp_pos : (0 : ℝ) < (p : ℝ) := by linarith
+    have hpow_real : (p : ℝ) ^ b < (q : ℝ) ^ (a + b) := by
+      have hexp := Real.exp_lt_exp.mpr hlog_pow
+      rwa [Real.exp_log (pow_pos hp_pos b), Real.exp_log (pow_pos hq_pos (a + b))] at hexp
+    exact ⟨a, b, hb_ge1, by exact_mod_cast hpow_real, ha_kap⟩
+
+/-- Non-negative natural-number encoding of the general-base carry word for $\theta \le 0$:
+`dubBaseCarryGeneralNat p q ξ θ n = (dubBaseCarry p q ξ θ n + q).toNat`. -/
+noncomputable def dubBaseCarryGeneralNat (p q : ℕ) (ξ θ : ℝ) (n : ℕ) : ℕ :=
+  (dubBaseCarry p q ξ θ n + (q : ℤ)).toNat
+
+theorem dubBaseCarryGeneralNat_eq_iff {p q : ℕ} {ξ θ : ℝ}
+    (hq1 : 1 ≤ q) (hqp : q < p) (hθ_hi : θ ≤ 0) (i j : ℕ) :
+    dubBaseCarryGeneralNat p q ξ θ i = dubBaseCarryGeneralNat p q ξ θ j ↔
+      dubBaseCarry p q ξ θ i = dubBaseCarry p q ξ θ j := by
+  have hpos : ∀ n, 0 ≤ dubBaseCarry p q ξ θ n + (q : ℤ) := by
+    intro n
+    have hp_pos : (0 : ℝ) ≤ (p : ℝ) := Nat.cast_nonneg p
+    have hq_pos : (0 : ℝ) < (q : ℝ) := by exact_mod_cast hq1
+    have hqp_real : (q : ℝ) < (p : ℝ) := by exact_mod_cast hqp
+    have hy0 := (dubBaseY_bounds p q ξ θ n).1
+    have hy1 := (dubBaseY_bounds p q ξ θ (n + 1)).2
+    have hpy : 0 ≤ (p : ℝ) * dubBaseY p q ξ θ n := mul_nonneg hp_pos hy0
+    have hqy : (q : ℝ) * dubBaseY p q ξ θ (n + 1) < (q : ℝ) := by nlinarith
+    have hθ_term : 0 ≤ -((p : ℝ) - (q : ℝ)) * θ := by nlinarith
+    have hlin := dubBaseCarry_eq_fract_linear (p := p) hq1 ξ θ n
+    have hgt : -(q : ℝ) < (dubBaseCarry p q ξ θ n : ℝ) := by linarith
+    have hint : -(q : ℤ) < dubBaseCarry p q ξ θ n := by exact_mod_cast hgt
+    omega
+  constructor
+  · intro h
+    unfold dubBaseCarryGeneralNat at h
+    have h1 := Int.toNat_of_nonneg (hpos i)
+    have h2 := Int.toNat_of_nonneg (hpos j)
+    omega
+  · intro h
+    unfold dubBaseCarryGeneralNat
+    rw [h]
+
+/-- **General-Base $\log q / \log(p/q)$ Sub-Critical Complexity Exclusion for Shifted Carry Words
+(`no_subcritical_general_log_threshold_dubBaseCarry`)**:
+For **every** coprime pair $2 \le q < p$ (including the open regime $p > q^2$), **every**
+$\xi \ge 2 + \frac{2q}{p - q}$, **every** $\theta \in [-1, 0]$, $C_0 \ge 0$, and **every**
+$\kappa$ with $\kappa \log(p/q) < \log q$, the general-base carry word
+`dubBaseCarryGeneralNat p q ξ θ` cannot satisfy
+`prefixFactorCount (dubBaseCarryGeneralNat p q ξ θ) L (C L) ≤ C L ≤ kappa * L + C_0`
+at arbitrarily large lengths $L$. -/
+theorem no_subcritical_general_log_threshold_dubBaseCarry
+    {p q : ℕ} {ξ θ kappa C_0 : ℝ} {C : ℕ → ℕ}
+    (hq2 : 2 ≤ q) (hqp : q < p) (hcop_pq : Nat.Coprime p q)
+    (hξ_lo : (2 : ℝ) + (2 * (q : ℝ)) / ((p : ℝ) - (q : ℝ)) ≤ ξ)
+    (hθ_lo : (-1 : ℝ) ≤ θ) (hθ_hi : θ ≤ 0) (hC0 : 0 ≤ C_0)
+    (hlog : kappa * Real.log ((p : ℝ) / (q : ℝ)) < Real.log (q : ℝ)) :
+    ¬ (∀ L_min : ℕ, ∃ L ≥ L_min,
+      prefixFactorCount (dubBaseCarryGeneralNat p q ξ θ) L (C L) ≤ C L ∧
+        (C L : ℝ) ≤ kappa * (L : ℝ) + C_0) := by
+  intro hliminf
+  have hq1 : 1 ≤ q := by omega
+  obtain ⟨a, b, hb1, hpab, ha_kap⟩ := exists_ab_of_lt_general_log_threshold hq2 hqp hlog
+  obtain ⟨W, hW⟩ := exists_nat_gt ξ
+  have hlt_pow : (W : ℝ) < (q : ℝ) ^ W := by
+    have hnat : W < q ^ W := by
+      clear hW
+      induction W with
+      | zero => exact Nat.pow_pos (by omega)
+      | succ n ih =>
+          have hpos : 1 ≤ q ^ n := Nat.pow_pos (by omega)
+          have hq_mul : 2 * q ^ n ≤ q * q ^ n := Nat.mul_le_mul_right (q ^ n) hq2
+          rw [Nat.pow_succ']
+          omega
+    exact_mod_cast hnat
+  have hξW : ξ < (q : ℝ) ^ W := lt_trans hW hlt_pow
+  set gap : ℝ := (b : ℝ) - (a : ℝ) * kappa
+  have hgap_pos : 0 < gap := by unfold gap; linarith
+  set RHS : ℝ := (a : ℝ) * C_0 + (b : ℝ) * (W : ℝ)
+  have hRHS_nonneg : 0 ≤ RHS := by unfold RHS; positivity
+  obtain ⟨L_min, hL_min⟩ := exists_nat_gt (RHS / gap + 1)
+  obtain ⟨L, hL_ge, hcard, hC_bound⟩ := hliminf L_min
+  obtain ⟨r1, r2, hr12, hr2C, hmatch_nat⟩ :=
+    exists_repeated_subword_of_prefixFactorCount_le
+      (dubBaseCarryGeneralNat p q ξ θ) L (C L) hcard
+  have hmatch : ∀ t < L, dubBaseCarry p q ξ θ (r1 + t) = dubBaseCarry p q ξ θ (r2 + t) := by
+    intro t ht
+    exact (dubBaseCarryGeneralNat_eq_iff hq1 hqp hθ_hi (r1 + t) (r2 + t)).mp (hmatch_nat t ht)
+  have hgrowth :=
+    dubBaseX_strict_step_growth hq1 hqp hξ_lo hξW hθ_lo (by linarith) hr12
+  have hcut :=
+    (dubBaseX_repeated_window_exp_and_power_cutoff hq2 hcop_pq
+      hgrowth.2.1 hgrowth.2.2 hmatch).2.1 hb1 hpab
+  have har2 : a * r2 ≤ a * C L := Nat.mul_le_mul_left a hr2C
+  have hcut_le : b * L + 1 ≤ a * C L + b * W := by omega
+  have hcut_real :
+      (b : ℝ) * (L : ℝ) + 1 ≤ (a : ℝ) * (C L : ℝ) + (b : ℝ) * (W : ℝ) := by
+    exact_mod_cast hcut_le
+  have ha_nonneg : (0 : ℝ) ≤ (a : ℝ) := Nat.cast_nonneg a
+  have ha_mul :
+      (a : ℝ) * (C L : ℝ) ≤ (a : ℝ) * (kappa * (L : ℝ) + C_0) :=
+    mul_le_mul_of_nonneg_left hC_bound ha_nonneg
+  have hgap_le : gap * (L : ℝ) + 1 ≤ RHS := by
+    unfold gap RHS
+    linarith
+  have hL_real : (L_min : ℝ) ≤ (L : ℝ) := by exact_mod_cast hL_ge
+  have h1 : RHS / gap < (L : ℝ) := by linarith
+  have h2 : RHS < (L : ℝ) * gap := (div_lt_iff₀ hgap_pos).mp h1
+  linarith
+
+/-- **Linear-in-$W$ General-Base Dubickas (2009) Escape Bound (`dubickas2009_general_base_linear_in_W_escape`)**:
+For **every** coprime pair $2 \le q < p < q^2$, there exist integers $a < b$ ($1 \le b - a$)
+with $p^b < q^{a + b}$ such that for **every** shift $s \in [0, 1 - 1/p]$ and **every**
+$\xi \in [2 + \frac{2q}{p - q},\, q^W)$, there exists an index $n \le 2 b W + 2 a + 2$
+where $\{\xi (p/q)^n\} \notin [s, s + 1/p]$. -/
+theorem dubickas2009_general_base_linear_in_W_escape
+    {p q : ℕ} (hq2 : 2 ≤ q) (hqp : q < p) (hpq2 : p < q ^ 2) (hcop_pq : Nat.Coprime p q) :
+    ∃ a b : ℕ, a < b ∧ p ^ b < q ^ (a + b) ∧
+      ∀ {s ξ : ℝ} {W : ℕ},
+        0 ≤ s → s + 1 / (p : ℝ) ≤ 1 →
+        (2 : ℝ) + (2 * (q : ℝ)) / ((p : ℝ) - (q : ℝ)) ≤ ξ → ξ < (q : ℝ) ^ W →
+        ∃ n ≤ 2 * b * W + 2 * a + 2,
+          Int.fract (ξ * ((p : ℝ) / (q : ℝ)) ^ n) < s ∨
+            s + 1 / (p : ℝ) < Int.fract (ξ * ((p : ℝ) / (q : ℝ)) ^ n) := by
+  have hq1 : 1 ≤ q := by omega
+  have hq_pos : (0 : ℝ) < (q : ℝ) := by exact_mod_cast hq1
+  have hp_pos : (0 : ℝ) < (p : ℝ) := by exact_mod_cast (by omega : 0 < p)
+  have hpq2_real : (p : ℝ) < (q : ℝ) ^ 2 := by exact_mod_cast hpq2
+  have hdiv_lt_q : (p : ℝ) / (q : ℝ) < (q : ℝ) := by
+    rw [div_lt_iff₀ hq_pos]
+    linarith [show (q : ℝ) * (q : ℝ) = (q : ℝ) ^ 2 by ring]
+  have hlog1 : (1 : ℝ) * Real.log ((p : ℝ) / (q : ℝ)) < Real.log (q : ℝ) := by
+    rw [one_mul]
+    exact Real.log_lt_log (div_pos hp_pos hq_pos) hdiv_lt_q
+  obtain ⟨a, b, hb1, hpab, hab_real⟩ := exists_ab_of_lt_general_log_threshold hq2 hqp hlog1
+  rw [mul_one] at hab_real
+  have hab : a < b := by exact_mod_cast hab_real
+  refine ⟨a, b, hab, hpab, ?_⟩
+  intro s ξ W hs0 hs_hi hξ_lo hξW
+  have h1 : ∃ n ≤ 2 * b * W + 2 * a + 2, 1 / (p : ℝ) < Int.fract (ξ * ((p : ℝ) / (q : ℝ)) ^ n - s) := by
+    by_contra hno
+    push_neg at hno
+    set L := b * W + a
+    set C := L + 1
+    have h2bW : 2 * b * W = 2 * (b * W) := by ring
+    have hy_le : ∀ n ≤ 2 * b * W + 2 * a + 2, dubBaseY p q ξ (-s) n ≤ 1 / (p : ℝ) := by
+      intro n hn
+      unfold dubBaseY
+      have hsub : ξ * ((p : ℝ) / (q : ℝ)) ^ n + -s = ξ * ((p : ℝ) / (q : ℝ)) ^ n - s := by ring
+      rw [hsub]
+      exact hno n hn
+    have hcard :
+        prefixFactorCount (shiftSeq (dubBaseCarryNat p q ξ s) 0) L C ≤ C := by
+      apply dubBaseCarryNat_prefixFactorCount_le hq1 hqp
+      intro n _ hn_hi
+      exact hy_le n (by omega)
+    obtain ⟨r1, r2, hr12, hr2C, hmatch_nat⟩ :=
+      exists_repeated_subword_of_prefixFactorCount_le
+        (shiftSeq (dubBaseCarryNat p q ξ s) 0) L C hcard
+    set k0 : ℤ := ⌊((p : ℝ) - (q : ℝ)) * s⌋
+    have hmatch :
+        ∀ t < L, dubBaseCarry p q ξ (-s) (r1 + t) = dubBaseCarry p q ξ (-s) (r2 + t) := by
+      intro t ht
+      have hnat_eq := hmatch_nat t ht
+      simp only [shiftSeq, Nat.zero_add] at hnat_eq
+      have hm1 := (dubBaseCarry_mem_two_letters hq1 hqp
+        (hy_le (r1 + t) (by omega)) (hy_le (r1 + t + 1) (by omega))).1.1
+      have hm2 := (dubBaseCarry_mem_two_letters hq1 hqp
+        (hy_le (r2 + t) (by omega)) (hy_le (r2 + t + 1) (by omega))).1.1
+      have hcast1 :
+          (dubBaseCarryNat p q ξ s (r1 + t) : ℤ) =
+            dubBaseCarry p q ξ (-s) (r1 + t) - k0 :=
+        Int.toNat_of_nonneg (by omega)
+      have hcast2 :
+          (dubBaseCarryNat p q ξ s (r2 + t) : ℤ) =
+            dubBaseCarry p q ξ (-s) (r2 + t) - k0 :=
+        Int.toNat_of_nonneg (by omega)
+      omega
+    have hs_le1 : s ≤ 1 := by linarith [ (by positivity : (0 : ℝ) ≤ 1 / (p : ℝ)) ]
+    have hgrowth :=
+      dubBaseX_strict_step_growth hq1 hqp hξ_lo hξW
+        (θ := -s) (i := r1) (j := r2) (by linarith) (by linarith) hr12
+    have hcut :=
+      (dubBaseX_repeated_window_exp_and_power_cutoff hq2 hcop_pq
+        hgrowth.2.1 hgrowth.2.2 hmatch).2.1 hb1 hpab
+    have har2 : a * r2 ≤ a * (L + 1) := Nat.mul_le_mul_left a hr2C
+    have hba : a * L + L ≤ b * L := by
+      have h : a + 1 ≤ b := by omega
+      calc
+        a * L + L = (a + 1) * L := by ring
+        _ ≤ b * L := Nat.mul_le_mul_right L h
+    have haL1 : a * (L + 1) = a * L + a := by ring
+    omega
+  rcases h1 with ⟨n, hn_le, hn_gt⟩
+  refine ⟨n, hn_le, ?_⟩
+  by_contra hmem
+  push_neg at hmem
+  set f := Int.fract (ξ * ((p : ℝ) / (q : ℝ)) ^ n)
+  have hf_lt1 : f < 1 := Int.fract_lt_one _
+  have hfl_eq :
+      ⌊ξ * ((p : ℝ) / (q : ℝ)) ^ n - s⌋ = ⌊ξ * ((p : ℝ) / (q : ℝ)) ^ n⌋ := by
+    rw [Int.floor_eq_iff]
+    have h := Int.self_sub_floor (ξ * ((p : ℝ) / (q : ℝ)) ^ n)
+    exact ⟨by linarith [h, hmem.1], by linarith [h, hf_lt1, hs0]⟩
+  have hfract_eq : Int.fract (ξ * ((p : ℝ) / (q : ℝ)) ^ n - s) = f - s := by
+    have h1 := Int.self_sub_floor (ξ * ((p : ℝ) / (q : ℝ)) ^ n - s)
+    have h2 := Int.self_sub_floor (ξ * ((p : ℝ) / (q : ℝ)) ^ n)
+    rw [hfl_eq] at h1
+    linarith
+  linarith [hmem.2, hfract_eq, hn_gt]
+
+/-! ## 8. Human-Readable 4-Inequality Proof of $Z_{4/3}(1/3, 5/8) = \emptyset$ (Length $7/24 > 1/4$) with Explicit $W + 8$ Bound -/
+
+/-- **4-Inequality Period-2 Carry Locking for Base $4/3$ on $[1/3, 5/8)$
+(`base_four_three_carry_period_two`)**:
+Whenever $\frac{1}{3} \le \operatorname{dubBaseY} 4\ 3\ \xi\ 0\ n < \frac{5}{8}$ for all $0 \le n \le N$:
+1. $s_n \in \{0, 1\}$ for all $n < N$,
+2. `11` is impossible for $k + 2 \le N$ ($9 y_{k+2} = 16 y_k - 7 < 3$),
+3. `000` is impossible for $k + 3 \le N$ ($27 y_{k+3} = 64 y_k > 135/8$),
+4. `00` is impossible for $k + 6 \le N$ (since `00100` has $243 y_{k+5} = 1024 y_k - 144 > 1215/8$
+   and `001010` has $729 y_{k+6} = 4096 y_k - 675 > 3645/8$), and
+5. Therefore $s_{k+2} = s_k$ (strict alternation) for all $k + 7 \le N$. -/
+theorem base_four_three_carry_period_two {ξ : ℝ} {N : ℕ}
+    (hmem : ∀ n ≤ N, (1 / 3 : ℝ) ≤ dubBaseY 4 3 ξ 0 n ∧ dubBaseY 4 3 ξ 0 n < (5 / 8 : ℝ)) :
+    ∀ k, k + 7 ≤ N → dubBaseCarry 4 3 ξ 0 (k + 2) = dubBaseCarry 4 3 ξ 0 k := by
+  have hlin_step : ∀ n : ℕ,
+      (dubBaseCarry 4 3 ξ 0 n : ℝ) = 4 * dubBaseY 4 3 ξ 0 n - 3 * dubBaseY 4 3 ξ 0 (n + 1) := by
+    intro n
+    have h := dubBaseCarry_eq_fract_linear (p := 4) (q := 3) (by decide) ξ 0 n
+    push_cast at h
+    linarith
+  have hbit : ∀ n < N, dubBaseCarry 4 3 ξ 0 n = 0 ∨ dubBaseCarry 4 3 ξ 0 n = 1 := by
+    intro n hn
+    have h0 := hmem n (by omega)
+    have h1 := hmem (n + 1) (by omega)
+    have hl := hlin_step n
+    have hlo : (-1 : ℝ) < (dubBaseCarry 4 3 ξ 0 n : ℝ) := by linarith
+    have hhi : (dubBaseCarry 4 3 ξ 0 n : ℝ) < (2 : ℝ) := by linarith
+    have hz1 : -1 < dubBaseCarry 4 3 ξ 0 n := by exact_mod_cast hlo
+    have hz2 : dubBaseCarry 4 3 ξ 0 n < 2 := by exact_mod_cast hhi
+    omega
+  have hno_11 : ∀ n, n + 2 ≤ N → ¬ (dubBaseCarry 4 3 ξ 0 n = 1 ∧ dubBaseCarry 4 3 ξ 0 (n + 1) = 1) := by
+    intro n hn ⟨hs0, hs1⟩
+    have hy0 := hmem n (by omega)
+    have hy2 := hmem (n + 2) (by omega)
+    have hl0 := hlin_step n
+    have hl1 := hlin_step (n + 1)
+    have hc0 : (dubBaseCarry 4 3 ξ 0 n : ℝ) = 1 := by exact_mod_cast hs0
+    have hc1 : (dubBaseCarry 4 3 ξ 0 (n + 1) : ℝ) = 1 := by exact_mod_cast hs1
+    linarith
+  have hno_000 :
+      ∀ n, n + 3 ≤ N →
+        ¬ (dubBaseCarry 4 3 ξ 0 n = 0 ∧ dubBaseCarry 4 3 ξ 0 (n + 1) = 0 ∧
+          dubBaseCarry 4 3 ξ 0 (n + 2) = 0) := by
+    intro n hn ⟨hs0, hs1, hs2⟩
+    have hy0 := hmem n (by omega)
+    have hy3 := hmem (n + 3) (by omega)
+    have hl0 := hlin_step n
+    have hl1 := hlin_step (n + 1)
+    have hl2 := hlin_step (n + 2)
+    have hc0 : (dubBaseCarry 4 3 ξ 0 n : ℝ) = 0 := by exact_mod_cast hs0
+    have hc1 : (dubBaseCarry 4 3 ξ 0 (n + 1) : ℝ) = 0 := by exact_mod_cast hs1
+    have hc2 : (dubBaseCarry 4 3 ξ 0 (n + 2) : ℝ) = 0 := by exact_mod_cast hs2
+    linarith
+  have hno_00 :
+      ∀ n, n + 6 ≤ N → ¬ (dubBaseCarry 4 3 ξ 0 n = 0 ∧ dubBaseCarry 4 3 ξ 0 (n + 1) = 0) := by
+    intro n hn ⟨hs0, hs1⟩
+    have hs2 : dubBaseCarry 4 3 ξ 0 (n + 2) = 1 := by
+      rcases hbit (n + 2) (by omega) with h0 | h1
+      · exfalso; exact hno_000 n (by omega) ⟨hs0, hs1, h0⟩
+      · exact h1
+    have hs3 : dubBaseCarry 4 3 ξ 0 (n + 3) = 0 := by
+      rcases hbit (n + 3) (by omega) with h0 | h1
+      · exact h0
+      · exfalso; exact hno_11 (n + 2) (by omega) ⟨hs2, h1⟩
+    have hl0 := hlin_step n
+    have hl1 := hlin_step (n + 1)
+    have hl2 := hlin_step (n + 2)
+    have hl3 := hlin_step (n + 3)
+    have hl4 := hlin_step (n + 4)
+    have hl5 := hlin_step (n + 5)
+    have hc0 : (dubBaseCarry 4 3 ξ 0 n : ℝ) = 0 := by exact_mod_cast hs0
+    have hc1 : (dubBaseCarry 4 3 ξ 0 (n + 1) : ℝ) = 0 := by exact_mod_cast hs1
+    have hc2 : (dubBaseCarry 4 3 ξ 0 (n + 2) : ℝ) = 1 := by exact_mod_cast hs2
+    have hc3 : (dubBaseCarry 4 3 ξ 0 (n + 3) : ℝ) = 0 := by exact_mod_cast hs3
+    have hy0 := hmem n (by omega)
+    have hy5 := hmem (n + 5) (by omega)
+    have hy6 := hmem (n + 6) (by omega)
+    rcases hbit (n + 4) (by omega) with hs4_0 | hs4_1
+    · have hc4 : (dubBaseCarry 4 3 ξ 0 (n + 4) : ℝ) = 0 := by exact_mod_cast hs4_0
+      linarith
+    · have hs5 : dubBaseCarry 4 3 ξ 0 (n + 5) = 0 := by
+        rcases hbit (n + 5) (by omega) with h0 | h1
+        · exact h0
+        · exfalso; exact hno_11 (n + 4) (by omega) ⟨hs4_1, h1⟩
+      have hc4 : (dubBaseCarry 4 3 ξ 0 (n + 4) : ℝ) = 1 := by exact_mod_cast hs4_1
+      have hc5 : (dubBaseCarry 4 3 ξ 0 (n + 5) : ℝ) = 0 := by exact_mod_cast hs5
+      linarith
+  intro k hk
+  rcases hbit k (by omega) with b0 | b0 <;>
+    rcases hbit (k + 1) (by omega) with b1 | b1 <;>
+    rcases hbit (k + 2) (by omega) with b2 | b2
+  · exfalso; exact hno_00 k (by omega) ⟨b0, b1⟩
+  · exfalso; exact hno_00 k (by omega) ⟨b0, b1⟩
+  · omega
+  · exfalso; exact hno_11 (k + 1) (by omega) ⟨b1, b2⟩
+  · exfalso; exact hno_00 (k + 1) (by omega) ⟨b1, b2⟩
+  · omega
+  · exfalso; exact hno_11 k (by omega) ⟨b0, b1⟩
+  · exfalso; exact hno_11 k (by omega) ⟨b0, b1⟩
+
+/-- **Explicit $W + 8$ Escape Bound & Infinite-Horizon Emptiness for Base $4/3$ on $[1/3, 5/8)$
+(Length $7/24 > 1/4 = 1/p$, `base_four_three_beyond_quarter_explicit_and_infinite_escape`)**:
+1. **Explicit $W + 8$ Escape Bound:** For **every** $\xi \in [8, 3^W)$, there exists an
+   index $n \le W + 8$ such that $\{\xi (4/3)^n\} \notin [1/3, 5/8)$.
+2. **Infinite-Horizon Emptiness ($Z_{4/3}(1/3, 5/8) = \emptyset$):** For **every** real $\xi > 0$
+   and threshold $N_0 \in \mathbb{N}$, there exists $n \ge N_0$ with $\{\xi (4/3)^n\} \notin [1/3, 5/8)$. -/
+theorem base_four_three_beyond_quarter_explicit_and_infinite_escape :
+    (∀ {ξ : ℝ} {W : ℕ}, (8 : ℝ) ≤ ξ → ξ < (3 : ℝ) ^ W →
+      ∃ n ≤ W + 8,
+        Int.fract (ξ * (4 / 3 : ℝ) ^ n) < (1 / 3 : ℝ) ∨
+          (5 / 8 : ℝ) ≤ Int.fract (ξ * (4 / 3 : ℝ) ^ n)) ∧
+    (∀ {ξ : ℝ}, 0 < ξ → ∀ N_0 : ℕ,
+      ∃ n ≥ N_0,
+        Int.fract (ξ * (4 / 3 : ℝ) ^ n) < (1 / 3 : ℝ) ∨
+          (5 / 8 : ℝ) ≤ Int.fract (ξ * (4 / 3 : ℝ) ^ n)) := by
+  have hexplicit :
+      ∀ {ξ : ℝ} {W : ℕ}, (8 : ℝ) ≤ ξ → ξ < (3 : ℝ) ^ W →
+        ∃ n ≤ W + 8,
+          Int.fract (ξ * (4 / 3 : ℝ) ^ n) < (1 / 3 : ℝ) ∨
+            (5 / 8 : ℝ) ≤ Int.fract (ξ * (4 / 3 : ℝ) ^ n) := by
+    intro ξ W hξ8 hξW
+    by_contra hno
+    have hmem : ∀ n ≤ W + 8, (1 / 3 : ℝ) ≤ dubBaseY 4 3 ξ 0 n ∧ dubBaseY 4 3 ξ 0 n < (5 / 8 : ℝ) := by
+      intro n hn
+      unfold dubBaseY
+      push_cast
+      rw [add_zero]
+      by_contra hout
+      rcases lt_or_ge (Int.fract (ξ * (4 / 3 : ℝ) ^ n)) (1 / 3 : ℝ) with hlt | hge
+      · exact hno ⟨n, hn, Or.inl hlt⟩
+      · have hge2 : (5 / 8 : ℝ) ≤ Int.fract (ξ * (4 / 3 : ℝ) ^ n) := by
+          by_contra hlt2
+          exact hout ⟨hge, not_le.mp hlt2⟩
+        exact hno ⟨n, hn, Or.inr hge2⟩
+    have hper2 := base_four_three_carry_period_two hmem
+    set L := W + 1
+    have hmatch : ∀ t < L, dubBaseCarry 4 3 ξ 0 (0 + t) = dubBaseCarry 4 3 ξ 0 (2 + t) := by
+      intro t ht
+      have h := hper2 t (by omega)
+      have hidx : 2 + t = t + 2 := by omega
+      rw [Nat.zero_add, hidx, h]
+    have hgrowth :=
+      dubBaseX_strict_step_growth (p := 4) (q := 3) (by decide) (by decide)
+        (by push_cast; linarith) hξW (θ := 0) (i := 0) (j := 2)
+        (by norm_num) (by norm_num) (by decide)
+    have hexp : 3 ^ (L + 2) < 4 ^ 2 * 3 ^ W :=
+      (dubBaseX_repeated_window_exp_and_power_cutoff (by decide) (by decide)
+        hgrowth.2.1 hgrowth.2.2 hmatch).1
+    have hrhs_lt : 4 ^ 2 * 3 ^ W < 3 ^ (L + 2) := by
+      calc
+        4 ^ 2 * 3 ^ W < 3 ^ 3 * 3 ^ W :=
+          Nat.mul_lt_mul_of_pos_right (by decide : 4 ^ 2 < 3 ^ 3) (Nat.pow_pos (by decide))
+        _ = 3 ^ (L + 2) := by
+          rw [← Nat.pow_add]
+          have h : 3 + W = L + 2 := by dsimp [L]; ring
+          rw [h]
+    exact Nat.lt_asymm hexp hrhs_lt
+  refine ⟨hexplicit, ?_⟩
+  intro ξ hξ N_0
+  obtain ⟨k0, hk0⟩ := exists_nat_gt (24 / ξ)
+  set k := max N_0 (k0 + 1)
+  have hk_ge : N_0 ≤ k := le_max_left _ _
+  have hbernoulli : (1 : ℝ) + (k : ℝ) / 3 ≤ (4 / 3 : ℝ) ^ k := by
+    clear hk_ge
+    induction k with
+    | zero => simp
+    | succ m ih =>
+        rw [pow_succ, Nat.cast_add, Nat.cast_one]
+        have hpos : (0 : ℝ) ≤ (m : ℝ) / 9 := by positivity
+        nlinarith
+  have hξk_ge8 : (8 : ℝ) ≤ ξ * (4 / 3 : ℝ) ^ k := by
+    have h1 : 24 < (k0 : ℝ) * ξ := (div_lt_iff₀ hξ).mp hk0
+    have h2 : (k0 : ℝ) ≤ (k : ℝ) := by exact_mod_cast (by omega : k0 ≤ k)
+    have h3 : 24 ≤ (k : ℝ) * ξ := by nlinarith
+    have h4 := mul_le_mul_of_nonneg_left hbernoulli (le_of_lt hξ)
+    linarith
+  obtain ⟨W, hW⟩ := exists_nat_gt (ξ * (4 / 3 : ℝ) ^ k)
+  have hW_lt : (W : ℝ) < (3 : ℝ) ^ W := by exact_mod_cast (n_lt_q_pow (by decide : 2 ≤ 3) W)
+  have hξk_ltW : ξ * (4 / 3 : ℝ) ^ k < (3 : ℝ) ^ W := lt_trans hW hW_lt
+  obtain ⟨d, _, hd_out⟩ := hexplicit hξk_ge8 hξk_ltW
+  refine ⟨k + d, by omega, ?_⟩
+  have hmul : ξ * (4 / 3 : ℝ) ^ k * (4 / 3 : ℝ) ^ d = ξ * (4 / 3 : ℝ) ^ (k + d) := by
+    rw [pow_add, mul_assoc]
+  rwa [← hmul]
+
+/-! ## 9. Forward Funnel Pruning & Explicit $O(W)$ Escape for the $2/3$ and $25/36 \approx 0.6944$ Multi-Interval Unions -/
+
+/-- Check whether the forward image $[3 a - s D, 3 b - s D) \cap [2 c, 2 d)$ is empty or
+contained in $2 \cdot [e, f)$ for some $(e, f) \in T_{\text{next}}$. -/
+def forwardPieceOk (D : ℤ) (Tnext : List (ℤ × ℤ)) (a b s c d : ℤ) : Bool :=
+  let lo1 := 3 * a - s * D
+  let lo2 := 2 * c
+  let hi1 := 3 * b - s * D
+  let hi2 := 2 * d
+  decide (hi1 ≤ lo1 ∨ hi1 ≤ lo2 ∨ hi2 ≤ lo1 ∨ hi2 ≤ lo2) ||
+    Tnext.any (fun ef =>
+      decide ((2 * ef.1 ≤ lo1 ∨ 2 * ef.1 ≤ lo2) ∧ (hi1 ≤ 2 * ef.2 ∨ hi2 ≤ 2 * ef.2)))
+
+/-- Check one forward pruning transition: if $y_n \in T_{\text{cur}}$ and $y_{n+1} \in T_{\text{amb}}$,
+then $y_{n+1} \in T_{\text{next}}$. -/
+def forwardStepOk (D : ℤ) (Tcur Tamb Tnext : List (ℤ × ℤ)) : Bool :=
+  Tcur.all (fun ab =>
+    ([-1, 0, 1, 2] : List ℤ).all (fun s =>
+      Tamb.all (fun cd => forwardPieceOk D Tnext ab.1 ab.2 s cd.1 cd.2)))
+
+/-- **Soundness of Forward Funnel Pruning (`inRatIntervalList_next_of_forwardStepOk`)**:
+If `forwardStepOk D Tcur Tamb Tnext = true`, $y_n \in T_{\text{cur}}$, and $y_{n+1} \in T_{\text{amb}}$,
+then $y_{n+1} \in T_{\text{next}}$. -/
+theorem inRatIntervalList_next_of_forwardStepOk
+    {D : ℤ} {Tcur Tamb Tnext : List (ℤ × ℤ)} {ξ : ℝ} {n : ℕ}
+    (_hD : 0 < D)
+    (hfwd : forwardStepOk D Tcur Tamb Tnext = true)
+    (hcur : InRatIntervalList D Tcur (dubY ξ 0 n))
+    (hamb : InRatIntervalList D Tamb (dubY ξ 0 (n + 1))) :
+    InRatIntervalList D Tnext (dubY ξ 0 (n + 1)) := by
+  rcases hcur with ⟨⟨a, b⟩, hab_mem, ha_lo, hb_hi⟩
+  rcases hamb with ⟨⟨c, d⟩, hcd_mem, hc_lo, hd_hi⟩
+  have hy0 := dubY_bounds ξ 0 n
+  have hy1 := dubY_bounds ξ 0 (n + 1)
+  have hlin := dubCarry_eq_fract_linear ξ 0 n
+  set s := dubCarry ξ 0 n
+  have hs_mem : s ∈ ([-1, 0, 1, 2] : List ℤ) := by
+    have hlo : (-2 : ℝ) < (s : ℝ) := by linarith [hy0.1, hy1.2, hlin]
+    have hhi : (s : ℝ) < (3 : ℝ) := by linarith [hy0.2, hy1.1, hlin]
+    have hz1 : -2 < s := by exact_mod_cast hlo
+    have hz2 : s < 3 := by exact_mod_cast hhi
+    simp only [List.mem_cons, List.not_mem_nil, or_false]
+    omega
+  unfold forwardStepOk at hfwd
+  rw [List.all_eq_true] at hfwd
+  have h1 := hfwd (a, b) hab_mem
+  rw [List.all_eq_true] at h1
+  have h2 := h1 s hs_mem
+  rw [List.all_eq_true] at h2
+  have hpiece := h2 (c, d) hcd_mem
+  unfold forwardPieceOk at hpiece
+  rw [Bool.or_eq_true, decide_eq_true_eq, List.any_eq_true] at hpiece
+  have h2y_eq : 2 * ((D : ℝ) * dubY ξ 0 (n + 1)) = 3 * ((D : ℝ) * dubY ξ 0 n) - (s : ℝ) * (D : ℝ) := by
+    dsimp [s]
+    linear_combination (D : ℝ) * hlin
+  have hlo1_real : ((3 * a - s * D : ℤ) : ℝ) ≤ 2 * ((D : ℝ) * dubY ξ 0 (n + 1)) := by
+    push_cast; linarith
+  have hhi1_real : 2 * ((D : ℝ) * dubY ξ 0 (n + 1)) < ((3 * b - s * D : ℤ) : ℝ) := by
+    push_cast; linarith
+  have hlo2_real : ((2 * c : ℤ) : ℝ) ≤ 2 * ((D : ℝ) * dubY ξ 0 (n + 1)) := by
+    push_cast; linarith
+  have hhi2_real : 2 * ((D : ℝ) * dubY ξ 0 (n + 1)) < ((2 * d : ℤ) : ℝ) := by
+    push_cast; linarith
+  rcases hpiece with hempty | ⟨⟨e, f⟩, hef_mem, hef_ok⟩
+  · exfalso
+    rcases hempty with hle1 | hle2 | hle3 | hle4
+    · have h : ((3 * b - s * D : ℤ) : ℝ) ≤ ((3 * a - s * D : ℤ) : ℝ) := by exact_mod_cast hle1
+      linarith
+    · have h : ((3 * b - s * D : ℤ) : ℝ) ≤ ((2 * c : ℤ) : ℝ) := by exact_mod_cast hle2
+      linarith
+    · have h : ((2 * d : ℤ) : ℝ) ≤ ((3 * a - s * D : ℤ) : ℝ) := by exact_mod_cast hle3
+      linarith
+    · have h : ((2 * d : ℤ) : ℝ) ≤ ((2 * c : ℤ) : ℝ) := by exact_mod_cast hle4
+      linarith
+  · rw [decide_eq_true_eq] at hef_ok
+    refine ⟨(e, f), hef_mem, ?_, ?_⟩
+    · rcases hef_ok.1 with he1 | he2
+      · have h : ((2 * e : ℤ) : ℝ) ≤ ((3 * a - s * D : ℤ) : ℝ) := by exact_mod_cast he1
+        push_cast at h; linarith
+      · have h : ((2 * e : ℤ) : ℝ) ≤ ((2 * c : ℤ) : ℝ) := by exact_mod_cast he2
+        push_cast at h; linarith
+    · rcases hef_ok.2 with hf1 | hf2
+      · have h : ((3 * b - s * D : ℤ) : ℝ) ≤ ((2 * f : ℤ) : ℝ) := by exact_mod_cast hf1
+        push_cast at h; linarith
+      · have h : ((2 * d : ℤ) : ℝ) ≤ ((2 * f : ℤ) : ℝ) := by exact_mod_cast hf2
+        push_cast at h; linarith
+
+/-- Base 5-interval union $U_{2/3} = [0, 1/9) \cup [1/6, 4/9) \cup [1/2, 5/9) \cup [11/18, 7/9) \cup [5/6, 8/9)$
+of total length $2 / 3 \approx 0.6667 > 7 / 12 > 1 / 2$ scaled by $D = 118098$. -/
+def unionTwoThirdsBase : List (ℤ × ℤ) :=
+  [(0, 13122), (19683, 52488), (59049, 65610), (72171, 91854), (98415, 104976)]
+
+/-- 9-step backward funnel for $U_{2/3}$ over $D = 118098$. -/
+def funnelTwoThirdsLevels : List (List (ℤ × ℤ)) :=
+  [ [(0, 13122), (19683, 34992), (39366, 52488), (59049, 65610), (72171, 74358), (78732, 91854), (98415, 104976)],
+    [(0, 10206), (19683, 23328), (26244, 34992), (39366, 49572), (59049, 62694), (72171, 74358), (78732, 88938), (98415, 102060)],
+    [(0, 10206), (19683, 23328), (26244, 33048), (39366, 49572), (59049, 62694), (72171, 72414), (78732, 88938), (98415, 102060)],
+    [(0, 8910), (19683, 22032), (26244, 33048), (39366, 48276), (59049, 61398), (72171, 72414), (78732, 87642), (98415, 100764)],
+    [(0, 5940), (8748, 8910), (19683, 22032), (26244, 32184), (39366, 45306), (48114, 48276), (59049, 61398), (78732, 84672), (87480, 87642), (98415, 100764)],
+    [(0, 5940), (19683, 21456), (26244, 32184), (39366, 45306), (59049, 60822), (78732, 84672), (98415, 100188)],
+    [(0, 3960), (19683, 21456), (26244, 30204), (39366, 43326), (59049, 60822), (78732, 82692), (98415, 100188)],
+    [(0, 2640), (19683, 20136), (26244, 28884), (39366, 42006), (59049, 59502), (78732, 81372), (98415, 98868)],
+    [(0, 1760), (26244, 28004), (39366, 41126), (78732, 80492)] ]
+
+def funnelTwoThirdsT9 : List (ℤ × ℤ) :=
+  [(0, 1760), (26244, 28004), (39366, 41126), (78732, 80492)]
+
+def funnelTwoThirdsF1 : List (ℤ × ℤ) :=
+  [(0, 1760), (39366, 41126)]
+
+private theorem funnelTwoThirds_valid :
+    funnelChainOk 118098 unionTwoThirdsBase funnelTwoThirdsT9 unionTwoThirdsBase
+      funnelTwoThirdsLevels = true ∧
+    forwardStepOk 118098 funnelTwoThirdsT9 funnelTwoThirdsT9 funnelTwoThirdsF1 = true ∧
+    forwardStepOk 118098 funnelTwoThirdsF1 funnelTwoThirdsT9 [(0, 1760)] = true := by
+  decide
+
+/-- Predicate for membership in the 5-interval union
+$U_{2/3} = [0, 1/9) \cup [1/6, 4/9) \cup [1/2, 5/9) \cup [11/18, 7/9) \cup [5/6, 8/9)$ of total length $2/3 > 1/2$. -/
+def InUnionTwoThirds (y : ℝ) : Prop :=
+  (0 ≤ y ∧ y < (1 / 9 : ℝ)) ∨
+    ((1 / 6 : ℝ) ≤ y ∧ y < (4 / 9 : ℝ)) ∨
+    ((1 / 2 : ℝ) ≤ y ∧ y < (5 / 9 : ℝ)) ∨
+    ((11 / 18 : ℝ) ≤ y ∧ y < (7 / 9 : ℝ)) ∨
+    ((5 / 6 : ℝ) ≤ y ∧ y < (8 / 9 : ℝ))
+
+/-- **Explicit $W + 14$ Escape Bound & Infinite-Horizon Emptiness for the $2/3 > 7/12 > 1/2$
+Union $U_{2/3}$ (`union_two_thirds_explicit_and_infinite_escape`)**:
+1. **Explicit $W + 14$ Escape Bound:** For **every** $\xi \in [1, 2^W)$, there exists an
+   index $n \le W + 14$ such that $\{\xi (3/2)^n\} \notin U_{2/3}$.
+2. **Infinite-Horizon Emptiness:** For **every** real $\xi > 0$ and threshold $N_0 \in \mathbb{N}$,
+   there exists $n \ge N_0$ such that $\{\xi (3/2)^n\} \notin U_{2/3}$. -/
+theorem union_two_thirds_explicit_and_infinite_escape :
+    (∀ {ξ : ℝ} {W : ℕ}, (1 : ℝ) ≤ ξ → ξ < (2 : ℝ) ^ W →
+      ∃ n ≤ W + 14, ¬ InUnionTwoThirds (Int.fract (ξ * (3 / 2 : ℝ) ^ n))) ∧
+    (∀ {ξ : ℝ}, 0 < ξ → ∀ N_0 : ℕ,
+      ∃ n ≥ N_0, ¬ InUnionTwoThirds (Int.fract (ξ * (3 / 2 : ℝ) ^ n))) := by
+  have hexplicit :
+      ∀ {ξ : ℝ} {W : ℕ}, (1 : ℝ) ≤ ξ → ξ < (2 : ℝ) ^ W →
+        ∃ n ≤ W + 14, ¬ InUnionTwoThirds (Int.fract (ξ * (3 / 2 : ℝ) ^ n)) := by
+    intro ξ W hξ1 hξW
+    by_contra hno
+    push_neg at hno
+    set N := W + 14
+    have hmemU : ∀ n ≤ N, InRatIntervalList 118098 unionTwoThirdsBase (dubY ξ 0 n) := by
+      intro n hn
+      have hu := hno n hn
+      unfold InUnionTwoThirds at hu
+      unfold InRatIntervalList unionTwoThirdsBase dubY
+      rw [add_zero]
+      rcases hu with ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩
+      · exact ⟨(0, 13122), by simp, by linarith, by linarith⟩
+      · exact ⟨(19683, 52488), by simp, by linarith, by linarith⟩
+      · exact ⟨(59049, 65610), by simp, by linarith, by linarith⟩
+      · exact ⟨(72171, 91854), by simp, by linarith, by linarith⟩
+      · exact ⟨(98415, 104976), by simp, by linarith, by linarith⟩
+    have hT9 :=
+      inRatIntervalList_terminal_of_funnelChainOk (by decide : (0 : ℤ) < 118098) hmemU
+        funnelTwoThirdsLevels unionTwoThirdsBase 0 funnelTwoThirds_valid.1
+        (fun n hn => hmemU n (by omega))
+    have hF1 : ∀ n, 1 ≤ n → n ≤ W + 5 → InRatIntervalList 118098 funnelTwoThirdsF1 (dubY ξ 0 n) := by
+      intro n hn1 hn5
+      obtain ⟨m, rfl⟩ : ∃ m, n = m + 1 := ⟨n - 1, by omega⟩
+      exact inRatIntervalList_next_of_forwardStepOk (by decide) funnelTwoThirds_valid.2.1
+        (hT9 m (by simp [funnelTwoThirdsLevels, N]; omega))
+        (hT9 (m + 1) (by simp [funnelTwoThirdsLevels, N]; omega))
+    have hF2 : ∀ n, 2 ≤ n → n ≤ W + 5 → InRatIntervalList 118098 [(0, 1760)] (dubY ξ 0 n) := by
+      intro n hn2 hn5
+      obtain ⟨m, rfl⟩ : ∃ m, n = m + 1 := ⟨n - 1, by omega⟩
+      exact inRatIntervalList_next_of_forwardStepOk (by decide) funnelTwoThirds_valid.2.2
+        (hF1 m (by omega) (by omega))
+        (hT9 (m + 1) (by simp [funnelTwoThirdsLevels, N]; omega))
+    have hzero : ∀ n, 2 ≤ n → n ≤ W + 4 → dubCarry ξ 0 n = 0 := by
+      intro n hn2 hn4
+      have hy0_mem := hF2 n hn2 (by omega)
+      have hy1_mem := hF2 (n + 1) (by omega) (by omega)
+      unfold InRatIntervalList at hy0_mem hy1_mem
+      rcases hy0_mem with ⟨ab0, hab0, hlo0, hhi0⟩
+      rcases hy1_mem with ⟨ab1, hab1, hlo1, hhi1⟩
+      simp only [List.mem_singleton] at hab0 hab1
+      subst hab0; subst hab1
+      dsimp at hlo0 hhi0 hlo1 hhi1
+      push_cast at hlo0 hhi0 hlo1 hhi1
+      have hlin := dubCarry_eq_fract_linear ξ 0 n
+      have hlo : (-1 : ℝ) < (dubCarry ξ 0 n : ℝ) := by linarith
+      have hhi : (dubCarry ξ 0 n : ℝ) < (1 : ℝ) := by linarith
+      have hz1 : -1 < dubCarry ξ 0 n := by exact_mod_cast hlo
+      have hz2 : dubCarry ξ 0 n < 1 := by exact_mod_cast hhi
+      omega
+    have hmatch : ∀ t < W + 2, dubCarry ξ 0 (2 + t) = dubCarry ξ 0 (3 + t) := by
+      intro t ht
+      rw [hzero (2 + t) (by omega) (by omega), hzero (3 + t) (by omega) (by omega)]
+    have hexp :=
+      dubX_repeated_window_exp_bound (i := 2) (j := 3) (L := W + 2)
+        hξ1 hξW (by norm_num) (by norm_num) le_rfl (by omega) hmatch
+    have hpow : 3 ^ 3 * 2 ^ W < 2 ^ ((W + 2) + 3) := by
+      calc
+        3 ^ 3 * 2 ^ W = 27 * 2 ^ W := by ring
+        _ < 32 * 2 ^ W := Nat.mul_lt_mul_of_pos_right (by decide) (Nat.pow_pos (by decide))
+        _ = 2 ^ ((W + 2) + 3) := by
+          have h : (W + 2) + 3 = 5 + W := by omega
+          rw [h, Nat.pow_add]
+    omega
+  refine ⟨hexplicit, ?_⟩
+  intro ξ hξ N_0
+  obtain ⟨k, W, hk_ge, _, hge1, hltW⟩ := exists_pow_shift_ge_one_and_lt_two_pow hξ N_0
+  obtain ⟨m, _, hm_out⟩ := hexplicit hge1 hltW
+  refine ⟨k + m, by omega, ?_⟩
+  have hmul : ξ * (3 / 2 : ℝ) ^ k * (3 / 2 : ℝ) ^ m = ξ * (3 / 2 : ℝ) ^ (k + m) := by
+    rw [pow_add, mul_assoc]
+  rwa [← hmul]
+
+/-- Base 6-interval union $U_{25/36} = [0, 1/12) \cup [1/9, 11/36) \cup [4/9, 2/3) \cup [25/36, 3/4) \cup [5/6, 8/9) \cup [11/12, 1)$
+of total length $25 / 36 \approx 0.6944 > 2 / 3 > 1 / 2$ scaled by $D = 708588$. -/
+def unionTwentyFiveThirtySixthsBase : List (ℤ × ℤ) :=
+  [(0, 59049), (78732, 216513), (314928, 472392), (492075, 531441), (590490, 629856), (649539, 708588)]
+
+/-- 11-step backward funnel for $U_{25/36}$ over $D = 708588$. -/
+def funnelTwentyFiveThirtySixthsLevels : List (List (ℤ × ℤ)) :=
+  [ [(0, 59049), (78732, 144342), (157464, 183708), (196830, 216513), (314928, 380538), (393660, 419904), (433026, 472392), (492075, 531441), (590490, 616734), (649539, 656100), (669222, 708588)],
+    [(0, 59049), (78732, 144342), (157464, 174960), (196830, 216513), (314928, 380538), (393660, 411156), (433026, 472392), (492075, 531441), (590490, 616734), (669222, 708588)],
+    [(0, 39366), (52488, 59049), (78732, 118098), (131220, 144342), (157464, 174960), (209952, 216513), (314928, 354294), (367416, 380538), (393660, 411156), (446148, 472392), (492075, 511758), (524880, 531441), (603612, 616734), (682344, 708588)],
+    [(0, 39366), (52488, 59049), (87480, 118098), (139968, 144342), (166212, 174960), (209952, 216513), (323676, 354294), (376164, 380538), (402408, 411156), (446148, 472392), (492075, 511758), (524880, 531441), (612360, 616734), (682344, 708588)],
+    [(0, 39366), (58320, 59049), (91854, 118098), (139968, 144342), (172044, 174960), (215784, 216513), (328050, 354294), (376164, 380538), (408240, 411156), (451980, 472392), (492075, 511758), (530712, 531441), (612360, 616734), (688176, 708588)],
+    [(0, 39366), (91854, 118098), (143856, 144342), (172044, 174960), (328050, 354294), (380052, 380538), (408240, 411156), (454896, 472392), (492075, 511758), (616248, 616734), (691092, 708588)],
+    [(0, 37908), (91854, 116640), (174636, 174960), (328050, 352836), (410832, 411156), (454896, 472392), (492075, 510300), (691092, 708588)],
+    [(0, 25272), (37692, 37908), (91854, 104004), (116424, 116640), (328050, 340200), (352620, 352836), (454896, 472392), (492075, 497664), (510084, 510300), (691092, 708588)],
+    [(0, 25272), (91854, 104004), (328050, 340200), (454896, 472392), (497520, 497664), (691092, 708588)],
+    [(0, 16848), (95484, 95580), (331680, 331776), (454896, 472392), (691092, 708588)],
+    [(0, 11232), (457316, 472392), (693512, 708588)] ]
+
+def funnelTwentyFiveThirtySixthsT11 : List (ℤ × ℤ) :=
+  [(0, 11232), (457316, 472392), (693512, 708588)]
+
+def funnelTwentyFiveThirtySixthsF1 : List (ℤ × ℤ) :=
+  [(0, 11232), (693512, 708588)]
+
+set_option maxHeartbeats 800000 in
+private theorem funnelTwentyFiveThirtySixths_valid :
+    funnelChainOk 708588 unionTwentyFiveThirtySixthsBase funnelTwentyFiveThirtySixthsT11
+      unionTwentyFiveThirtySixthsBase funnelTwentyFiveThirtySixthsLevels = true ∧
+    forwardStepOk 708588 funnelTwentyFiveThirtySixthsT11 funnelTwentyFiveThirtySixthsT11
+      funnelTwentyFiveThirtySixthsF1 = true := by
+  decide
+
+/-- Predicate for membership in the 6-interval union
+$U_{25/36} = [0, 1/12) \cup [1/9, 11/36) \cup [4/9, 2/3) \cup [25/36, 3/4) \cup [5/6, 8/9) \cup [11/12, 1)$
+of total length $25/36 \approx 0.6944 > 2/3 > 1/2$. -/
+def InUnionTwentyFiveThirtySixths (y : ℝ) : Prop :=
+  (0 ≤ y ∧ y < (1 / 12 : ℝ)) ∨
+    ((1 / 9 : ℝ) ≤ y ∧ y < (11 / 36 : ℝ)) ∨
+    ((4 / 9 : ℝ) ≤ y ∧ y < (2 / 3 : ℝ)) ∨
+    ((25 / 36 : ℝ) ≤ y ∧ y < (3 / 4 : ℝ)) ∨
+    ((5 / 6 : ℝ) ≤ y ∧ y < (8 / 9 : ℝ)) ∨
+    ((11 / 12 : ℝ) ≤ y ∧ y < (1 : ℝ))
+
+/-- **Explicit $W + 16$ Escape Bound & Infinite-Horizon Emptiness for the $25/36 \approx 0.6944 > 2/3$
+Union $U_{25/36}$ (`union_twenty_five_thirty_sixths_explicit_and_infinite_escape`)**:
+1. **Explicit $W + 16$ Escape Bound:** For **every** $\xi \in [1, 2^W)$, there exists an
+   index $n \le W + 16$ such that $\{\xi (3/2)^n\} \notin U_{25/36}$.
+2. **Infinite-Horizon Emptiness:** For **every** real $\xi > 0$ and threshold $N_0 \in \mathbb{N}$,
+   there exists $n \ge N_0$ such that $\{\xi (3/2)^n\} \notin U_{25/36}$. -/
+theorem union_twenty_five_thirty_sixths_explicit_and_infinite_escape :
+    (∀ {ξ : ℝ} {W : ℕ}, (1 : ℝ) ≤ ξ → ξ < (2 : ℝ) ^ W →
+      ∃ n ≤ W + 16, ¬ InUnionTwentyFiveThirtySixths (Int.fract (ξ * (3 / 2 : ℝ) ^ n))) ∧
+    (∀ {ξ : ℝ}, 0 < ξ → ∀ N_0 : ℕ,
+      ∃ n ≥ N_0, ¬ InUnionTwentyFiveThirtySixths (Int.fract (ξ * (3 / 2 : ℝ) ^ n))) := by
+  have hexplicit :
+      ∀ {ξ : ℝ} {W : ℕ}, (1 : ℝ) ≤ ξ → ξ < (2 : ℝ) ^ W →
+        ∃ n ≤ W + 16, ¬ InUnionTwentyFiveThirtySixths (Int.fract (ξ * (3 / 2 : ℝ) ^ n)) := by
+    intro ξ W hξ1 hξW
+    by_contra hno
+    push_neg at hno
+    set N := W + 16
+    have hmemU : ∀ n ≤ N, InRatIntervalList 708588 unionTwentyFiveThirtySixthsBase (dubY ξ 0 n) := by
+      intro n hn
+      have hu := hno n hn
+      unfold InUnionTwentyFiveThirtySixths at hu
+      unfold InRatIntervalList unionTwentyFiveThirtySixthsBase dubY
+      rw [add_zero]
+      rcases hu with ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩
+      · exact ⟨(0, 59049), by simp, by linarith, by linarith⟩
+      · exact ⟨(78732, 216513), by simp, by linarith, by linarith⟩
+      · exact ⟨(314928, 472392), by simp, by linarith, by linarith⟩
+      · exact ⟨(492075, 531441), by simp, by linarith, by linarith⟩
+      · exact ⟨(590490, 629856), by simp, by linarith, by linarith⟩
+      · exact ⟨(649539, 708588), by simp, by linarith, by linarith⟩
+    have hT11 :=
+      inRatIntervalList_terminal_of_funnelChainOk (by decide : (0 : ℤ) < 708588) hmemU
+        funnelTwentyFiveThirtySixthsLevels unionTwentyFiveThirtySixthsBase 0
+        funnelTwentyFiveThirtySixths_valid.1 (fun n hn => hmemU n (by omega))
+    have hF1 :
+        ∀ n, 1 ≤ n → n ≤ W + 5 →
+          dubY ξ 0 n < (1 / 5 : ℝ) ∨ (4 / 5 : ℝ) ≤ dubY ξ 0 n := by
+      intro n hn1 hn5
+      obtain ⟨m, rfl⟩ : ∃ m, n = m + 1 := ⟨n - 1, by omega⟩
+      have hmem_f1 :=
+        inRatIntervalList_next_of_forwardStepOk (by decide) funnelTwentyFiveThirtySixths_valid.2
+          (hT11 m (by simp [funnelTwentyFiveThirtySixthsLevels, N]; omega))
+          (hT11 (m + 1) (by simp [funnelTwentyFiveThirtySixthsLevels, N]; omega))
+      unfold InRatIntervalList funnelTwentyFiveThirtySixthsF1 at hmem_f1
+      rcases hmem_f1 with ⟨ab, hab_mem, hlo, hhi⟩
+      simp only [List.mem_cons, List.not_mem_nil, or_false] at hab_mem
+      rcases hab_mem with rfl | rfl
+      · dsimp at hlo hhi; push_cast at hlo hhi; exact Or.inl (by linarith)
+      · dsimp at hlo hhi; push_cast at hlo hhi; exact Or.inr (by linarith)
+    have hstep_eq : ∀ k, 1 ≤ k → k ≤ W + 3 → dubCarry ξ 0 (k + 1) = dubCarry ξ 0 k := by
+      intro k hk1 hk3
+      have hk0 := hF1 k hk1 (by omega)
+      have hk1_mem := hF1 (k + 1) (by omega) (by omega)
+      have hk2_mem := hF1 (k + 2) (by omega) (by omega)
+      have hs0 := nearest_int_fifth_carry_step hk0 hk1_mem
+      have hs1 := nearest_int_fifth_carry_step hk1_mem hk2_mem
+      rcases hk0 with hlt | hge
+      · rcases hs0.1 hlt with ⟨hc0, hlt1⟩
+        rcases hs1.1 hlt1 with ⟨hc1, _⟩
+        omega
+      · rcases hs0.2 hge with ⟨hc0, hge1⟩
+        rcases hs1.2 hge1 with ⟨hc1, _⟩
+        omega
+    have hmatch : ∀ t < W + 2, dubCarry ξ 0 (2 + t) = dubCarry ξ 0 (3 + t) := by
+      intro t ht
+      have hidx : 3 + t = (2 + t) + 1 := by omega
+      rw [hidx, hstep_eq (2 + t) (by omega) (by omega)]
+    have hexp :=
+      dubX_repeated_window_exp_bound (i := 2) (j := 3) (L := W + 2)
+        hξ1 hξW (by norm_num) (by norm_num) le_rfl (by omega) hmatch
+    have hpow : 3 ^ 3 * 2 ^ W < 2 ^ ((W + 2) + 3) := by
+      calc
+        3 ^ 3 * 2 ^ W = 27 * 2 ^ W := by ring
+        _ < 32 * 2 ^ W := Nat.mul_lt_mul_of_pos_right (by decide) (Nat.pow_pos (by decide))
+        _ = 2 ^ ((W + 2) + 3) := by
+          have h : (W + 2) + 3 = 5 + W := by omega
+          rw [h, Nat.pow_add]
+    omega
+  refine ⟨hexplicit, ?_⟩
+  intro ξ hξ N_0
+  obtain ⟨k, W, hk_ge, _, hge1, hltW⟩ := exists_pow_shift_ge_one_and_lt_two_pow hξ N_0
+  obtain ⟨m, _, hm_out⟩ := hexplicit hge1 hltW
+  refine ⟨k + m, by omega, ?_⟩
+  have hmul : ξ * (3 / 2 : ℝ) ^ k * (3 / 2 : ℝ) ^ m = ξ * (3 / 2 : ℝ) ^ (k + m) := by
+    rw [pow_add, mul_assoc]
+  rwa [← hmul]
+
 end Mahler.DubickasExtension
