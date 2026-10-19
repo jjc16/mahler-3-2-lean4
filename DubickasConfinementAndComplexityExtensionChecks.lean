@@ -191,6 +191,18 @@ example :
 #print axioms Mahler.DubickasExtension.rungDeathGap_maps_onto_catapult_zone
 #print axioms Mahler.DubickasExtension.homoclinic_seven_cycle_in_gap_and_divisibility_lock
 
+-- 12. Verify universal homoclinic lock family and multi-defect simultaneous valuation locks
+example :
+    (homoclinicCycleNum 2 = 8072 ∧ homoclinicCycleDen 2 = 58025) ∧
+    (homoclinicCycleNum 3 = 222040 ∧ homoclinicCycleDen 3 = 1586131) :=
+  ⟨homoclinic_family_cycle_divisibility_lock.2.1.2.1,
+    homoclinic_family_cycle_divisibility_lock.2.1.2.2⟩
+
+#print axioms Mahler.DubickasExtension.homoclinic_family_cycle_divisibility_lock
+#print axioms Mahler.DubickasExtension.rungAffInv_general_defect_step_identity
+#print axioms Mahler.DubickasExtension.exactTwoPowLock_incompatible_of_ne
+#print axioms Mahler.DubickasExtension.general_rung_two_defect_simultaneous_lock
+
 #print axioms Mahler.DubickasExtension.dubBaseCarry_eq_fract_linear
 #print axioms Mahler.DubickasExtension.dubBaseY_multi_step_carry_identity
 #print axioms Mahler.DubickasExtension.dubBaseCarry_mem_two_letters

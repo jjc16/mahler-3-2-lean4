@@ -5995,7 +5995,342 @@ theorem homoclinic_seven_cycle_in_gap_and_divisibility_lock :
     hcop.dvd_of_dvd_mul_left hdvd_nat
   simpa [Nat.cast_pow] using Int.ofNat_dvd_left.mpr hdvd_abs
 
+/-! ## 16. Infinite Family of Homoclinic 2-Adic Locks, General Rung-$g$ Defect Cocycle, and Mutually Incompatible Multi-Defect Valuation Locks
+
+We now generalize our 2-adic divisibility and valuation locks in two complementary directions:
+1. **Universal Homoclinic Cycle Family Lock (`homoclinic_family_cycle_divisibility_lock`):**
+   For every $k \ge 1$ in the infinite cascade of homoclinic cycles $\mathcal{O}_k = \mathtt{(001)^k(0001)}$
+   approaching $\frac{8}{57}$ from below, define the exact integer numerator $N_k = \text{homoclinicCycleNum}(k)$
+   and denominator $D_k = \text{homoclinicCycleDen}(k) = 3^{3k+4} - 2^{3k+4}$. We prove:
+   - $19 N_k = 8 (27^{k+1} - 8^{k+1})$ and $\varepsilon_k = \text{homoclinicCycleMin}(k) = \frac{N_k}{D_k}$,
+   - Whenever a real $\xi$ visits $y_r = y_{r + (3k+4)m} = \varepsilon_k$, its floor $x_r = \text{dubX } \xi\ 0\ r$
+     must satisfy the level-$k$ 2-adic divisibility lock:
+     $$\left(2^{(3k+4)m} : \mathbb{Z}\right) \;\Big|\; \big(D_k x_r + N_k\big).$$
+2. **General Rung-$g$ Defect Cocycle & Incompatible Multi-Defect Valuation Locks
+   (`rungAffInv_general_defect_step_identity`, `general_rung_two_defect_simultaneous_lock`):**
+   - Across any defect block $3 b + 1 = 2^c u$ ($c \ge g \ge 1$) with $b' = 3^{c-1} u$, the Rung-$g$
+     affine invariant $I_g(b) = (3^g - 2^g)b + 3^{g-1}$ satisfies the universal defect cocycle law:
+     $$2^c I_g(b') + 2^g 3^{g-1}\left(3^{c-g} - 2^{c-g}\right) = 3^c I_g(b).$$
+   - Defining `ExactTwoPowLock e I := 2 ^ e ∣ I ∧ ¬ (2 ^ (e + 1) ∣ I)`, any two distinct exponents
+     $e_1 \ne e_2$ are **mutually incompatible** (`¬ (ExactTwoPowLock e_1 I ∧ ExactTwoPowLock e_2 I)`).
+   - If a trajectory has $j_0$ blocks of length $g$, a first defect $s(j_0) = c \ge g + 1$, $j_1$ blocks
+     of length $g$, and a second defect $s(j_0 + 1 + j_1) \ge g + 1$, then $a_0$ must **simultaneously**
+     satisfy:
+     1. `ExactTwoPowLock (g * (j_0 + 1)) (rungAffInv g a_0)`, and
+     2. `ExactTwoPowLock (g * j_0 + c + g * (j_1 + 1)) (3 ^ (g * j_0 + c) * rungAffInv g a_0 - 2 ^ (g * (j_0 + 1)) * 3 ^ (g - 1) * (3 ^ (c - g) - 2 ^ (c - g)))`,
+     so no seed $a_0$ can be compatible with two distinct first-defect horizons $j_0 \ne j_0'$ OR two
+     distinct second-defect horizons $j_1 \ne j_1'$! -/
+
+/-- Exact integer numerator $N_k = 8 \sum_{j=0}^k 27^{k-j} 8^j = \frac{8(27^{k+1} - 8^{k+1})}{19}$
+of the $k$-th homoclinic cycle minimum $\varepsilon_k = N_k / D_k$. -/
+def homoclinicCycleNum : ℕ → ℤ
+  | 0 => 8
+  | k + 1 => 27 * homoclinicCycleNum k + 8 * (8 : ℤ) ^ (k + 1)
+
+/-- Exact integer denominator $D_k = 3^{3k+4} - 2^{3k+4}$ of the $k$-th homoclinic cycle $\mathcal{O}_k$. -/
+def homoclinicCycleDen (k : ℕ) : ℤ :=
+  (3 : ℤ) ^ (3 * k + 4) - (2 : ℤ) ^ (3 * k + 4)
+
+/-- **Universal Homoclinic Family of 2-Adic Divisibility Locks (`homoclinic_family_cycle_divisibility_lock`)**:
+For every $k \in \mathbb{N}$:
+1. $19 \cdot \text{homoclinicCycleNum}(k) = 8 \cdot (27^{k+1} - 8^{k+1})$ and $0 < \text{homoclinicCycleDen}(k)$,
+2. $\text{homoclinicCycleMin}(k) = \frac{\text{homoclinicCycleNum}(k)}{\text{homoclinicCycleDen}(k)}$,
+3. Explicit values $(N_1, D_1) = (280, 2059)$, $(N_2, D_2) = (8072, 58025)$, $(N_3, D_3) = (222040, 1586131)$,
+4. Whenever $\text{dubY } \xi\ 0\ r = \text{homoclinicCycleMin}(k)$ and
+   $\text{dubY } \xi\ 0\ (r + (3k + 4)m) = \text{homoclinicCycleMin}(k)$, the integer part
+   $x_r = \text{dubX } \xi\ 0\ r$ satisfies:
+   $$\left(2^{(3k + 4)m} : \mathbb{Z}\right) \;\Big|\;
+     \big(\text{homoclinicCycleDen}(k) \cdot \text{dubX } \xi\ 0\ r + \text{homoclinicCycleNum}(k)\big).$$ -/
+theorem homoclinic_family_cycle_divisibility_lock :
+    (∀ k : ℕ,
+      19 * homoclinicCycleNum k = 8 * ((27 : ℤ) ^ (k + 1) - (8 : ℤ) ^ (k + 1)) ∧
+      0 < homoclinicCycleDen k ∧
+      homoclinicCycleMin k = (homoclinicCycleNum k : ℝ) / (homoclinicCycleDen k : ℝ)) ∧
+    ((homoclinicCycleNum 1 = 280 ∧ homoclinicCycleDen 1 = 2059) ∧
+      (homoclinicCycleNum 2 = 8072 ∧ homoclinicCycleDen 2 = 58025) ∧
+      (homoclinicCycleNum 3 = 222040 ∧ homoclinicCycleDen 3 = 1586131)) ∧
+    (∀ {ξ : ℝ} {k r m : ℕ},
+      dubY ξ 0 r = homoclinicCycleMin k →
+      dubY ξ 0 (r + (3 * k + 4) * m) = homoclinicCycleMin k →
+      ((2 : ℤ) ^ ((3 * k + 4) * m)) ∣
+        (homoclinicCycleDen k * dubX ξ 0 r + homoclinicCycleNum k)) := by
+  have hnum_id :
+      ∀ k : ℕ, 19 * homoclinicCycleNum k = 8 * ((27 : ℤ) ^ (k + 1) - (8 : ℤ) ^ (k + 1)) := by
+    intro k
+    induction k with
+    | zero => decide
+    | succ k ih =>
+        unfold homoclinicCycleNum
+        have h27 : (27 : ℤ) ^ (k + 1 + 1) = 27 * (27 : ℤ) ^ (k + 1) := by rw [pow_succ']
+        have h8 : (8 : ℤ) ^ (k + 1 + 1) = 8 * (8 : ℤ) ^ (k + 1) := by rw [pow_succ']
+        linear_combination 27 * ih - 8 * h27 + 8 * h8
+  have hden_pos : ∀ k : ℕ, 0 < homoclinicCycleDen k := by
+    intro k
+    unfold homoclinicCycleDen
+    have hlt : (2 : ℤ) ^ (3 * k + 4) < (3 : ℤ) ^ (3 * k + 4) := by
+      exact_mod_cast Nat.pow_lt_pow_left (by decide : 2 < 3) (by omega : 3 * k + 4 ≠ 0)
+    linarith
+  have hmin_eq :
+      ∀ k : ℕ, homoclinicCycleMin k = (homoclinicCycleNum k : ℝ) / (homoclinicCycleDen k : ℝ) := by
+    intro k
+    unfold homoclinicCycleMin homoclinicCycleDen
+    have h19 : (19 : ℝ) * (homoclinicCycleNum k : ℝ) =
+        8 * ((27 : ℝ) ^ (k + 1) - (8 : ℝ) ^ (k + 1)) := by
+      exact_mod_cast hnum_id k
+    have h27_pow : (27 : ℝ) ^ (k + 1) = (3 : ℝ) ^ (3 * k + 3) := by
+      have h27 : (27 : ℝ) = (3 : ℝ) ^ 3 := by norm_num
+      rw [h27, ← pow_mul]
+      have h : 3 * (k + 1) = 3 * k + 3 := by omega
+      rw [h]
+    have h8_pow : (8 : ℝ) ^ (k + 1) = (2 : ℝ) ^ (3 * k + 3) := by
+      have h8 : (8 : ℝ) = (2 : ℝ) ^ 3 := by norm_num
+      rw [h8, ← pow_mul]
+      have h : 3 * (k + 1) = 3 * k + 3 := by omega
+      rw [h]
+    have h3_4 : (3 : ℝ) ^ (3 * k + 4) = 3 * (3 : ℝ) ^ (3 * k + 3) := by rw [pow_succ']
+    have h2_4 : (2 : ℝ) ^ (3 * k + 4) = 2 * (2 : ℝ) ^ (3 * k + 3) := by rw [pow_succ']
+    have hd_pos : 0 < (3 : ℝ) ^ (3 * k + 4) - (2 : ℝ) ^ (3 * k + 4) := by
+      have hlt : (2 : ℝ) ^ (3 * k + 4) < (3 : ℝ) ^ (3 * k + 4) := by
+        exact_mod_cast Nat.pow_lt_pow_left (by decide : 2 < 3) (by omega : 3 * k + 4 ≠ 0)
+      linarith
+    have hnum_57 :
+        (57 : ℝ) * (homoclinicCycleNum k : ℝ) =
+          8 * ((3 : ℝ) ^ (3 * k + 4) - (2 : ℝ) ^ (3 * k + 4)) - 4 * (2 : ℝ) ^ (3 * k + 4) := by
+      rw [h3_4, h2_4, ← h27_pow, ← h8_pow]
+      linarith [h19]
+    push_cast
+    field_simp [ne_of_gt hd_pos]
+    linear_combination -57 * ((3 : ℝ) ^ (3 * k + 4) - (2 : ℝ) ^ (3 * k + 4)) * hnum_57
+  refine ⟨fun k => ⟨hnum_id k, hden_pos k, hmin_eq k⟩,
+    ⟨⟨by decide, by decide⟩, ⟨by decide, by decide⟩, ⟨by decide, by decide⟩⟩, ?_⟩
+  intro ξ k r m hy_r hy_rm
+  set L := (3 * k + 4) * m
+  set D := homoclinicCycleDen k
+  set v := homoclinicCycleNum k
+  have hD_pos : (0 : ℝ) < (D : ℝ) := by exact_mod_cast hden_pos k
+  have hD_ne : (D : ℝ) ≠ 0 := ne_of_gt hD_pos
+  rw [hmin_eq k] at hy_r hy_rm
+  have hX := dubX_multi_step_carry_identity ξ 0 r L
+  have hY := dubY_multi_step_carry_identity ξ 0 r L
+  rw [hy_r, hy_rm] at hY
+  have hY_cleared :
+      (2 : ℝ) ^ L * (v : ℝ) =
+        (3 : ℝ) ^ L * (v : ℝ) - (D : ℝ) * (dubCarryAcc (dubCarry ξ 0) r L : ℝ) := by
+    have h := congrArg ((D : ℝ) * ·) hY
+    field_simp [hD_ne] at h
+    linarith
+  have hY_int :
+      (2 : ℤ) ^ L * v = (3 : ℤ) ^ L * v - D * dubCarryAcc (dubCarry ξ 0) r L := by
+    exact_mod_cast hY_cleared
+  have hcomb :
+      (2 : ℤ) ^ L * (D * dubX ξ 0 (r + L) + v) =
+        (3 : ℤ) ^ L * (D * dubX ξ 0 r + v) := by
+    linear_combination D * hX + hY_int
+  have hdvd_nat : 2 ^ L ∣ 3 ^ L * (D * dubX ξ 0 r + v).natAbs := by
+    have habs :
+        ((2 : ℤ) ^ L * (D * dubX ξ 0 (r + L) + v)).natAbs =
+          ((3 : ℤ) ^ L * (D * dubX ξ 0 r + v)).natAbs := by
+      rw [hcomb]
+    rw [Int.natAbs_mul, Int.natAbs_mul, Int.natAbs_pow, Int.natAbs_pow] at habs
+    exact ⟨(D * dubX ξ 0 (r + L) + v).natAbs, habs.symm⟩
+  have hcop : Nat.Coprime (2 ^ L) (3 ^ L) :=
+    ((by decide : Nat.Coprime 2 3).pow_left L).pow_right L
+  have hdvd_abs : 2 ^ L ∣ (D * dubX ξ 0 r + v).natAbs :=
+    hcop.dvd_of_dvd_mul_left hdvd_nat
+  simpa [Nat.cast_pow] using Int.ofNat_dvd_left.mpr hdvd_abs
+
+/-- **Universal Rung-$g$ Defect Cocycle Step Identity (`rungAffInv_general_defect_step_identity`)**:
+Across any single block $3 b + 1 = 2^c u$ of length $c \ge g \ge 1$, the next odd boundary
+$b' = \text{orbit } b\ c = 3^{c - 1} u$ satisfies:
+$$2^c \cdot \text{rungAffInv } g\ b' + 2^g \cdot 3^{g - 1} \cdot \left(3^{c - g} - 2^{c - g}\right) =
+  3^c \cdot \text{rungAffInv } g\ b.$$ -/
+theorem rungAffInv_general_defect_step_identity
+    {g b c u : ℕ} (hg : 1 ≤ g) (hcg : g ≤ c) (hstep : 3 * b + 1 = 2 ^ c * u) :
+    2 ^ c * rungAffInv g (orbit b c) + 2 ^ g * 3 ^ (g - 1) * (3 ^ (c - g) - 2 ^ (c - g)) =
+      3 ^ c * rungAffInv g b := by
+  have hc1 : 1 ≤ c := le_trans hg hcg
+  have horb := orbit_odd_block_return hc1 hstep
+  rw [horb]
+  obtain ⟨m, rfl⟩ : ∃ m : ℕ, g = m + 1 := ⟨g - 1, by omega⟩
+  obtain ⟨d, rfl⟩ : ∃ d : ℕ, c = (m + 1) + d := ⟨c - (m + 1), by omega⟩
+  have hsub_g : m + 1 - 1 = m := by omega
+  have hsub_c : m + 1 + d - 1 = m + d := by omega
+  have hsub_cg : m + 1 + d - (m + 1) = d := by omega
+  rw [hsub_g, hsub_c, hsub_cg]
+  have hsingle := rungAffInv_single_block_identity (g := m + 1) hg hstep
+  have h2_le_3_m : 2 ^ (m + 1) ≤ 3 ^ (m + 1) := Nat.pow_le_pow_left (by decide) (m + 1)
+  have h2_le_3_d : 2 ^ d ≤ 3 ^ d := Nat.pow_le_pow_left (by decide) d
+  have h3_c_split : 3 ^ (m + 1 + d) = 3 ^ (m + d) * 3 := by
+    have h : m + 1 + d = (m + d) + 1 := by omega
+    rw [h, Nat.pow_succ]
+  have h3_md_split : 3 ^ (m + d) = 3 ^ m * 3 ^ d := Nat.pow_add 3 m d
+  have h2_c_split : 2 ^ (m + 1 + d) = 2 ^ (m + 1) * 2 ^ d := Nat.pow_add 2 (m + 1) d
+  unfold rungAffInv at hsingle ⊢
+  rw [hsub_g] at hsingle ⊢
+  zify [h2_le_3_m, h2_le_3_d] at hsingle ⊢
+  have h3_c_int : (3 : ℤ) ^ (m + 1 + d) = (3 : ℤ) ^ (m + d) * 3 := by exact_mod_cast h3_c_split
+  have h3_md_int : (3 : ℤ) ^ (m + d) = (3 : ℤ) ^ m * (3 : ℤ) ^ d := by exact_mod_cast h3_md_split
+  have h2_c_int : (2 : ℤ) ^ (m + 1 + d) = (2 : ℤ) ^ (m + 1) * (2 : ℤ) ^ d := by exact_mod_cast h2_c_split
+  rw [h3_c_int, h3_md_int, h2_c_int]
+  rw [h2_c_int] at hsingle
+  linear_combination -((3 : ℤ) ^ m * (3 : ℤ) ^ d) * hsingle
+
+/-- Predicate asserting that the 2-adic valuation of $I$ is locked to **exactly $e$**
+($2^e \mid I$ and $2^{e+1} \nmid I$). -/
+def ExactTwoPowLock (e I : ℕ) : Prop :=
+  2 ^ e ∣ I ∧ ¬ (2 ^ (e + 1) ∣ I)
+
+/-- **Mutual Incompatibility of Distinct 2-Adic Valuation Locks (`exactTwoPowLock_incompatible_of_ne`)**:
+For any two distinct exponents $e_1 \ne e_2$, **no natural number $I$ can simultaneously satisfy
+`ExactTwoPowLock e_1 I` and `ExactTwoPowLock e_2 I`**. -/
+theorem exactTwoPowLock_incompatible_of_ne
+    {e_1 e_2 I : ℕ} (hne : e_1 ≠ e_2) :
+    ¬ (ExactTwoPowLock e_1 I ∧ ExactTwoPowLock e_2 I) := by
+  rintro ⟨⟨h1_dvd, h1_not⟩, ⟨h2_dvd, h2_not⟩⟩
+  rcases lt_or_gt_of_ne hne with hlt | hgt
+  · have hle : e_1 + 1 ≤ e_2 := hlt
+    have hdvd_pow : 2 ^ (e_1 + 1) ∣ 2 ^ e_2 := Nat.pow_dvd_pow 2 hle
+    exact h1_not ( dvd_trans hdvd_pow h2_dvd )
+  · have hle : e_2 + 1 ≤ e_1 := hgt
+    have hdvd_pow : 2 ^ (e_2 + 1) ∣ 2 ^ e_1 := Nat.pow_dvd_pow 2 hle
+    exact h2_not ( dvd_trans hdvd_pow h1_dvd )
+
+/-- **Simultaneous Multi-Defect Valuation Lock Family and Horizon Uniqueness
+(`general_rung_two_defect_simultaneous_lock`)**:
+Let $g \ge 1$, and suppose a block chain `ValidBlockChain a_0 s u (j_0 + 1 + j_1 + 1)` has:
+- $j_0$ pure blocks of length $g$ ($s(k) = g$ for $k < j_0$),
+- a first defect $c := s(j_0) \ge g + 1$ at block $j_0$,
+- $j_1$ pure blocks of length $g$ ($s(j_0 + 1 + k) = g$ for $k < j_1$), and
+- a second defect $s(j_0 + 1 + j_1) \ge g + 1$ at block $j_0 + 1 + j_1$.
+Then the starting seed $a_0$ must **simultaneously** satisfy:
+1. **First-Defect Lock:** `ExactTwoPowLock (g * (j_0 + 1)) (rungAffInv g a_0)`,
+2. **Second-Defect Shifted Lock:**
+   `ExactTwoPowLock (g * j_0 + c + g * (j_1 + 1)) (3 ^ (g * j_0 + c) * rungAffInv g a_0 - 2 ^ (g * (j_0 + 1)) * 3 ^ (g - 1) * (3 ^ (c - g) - 2 ^ (c - g)))`,
+3. **Unique Horizon Corollary:** For any fixed $(g, a_0)$, at most one first-defect horizon $j_0$
+   can satisfy Lock 1, and for any fixed $(g, a_0, j_0, c)$, at most one second-defect horizon $j_1$
+   can satisfy Lock 2. -/
+theorem general_rung_two_defect_simultaneous_lock
+    {g a_0 j_0 j_1 : ℕ} {s u : ℕ → ℕ}
+    (hg : 1 ≤ g)
+    (hchain : ValidBlockChain a_0 s u (j_0 + 1 + j_1 + 1))
+    (hpure0 : ∀ k < j_0, s k = g)
+    (hdef0 : g + 1 ≤ s j_0)
+    (hpure1 : ∀ k < j_1, s (j_0 + 1 + k) = g)
+    (hdef1 : g + 1 ≤ s (j_0 + 1 + j_1)) :
+    ExactTwoPowLock (g * (j_0 + 1)) (rungAffInv g a_0) ∧
+    ExactTwoPowLock (g * j_0 + s j_0 + g * (j_1 + 1))
+      (3 ^ (g * j_0 + s j_0) * rungAffInv g a_0 -
+        2 ^ (g * (j_0 + 1)) * 3 ^ (g - 1) * (3 ^ (s j_0 - g) - 2 ^ (s j_0 - g))) ∧
+    (∀ j_0' : ℕ, j_0' ≠ j_0 → ¬ ExactTwoPowLock (g * (j_0' + 1)) (rungAffInv g a_0)) ∧
+    (∀ j_1' : ℕ, j_1' ≠ j_1 →
+      ¬ ExactTwoPowLock (g * j_0 + s j_0 + g * (j_1' + 1))
+          (3 ^ (g * j_0 + s j_0) * rungAffInv g a_0 -
+            2 ^ (g * (j_0 + 1)) * 3 ^ (g - 1) * (3 ^ (s j_0 - g) - 2 ^ (s j_0 - g)))) := by
+  have hchain0 : ValidBlockChain a_0 s u (j_0 + 1) :=
+    fun k hk => hchain k (by omega)
+  have hlock0 := general_rung_first_defect_valuation_lock hg hchain0 hpure0 hdef0
+  have hex0 : ExactTwoPowLock (g * (j_0 + 1)) (rungAffInv g a_0) := ⟨hlock0.1, hlock0.2.1⟩
+  have hpre0 := rungAffInv_pure_prefix_identity hg (Nat.le_succ j_0) hchain0 hpure0
+  rcases hchain j_0 (by omega) with ⟨_, _, hstep_j0⟩
+  set c := s j_0
+  have hcg : g ≤ c := by omega
+  have hdef_step := rungAffInv_general_defect_step_identity hg hcg hstep_j0
+  set b1 := orbit a_0 (blockSteps s (j_0 + 1))
+  have hb1_eq : b1 = orbit (orbit a_0 (blockSteps s j_0)) c := by
+    have hsteps : blockSteps s (j_0 + 1) = blockSteps s j_0 + s j_0 := rfl
+    dsimp [b1, c]
+    rw [hsteps, orbit_add]
+  rw [← hb1_eq] at hdef_step
+  have hcomb_b1 :
+      2 ^ (g * j_0 + c) * rungAffInv g b1 +
+        2 ^ (g * (j_0 + 1)) * 3 ^ (g - 1) * (3 ^ (c - g) - 2 ^ (c - g)) =
+        3 ^ (g * j_0 + c) * rungAffInv g a_0 := by
+    have h2_mul : (2 ^ g) ^ j_0 * 2 ^ c = 2 ^ (g * j_0 + c) := by
+      rw [← Nat.pow_mul, ← Nat.pow_add]
+    have h2_g1 : (2 ^ g) ^ j_0 * 2 ^ g = 2 ^ (g * (j_0 + 1)) := by
+      rw [← Nat.pow_mul, ← Nat.pow_add, Nat.mul_add, Nat.mul_one]
+    have h3_mul : (3 ^ g) ^ j_0 * 3 ^ c = 3 ^ (g * j_0 + c) := by
+      rw [← Nat.pow_mul, ← Nat.pow_add]
+    calc
+      2 ^ (g * j_0 + c) * rungAffInv g b1 +
+          2 ^ (g * (j_0 + 1)) * 3 ^ (g - 1) * (3 ^ (c - g) - 2 ^ (c - g))
+          = (2 ^ g) ^ j_0 *
+              (2 ^ c * rungAffInv g b1 + 2 ^ g * 3 ^ (g - 1) * (3 ^ (c - g) - 2 ^ (c - g))) := by
+        rw [← h2_mul, ← h2_g1]
+        ring
+      _ = (2 ^ g) ^ j_0 * (3 ^ c * rungAffInv g (orbit a_0 (blockSteps s j_0))) := by
+        rw [hdef_step]
+      _ = 3 ^ c * ((2 ^ g) ^ j_0 * rungAffInv g (orbit a_0 (blockSteps s j_0))) := by ring
+      _ = 3 ^ c * ((3 ^ g) ^ j_0 * rungAffInv g a_0) := by rw [hpre0]
+      _ = 3 ^ (g * j_0 + c) * rungAffInv g a_0 := by
+        rw [← h3_mul]
+        ring
+  have hsub_b1 :
+      3 ^ (g * j_0 + c) * rungAffInv g a_0 -
+        2 ^ (g * (j_0 + 1)) * 3 ^ (g - 1) * (3 ^ (c - g) - 2 ^ (c - g)) =
+        2 ^ (g * j_0 + c) * rungAffInv g b1 := by
+    omega
+  set s1 : ℕ → ℕ := fun k => s (j_0 + 1 + k)
+  set u1 : ℕ → ℕ := fun k => u (j_0 + 1 + k)
+  have hsteps_shift :
+      ∀ k : ℕ, blockSteps s (j_0 + 1 + k) = blockSteps s (j_0 + 1) + blockSteps s1 k := by
+    intro k
+    induction k with
+    | zero => simp [blockSteps]
+    | succ k ih =>
+        have hidx : j_0 + 1 + (k + 1) = (j_0 + 1 + k) + 1 := by omega
+        have hs_lhs : blockSteps s ((j_0 + 1 + k) + 1) = blockSteps s (j_0 + 1 + k) + s (j_0 + 1 + k) := rfl
+        have hs_rhs : blockSteps s1 (k + 1) = blockSteps s1 k + s1 k := rfl
+        rw [hidx, hs_lhs, hs_rhs, ih]
+        dsimp [s1]
+        omega
+  have hchain1 : ValidBlockChain b1 s1 u1 (j_1 + 1) := by
+    intro k hk
+    rcases hchain (j_0 + 1 + k) (by omega) with ⟨hs_pos, hu_odd, hdecomp⟩
+    refine ⟨hs_pos, hu_odd, ?_⟩
+    dsimp [b1, s1, u1]
+    rw [← orbit_add, ← hsteps_shift k]
+    exact hdecomp
+  have hlock1 := general_rung_first_defect_valuation_lock hg hchain1 hpure1 hdef1
+  have hex1 :
+      ExactTwoPowLock (g * j_0 + c + g * (j_1 + 1))
+        (3 ^ (g * j_0 + c) * rungAffInv g a_0 -
+          2 ^ (g * (j_0 + 1)) * 3 ^ (g - 1) * (3 ^ (c - g) - 2 ^ (c - g))) := by
+    rw [hsub_b1]
+    rcases hlock1.1 with ⟨q1, hq1⟩
+    have hdvd1 : 2 ^ (g * j_0 + c + g * (j_1 + 1)) ∣ 2 ^ (g * j_0 + c) * rungAffInv g b1 := by
+      refine ⟨q1, ?_⟩
+      rw [hq1, Nat.pow_add]
+      ring
+    have hnot1 : ¬ (2 ^ (g * j_0 + c + g * (j_1 + 1) + 1) ∣ 2 ^ (g * j_0 + c) * rungAffInv g b1) := by
+      rintro ⟨q2, hq2⟩
+      have hpow_split :
+          2 ^ (g * j_0 + c + g * (j_1 + 1) + 1) =
+            2 ^ (g * j_0 + c) * 2 ^ (g * (j_1 + 1) + 1) := by
+        rw [← Nat.pow_add]
+        have h : g * j_0 + c + g * (j_1 + 1) + 1 = (g * j_0 + c) + (g * (j_1 + 1) + 1) := by omega
+        rw [h]
+      rw [hpow_split, mul_assoc] at hq2
+      have hcancel := Nat.eq_of_mul_eq_mul_left (Nat.pow_pos (by decide)) hq2
+      exact hlock1.2.1 ⟨q2, hcancel⟩
+    exact ⟨hdvd1, hnot1⟩
+  refine ⟨hex0, hex1, ?_, ?_⟩
+  · intro j_0' hjne hlock'
+    have he_ne : g * (j_0' + 1) ≠ g * (j_0 + 1) := by
+      intro heq
+      have hcancel := Nat.eq_of_mul_eq_mul_left hg heq
+      omega
+    exact exactTwoPowLock_incompatible_of_ne he_ne ⟨hlock', hex0⟩
+  · intro j_1' hjne hlock'
+    have he_ne : g * j_0 + c + g * (j_1' + 1) ≠ g * j_0 + c + g * (j_1 + 1) := by
+      intro heq
+      have h1 : g * (j_1' + 1) = g * (j_1 + 1) := by omega
+      have hcancel := Nat.eq_of_mul_eq_mul_left hg h1
+      omega
+    exact exactTwoPowLock_incompatible_of_ne he_ne ⟨hlock', hex1⟩
+
 end Mahler.DubickasExtension
+
 
 
 
