@@ -158,6 +158,17 @@ example {ξ : ℝ} {W : ℕ} (hξ1 : (1 : ℝ) ≤ ξ) (hξW : ξ < (2 : ℝ) ^ 
 #print axioms Mahler.DubickasExtension.homoclinicCycleMin_closed_form_and_strictMono
 #print axioms Mahler.DubickasExtension.cantorPuncturedHalf_phase_transition_counts
 
+-- 9. Verify universal rung-g catapult staircase and leak-free inductive elevator
+example {G : ℕ} {z : ℕ → ℝ} {s : ℕ → ℕ}
+    (hG : 3 ≤ G) (helev : ValidLeakFreeElevator G z s) :
+    (∀ m : ℕ, 1 ≤ m → z m ≤ z (m + 1)) ∧ (∀ m : ℕ, s (m + 1) ≤ s m) :=
+  ⟨(leak_free_inductive_elevator_monotone_rung_descent hG helev).2.1,
+    (leak_free_inductive_elevator_monotone_rung_descent hG helev).2.2⟩
+
+#print axioms Mahler.DubickasExtension.rungCatapult_ordering_and_corridor_overlap
+#print axioms Mahler.DubickasExtension.universal_rung_catapult_and_upward_expansion
+#print axioms Mahler.DubickasExtension.leak_free_inductive_elevator_monotone_rung_descent
+
 #print axioms Mahler.DubickasExtension.dubBaseCarry_eq_fract_linear
 #print axioms Mahler.DubickasExtension.dubBaseY_multi_step_carry_identity
 #print axioms Mahler.DubickasExtension.dubBaseCarry_mem_two_letters

@@ -5032,5 +5032,389 @@ theorem cantorPuncturedHalf_phase_transition_counts :
     cantorPuncturedHalfLengths 1 8 10 = [1, 2, 3, 4, 5, 6, 7, 9, 11, 13, 16] := by
   decide
 
+/-! ## 13. Universal Rung-$g$ Catapult Staircase ($\varepsilon_g^* \to 0$) and the Leak-Free Inductive Elevator
+
+Section 12's homoclinic catapult trap on $[8/57, 1/2)$ is the $g = 3$ base case of an infinite
+inductive staircase of catapult thresholds $\varepsilon_g^* = \frac{2^g}{3(3^g - 2^g)}$ that
+converges to $0$ as $g \to \infty$:
+1. **Universal Four-Term Rung Ordering & Overlapping Corridors (`rungCatapult_ordering_and_corridor_overlap`):**
+   For every $g \ge 3$, define:
+   - the period-$g$ post-reset fixed point $z_g^* := \frac{2^{g-1}}{3^g - 2^g}$,
+   - the $(g+1)$-defect boundary $b_g := \frac{2^{g-1}}{3^g}$, and
+   - the Rung-$g$ catapult floor $\varepsilon_g^* := \frac{2^g}{3(3^g - 2^g)} = \frac{2}{3} z_g^*$.
+   Because $2^g < 3^{g-1}$ for all $g \ge 3$, these satisfy the strict four-term chain
+   $$0 < \varepsilon_{g+1}^* < z_{g+1}^* < \varepsilon_g^* < b_g < z_g^* < b_{g-1},$$
+   so adjacent Rung-$g$ corridors $J_g = [\varepsilon_g^*, b_{g-1})$ overlap on $[\varepsilon_g^*, b_g)$
+   and shrink to $0$ at geometric rate $\varepsilon_g^* < (2/3)^g \to 0$.
+2. **Universal Rung-$g$ Catapult & Absorbing Upward Expansion (`universal_rung_catapult_and_upward_expansion`):**
+   Under the $k$-step post-reset return map $T_k(z) = (3/2)^k z - 1/2$:
+   - $T_g(z) - z_g^* = (3/2)^g (z - z_g^*)$ and $T_{g+1}(z) - z_g^* = (3/2)^{g+1}(z - \varepsilon_g^*)$,
+   - Any $(g+1)$-step block from $z \ge \varepsilon_g^*$ **catapults** $T_{g+1}(z) \ge z_g^* > b_g$,
+   - Any $g$-step block from $z \ge z_g^*$ expands upward ($T_g(z) \ge z \ge z_g^*$).
+3. **The Leak-Free Inductive Elevator Across Rungs $3 \le g \le G$ (`leak_free_inductive_elevator_monotone_rung_descent`):**
+   Each interval $[b_g, b_{g-1})$ decomposes into the **Rung-$g$ leak window** $L_g = [b_g, z_g^*)$
+   (of width $\frac{2^{2g-1}}{3^g(3^g - 2^g)}$, summing to $< \frac{4}{285} \approx 0.01404$ over all
+   $g \ge 3$) and the **Rung-$g$ upward trap** $\text{Trap}_g = [z_g^*, b_{g-1})$. Whenever a
+   post-reset trajectory stays in the leak-free union
+   $$\mathcal{U}_G = [\varepsilon_G^*, b_G) \cup \bigcup_{g=3}^G [z_g^*, b_{g-1}),$$
+   at most one initial catapult step ($s_0 = G + 1$) occurs at $m = 0$, after which $z_1 \le z_2 \le \cdots$
+   is monotonically non-decreasing and the block lengths satisfy $G + 1 \ge s_0 \ge s_1 \ge s_2 \ge \cdots \ge 3$
+   — the trajectory can only be promoted **upward** to smaller block lengths and can never cycle back toward $0$. -/
+
+/-- The $k$-step post-reset return map $T_k(z) = (3/2)^k z - 1/2$ corresponding to the block `0^{k-1} 1`. -/
+noncomputable def rungReturnMap (k : ℕ) (z : ℝ) : ℝ :=
+  ((3 / 2 : ℝ) ^ k) * z - (1 / 2 : ℝ)
+
+/-- Post-reset fixed point $z_g^* = \frac{2^{g-1}}{3^g - 2^g}$ of the period-$g$ block `0^{g-1} 1`. -/
+noncomputable def rungFixedPoint (g : ℕ) : ℝ :=
+  ((2 : ℝ) ^ (g - 1)) / ((3 : ℝ) ^ g - (2 : ℝ) ^ g)
+
+/-- Defect boundary $b_g = \frac{2^{g-1}}{3^g}$ separating $(g+1)$-step blocks (`0^g 1`) from
+$g$-step blocks (`0^{g-1} 1`). -/
+noncomputable def rungBoundary (g : ℕ) : ℝ :=
+  ((2 : ℝ) ^ (g - 1)) / ((3 : ℝ) ^ g)
+
+/-- Rung-$g$ catapult floor $\varepsilon_g^* = \frac{2^g}{3(3^g - 2^g)} = \frac{2}{3} z_g^*$,
+the exact preimage of $z_g^*$ under the $(g+1)$-step return map $T_{g+1}$. -/
+noncomputable def rungCatapultFloor (g : ℕ) : ℝ :=
+  ((2 : ℝ) ^ g) / (3 * ((3 : ℝ) ^ g - (2 : ℝ) ^ g))
+
+/-- Width $z_g^* - b_g = \frac{2^{2g-1}}{3^g(3^g - 2^g)}$ of the Rung-$g$ leak window $L_g = [b_g, z_g^*)$. -/
+noncomputable def rungLeakWidth (g : ℕ) : ℝ :=
+  rungFixedPoint g - rungBoundary g
+
+/-- **Universal Rung-$g$ Ordering, Overlapping Corridors, Geometric Decay $\varepsilon_g^* < (2/3)^g$,
+and Explicit Rung Values (`rungCatapult_ordering_and_corridor_overlap`)**:
+For every $g \ge 3$:
+1. $0 < \varepsilon_{g+1}^* < z_{g+1}^* < \varepsilon_g^* < b_g < z_g^* < b_{g-1}$,
+2. $\varepsilon_g^* < (2/3)^g$ (so $\varepsilon_g^* \to 0$ exponentially as $g \to \infty$),
+3. $\text{rungLeakWidth}(g) = \frac{2^{2g-1}}{3^g(3^g - 2^g)} \le \frac{32}{513}\left(\frac{4}{9}\right)^{g-3}$,
+4. Explicit rational values for rungs $g = 3, 4, 5$:
+   $(\varepsilon_3^*, b_3, z_3^*) = (8/57, 4/27, 4/19)$,
+   $(\varepsilon_4^*, b_4, z_4^*) = (16/195, 8/81, 8/65)$, and
+   $(\varepsilon_5^*, b_5, z_5^*) = (32/633, 16/243, 16/211)$. -/
+theorem rungCatapult_ordering_and_corridor_overlap :
+    (∀ g : ℕ, 3 ≤ g →
+      0 < rungCatapultFloor (g + 1) ∧
+      rungCatapultFloor (g + 1) < rungFixedPoint (g + 1) ∧
+      rungFixedPoint (g + 1) < rungCatapultFloor g ∧
+      rungCatapultFloor g < rungBoundary g ∧
+      rungBoundary g < rungFixedPoint g ∧
+      rungFixedPoint g < rungBoundary (g - 1) ∧
+      rungCatapultFloor g < (2 / 3 : ℝ) ^ g ∧
+      rungLeakWidth g = ((2 : ℝ) ^ (2 * g - 1)) / (((3 : ℝ) ^ g) * ((3 : ℝ) ^ g - (2 : ℝ) ^ g)) ∧
+      rungLeakWidth g ≤ (32 / 513 : ℝ) * (4 / 9 : ℝ) ^ (g - 3)) ∧
+    (rungCatapultFloor 3 = (8 / 57 : ℝ) ∧ rungBoundary 3 = (4 / 27 : ℝ) ∧ rungFixedPoint 3 = (4 / 19 : ℝ)) ∧
+    (rungCatapultFloor 4 = (16 / 195 : ℝ) ∧ rungBoundary 4 = (8 / 81 : ℝ) ∧ rungFixedPoint 4 = (8 / 65 : ℝ)) ∧
+    (rungCatapultFloor 5 = (32 / 633 : ℝ) ∧ rungBoundary 5 = (16 / 243 : ℝ) ∧ rungFixedPoint 5 = (16 / 211 : ℝ)) := by
+  refine ⟨?_, ⟨by unfold rungCatapultFloor rungBoundary rungFixedPoint; norm_num,
+    ⟨by unfold rungCatapultFloor rungBoundary rungFixedPoint; norm_num,
+     by unfold rungCatapultFloor rungBoundary rungFixedPoint; norm_num⟩⟩⟩
+  intro g hg
+  obtain ⟨m, rfl⟩ : ∃ m : ℕ, g = m + 3 := ⟨g - 3, by omega⟩
+  have h2m_le_3m : (2 : ℝ) ^ m ≤ (3 : ℝ) ^ m := by
+    exact_mod_cast Nat.pow_le_pow_left (by decide : 2 ≤ 3) m
+  have h2m_pos : (0 : ℝ) < (2 : ℝ) ^ m := by positivity
+  have h3m_pos : (0 : ℝ) < (3 : ℝ) ^ m := by positivity
+  have h3g_eq : (3 : ℝ) ^ (m + 3) = 27 * (3 : ℝ) ^ m := by rw [pow_add]; ring
+  have h2g_eq : (2 : ℝ) ^ (m + 3) = 8 * (2 : ℝ) ^ m := by rw [pow_add]; ring
+  have h3g1_eq : (3 : ℝ) ^ (m + 3 + 1) = 81 * (3 : ℝ) ^ m := by rw [pow_add]; ring
+  have h2g1_eq : (2 : ℝ) ^ (m + 3 + 1) = 16 * (2 : ℝ) ^ m := by rw [pow_add]; ring
+  have hden_pos : 0 < (3 : ℝ) ^ (m + 3) - (2 : ℝ) ^ (m + 3) := by linarith
+  have hden1_pos : 0 < (3 : ℝ) ^ (m + 3 + 1) - (2 : ℝ) ^ (m + 3 + 1) := by linarith
+  have h3pow_pos : 0 < (3 : ℝ) ^ (m + 3) := by positivity
+  have h3pow_pred_pos : 0 < (3 : ℝ) ^ (m + 2) := by positivity
+  have hsub1 : m + 3 - 1 = m + 2 := by omega
+  have hsub2 : m + 3 + 1 - 1 = m + 3 := by omega
+  have hsub3 : m + 3 - 2 = m + 1 := by omega
+  have hsub_m : m + 3 - 3 = m := by omega
+  have h2g_minus1 : 2 * (m + 3) - 1 = 2 * m + 5 := by omega
+  have hpos_cat1 : 0 < rungCatapultFloor (m + 3 + 1) := by
+    unfold rungCatapultFloor
+    positivity
+  have hcat1_lt_fp1 : rungCatapultFloor (m + 3 + 1) < rungFixedPoint (m + 3 + 1) := by
+    unfold rungCatapultFloor rungFixedPoint
+    rw [hsub2]
+    have hdiff :
+        ((2 : ℝ) ^ (m + 3)) / ((3 : ℝ) ^ (m + 3 + 1) - (2 : ℝ) ^ (m + 3 + 1)) -
+          ((2 : ℝ) ^ (m + 3 + 1)) / (3 * ((3 : ℝ) ^ (m + 3 + 1) - (2 : ℝ) ^ (m + 3 + 1))) =
+          ((2 : ℝ) ^ (m + 3)) / (3 * ((3 : ℝ) ^ (m + 3 + 1) - (2 : ℝ) ^ (m + 3 + 1))) := by
+      field_simp [ne_of_gt hden1_pos]
+      rw [h2g1_eq, h2g_eq]
+      ring
+    have hpos : 0 < ((2 : ℝ) ^ (m + 3)) / (3 * ((3 : ℝ) ^ (m + 3 + 1) - (2 : ℝ) ^ (m + 3 + 1))) := by
+      positivity
+    linarith
+  have hfp1_lt_cat : rungFixedPoint (m + 3 + 1) < rungCatapultFloor (m + 3) := by
+    unfold rungFixedPoint rungCatapultFloor
+    rw [hsub2]
+    have hdiff :
+        ((2 : ℝ) ^ (m + 3)) / (3 * ((3 : ℝ) ^ (m + 3) - (2 : ℝ) ^ (m + 3))) -
+          ((2 : ℝ) ^ (m + 3)) / ((3 : ℝ) ^ (m + 3 + 1) - (2 : ℝ) ^ (m + 3 + 1)) =
+          ((2 : ℝ) ^ (m + 3) * (8 * (2 : ℝ) ^ m)) /
+            ((3 * ((3 : ℝ) ^ (m + 3) - (2 : ℝ) ^ (m + 3))) *
+              ((3 : ℝ) ^ (m + 3 + 1) - (2 : ℝ) ^ (m + 3 + 1))) := by
+      field_simp [ne_of_gt hden_pos, ne_of_gt hden1_pos]
+      rw [h3g1_eq, h2g1_eq, h3g_eq, h2g_eq]
+      ring
+    have hpos :
+        0 < ((2 : ℝ) ^ (m + 3) * (8 * (2 : ℝ) ^ m)) /
+          ((3 * ((3 : ℝ) ^ (m + 3) - (2 : ℝ) ^ (m + 3))) *
+            ((3 : ℝ) ^ (m + 3 + 1) - (2 : ℝ) ^ (m + 3 + 1))) := by
+      positivity
+    linarith
+  have hcat_lt_b : rungCatapultFloor (m + 3) < rungBoundary (m + 3) := by
+    unfold rungCatapultFloor rungBoundary
+    rw [hsub1]
+    have h3m2 : (3 : ℝ) ^ (m + 2) = 9 * (3 : ℝ) ^ m := by rw [pow_add]; ring
+    have h2m2 : (2 : ℝ) ^ (m + 2) = 4 * (2 : ℝ) ^ m := by rw [pow_add]; ring
+    have hdiff :
+        ((2 : ℝ) ^ (m + 2)) / ((3 : ℝ) ^ (m + 3)) -
+          ((2 : ℝ) ^ (m + 3)) / (3 * ((3 : ℝ) ^ (m + 3) - (2 : ℝ) ^ (m + 3))) =
+          (3 * (2 : ℝ) ^ (m + 2) * (9 * (3 : ℝ) ^ m - 8 * (2 : ℝ) ^ m)) /
+            (((3 : ℝ) ^ (m + 3)) * (3 * ((3 : ℝ) ^ (m + 3) - (2 : ℝ) ^ (m + 3)))) := by
+      field_simp [ne_of_gt h3pow_pos, ne_of_gt hden_pos]
+      rw [h3g_eq, h2g_eq, h2m2]
+      ring
+    have hnum_pos : 0 < 9 * (3 : ℝ) ^ m - 8 * (2 : ℝ) ^ m := by linarith
+    have hpos :
+        0 < (3 * (2 : ℝ) ^ (m + 2) * (9 * (3 : ℝ) ^ m - 8 * (2 : ℝ) ^ m)) /
+          (((3 : ℝ) ^ (m + 3)) * (3 * ((3 : ℝ) ^ (m + 3) - (2 : ℝ) ^ (m + 3)))) := by
+      positivity
+    linarith
+  have hb_lt_fp : rungBoundary (m + 3) < rungFixedPoint (m + 3) := by
+    unfold rungBoundary rungFixedPoint
+    rw [hsub1]
+    have hdiff :
+        ((2 : ℝ) ^ (m + 2)) / ((3 : ℝ) ^ (m + 3) - (2 : ℝ) ^ (m + 3)) -
+          ((2 : ℝ) ^ (m + 2)) / ((3 : ℝ) ^ (m + 3)) =
+          ((2 : ℝ) ^ (m + 2) * (2 : ℝ) ^ (m + 3)) /
+            (((3 : ℝ) ^ (m + 3) - (2 : ℝ) ^ (m + 3)) * ((3 : ℝ) ^ (m + 3))) := by
+      field_simp [ne_of_gt hden_pos, ne_of_gt h3pow_pos]
+      ring
+    have hpos :
+        0 < ((2 : ℝ) ^ (m + 2) * (2 : ℝ) ^ (m + 3)) /
+          (((3 : ℝ) ^ (m + 3) - (2 : ℝ) ^ (m + 3)) * ((3 : ℝ) ^ (m + 3))) := by
+      positivity
+    linarith
+  have hfp_lt_bprev : rungFixedPoint (m + 3) < rungBoundary (m + 2) := by
+    unfold rungFixedPoint rungBoundary
+    rw [hsub1]
+    have hsub_m2 : m + 2 - 1 = m + 1 := by omega
+    rw [hsub_m2]
+    have h3m2 : (3 : ℝ) ^ (m + 2) = 9 * (3 : ℝ) ^ m := by rw [pow_add]; ring
+    have h2m2 : (2 : ℝ) ^ (m + 2) = 4 * (2 : ℝ) ^ m := by rw [pow_add]; ring
+    have h2m1 : (2 : ℝ) ^ (m + 1) = 2 * (2 : ℝ) ^ m := by rw [pow_add]; ring
+    have hdiff :
+        ((2 : ℝ) ^ (m + 1)) / ((3 : ℝ) ^ (m + 2)) -
+          ((2 : ℝ) ^ (m + 2)) / ((3 : ℝ) ^ (m + 3) - (2 : ℝ) ^ (m + 3)) =
+          ((2 : ℝ) ^ (m + 1) * (9 * (3 : ℝ) ^ m - 8 * (2 : ℝ) ^ m)) /
+            (((3 : ℝ) ^ (m + 2)) * ((3 : ℝ) ^ (m + 3) - (2 : ℝ) ^ (m + 3))) := by
+      field_simp [ne_of_gt h3pow_pred_pos, ne_of_gt hden_pos]
+      rw [h3g_eq, h2g_eq, h3m2, h2m2, h2m1]
+      ring
+    have hnum_pos : 0 < 9 * (3 : ℝ) ^ m - 8 * (2 : ℝ) ^ m := by linarith
+    have hpos :
+        0 < ((2 : ℝ) ^ (m + 1) * (9 * (3 : ℝ) ^ m - 8 * (2 : ℝ) ^ m)) /
+          (((3 : ℝ) ^ (m + 2)) * ((3 : ℝ) ^ (m + 3) - (2 : ℝ) ^ (m + 3))) := by
+      positivity
+    linarith
+  have hcat_lt_23 : rungCatapultFloor (m + 3) < (2 / 3 : ℝ) ^ (m + 3) := by
+    have hb_lt_23 : rungBoundary (m + 3) < (2 / 3 : ℝ) ^ (m + 3) := by
+      unfold rungBoundary
+      rw [hsub1, div_pow]
+      have h2_lt : (2 : ℝ) ^ (m + 2) < (2 : ℝ) ^ (m + 3) := by
+        rw [h2g_eq]
+        have h2m2 : (2 : ℝ) ^ (m + 2) = 4 * (2 : ℝ) ^ m := by rw [pow_add]; ring
+        linarith
+      exact div_lt_div_of_pos_right h2_lt h3pow_pos
+    exact lt_trans hcat_lt_b hb_lt_23
+  have hleak_eq :
+      rungLeakWidth (m + 3) =
+        ((2 : ℝ) ^ (2 * (m + 3) - 1)) / (((3 : ℝ) ^ (m + 3)) * ((3 : ℝ) ^ (m + 3) - (2 : ℝ) ^ (m + 3))) := by
+    unfold rungLeakWidth rungFixedPoint rungBoundary
+    rw [hsub1, h2g_minus1]
+    have hpow_comb : (2 : ℝ) ^ (m + 2) * (2 : ℝ) ^ (m + 3) = (2 : ℝ) ^ (2 * m + 5) := by
+      rw [← pow_add]
+      have h : (m + 2) + (m + 3) = 2 * m + 5 := by omega
+      rw [h]
+    field_simp [ne_of_gt hden_pos, ne_of_gt h3pow_pos]
+    rw [← hpow_comb]
+    ring
+  have hleak_le : rungLeakWidth (m + 3) ≤ (32 / 513 : ℝ) * (4 / 9 : ℝ) ^ (m + 3 - 3) := by
+    rw [hleak_eq, h2g_minus1, hsub_m]
+    have h2_2m5 : (2 : ℝ) ^ (2 * m + 5) = 32 * (4 : ℝ) ^ m := by
+      rw [pow_add, pow_mul]
+      norm_num
+      ring
+    have h49_m : (4 / 9 : ℝ) ^ m = ((4 : ℝ) ^ m) / ((9 : ℝ) ^ m) := div_pow 4 9 m
+    have h9m_eq : (9 : ℝ) ^ m = (3 : ℝ) ^ m * (3 : ℝ) ^ m := by
+      have h9 : (9 : ℝ) = 3 ^ 2 := by norm_num
+      rw [h9, ← pow_mul, mul_comm 2 m, pow_mul]
+      ring
+    have h9m_pos : (0 : ℝ) < (9 : ℝ) ^ m := by positivity
+    have hden_ge : 19 * (3 : ℝ) ^ m ≤ (3 : ℝ) ^ (m + 3) - (2 : ℝ) ^ (m + 3) := by
+      linarith
+    have hprod_ge :
+        513 * (9 : ℝ) ^ m ≤ ((3 : ℝ) ^ (m + 3)) * ((3 : ℝ) ^ (m + 3) - (2 : ℝ) ^ (m + 3)) := by
+      rw [h9m_eq, h3g_eq]
+      nlinarith
+    have hdiv_le :
+        (32 * (4 : ℝ) ^ m) / (((3 : ℝ) ^ (m + 3)) * ((3 : ℝ) ^ (m + 3) - (2 : ℝ) ^ (m + 3))) ≤
+          (32 * (4 : ℝ) ^ m) / (513 * (9 : ℝ) ^ m) := by
+      exact div_le_div_of_nonneg_left (by positivity) (by positivity) hprod_ge
+    have hrhs_eq :
+        (32 * (4 : ℝ) ^ m) / (513 * (9 : ℝ) ^ m) =
+          (32 / 513 : ℝ) * (((4 : ℝ) ^ m) / ((9 : ℝ) ^ m)) := by
+      ring
+    rw [h2_2m5, h49_m, ← hrhs_eq]
+    exact hdiv_le
+  exact ⟨hpos_cat1, hcat1_lt_fp1, hfp1_lt_cat, hcat_lt_b, hb_lt_fp, hfp_lt_bprev,
+    hcat_lt_23, hleak_eq, hleak_le⟩
+
+/-- **Universal Rung-$g$ Catapult Identity and Absorbing Upward Expansion (`universal_rung_catapult_and_upward_expansion`)**:
+For every $g \ge 3$ and every $z \in \mathbb{R}$:
+1. **Period-$g$ Return Displacement:**
+   $\text{rungReturnMap}(g, z) - z_g^* = (3/2)^g (z - z_g^*)$, and in particular
+   $\text{rungReturnMap}(g, z_g^*) = z_g^*$.
+2. **Catapult Return Displacement:**
+   $\text{rungReturnMap}(g + 1, z) - z_g^* = (3/2)^{g+1} (z - \varepsilon_g^*)$, and in particular
+   $\text{rungReturnMap}(g + 1, \varepsilon_g^*) = z_g^*$.
+3. **One-Shot Catapult Above $z_g^*$:**
+   If $\varepsilon_g^* \le z$, then $z_g^* \le \text{rungReturnMap}(g + 1, z)$.
+4. **Absorbing Upward Expansion Above $z_g^*$:**
+   If $z_g^* \le z$, then $z \le \text{rungReturnMap}(g, z)$ and $z_g^* \le \text{rungReturnMap}(g, z)$. -/
+theorem universal_rung_catapult_and_upward_expansion
+    {g : ℕ} (hg : 3 ≤ g) (z : ℝ) :
+    rungReturnMap g z - rungFixedPoint g = ((3 / 2 : ℝ) ^ g) * (z - rungFixedPoint g) ∧
+    rungReturnMap (g + 1) z - rungFixedPoint g = ((3 / 2 : ℝ) ^ (g + 1)) * (z - rungCatapultFloor g) ∧
+    (rungCatapultFloor g ≤ z → rungFixedPoint g ≤ rungReturnMap (g + 1) z) ∧
+    (rungFixedPoint g ≤ z → z ≤ rungReturnMap g z ∧ rungFixedPoint g ≤ rungReturnMap g z) := by
+  obtain ⟨m, rfl⟩ : ∃ m : ℕ, g = m + 3 := ⟨g - 3, by omega⟩
+  have h2m_le_3m : (2 : ℝ) ^ m ≤ (3 : ℝ) ^ m := by
+    exact_mod_cast Nat.pow_le_pow_left (by decide : 2 ≤ 3) m
+  have h2m_pos : (0 : ℝ) < (2 : ℝ) ^ m := by positivity
+  have h3g_eq : (3 : ℝ) ^ (m + 3) = 27 * (3 : ℝ) ^ m := by rw [pow_add]; ring
+  have h2g_eq : (2 : ℝ) ^ (m + 3) = 8 * (2 : ℝ) ^ m := by rw [pow_add]; ring
+  have hden_pos : 0 < (3 : ℝ) ^ (m + 3) - (2 : ℝ) ^ (m + 3) := by linarith
+  have h2g_pos : 0 < (2 : ℝ) ^ (m + 3) := by positivity
+  have hsub1 : m + 3 - 1 = m + 2 := by omega
+  have h2g_split : (2 : ℝ) ^ (m + 3) = 2 * (2 : ℝ) ^ (m + 2) := by
+    rw [pow_succ']
+  have hdisp_g :
+      rungReturnMap (m + 3) z - rungFixedPoint (m + 3) =
+        ((3 / 2 : ℝ) ^ (m + 3)) * (z - rungFixedPoint (m + 3)) := by
+    unfold rungReturnMap rungFixedPoint
+    rw [hsub1, div_pow]
+    field_simp [ne_of_gt h2g_pos, ne_of_gt hden_pos]
+    rw [h2g_split]
+    ring
+  have hdisp_g1 :
+      rungReturnMap (m + 3 + 1) z - rungFixedPoint (m + 3) =
+        ((3 / 2 : ℝ) ^ (m + 3 + 1)) * (z - rungCatapultFloor (m + 3)) := by
+    unfold rungReturnMap rungFixedPoint rungCatapultFloor
+    rw [hsub1, div_pow]
+    have h2g1_pos : (0 : ℝ) < (2 : ℝ) ^ (m + 3 + 1) := by positivity
+    have h3g1_split : (3 : ℝ) ^ (m + 3 + 1) = 3 * (3 : ℝ) ^ (m + 3) := by rw [pow_succ']
+    have h2g1_split : (2 : ℝ) ^ (m + 3 + 1) = 2 * (2 : ℝ) ^ (m + 3) := by rw [pow_succ']
+    field_simp [ne_of_gt h2g1_pos, ne_of_gt hden_pos]
+    rw [h3g1_split, h2g1_split, h2g_split]
+    ring
+  refine ⟨hdisp_g, hdisp_g1, ?_, ?_⟩
+  · intro hz
+    have hpow_pos : (0 : ℝ) < (3 / 2 : ℝ) ^ (m + 3 + 1) := by positivity
+    have hnonneg : 0 ≤ ((3 / 2 : ℝ) ^ (m + 3 + 1)) * (z - rungCatapultFloor (m + 3)) :=
+      mul_nonneg (le_of_lt hpow_pos) (by linarith)
+    linarith [hdisp_g1]
+  · intro hz
+    have hpow_ge1 : (1 : ℝ) ≤ (3 / 2 : ℝ) ^ (m + 3) :=
+      one_le_pow₀ (by norm_num : (1 : ℝ) ≤ (3 / 2 : ℝ))
+    have hdiff_nonneg : 0 ≤ z - rungFixedPoint (m + 3) := by linarith
+    have hmul_ge :
+        z - rungFixedPoint (m + 3) ≤ ((3 / 2 : ℝ) ^ (m + 3)) * (z - rungFixedPoint (m + 3)) := by
+      nlinarith
+    exact ⟨by linarith [hdisp_g], by linarith [hdisp_g]⟩
+
+/-- A post-reset trajectory $(z_m, s_m)$ follows the **Leak-Free Rung-$G$ Elevator** if at each
+step $m$:
+1. $z_{m+1} = \text{rungReturnMap}(s_m, z_m)$, and
+2. Either $m = 0$, $s_0 = G + 1$, and $\varepsilon_G^* \le z_0 < b_G$ (initial catapult trigger at
+   the bottom of Rung $G$), OR $3 \le s_m \le G$ and $z_{s_m}^* \le z_m < b_{s_m - 1}$ ($z_m$ lies
+   in the upward trap zone $\text{Trap}_{s_m} = [z_{s_m}^*, b_{s_m - 1})$ of Rung $s_m$). -/
+def ValidLeakFreeElevator (G : ℕ) (z : ℕ → ℝ) (s : ℕ → ℕ) : Prop :=
+  ∀ m : ℕ,
+    z (m + 1) = rungReturnMap (s m) (z m) ∧
+    ((m = 0 ∧ s m = G + 1 ∧ rungCatapultFloor G ≤ z m ∧ z m < rungBoundary G) ∨
+      (3 ≤ s m ∧ s m ≤ G ∧ rungFixedPoint (s m) ≤ z m ∧ z m < rungBoundary (s m - 1)))
+
+/-- **The Leak-Free Inductive Elevator Theorem (`leak_free_inductive_elevator_monotone_rung_descent`)**:
+For every horizon rung $G \ge 3$ and any trajectory $(z_m, s_m)$ satisfying
+`ValidLeakFreeElevator G z s`:
+1. **Universal Upward Monotonicity:** For every $m \ge 0$, $z_{s_{m+1}}^* \le z_{m+1}$, and for
+   every $m \ge 1$, $z_m \le z_{m+1}$.
+2. **One-Way Rung Promotion ($s_{m+1} \le s_m$):** For every $m \ge 0$,
+   $$3 \le s_{m+1} \le s_m \le G + 1,$$
+   so the trajectory can only move **upward** to smaller block lengths $s_m$ and can never drop
+   back down to a larger block length. -/
+theorem leak_free_inductive_elevator_monotone_rung_descent
+    {G : ℕ} {z : ℕ → ℝ} {s : ℕ → ℕ}
+    (_hG : 3 ≤ G) (helev : ValidLeakFreeElevator G z s) :
+    (∀ m : ℕ,
+      3 ≤ s (m + 1) ∧ s (m + 1) ≤ G ∧
+      rungFixedPoint (s (m + 1)) ≤ z (m + 1) ∧
+      z (m + 1) < rungBoundary (s (m + 1) - 1)) ∧
+    (∀ m : ℕ, 1 ≤ m → z m ≤ z (m + 1)) ∧
+    (∀ m : ℕ, s (m + 1) ≤ s m) := by
+  have htrap_all :
+      ∀ m : ℕ,
+        3 ≤ s (m + 1) ∧ s (m + 1) ≤ G ∧
+        rungFixedPoint (s (m + 1)) ≤ z (m + 1) ∧
+        z (m + 1) < rungBoundary (s (m + 1) - 1) := by
+    intro m
+    rcases (helev (m + 1)).2 with ⟨hm_zero, _, _, _⟩ | htrap
+    · omega
+    · exact htrap
+  have hb_mono : ∀ {a b : ℕ}, 2 ≤ a → a ≤ b → rungBoundary b ≤ rungBoundary a := by
+    intro a b ha hab
+    obtain ⟨d, rfl⟩ : ∃ d : ℕ, b = a + d := ⟨b - a, by omega⟩
+    induction d with
+    | zero => simp
+    | succ d ih =>
+        have ihd := ih (by omega)
+        have hstep : rungBoundary (a + d + 1) < rungBoundary (a + d) := by
+          have hord := (rungCatapult_ordering_and_corridor_overlap.1 (a + d + 1) (by omega))
+          have hsub : a + d + 1 - 1 = a + d := by omega
+          rw [hsub] at hord
+          exact lt_trans hord.2.2.2.2.1 hord.2.2.2.2.2.1
+        have hidx : a + (d + 1) = a + d + 1 := by omega
+        rw [hidx]
+        exact le_of_lt (lt_of_lt_of_le hstep ihd)
+  have hmono_z : ∀ m : ℕ, 1 ≤ m → z m ≤ z (m + 1) := by
+    intro m hm1
+    obtain ⟨k, rfl⟩ : ∃ k : ℕ, m = k + 1 := ⟨m - 1, by omega⟩
+    have htr := htrap_all k
+    have hstep_eq := (helev (k + 1)).1
+    have hcat := universal_rung_catapult_and_upward_expansion htr.1 (z (k + 1))
+    rw [hstep_eq]
+    exact (hcat.2.2.2 htr.2.2.1).1
+  refine ⟨htrap_all, hmono_z, ?_⟩
+  intro m
+  have htr_next := htrap_all m
+  have hstep_eq := (helev m).1
+  rcases (helev m).2 with ⟨hm0, hs0, hz0_lo, _⟩ | htr_cur
+  · omega
+  · have hcat := universal_rung_catapult_and_upward_expansion htr_cur.1 (z m)
+    have hzm1_ge_fp : rungFixedPoint (s m) ≤ z (m + 1) := by
+      rw [hstep_eq]
+      exact (hcat.2.2.2 htr_cur.2.2.1).2
+    by_contra hgt
+    push_neg at hgt
+    have hle_b : s m ≤ s (m + 1) - 1 := by omega
+    have hb_le : rungBoundary (s (m + 1) - 1) ≤ rungBoundary (s m) :=
+      hb_mono (by omega) hle_b
+    have hord := (rungCatapult_ordering_and_corridor_overlap.1 (s m) htr_cur.1).2.2.2.2.1
+    linarith [htr_next.2.2.2, hb_le, hord, hzm1_ge_fp]
+
 end Mahler.DubickasExtension
+
 
