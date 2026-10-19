@@ -1949,4 +1949,968 @@ theorem dubBaseX_repeated_window_exp_and_power_cutoff {p q W i j L : ℕ} {ξ θ
   have h1 := hpow_cut (a := 1) (b := 1) le_rfl (by simpa using hpq2)
   omega
 
+theorem dubBaseX_add_dubBaseY (p q : ℕ) (ξ θ : ℝ) (n : ℕ) :
+    (dubBaseX p q ξ θ n : ℝ) + dubBaseY p q ξ θ n =
+      ξ * ((p : ℝ) / (q : ℝ)) ^ n + θ := by
+  unfold dubBaseX dubBaseY
+  have h := Int.self_sub_floor (ξ * ((p : ℝ) / (q : ℝ)) ^ n + θ)
+  linarith
+
+theorem dubBaseY_bounds (p q : ℕ) (ξ θ : ℝ) (n : ℕ) :
+    0 ≤ dubBaseY p q ξ θ n ∧ dubBaseY p q ξ θ n < 1 :=
+  ⟨Int.fract_nonneg _, Int.fract_lt_one _⟩
+
+/-- **General-Base Fractional-Part Formula for Shifted Carry Words (`dubBaseCarry_eq_fract_linear`)**:
+Whenever $1 \le q$, for all $\xi, \theta \in \mathbb{R}$ and $n \in \mathbb{N}$:
+`(dubBaseCarry p q ξ θ n : ℝ) = p * dubBaseY p q ξ θ n - q * dubBaseY p q ξ θ (n + 1) - (p - q) * θ`. -/
+theorem dubBaseCarry_eq_fract_linear {p q : ℕ} (hq1 : 1 ≤ q) (ξ θ : ℝ) (n : ℕ) :
+    (dubBaseCarry p q ξ θ n : ℝ) =
+      (p : ℝ) * dubBaseY p q ξ θ n -
+        (q : ℝ) * dubBaseY p q ξ θ (n + 1) - ((p : ℝ) - (q : ℝ)) * θ := by
+  have hq_pos : (0 : ℝ) < (q : ℝ) := by exact_mod_cast hq1
+  have hq_ne : (q : ℝ) ≠ 0 := ne_of_gt hq_pos
+  unfold dubBaseCarry
+  push_cast
+  have h0 := dubBaseX_add_dubBaseY p q ξ θ n
+  have h1 := dubBaseX_add_dubBaseY p q ξ θ (n + 1)
+  rw [pow_succ] at h1
+  have h1_mul :
+      (q : ℝ) * ((dubBaseX p q ξ θ (n + 1) : ℝ) + dubBaseY p q ξ θ (n + 1)) =
+        (p : ℝ) * (ξ * ((p : ℝ) / (q : ℝ)) ^ n) + (q : ℝ) * θ := by
+    calc
+      (q : ℝ) * ((dubBaseX p q ξ θ (n + 1) : ℝ) + dubBaseY p q ξ θ (n + 1)) =
+          (q : ℝ) * (ξ * (((p : ℝ) / (q : ℝ)) ^ n * ((p : ℝ) / (q : ℝ))) + θ) := by
+        rw [h1]
+      _ = (p : ℝ) * (ξ * ((p : ℝ) / (q : ℝ)) ^ n) + (q : ℝ) * θ := by
+        field_simp [hq_ne]
+        ring
+  linear_combination h1_mul - (p : ℝ) * h0
+
+/-- **General-Base Multi-Step Fractional-Part Summation Identity (`dubBaseY_multi_step_carry_identity`)**:
+Whenever $1 \le q$, for all $n, m \in \mathbb{N}$:
+`q^m * dubBaseY p q ξ θ (n + m) = p^m * dubBaseY p q ξ θ n - dubBaseCarryAcc p q (dubBaseCarry p q ξ θ) n m - (p^m - q^m) * θ`. -/
+theorem dubBaseY_multi_step_carry_identity {p q : ℕ} (hq1 : 1 ≤ q)
+    (ξ θ : ℝ) (n m : ℕ) :
+    (q : ℝ) ^ m * dubBaseY p q ξ θ (n + m) =
+      (p : ℝ) ^ m * dubBaseY p q ξ θ n -
+        (dubBaseCarryAcc p q (dubBaseCarry p q ξ θ) n m : ℝ) -
+          ((p : ℝ) ^ m - (q : ℝ) ^ m) * θ := by
+  induction m with
+  | zero => simp [dubBaseCarryAcc]
+  | succ m ih =>
+      have hidx : n + (m + 1) = (n + m) + 1 := by omega
+      have hstep := dubBaseCarry_eq_fract_linear (p := p) hq1 ξ θ (n + m)
+      rw [hidx]
+      push_cast [dubBaseCarryAcc]
+      rw [pow_succ (q : ℝ) m, pow_succ (p : ℝ) m]
+      linear_combination (p : ℝ) * ih + (q : ℝ) ^ m * hstep
+
+/-- **Universal Two-Letter Carry Alphabet on General-Base Shifted $1/p$-Windows
+(`dubBaseCarry_mem_two_letters`)**:
+For **every** $1 \le q < p$ and **every** real shift $s \in \mathbb{R}$, if
+`dubBaseY p q ξ (-s) n ≤ 1 / p` and `dubBaseY p q ξ (-s) (n + 1) ≤ 1 / p`, then
+`dubBaseCarry p q ξ (-s) n` lies in the explicit two-element set
+$\{\lfloor (p - q)s \rfloor,\, \lfloor (p - q)s \rfloor + 1\}$. -/
+theorem dubBaseCarry_mem_two_letters {p q : ℕ} {ξ s : ℝ} {n : ℕ}
+    (hq1 : 1 ≤ q) (hqp : q < p)
+    (hyn : dubBaseY p q ξ (-s) n ≤ 1 / (p : ℝ))
+    (hyn1 : dubBaseY p q ξ (-s) (n + 1) ≤ 1 / (p : ℝ)) :
+    let k0 : ℤ := ⌊((p : ℝ) - (q : ℝ)) * s⌋
+    (k0 ≤ dubBaseCarry p q ξ (-s) n ∧ dubBaseCarry p q ξ (-s) n ≤ k0 + 1) ∧
+      (dubBaseCarry p q ξ (-s) n = k0 ∨ dubBaseCarry p q ξ (-s) n = k0 + 1) := by
+  intro k0
+  have hp_pos : (0 : ℝ) < (p : ℝ) := by exact_mod_cast (by omega : 0 < p)
+  have hq_nonneg : (0 : ℝ) ≤ (q : ℝ) := Nat.cast_nonneg q
+  have hqp_real : (q : ℝ) < (p : ℝ) := by exact_mod_cast hqp
+  have hqp_div : (q : ℝ) / (p : ℝ) < 1 := (div_lt_one hp_pos).mpr hqp_real
+  have hy0_lo := (dubBaseY_bounds p q ξ (-s) n).1
+  have hy1_lo := (dubBaseY_bounds p q ξ (-s) (n + 1)).1
+  have hpy_hi : (p : ℝ) * dubBaseY p q ξ (-s) n ≤ 1 := by
+    have h1 := mul_le_mul_of_nonneg_left hyn (le_of_lt hp_pos)
+    have h2 : (p : ℝ) * (1 / (p : ℝ)) = 1 := mul_one_div_cancel (ne_of_gt hp_pos)
+    linarith
+  have hqy_hi : (q : ℝ) * dubBaseY p q ξ (-s) (n + 1) ≤ (q : ℝ) / (p : ℝ) := by
+    have h1 := mul_le_mul_of_nonneg_left hyn1 hq_nonneg
+    ring_nf at h1 ⊢
+    exact h1
+  have hpy_lo : 0 ≤ (p : ℝ) * dubBaseY p q ξ (-s) n := mul_nonneg (le_of_lt hp_pos) hy0_lo
+  have hqy_lo : 0 ≤ (q : ℝ) * dubBaseY p q ξ (-s) (n + 1) := mul_nonneg hq_nonneg hy1_lo
+  have hlin := dubBaseCarry_eq_fract_linear (p := p) hq1 ξ (-s) n
+  have hk0_le : (k0 : ℝ) ≤ ((p : ℝ) - (q : ℝ)) * s := Int.floor_le _
+  have hk0_gt : ((p : ℝ) - (q : ℝ)) * s < (k0 : ℝ) + 1 := Int.lt_floor_add_one _
+  have hlo_real : (k0 : ℝ) - 1 < (dubBaseCarry p q ξ (-s) n : ℝ) := by linarith
+  have hhi_real : (dubBaseCarry p q ξ (-s) n : ℝ) < (k0 : ℝ) + 2 := by linarith
+  have hlo_int : k0 - 1 < dubBaseCarry p q ξ (-s) n := by exact_mod_cast hlo_real
+  have hhi_int : dubBaseCarry p q ξ (-s) n < k0 + 2 := by exact_mod_cast hhi_real
+  exact ⟨⟨by omega, by omega⟩, by omega⟩
+
+/-- **General-Base No-Bispecial-Pair Theorem on Shifted $1/p$-Windows
+(`dubBaseCarry_no_bispecial_pair`)**:
+For any $1 \le q < p$ and $s \in \mathbb{R}$, if `dubBaseY p q ξ (-s)` is $\le 1/p$ at
+$i, i+m, j, j+m$ ($m \ge 2$), then `dubBaseCarry p q ξ (-s)` cannot have a bispecial
+pair of length $m$ at $i$ and $j$. -/
+theorem dubBaseCarry_no_bispecial_pair {p q : ℕ} {ξ s : ℝ} {i j m : ℕ}
+    (hq1 : 1 ≤ q) (hqp : q < p) (hm : 2 ≤ m)
+    (_hyi : dubBaseY p q ξ (-s) i ≤ 1 / (p : ℝ))
+    (hyim : dubBaseY p q ξ (-s) (i + m) ≤ 1 / (p : ℝ))
+    (hyj : dubBaseY p q ξ (-s) j ≤ 1 / (p : ℝ))
+    (_hyjm : dubBaseY p q ξ (-s) (j + m) ≤ 1 / (p : ℝ))
+    (hfirst : dubBaseCarry p q ξ (-s) j = dubBaseCarry p q ξ (-s) i + 1)
+    (hmid : ∀ t : ℕ, 1 ≤ t → t + 1 < m →
+      dubBaseCarry p q ξ (-s) (j + t) = dubBaseCarry p q ξ (-s) (i + t))
+    (hlast : dubBaseCarry p q ξ (-s) (j + (m - 1)) =
+      dubBaseCarry p q ξ (-s) (i + (m - 1)) + 1) :
+    False := by
+  have hp_pos : (0 : ℝ) < (p : ℝ) := by exact_mod_cast (by omega : 0 < p)
+  have hq_pos : (0 : ℝ) < (q : ℝ) := by exact_mod_cast hq1
+  have hqp_real : (q : ℝ) < (p : ℝ) := by exact_mod_cast hqp
+  have hqp_div : (q : ℝ) / (p : ℝ) < 1 := (div_lt_one hp_pos).mpr hqp_real
+  have hi_id := dubBaseY_multi_step_carry_identity (p := p) hq1 ξ (-s) i m
+  have hj_id := dubBaseY_multi_step_carry_identity (p := p) hq1 ξ (-s) j m
+  have hyi0 := (dubBaseY_bounds p q ξ (-s) i).1
+  have hyjm0 := (dubBaseY_bounds p q ξ (-s) (j + m)).1
+  obtain ⟨k, rfl⟩ : ∃ k, m = k + 2 := ⟨m - 2, by omega⟩
+  have hmid_eq :
+      ∀ r ≤ k + 1, 1 ≤ r →
+        dubBaseCarryAcc p q (dubBaseCarry p q ξ (-s)) j r -
+          dubBaseCarryAcc p q (dubBaseCarry p q ξ (-s)) i r =
+          (p : ℤ) ^ (r - 1) := by
+    intro r hr_hi hr_lo
+    induction r with
+    | zero => omega
+    | succ r ih =>
+        rcases Nat.eq_zero_or_pos r with rfl | hr_pos
+        · simp only [dubBaseCarryAcc, pow_zero, mul_zero, zero_add, one_mul, Nat.add_zero, Nat.sub_self]
+          omega
+        · have ihr := ih (by omega) hr_pos
+          have hmid_r := hmid r hr_pos (by omega)
+          change ((p : ℤ) * dubBaseCarryAcc p q (dubBaseCarry p q ξ (-s)) j r +
+              (q : ℤ) ^ r * dubBaseCarry p q ξ (-s) (j + r)) -
+            ((p : ℤ) * dubBaseCarryAcc p q (dubBaseCarry p q ξ (-s)) i r +
+              (q : ℤ) ^ r * dubBaseCarry p q ξ (-s) (i + r)) =
+            (p : ℤ) ^ r
+          rw [hmid_r]
+          have hr_eq : r = (r - 1) + 1 := by omega
+          have hpowp : (p : ℤ) * (p : ℤ) ^ (r - 1) = (p : ℤ) ^ r := by
+            conv_rhs => rw [hr_eq, pow_succ']
+          linear_combination (p : ℤ) * ihr + hpowp
+  have hk1 := hmid_eq (k + 1) le_rfl (by omega)
+  simp only [Nat.add_sub_cancel] at hk1
+  have hlast_sub : k + 2 - 1 = k + 1 := by omega
+  rw [hlast_sub] at hlast
+  have hacc_diff :
+      dubBaseCarryAcc p q (dubBaseCarry p q ξ (-s)) j (k + 2) -
+        dubBaseCarryAcc p q (dubBaseCarry p q ξ (-s)) i (k + 2) =
+        (p : ℤ) ^ (k + 1) + (q : ℤ) ^ (k + 1) := by
+    change ((p : ℤ) * dubBaseCarryAcc p q (dubBaseCarry p q ξ (-s)) j (k + 1) +
+        (q : ℤ) ^ (k + 1) * dubBaseCarry p q ξ (-s) (j + (k + 1))) -
+      ((p : ℤ) * dubBaseCarryAcc p q (dubBaseCarry p q ξ (-s)) i (k + 1) +
+        (q : ℤ) ^ (k + 1) * dubBaseCarry p q ξ (-s) (i + (k + 1))) =
+      (p : ℤ) ^ (k + 1) + (q : ℤ) ^ (k + 1)
+    rw [hlast]
+    have hpowp : (p : ℤ) * (p : ℤ) ^ k = (p : ℤ) ^ (k + 1) := by rw [pow_succ']
+    linear_combination (p : ℤ) * hk1 + hpowp
+  have hacc_real :
+      (dubBaseCarryAcc p q (dubBaseCarry p q ξ (-s)) j (k + 2) : ℝ) -
+        (dubBaseCarryAcc p q (dubBaseCarry p q ξ (-s)) i (k + 2) : ℝ) =
+        (p : ℝ) ^ (k + 1) + (q : ℝ) ^ (k + 1) := by
+    exact_mod_cast hacc_diff
+  have hpj_hi : (p : ℝ) ^ (k + 2) * dubBaseY p q ξ (-s) j ≤ (p : ℝ) ^ (k + 1) := by
+    have hp_split : (p : ℝ) ^ (k + 2) = (p : ℝ) ^ (k + 1) * (p : ℝ) := by rw [pow_succ]
+    have h1 : (p : ℝ) * dubBaseY p q ξ (-s) j ≤ 1 := by
+      have hm1 := mul_le_mul_of_nonneg_left hyj (le_of_lt hp_pos)
+      have hm2 : (p : ℝ) * (1 / (p : ℝ)) = 1 := mul_one_div_cancel (ne_of_gt hp_pos)
+      linarith
+    have hpk1_pos : (0 : ℝ) ≤ (p : ℝ) ^ (k + 1) := by positivity
+    calc
+      (p : ℝ) ^ (k + 2) * dubBaseY p q ξ (-s) j =
+          (p : ℝ) ^ (k + 1) * ((p : ℝ) * dubBaseY p q ξ (-s) j) := by
+        rw [hp_split]; ring
+      _ ≤ (p : ℝ) ^ (k + 1) * 1 := mul_le_mul_of_nonneg_left h1 hpk1_pos
+      _ = (p : ℝ) ^ (k + 1) := mul_one _
+  have hpi_lo : (0 : ℝ) ≤ (p : ℝ) ^ (k + 2) * dubBaseY p q ξ (-s) i := by positivity
+  have hqjm_lo : (0 : ℝ) ≤ (q : ℝ) ^ (k + 2) * dubBaseY p q ξ (-s) (j + (k + 2)) := by positivity
+  have hqim_lt :
+      (q : ℝ) ^ (k + 2) * dubBaseY p q ξ (-s) (i + (k + 2)) < (q : ℝ) ^ (k + 1) := by
+    have hq_split : (q : ℝ) ^ (k + 2) = (q : ℝ) ^ (k + 1) * (q : ℝ) := by rw [pow_succ]
+    have h1 : (q : ℝ) * dubBaseY p q ξ (-s) (i + (k + 2)) < 1 := by
+      have hm1 := mul_le_mul_of_nonneg_left hyim (le_of_lt hq_pos)
+      have hm2 : (q : ℝ) * (1 / (p : ℝ)) = (q : ℝ) / (p : ℝ) := by ring
+      linarith
+    have hqk1_pos : (0 : ℝ) < (q : ℝ) ^ (k + 1) := by positivity
+    calc
+      (q : ℝ) ^ (k + 2) * dubBaseY p q ξ (-s) (i + (k + 2)) =
+          (q : ℝ) ^ (k + 1) * ((q : ℝ) * dubBaseY p q ξ (-s) (i + (k + 2))) := by
+        rw [hq_split]; ring
+      _ < (q : ℝ) ^ (k + 1) * 1 := mul_lt_mul_of_pos_left h1 hqk1_pos
+      _ = (q : ℝ) ^ (k + 1) := mul_one _
+  linarith
+
+/-- Natural-number shifted carry word for base $p / q$:
+`dubBaseCarryNat p q ξ s n = Int.toNat (dubBaseCarry p q ξ (-s) n - ⌊(p - q)s⌋)`. -/
+noncomputable def dubBaseCarryNat (p q : ℕ) (ξ s : ℝ) (n : ℕ) : ℕ :=
+  Int.toNat (dubBaseCarry p q ξ (-s) n - ⌊((p : ℝ) - (q : ℝ)) * s⌋)
+
+/-- **Derived Factor Complexity $\le L + 1$ for General-Base Shifted $1/p$-Windows
+(`dubBaseCarryNat_prefixFactorCount_le`)**:
+For **every** $1 \le q < p$ and **every** real shift $s \in \mathbb{R}$, whenever
+`dubBaseY p q ξ (-s) n ≤ 1 / p` for all $n_0 \le n \le n_0 + C + L$, the shifted carry word
+`shiftSeq (dubBaseCarryNat p q ξ s) n_0` has at most $L + 1$ distinct length-$L$ factors
+on $0 \le r \le C$. -/
+theorem dubBaseCarryNat_prefixFactorCount_le
+    {p q : ℕ} {ξ s : ℝ} {n_0 L C : ℕ}
+    (hq1 : 1 ≤ q) (hqp : q < p)
+    (hy : ∀ n, n_0 ≤ n → n ≤ n_0 + C + L → dubBaseY p q ξ (-s) n ≤ 1 / (p : ℝ)) :
+    prefixFactorCount (shiftSeq (dubBaseCarryNat p q ξ s) n_0) L C ≤ L + 1 := by
+  set w := shiftSeq (dubBaseCarryNat p q ξ s) n_0
+  set k0 : ℤ := ⌊((p : ℝ) - (q : ℝ)) * s⌋
+  have hmem01 : ∀ n < C + L,
+      (w n : ℤ) = dubBaseCarry p q ξ (-s) (n_0 + n) - k0 ∧
+        (w n = 0 ∨ w n = 1) := by
+    intro n hn
+    have h2 := dubBaseCarry_mem_two_letters hq1 hqp
+      (hy (n_0 + n) (by omega) (by omega))
+      (hy (n_0 + n + 1) (by omega) (by omega))
+    dsimp [k0] at h2
+    unfold w shiftSeq dubBaseCarryNat
+    have hnonneg : 0 ≤ dubBaseCarry p q ξ (-s) (n_0 + n) - k0 := by omega
+    have hcast := Int.toNat_of_nonneg hnonneg
+    refine ⟨hcast, ?_⟩
+    rcases h2.2 with h0 | h1 <;> omega
+  apply prefixFactorCount_le_add_one_of_no_bispecial (c0 := 0)
+  · intro n hn
+    exact (hmem01 n hn).2
+  · intro i j m hm hi hj hfirst hmid hlast
+    have hci := (hmem01 i (by omega)).1
+    have hcj := (hmem01 j (by omega)).1
+    have hcim := (hmem01 (i + (m - 1)) (by omega)).1
+    have hcjm := (hmem01 (j + (m - 1)) (by omega)).1
+    have hidx_im : n_0 + (i + (m - 1)) = (n_0 + i) + (m - 1) := by omega
+    have hidx_jm : n_0 + (j + (m - 1)) = (n_0 + j) + (m - 1) := by omega
+    rw [hidx_im] at hcim
+    rw [hidx_jm] at hcjm
+    apply dubBaseCarry_no_bispecial_pair hq1 hqp hm
+      (hy (n_0 + i) (by omega) (by omega))
+      (hy ((n_0 + i) + m) (by omega) (by omega))
+      (hy (n_0 + j) (by omega) (by omega))
+      (hy ((n_0 + j) + m) (by omega) (by omega))
+    · omega
+    · intro t ht1 ht2
+      have hmid_t := hmid t ht1 ht2
+      have hcit := (hmem01 (i + t) (by omega)).1
+      have hcjt := (hmem01 (j + t) (by omega)).1
+      have hi_t : n_0 + (i + t) = (n_0 + i) + t := by omega
+      have hj_t : n_0 + (j + t) = (n_0 + j) + t := by omega
+      rw [hi_t] at hcit
+      rw [hj_t] at hcjt
+      omega
+    · omega
+
+/-- General-base strict monotonicity and upper bound on `dubBaseX`:
+Whenever $1 \le q < p$, $2 + \frac{2q}{p - q} \le \xi < q^W$, and $-1 \le \theta \le 0$,
+for all $0 \le i < j$:
+1. $1 \le \operatorname{dubBaseX} p\ q\ \xi\ \theta\ i$,
+2. $1 \le \operatorname{dubBaseX} p\ q\ \xi\ \theta\ j - \operatorname{dubBaseX} p\ q\ \xi\ \theta\ i$, and
+3. $q^j (\operatorname{dubBaseX} p\ q\ \xi\ \theta\ j - \operatorname{dubBaseX} p\ q\ \xi\ \theta\ i) < p^j \cdot q^W$. -/
+theorem dubBaseX_strict_step_growth {p q W i j : ℕ} {ξ θ : ℝ}
+    (hq1 : 1 ≤ q) (hqp : q < p)
+    (hξ_lo : (2 : ℝ) + (2 * (q : ℝ)) / ((p : ℝ) - (q : ℝ)) ≤ ξ)
+    (hξW : ξ < (q : ℝ) ^ W)
+    (hθ_lo : (-1 : ℝ) ≤ θ) (hθ_hi : θ ≤ 0)
+    (hij : i < j) :
+    1 ≤ dubBaseX p q ξ θ i ∧
+      1 ≤ dubBaseX p q ξ θ j - dubBaseX p q ξ θ i ∧
+      (q : ℤ) ^ j * (dubBaseX p q ξ θ j - dubBaseX p q ξ θ i) <
+        (p : ℤ) ^ j * (q : ℤ) ^ W := by
+  have hq_pos : (0 : ℝ) < (q : ℝ) := by exact_mod_cast hq1
+  have hp_pos : (0 : ℝ) < (p : ℝ) := by exact_mod_cast (by omega : 0 < p)
+  have hqp_real : (q : ℝ) + 1 ≤ (p : ℝ) := by exact_mod_cast (by omega : q + 1 ≤ p)
+  have hpq_diff : (1 : ℝ) ≤ (p : ℝ) - (q : ℝ) := by linarith
+  have hpq_pos : (0 : ℝ) < (p : ℝ) - (q : ℝ) := by linarith
+  have hdiv_pos : (0 : ℝ) < (2 * (q : ℝ)) / ((p : ℝ) - (q : ℝ)) := by positivity
+  have hξ_ge2 : (2 : ℝ) ≤ ξ := by linarith
+  have hξ_ge_div : (2 * (q : ℝ)) / ((p : ℝ) - (q : ℝ)) ≤ ξ := by linarith
+  have hr_ge1 : (1 : ℝ) ≤ (p : ℝ) / (q : ℝ) := (one_le_div hq_pos).mpr (by linarith)
+  have hpow_i_ge1 : (1 : ℝ) ≤ ((p : ℝ) / (q : ℝ)) ^ i := one_le_pow₀ hr_ge1
+  have hxi_ge1 : 1 ≤ dubBaseX p q ξ θ i := by
+    unfold dubBaseX
+    exact Int.le_floor.mpr (by push_cast; nlinarith)
+  have hpow_step :
+      ((p : ℝ) / (q : ℝ)) ^ i * ((p : ℝ) / (q : ℝ)) ≤ ((p : ℝ) / (q : ℝ)) ^ j := by
+    obtain ⟨d, hd⟩ : ∃ d, j = (i + 1) + d := ⟨j - (i + 1), by omega⟩
+    rw [hd, pow_add, pow_succ]
+    have hpos : (0 : ℝ) ≤ ((p : ℝ) / (q : ℝ)) ^ i * ((p : ℝ) / (q : ℝ)) := by positivity
+    have hpow_d : (1 : ℝ) ≤ ((p : ℝ) / (q : ℝ)) ^ d := one_le_pow₀ hr_ge1
+    nlinarith
+  have hdiff_ge2 :
+      (2 : ℝ) ≤ (ξ * ((p : ℝ) / (q : ℝ)) ^ j + θ) - (ξ * ((p : ℝ) / (q : ℝ)) ^ i + θ) := by
+    have h1 : ξ * (((p : ℝ) / (q : ℝ)) - 1) ≥ 2 := by
+      have hsub : (p : ℝ) / (q : ℝ) - 1 = ((p : ℝ) - (q : ℝ)) / (q : ℝ) := by
+        field_simp [ne_of_gt hq_pos]
+      rw [hsub]
+      have hmul := mul_le_mul_of_nonneg_right hξ_ge_div (le_of_lt (div_pos hpq_pos hq_pos))
+      have hcancel :
+          ((2 * (q : ℝ)) / ((p : ℝ) - (q : ℝ))) * (((p : ℝ) - (q : ℝ)) / (q : ℝ)) = 2 := by
+        field_simp [ne_of_gt hpq_pos, ne_of_gt hq_pos]
+      linarith
+    have h2 :
+        ξ * ((p : ℝ) / (q : ℝ)) ^ i * (((p : ℝ) / (q : ℝ)) - 1) ≤
+          ξ * ((p : ℝ) / (q : ℝ)) ^ j - ξ * ((p : ℝ) / (q : ℝ)) ^ i := by
+      have hm := mul_le_mul_of_nonneg_left hpow_step (by linarith : (0 : ℝ) ≤ ξ)
+      linarith
+    nlinarith
+  have hfl_i_le : (dubBaseX p q ξ θ i : ℝ) ≤ ξ * ((p : ℝ) / (q : ℝ)) ^ i + θ :=
+    Int.floor_le _
+  have hfl_j_gt : ξ * ((p : ℝ) / (q : ℝ)) ^ j + θ - 1 < (dubBaseX p q ξ θ j : ℝ) := by
+    have h := Int.lt_floor_add_one (ξ * ((p : ℝ) / (q : ℝ)) ^ j + θ)
+    unfold dubBaseX
+    linarith
+  have hdiff_pos : 0 < dubBaseX p q ξ θ j - dubBaseX p q ξ θ i := by
+    have hreal : ((0 : ℤ) : ℝ) < ((dubBaseX p q ξ θ j - dubBaseX p q ξ θ i : ℤ) : ℝ) := by
+      push_cast; linarith
+    exact_mod_cast hreal
+  have hfl_j_le : (dubBaseX p q ξ θ j : ℝ) ≤ ξ * ((p : ℝ) / (q : ℝ)) ^ j + θ :=
+    Int.floor_le _
+  have hxi_real_ge1 : (1 : ℝ) ≤ (dubBaseX p q ξ θ i : ℝ) := by exact_mod_cast hxi_ge1
+  have hqj_pos : (0 : ℝ) < (q : ℝ) ^ j := by positivity
+  have hpj_pos : (0 : ℝ) < (p : ℝ) ^ j := by positivity
+  have hupper_real :
+      (q : ℝ) ^ j * ((dubBaseX p q ξ θ j - dubBaseX p q ξ θ i : ℤ) : ℝ) <
+        (p : ℝ) ^ j * (q : ℝ) ^ W := by
+    push_cast
+    have h1 : (dubBaseX p q ξ θ j : ℝ) - (dubBaseX p q ξ θ i : ℝ) < ξ * ((p : ℝ) / (q : ℝ)) ^ j := by
+      linarith
+    have hdiv_pow_pos : (0 : ℝ) < ((p : ℝ) / (q : ℝ)) ^ j := by positivity
+    have h2 : ξ * ((p : ℝ) / (q : ℝ)) ^ j < (q : ℝ) ^ W * ((p : ℝ) ^ j / (q : ℝ) ^ j) := by
+      rw [← div_pow]
+      exact mul_lt_mul_of_pos_right hξW hdiv_pow_pos
+    have h3 :
+        (q : ℝ) ^ j * ((q : ℝ) ^ W * ((p : ℝ) ^ j / (q : ℝ) ^ j)) =
+          (p : ℝ) ^ j * (q : ℝ) ^ W := by
+      field_simp [ne_of_gt hqj_pos]
+      ring
+    have h4 := mul_lt_mul_of_pos_left (lt_trans h1 h2) hqj_pos
+    linarith
+  exact ⟨hxi_ge1, by omega, by exact_mod_cast hupper_real⟩
+
+private theorem pow_succ_add_mul_pow_le (p L : ℕ) :
+    p ^ (L + 1) + L * p ^ L ≤ (p + 1) ^ (L + 1) := by
+  induction L with
+  | zero => simp
+  | succ L ih =>
+      rw [Nat.pow_succ (p + 1) (L + 1)]
+      have hmul :
+          (p ^ (L + 1) + L * p ^ L) * (p + 1) ≤ (p + 1) ^ (L + 1) * (p + 1) :=
+        Nat.mul_le_mul_right (p + 1) ih
+      have hexp :
+          (p ^ (L + 1) + L * p ^ L) * (p + 1) =
+            p ^ (L + 1 + 1) + (L + 1) * p ^ (L + 1) + L * p ^ L := by
+        rw [Nat.pow_succ p (L + 1), Nat.pow_succ p L]
+        ring
+      omega
+
+/-- **Full General-Base Dubickas (2009) Theorem 1 with Explicit Escape Bound
+(`dubickas2009_general_base_explicit_and_infinite_escape`)**:
+Let $2 \le q < p < q^2$ with $\gcd(p, q) = 1$, and let $0 \le s \le 1 - 1/p$.
+1. **Explicit Finite-Horizon Escape Bound:** Whenever $2 + \frac{2q}{p - q} \le \xi < q^W$,
+   there exists an index $n \le p^2 \cdot q^{2 W} + 3$ such that $\{\xi (p/q)^n - s\} > 1/p$ and
+   $\{\xi (p/q)^n\} \notin [s, s + 1/p]$.
+2. **Unconditional Infinite-Horizon Escape (Dubickas 2009, Theorem 1):** For every real
+   $\xi > 0$ and threshold $N_0 \in \mathbb{N}$, there exists $n \ge N_0$ such that
+   $\{\xi (p/q)^n\} \notin [s, s + 1/p]$ ($Z_{p/q}(s, s + 1/p) = \emptyset$). -/
+theorem dubickas2009_general_base_explicit_and_infinite_escape
+    {p q : ℕ} {s : ℝ}
+    (hq2 : 2 ≤ q) (hqp : q < p) (hpq2 : p < q ^ 2) (hcop_pq : Nat.Coprime p q)
+    (hs0 : 0 ≤ s) (hs_hi : s + 1 / (p : ℝ) ≤ 1) :
+    (∀ {ξ : ℝ} {W : ℕ},
+      (2 : ℝ) + (2 * (q : ℝ)) / ((p : ℝ) - (q : ℝ)) ≤ ξ → ξ < (q : ℝ) ^ W →
+      (∃ n ≤ p ^ 2 * q ^ (2 * W) + 3, 1 / (p : ℝ) < Int.fract (ξ * ((p : ℝ) / (q : ℝ)) ^ n - s)) ∧
+      (∃ n ≤ p ^ 2 * q ^ (2 * W) + 3,
+        Int.fract (ξ * ((p : ℝ) / (q : ℝ)) ^ n) < s ∨
+          s + 1 / (p : ℝ) < Int.fract (ξ * ((p : ℝ) / (q : ℝ)) ^ n))) ∧
+    (∀ {ξ : ℝ}, 0 < ξ → ∀ N_0 : ℕ,
+      ∃ n ≥ N_0,
+        Int.fract (ξ * ((p : ℝ) / (q : ℝ)) ^ n) < s ∨
+          s + 1 / (p : ℝ) < Int.fract (ξ * ((p : ℝ) / (q : ℝ)) ^ n)) := by
+  have hq1 : 1 ≤ q := by omega
+  have hexplicit :
+      ∀ {ξ : ℝ} {W : ℕ},
+        (2 : ℝ) + (2 * (q : ℝ)) / ((p : ℝ) - (q : ℝ)) ≤ ξ → ξ < (q : ℝ) ^ W →
+        (∃ n ≤ p ^ 2 * q ^ (2 * W) + 3, 1 / (p : ℝ) < Int.fract (ξ * ((p : ℝ) / (q : ℝ)) ^ n - s)) ∧
+        (∃ n ≤ p ^ 2 * q ^ (2 * W) + 3,
+          Int.fract (ξ * ((p : ℝ) / (q : ℝ)) ^ n) < s ∨
+            s + 1 / (p : ℝ) < Int.fract (ξ * ((p : ℝ) / (q : ℝ)) ^ n)) := by
+    intro ξ W hξ_lo hξW
+    have h1 : ∃ n ≤ p ^ 2 * q ^ (2 * W) + 3, 1 / (p : ℝ) < Int.fract (ξ * ((p : ℝ) / (q : ℝ)) ^ n - s) := by
+      by_contra hno
+      push_neg at hno
+      set L := p ^ 2 * q ^ (2 * W) / 2 + 1
+      set C := L + 1
+      have h2L_gt : p ^ 2 * q ^ (2 * W) < 2 * L := by omega
+      have hCL_le : 0 + C + L ≤ p ^ 2 * q ^ (2 * W) + 3 := by omega
+      have hy_le : ∀ n ≤ p ^ 2 * q ^ (2 * W) + 3, dubBaseY p q ξ (-s) n ≤ 1 / (p : ℝ) := by
+        intro n hn
+        unfold dubBaseY
+        have hsub : ξ * ((p : ℝ) / (q : ℝ)) ^ n + -s = ξ * ((p : ℝ) / (q : ℝ)) ^ n - s := by ring
+        rw [hsub]
+        exact hno n hn
+      have hcard :
+          prefixFactorCount (shiftSeq (dubBaseCarryNat p q ξ s) 0) L C ≤ C := by
+        apply dubBaseCarryNat_prefixFactorCount_le hq1 hqp
+        intro n _ hn_hi
+        exact hy_le n (le_trans hn_hi hCL_le)
+      obtain ⟨r1, r2, hr12, hr2C, hmatch_nat⟩ :=
+        exists_repeated_subword_of_prefixFactorCount_le
+          (shiftSeq (dubBaseCarryNat p q ξ s) 0) L C hcard
+      set k0 : ℤ := ⌊((p : ℝ) - (q : ℝ)) * s⌋
+      have hmatch :
+          ∀ t < L, dubBaseCarry p q ξ (-s) (r1 + t) = dubBaseCarry p q ξ (-s) (r2 + t) := by
+        intro t ht
+        have hnat_eq := hmatch_nat t ht
+        simp only [shiftSeq, Nat.zero_add] at hnat_eq
+        have hr1_hi : r1 + t + 1 ≤ p ^ 2 * q ^ (2 * W) + 3 := by omega
+        have hr2_hi : r2 + t + 1 ≤ p ^ 2 * q ^ (2 * W) + 3 := by omega
+        have hm1 := (dubBaseCarry_mem_two_letters hq1 hqp
+          (hy_le (r1 + t) (by omega)) (hy_le (r1 + t + 1) hr1_hi)).1.1
+        have hm2 := (dubBaseCarry_mem_two_letters hq1 hqp
+          (hy_le (r2 + t) (by omega)) (hy_le (r2 + t + 1) hr2_hi)).1.1
+        have hcast1 :
+            (dubBaseCarryNat p q ξ s (r1 + t) : ℤ) =
+              dubBaseCarry p q ξ (-s) (r1 + t) - k0 :=
+          Int.toNat_of_nonneg (by omega)
+        have hcast2 :
+            (dubBaseCarryNat p q ξ s (r2 + t) : ℤ) =
+              dubBaseCarry p q ξ (-s) (r2 + t) - k0 :=
+          Int.toNat_of_nonneg (by omega)
+        omega
+      have hs_le1 : s ≤ 1 := by linarith [ (by positivity : (0 : ℝ) ≤ 1 / (p : ℝ)) ]
+      have hgrowth :=
+        dubBaseX_strict_step_growth hq1 hqp hξ_lo hξW
+          (θ := -s) (i := r1) (j := r2) (by linarith) (by linarith) hr12
+      have hexp :=
+        (dubBaseX_repeated_window_exp_and_power_cutoff hq2 hcop_pq
+          hgrowth.2.1 hgrowth.2.2 hmatch).1
+      set d := (L + 1) - r2
+      have hd_add : d + r2 = L + 1 := Nat.sub_add_cancel hr2C
+      have hqd_le_pd : q ^ d ≤ p ^ d := Nat.pow_le_pow_left (le_of_lt hqp) d
+      have hqd_pos : 0 < q ^ d := Nat.pow_pos (by omega)
+      have hstep1 : q ^ (2 * L + 1) < p ^ (L + 1) * q ^ W := by
+        calc
+          q ^ (2 * L + 1) = q ^ d * q ^ (L + r2) := by
+            rw [← Nat.pow_add]
+            have h : 2 * L + 1 = d + (L + r2) := by omega
+            rw [h]
+          _ < q ^ d * (p ^ r2 * q ^ W) := Nat.mul_lt_mul_of_pos_left hexp hqd_pos
+          _ ≤ p ^ d * (p ^ r2 * q ^ W) := Nat.mul_le_mul_right _ hqd_le_pd
+          _ = p ^ (L + 1) * q ^ W := by
+            have h : p ^ d * (p ^ r2 * q ^ W) = (p ^ d * p ^ r2) * q ^ W := by ring
+            rw [h, ← Nat.pow_add, hd_add]
+      have hsq : q ^ (4 * L + 2) < p ^ (2 * L) * (p ^ 2 * q ^ (2 * W)) := by
+        have hlt_sq : (q ^ (2 * L + 1)) ^ 2 < (p ^ (L + 1) * q ^ W) ^ 2 :=
+          Nat.pow_lt_pow_left hstep1 (by decide)
+        have hlhs : (q ^ (2 * L + 1)) ^ 2 = q ^ (4 * L + 2) := by
+          rw [← Nat.pow_mul]
+          have h : (2 * L + 1) * 2 = 4 * L + 2 := by ring
+          rw [h]
+        have hrhs : (p ^ (L + 1) * q ^ W) ^ 2 = p ^ (2 * L) * (p ^ 2 * q ^ (2 * W)) := by
+          rw [Nat.mul_pow, ← Nat.pow_mul, ← Nat.pow_mul]
+          have h1 : (L + 1) * 2 = 2 * L + 2 := by ring
+          have h2 : W * 2 = 2 * W := by ring
+          rw [h1, h2, Nat.pow_add p (2 * L) 2]
+          ring
+        rwa [hlhs, hrhs] at hlt_sq
+      have hbern : 2 * L * p ^ (2 * L) ≤ q ^ (4 * L + 2) := by
+        have h1 := pow_succ_add_mul_pow_le p (2 * L)
+        have h2 : (p + 1) ^ (2 * L + 1) ≤ (q ^ 2) ^ (2 * L + 1) :=
+          Nat.pow_le_pow_left (by omega : p + 1 ≤ q ^ 2) (2 * L + 1)
+        have h3 : (q ^ 2) ^ (2 * L + 1) = q ^ (4 * L + 2) := by
+          rw [← Nat.pow_mul]
+          have h : 2 * (2 * L + 1) = 4 * L + 2 := by ring
+          rw [h]
+        omega
+      have hp2L_pos : 0 < p ^ (2 * L) := Nat.pow_pos (by omega)
+      have hcontra : p ^ (2 * L) * (p ^ 2 * q ^ (2 * W)) < 2 * L * p ^ (2 * L) := by
+        rw [Nat.mul_comm (2 * L)]
+        exact Nat.mul_lt_mul_of_pos_left h2L_gt hp2L_pos
+      omega
+    obtain ⟨n, hn_le, hn_gt⟩ := h1
+    refine ⟨⟨n, hn_le, hn_gt⟩, n, hn_le, ?_⟩
+    by_contra hmem
+    push_neg at hmem
+    set f := Int.fract (ξ * ((p : ℝ) / (q : ℝ)) ^ n)
+    have hf_lt1 : f < 1 := Int.fract_lt_one _
+    have hfl_eq :
+        ⌊ξ * ((p : ℝ) / (q : ℝ)) ^ n - s⌋ = ⌊ξ * ((p : ℝ) / (q : ℝ)) ^ n⌋ := by
+      rw [Int.floor_eq_iff]
+      have h := Int.self_sub_floor (ξ * ((p : ℝ) / (q : ℝ)) ^ n)
+      exact ⟨by linarith [h, hmem.1], by linarith [h, hf_lt1, hs0]⟩
+    have hfract_eq : Int.fract (ξ * ((p : ℝ) / (q : ℝ)) ^ n - s) = f - s := by
+      have h1 := Int.self_sub_floor (ξ * ((p : ℝ) / (q : ℝ)) ^ n - s)
+      have h2 := Int.self_sub_floor (ξ * ((p : ℝ) / (q : ℝ)) ^ n)
+      rw [hfl_eq] at h1
+      linarith
+    linarith [hmem.2, hfract_eq, hn_gt]
+  refine ⟨hexplicit, ?_⟩
+  intro ξ hξ N_0
+  have hq_pos : (0 : ℝ) < (q : ℝ) := by exact_mod_cast hq1
+  have hqp_real : (q : ℝ) + 1 ≤ (p : ℝ) := by exact_mod_cast (by omega : q + 1 ≤ p)
+  have hpq_diff : (1 : ℝ) ≤ (p : ℝ) - (q : ℝ) := by linarith
+  have hpq_pos : (0 : ℝ) < (p : ℝ) - (q : ℝ) := by linarith
+  set B0 : ℝ := (2 : ℝ) + (2 * (q : ℝ)) / ((p : ℝ) - (q : ℝ))
+  obtain ⟨k0, hk0⟩ := exists_nat_gt ((B0 * (q : ℝ)) / ξ)
+  set k := max N_0 (k0 + 1)
+  have hk_ge : N_0 ≤ k := le_max_left _ _
+  have hbernoulli :
+      (1 : ℝ) + (k : ℝ) * (((p : ℝ) - (q : ℝ)) / (q : ℝ)) ≤ ((p : ℝ) / (q : ℝ)) ^ k := by
+    have hsub : (p : ℝ) / (q : ℝ) = 1 + ((p : ℝ) - (q : ℝ)) / (q : ℝ) := by
+      field_simp [ne_of_gt hq_pos]
+    rw [hsub]
+    clear hk_ge
+    induction k with
+    | zero => simp
+    | succ m ih =>
+        rw [pow_succ, Nat.cast_add, Nat.cast_one]
+        have hpos : (0 : ℝ) ≤ (m : ℝ) * (((p : ℝ) - (q : ℝ)) / (q : ℝ)) ^ 2 := by positivity
+        nlinarith [div_pos hpq_pos hq_pos]
+  have hξk_lo : B0 ≤ ξ * ((p : ℝ) / (q : ℝ)) ^ k := by
+    have h1 : B0 * (q : ℝ) < (k0 : ℝ) * ξ := (div_lt_iff₀ hξ).mp hk0
+    have h2 : (k0 : ℝ) ≤ (k : ℝ) := by exact_mod_cast (by omega : k0 ≤ k)
+    have h3 : B0 * (q : ℝ) ≤ (k : ℝ) * ξ * ((p : ℝ) - (q : ℝ)) := by
+      have hm1 : (k0 : ℝ) * ξ ≤ (k : ℝ) * ξ := mul_le_mul_of_nonneg_right h2 (le_of_lt hξ)
+      have hm2 : (k : ℝ) * ξ * 1 ≤ (k : ℝ) * ξ * ((p : ℝ) - (q : ℝ)) :=
+        mul_le_mul_of_nonneg_left hpq_diff (by positivity)
+      linarith
+    have h4 : B0 ≤ ξ * ((k : ℝ) * (((p : ℝ) - (q : ℝ)) / (q : ℝ))) := by
+      have hdiv : B0 ≤ ((k : ℝ) * ξ * ((p : ℝ) - (q : ℝ))) / (q : ℝ) :=
+        (le_div_iff₀ hq_pos).mpr h3
+      have heq_div :
+          ((k : ℝ) * ξ * ((p : ℝ) - (q : ℝ))) / (q : ℝ) =
+            ξ * ((k : ℝ) * (((p : ℝ) - (q : ℝ)) / (q : ℝ))) := by ring
+      linarith
+    have h5 := mul_le_mul_of_nonneg_left hbernoulli (le_of_lt hξ)
+    linarith
+  obtain ⟨W, hW⟩ := exists_nat_gt (ξ * ((p : ℝ) / (q : ℝ)) ^ k)
+  have hW_lt_qW : (W : ℝ) < (q : ℝ) ^ W := by
+    have hnat : ∀ n : ℕ, n < q ^ n := by
+      intro n
+      induction n with
+      | zero => exact Nat.pow_pos (by omega)
+      | succ m ih =>
+          have hpos : 1 ≤ q ^ m := Nat.pow_pos (by omega)
+          rw [Nat.pow_succ]
+          nlinarith
+    exact_mod_cast hnat W
+  have hξk_hi : ξ * ((p : ℝ) / (q : ℝ)) ^ k < (q : ℝ) ^ W := lt_trans hW hW_lt_qW
+  obtain ⟨d, _, hd_out⟩ := (hexplicit hξk_lo hξk_hi).2
+  refine ⟨k + d, by omega, ?_⟩
+  have hmul :
+      ξ * ((p : ℝ) / (q : ℝ)) ^ k * ((p : ℝ) / (q : ℝ)) ^ d =
+        ξ * ((p : ℝ) / (q : ℝ)) ^ (k + d) := by
+    rw [pow_add, mul_assoc]
+  rwa [← hmul]
+
+/-- **Universal Infinite-Family Single-Cell Theorem Covering the Open Regime $p > q^2$ ($p \ge 2q$)
+(`general_base_non_straddling_cell_escape`)**:
+Let $2 \le q < p$ with $\gcd(p, q) = 1$, and let $1 \le k < p$ and $m \in \mathbb{N}$ satisfy
+$$m p \le q k \quad \text{and} \quad q(k + 1) \le (m + 1)p$$
+(in particular, $k = 1, m = 0$ holds for **every** coprime base with $p \ge 2q$, which
+includes **every** coprime base in the open regime $p > q^2$!).
+Then:
+1. Confinement $\{\xi (p/q)^n\}, \{\xi (p/q)^{n+1}\} \in [k/p, (k+1)/p)$ forces the carry
+   word to take the constant value `dubBaseCarry p q ξ 0 n = (k : ℤ) - (m : ℤ)`.
+2. Whenever $2 + \frac{2q}{p - q} \le \xi < q^W$ and $p^2 < q^{W_0 + 2}$, there exists an explicit
+   step $n \le W + W_0 + 3$ with $\{\xi (p/q)^n\} \notin [k/p, (k+1)/p)$. -/
+theorem general_base_non_straddling_cell_escape
+    {p q k m : ℕ}
+    (hq2 : 2 ≤ q) (hqp : q < p) (hcop_pq : Nat.Coprime p q)
+    (hk1 : 1 ≤ k) (hkp : k < p)
+    (hlo_mp : m * p ≤ q * k) (hhi_mp : q * (k + 1) ≤ (m + 1) * p) :
+    (∀ {ξ : ℝ} {n : ℕ},
+      (k : ℝ) / (p : ℝ) ≤ dubBaseY p q ξ 0 n →
+      dubBaseY p q ξ 0 n < ((k : ℝ) + 1) / (p : ℝ) →
+      (k : ℝ) / (p : ℝ) ≤ dubBaseY p q ξ 0 (n + 1) →
+      dubBaseY p q ξ 0 (n + 1) < ((k : ℝ) + 1) / (p : ℝ) →
+      dubBaseCarry p q ξ 0 n = (k : ℤ) - (m : ℤ)) ∧
+    (∀ {ξ : ℝ} {W W_0 : ℕ},
+      p ^ 2 < q ^ (W_0 + 2) →
+      (2 : ℝ) + (2 * (q : ℝ)) / ((p : ℝ) - (q : ℝ)) ≤ ξ → ξ < (q : ℝ) ^ W →
+      ∃ n ≤ W + W_0 + 3,
+        Int.fract (ξ * ((p : ℝ) / (q : ℝ)) ^ n) < (k : ℝ) / (p : ℝ) ∨
+          ((k : ℝ) + 1) / (p : ℝ) ≤ Int.fract (ξ * ((p : ℝ) / (q : ℝ)) ^ n)) := by
+  have hq1 : 1 ≤ q := by omega
+  have hp_pos : (0 : ℝ) < (p : ℝ) := by exact_mod_cast (by omega : 0 < p)
+  have hq_pos : (0 : ℝ) < (q : ℝ) := by exact_mod_cast hq1
+  have hconst_step :
+      ∀ {ξ : ℝ} {n : ℕ},
+        (k : ℝ) / (p : ℝ) ≤ dubBaseY p q ξ 0 n →
+        dubBaseY p q ξ 0 n < ((k : ℝ) + 1) / (p : ℝ) →
+        (k : ℝ) / (p : ℝ) ≤ dubBaseY p q ξ 0 (n + 1) →
+        dubBaseY p q ξ 0 (n + 1) < ((k : ℝ) + 1) / (p : ℝ) →
+        dubBaseCarry p q ξ 0 n = (k : ℤ) - (m : ℤ) := by
+    intro ξ n hy0_lo hy0_hi hy1_lo hy1_hi
+    have hlin := dubBaseCarry_eq_fract_linear (p := p) hq1 ξ 0 n
+    have hpy_lo : (k : ℝ) ≤ (p : ℝ) * dubBaseY p q ξ 0 n := by
+      have h1 := mul_le_mul_of_nonneg_left hy0_lo (le_of_lt hp_pos)
+      have h2 : (p : ℝ) * ((k : ℝ) / (p : ℝ)) = (k : ℝ) := mul_div_cancel₀ _ (ne_of_gt hp_pos)
+      linarith
+    have hpy_hi : (p : ℝ) * dubBaseY p q ξ 0 n < (k : ℝ) + 1 := by
+      have h1 := mul_lt_mul_of_pos_left hy0_hi hp_pos
+      have h2 : (p : ℝ) * (((k : ℝ) + 1) / (p : ℝ)) = (k : ℝ) + 1 :=
+        mul_div_cancel₀ _ (ne_of_gt hp_pos)
+      linarith
+    have hlo_real_mp : (m : ℝ) * (p : ℝ) ≤ (q : ℝ) * (k : ℝ) := by exact_mod_cast hlo_mp
+    have hhi_real_mp : (q : ℝ) * ((k : ℝ) + 1) ≤ ((m : ℝ) + 1) * (p : ℝ) := by
+      exact_mod_cast hhi_mp
+    have hqy_lo : (m : ℝ) ≤ (q : ℝ) * dubBaseY p q ξ 0 (n + 1) := by
+      have h1 := mul_le_mul_of_nonneg_left hy1_lo (le_of_lt hq_pos)
+      have h2 : (m : ℝ) ≤ (q : ℝ) * ((k : ℝ) / (p : ℝ)) := by
+        rw [← mul_div_assoc]
+        exact (le_div_iff₀ hp_pos).mpr hlo_real_mp
+      linarith
+    have hqy_hi : (q : ℝ) * dubBaseY p q ξ 0 (n + 1) < (m : ℝ) + 1 := by
+      have h1 := mul_lt_mul_of_pos_left hy1_hi hq_pos
+      have h2 : (q : ℝ) * (((k : ℝ) + 1) / (p : ℝ)) ≤ (m : ℝ) + 1 := by
+        rw [← mul_div_assoc]
+        exact (div_le_iff₀ hp_pos).mpr hhi_real_mp
+      linarith
+    have hs_lo : ((k : ℤ) - (m : ℤ) - 1 : ℝ) < (dubBaseCarry p q ξ 0 n : ℝ) := by
+      push_cast; linarith
+    have hs_hi : (dubBaseCarry p q ξ 0 n : ℝ) < ((k : ℤ) - (m : ℤ) + 1 : ℝ) := by
+      push_cast; linarith
+    have hz_lo : (k : ℤ) - (m : ℤ) - 1 < dubBaseCarry p q ξ 0 n := by exact_mod_cast hs_lo
+    have hz_hi : dubBaseCarry p q ξ 0 n < (k : ℤ) - (m : ℤ) + 1 := by exact_mod_cast hs_hi
+    omega
+  refine ⟨hconst_step, ?_⟩
+  intro ξ W W_0 hp2 hξ_lo hξW
+  by_contra hno
+  have hmem :
+      ∀ n ≤ W + W_0 + 3,
+        (k : ℝ) / (p : ℝ) ≤ dubBaseY p q ξ 0 n ∧
+          dubBaseY p q ξ 0 n < ((k : ℝ) + 1) / (p : ℝ) := by
+    intro n hn
+    unfold dubBaseY
+    rw [add_zero]
+    by_contra hout
+    rcases lt_or_ge (Int.fract (ξ * ((p : ℝ) / (q : ℝ)) ^ n)) ((k : ℝ) / (p : ℝ)) with hlt | hge
+    · exact hno ⟨n, hn, Or.inl hlt⟩
+    · have hge2 : ((k : ℝ) + 1) / (p : ℝ) ≤ Int.fract (ξ * ((p : ℝ) / (q : ℝ)) ^ n) := by
+        by_contra hlt2
+        exact hout ⟨hge, not_le.mp hlt2⟩
+      exact hno ⟨n, hn, Or.inr hge2⟩
+  set L := W + W_0
+  have hmatch : ∀ t < L, dubBaseCarry p q ξ 0 (1 + t) = dubBaseCarry p q ξ 0 (2 + t) := by
+    intro t ht
+    have h1 := hconst_step (hmem (1 + t) (by omega)).1 (hmem (1 + t) (by omega)).2
+      (hmem (1 + t + 1) (by omega)).1 (hmem (1 + t + 1) (by omega)).2
+    have h2 := hconst_step (hmem (2 + t) (by omega)).1 (hmem (2 + t) (by omega)).2
+      (hmem (2 + t + 1) (by omega)).1 (hmem (2 + t + 1) (by omega)).2
+    omega
+  have hgrowth :=
+    dubBaseX_strict_step_growth hq1 hqp hξ_lo hξW (θ := 0) (i := 1) (j := 2)
+      (by norm_num) (by norm_num) (by omega)
+  have hexp : q ^ (L + 2) < p ^ 2 * q ^ W :=
+    (dubBaseX_repeated_window_exp_and_power_cutoff hq2 hcop_pq
+      hgrowth.2.1 hgrowth.2.2 hmatch).1
+  have hrhs_lt : p ^ 2 * q ^ W < q ^ (L + 2) := by
+    calc
+      p ^ 2 * q ^ W < q ^ (W_0 + 2) * q ^ W :=
+        Nat.mul_lt_mul_of_pos_right hp2 (Nat.pow_pos hq1)
+      _ = q ^ (L + 2) := by
+        rw [← Nat.pow_add]
+        have h : (W_0 + 2) + W = L + 2 := by dsimp [L]; ring
+        rw [h]
+  exact Nat.lt_asymm hexp hrhs_lt
+
+/-- **General-Base Floor-Residue Non-Stabilization $\lfloor \xi(p/q)^n \rfloor \bmod m$ for $m \ge p$
+(`general_base_floor_mod_non_stabilization`)**:
+For every coprime pair $2 \le q < p < q^2$, every modulus $m \ge p$, every real $\xi > 0$,
+and every threshold $N_0 \in \mathbb{N}$, there exists $n \ge N_0$ such that
+$\lfloor \xi (p/q)^n \rfloor \bmod m \ne \lfloor \xi (p/q)^{N_0} \rfloor \bmod m$. -/
+theorem general_base_floor_mod_non_stabilization
+    {p q m : ℕ} (hq2 : 2 ≤ q) (hqp : q < p) (hpq2 : p < q ^ 2)
+    (hcop_pq : Nat.Coprime p q) (hmp : p ≤ m)
+    {ξ : ℝ} (hξ : 0 < ξ) (N_0 : ℕ) :
+    ∃ n ≥ N_0,
+      ⌊ξ * ((p : ℝ) / (q : ℝ)) ^ n⌋ % (m : ℤ) ≠
+        ⌊ξ * ((p : ℝ) / (q : ℝ)) ^ N_0⌋ % (m : ℤ) := by
+  have hm1 : 1 ≤ m := by omega
+  have hm_pos : (0 : ℝ) < (m : ℝ) := by exact_mod_cast hm1
+  have hp_pos : (0 : ℝ) < (p : ℝ) := by exact_mod_cast (by omega : 0 < p)
+  have hmp_real : (p : ℝ) ≤ (m : ℝ) := by exact_mod_cast hmp
+  have hinv_le : 1 / (m : ℝ) ≤ 1 / (p : ℝ) :=
+    one_div_le_one_div_of_le hp_pos hmp_real
+  have hm_int_pos : (0 : ℤ) < (m : ℤ) := by exact_mod_cast hm1
+  have hp1_le : (1 : ℝ) ≤ (p : ℝ) := by exact_mod_cast (by omega : 1 ≤ p)
+  have hp_inv_le1 : 1 / (p : ℝ) ≤ 1 := (div_le_one hp_pos).mpr hp1_le
+  set rem0 : ℤ := ⌊ξ * ((p : ℝ) / (q : ℝ)) ^ N_0⌋ % (m : ℤ)
+  set r : ℕ := Int.toNat rem0
+  have hrem0_lo : 0 ≤ rem0 := Int.emod_nonneg _ (ne_of_gt hm_int_pos)
+  have hrem0_hi : rem0 < (m : ℤ) := Int.emod_lt_of_pos _ hm_int_pos
+  have hr_cast : (r : ℤ) = rem0 := Int.toNat_of_nonneg hrem0_lo
+  have hr_lt : r < m := by
+    have h : (r : ℤ) < (m : ℤ) := by omega
+    exact_mod_cast h
+  set s : ℝ := min ((r : ℝ) / (m : ℝ)) (1 - 1 / (p : ℝ))
+  have hs0 : 0 ≤ s := le_min (div_nonneg (Nat.cast_nonneg r) (le_of_lt hm_pos)) (by linarith)
+  have hs_hi : s + 1 / (p : ℝ) ≤ 1 := by
+    have h : s ≤ 1 - 1 / (p : ℝ) := min_le_right _ _
+    linarith
+  have hs_le_rm : s ≤ (r : ℝ) / (m : ℝ) := min_le_left _ _
+  have hrm1_le : ((r : ℝ) + 1) / (m : ℝ) ≤ s + 1 / (p : ℝ) := by
+    by_cases hlt : (r : ℝ) / (m : ℝ) ≤ 1 - 1 / (p : ℝ)
+    · have hs_eq : s = (r : ℝ) / (m : ℝ) := min_eq_left hlt
+      rw [hs_eq, add_div]
+      linarith
+    · push_neg at hlt
+      have hs_eq : s = 1 - 1 / (p : ℝ) := min_eq_right (le_of_lt hlt)
+      have hr_le : (r : ℝ) + 1 ≤ (m : ℝ) := by
+        have h : r + 1 ≤ m := by omega
+        exact_mod_cast h
+      have hdiv_le1 : ((r : ℝ) + 1) / (m : ℝ) ≤ 1 :=
+        (div_le_one hm_pos).mpr hr_le
+      rw [hs_eq]
+      linarith
+  have hξm_pos : 0 < ξ / (m : ℝ) := div_pos hξ hm_pos
+  obtain ⟨n, hn_ge, hout⟩ :=
+    (dubickas2009_general_base_explicit_and_infinite_escape hq2 hqp hpq2 hcop_pq hs0 hs_hi).2
+      hξm_pos N_0
+  refine ⟨n, hn_ge, ?_⟩
+  intro hmod_eq
+  rw [← hr_cast] at hmod_eq
+  have hdiv_eq :
+      (ξ * ((p : ℝ) / (q : ℝ)) ^ n) / (m : ℝ) = (ξ / (m : ℝ)) * ((p : ℝ) / (q : ℝ)) ^ n := by
+    ring
+  have hcell :=
+    (floor_emod_eq_iff_fract_div_mem_cell (ξ * ((p : ℝ) / (q : ℝ)) ^ n) hm1 hr_lt).2.mp hmod_eq
+  rw [hdiv_eq] at hcell
+  rcases hout with hlt | hgt <;> linarith [hcell.1, hcell.2]
+
+/-! ## 6. Verified Single-Block Funnel Engine & Explicit $W + 12$ Escape for the $7/12 > 20/39 > 1/2$ Four-Interval Union -/
+
+/-- Check whether the intersection of $[q a + s D, q b + s D)$ and $[p c, p d)$ is empty,
+or contained in $p \cdot [e, f)$ for some interval $(e, f) \in T_{\text{next}}$,
+using only direct integer comparisons (avoiding `LinearOrder.max` / `min` overhead). -/
+def funnelPieceOk (D : ℤ) (Tnext : List (ℤ × ℤ)) (c d s a b : ℤ) : Bool :=
+  let lo1 := 2 * a + s * D
+  let lo2 := 3 * c
+  let hi1 := 2 * b + s * D
+  let hi2 := 3 * d
+  decide (hi1 ≤ lo1 ∨ hi1 ≤ lo2 ∨ hi2 ≤ lo1 ∨ hi2 ≤ lo2) ||
+    Tnext.any (fun ef =>
+      decide ((3 * ef.1 ≤ lo1 ∨ 3 * ef.1 ≤ lo2) ∧ (hi1 ≤ 3 * ef.2 ∨ hi2 ≤ 3 * ef.2)))
+
+/-- Check one funnel transition $T_k \to T_{k+1}$ against base union $U$ over denominator $D$
+at base $3 / 2$ (carries $s \in \{-1, 0, 1, 2\}$). -/
+def funnelStepOk (D : ℤ) (U Tk Tk1 : List (ℤ × ℤ)) : Bool :=
+  U.all (fun cd =>
+    ([-1, 0, 1, 2] : List ℤ).all (fun s =>
+      Tk.all (fun ab => funnelPieceOk D Tk1 cd.1 cd.2 s ab.1 ab.2)))
+
+/-- Check a full funnel chain `levels` starting at `Tk` and ending at `H` over denominator `D`. -/
+def funnelChainOk (D : ℤ) (U H : List (ℤ × ℤ)) :
+    List (ℤ × ℤ) → List (List (ℤ × ℤ)) → Bool
+  | Tk, [] => decide (Tk = H)
+  | Tk, Tk1 :: rest => funnelStepOk D U Tk Tk1 && funnelChainOk D U H Tk1 rest
+
+/-- Real membership in a union of half-open intervals $\bigcup_{(a, b) \in L} [a / D, b / D)$. -/
+def InRatIntervalList (D : ℤ) (L : List (ℤ × ℤ)) (y : ℝ) : Prop :=
+  ∃ ab ∈ L, (ab.1 : ℝ) ≤ (D : ℝ) * y ∧ (D : ℝ) * y < (ab.2 : ℝ)
+
+/-- **Soundness of One Verified Funnel Step (`inRatIntervalList_next_of_funnelStepOk`)**:
+If `funnelStepOk D U Tk Tk1 = true`, $y_n \in U$, and $y_{n+1} \in T_k$, then $y_n \in T_{k+1}$. -/
+theorem inRatIntervalList_next_of_funnelStepOk {D : ℤ} {U Tk Tk1 : List (ℤ × ℤ)} {ξ : ℝ} {n : ℕ}
+    (hD : 0 < D)
+    (hstep : funnelStepOk D U Tk Tk1 = true)
+    (hU : InRatIntervalList D U (dubY ξ 0 n))
+    (hTk : InRatIntervalList D Tk (dubY ξ 0 (n + 1))) :
+    InRatIntervalList D Tk1 (dubY ξ 0 n) := by
+  rcases hU with ⟨⟨c, d⟩, hcd_mem, hc_lo, hd_hi⟩
+  rcases hTk with ⟨⟨a, b⟩, hab_mem, ha_lo, hb_hi⟩
+  have hD_pos : (0 : ℝ) < (D : ℝ) := by exact_mod_cast hD
+  have hy0 := dubY_bounds ξ 0 n
+  have hy1 := dubY_bounds ξ 0 (n + 1)
+  have hlin := dubCarry_eq_fract_linear ξ 0 n
+  set s := dubCarry ξ 0 n
+  have hs_mem : s ∈ ([-1, 0, 1, 2] : List ℤ) := by
+    have hlo : (-2 : ℝ) < (s : ℝ) := by linarith [hy0.1, hy1.2, hlin]
+    have hhi : (s : ℝ) < (3 : ℝ) := by linarith [hy0.2, hy1.1, hlin]
+    have hz1 : -2 < s := by exact_mod_cast hlo
+    have hz2 : s < 3 := by exact_mod_cast hhi
+    simp only [List.mem_cons, List.not_mem_nil, or_false]
+    omega
+  unfold funnelStepOk at hstep
+  rw [List.all_eq_true] at hstep
+  have h1 := hstep (c, d) hcd_mem
+  rw [List.all_eq_true] at h1
+  have h2 := h1 s hs_mem
+  rw [List.all_eq_true] at h2
+  have hpiece := h2 (a, b) hab_mem
+  unfold funnelPieceOk at hpiece
+  rw [Bool.or_eq_true, decide_eq_true_eq, List.any_eq_true] at hpiece
+  have h3y_eq : 3 * ((D : ℝ) * dubY ξ 0 n) = 2 * ((D : ℝ) * dubY ξ 0 (n + 1)) + (s : ℝ) * (D : ℝ) := by
+    dsimp [s]
+    linear_combination - (D : ℝ) * hlin
+  have hlo1_real : ((2 * a + s * D : ℤ) : ℝ) ≤ 3 * ((D : ℝ) * dubY ξ 0 n) := by
+    push_cast; linarith
+  have hhi1_real : 3 * ((D : ℝ) * dubY ξ 0 n) < ((2 * b + s * D : ℤ) : ℝ) := by
+    push_cast; linarith
+  have hlo2_real : ((3 * c : ℤ) : ℝ) ≤ 3 * ((D : ℝ) * dubY ξ 0 n) := by
+    push_cast; linarith
+  have hhi2_real : 3 * ((D : ℝ) * dubY ξ 0 n) < ((3 * d : ℤ) : ℝ) := by
+    push_cast; linarith
+  rcases hpiece with hempty | ⟨⟨e, f⟩, hef_mem, hef_ok⟩
+  · exfalso
+    rcases hempty with hle1 | hle2 | hle3 | hle4
+    · have h : ((2 * b + s * D : ℤ) : ℝ) ≤ ((2 * a + s * D : ℤ) : ℝ) := by exact_mod_cast hle1
+      linarith
+    · have h : ((2 * b + s * D : ℤ) : ℝ) ≤ ((3 * c : ℤ) : ℝ) := by exact_mod_cast hle2
+      linarith
+    · have h : ((3 * d : ℤ) : ℝ) ≤ ((2 * a + s * D : ℤ) : ℝ) := by exact_mod_cast hle3
+      linarith
+    · have h : ((3 * d : ℤ) : ℝ) ≤ ((3 * c : ℤ) : ℝ) := by exact_mod_cast hle4
+      linarith
+  · rw [decide_eq_true_eq] at hef_ok
+    refine ⟨(e, f), hef_mem, ?_, ?_⟩
+    · rcases hef_ok.1 with he1 | he2
+      · have h : ((3 * e : ℤ) : ℝ) ≤ ((2 * a + s * D : ℤ) : ℝ) := by exact_mod_cast he1
+        push_cast at h; linarith
+      · have h : ((3 * e : ℤ) : ℝ) ≤ ((3 * c : ℤ) : ℝ) := by exact_mod_cast he2
+        push_cast at h; linarith
+    · rcases hef_ok.2 with hf1 | hf2
+      · have h : ((2 * b + s * D : ℤ) : ℝ) ≤ ((3 * f : ℤ) : ℝ) := by exact_mod_cast hf1
+        push_cast at h; linarith
+      · have h : ((3 * d : ℤ) : ℝ) ≤ ((3 * f : ℤ) : ℝ) := by exact_mod_cast hf2
+        push_cast at h; linarith
+
+/-- Induction across a verified funnel chain `levels`: if `y_n ∈ U` for all `n ≤ N`,
+then at depth `levels.length`, `y_n` lies in the terminal level `H`. -/
+theorem inRatIntervalList_terminal_of_funnelChainOk
+    {D : ℤ} {U H : List (ℤ × ℤ)} {ξ : ℝ} {N : ℕ}
+    (hD : 0 < D)
+    (hmemU : ∀ n ≤ N, InRatIntervalList D U (dubY ξ 0 n)) :
+    ∀ (levels : List (List (ℤ × ℤ))) (Tk : List (ℤ × ℤ)) (K : ℕ),
+      funnelChainOk D U H Tk levels = true →
+      (∀ n, n + K ≤ N → InRatIntervalList D Tk (dubY ξ 0 n)) →
+      ∀ n, n + K + levels.length ≤ N →
+        InRatIntervalList D H (dubY ξ 0 n)
+  | [], Tk, K, hchain, hTk, n, hn => by
+      unfold funnelChainOk at hchain
+      rw [decide_eq_true_eq] at hchain
+      subst hchain
+      exact hTk n (by omega)
+  | Tk1 :: rest, Tk, K, hchain, hTk, n, hn => by
+      unfold funnelChainOk at hchain
+      rw [Bool.and_eq_true] at hchain
+      have hTk1 : ∀ m, m + (K + 1) ≤ N → InRatIntervalList D Tk1 (dubY ξ 0 m) := by
+        intro m hm
+        exact inRatIntervalList_next_of_funnelStepOk hD hchain.1
+          (hmemU m (by omega)) (hTk (m + 1) (by omega))
+      exact inRatIntervalList_terminal_of_funnelChainOk hD hmemU rest Tk1 (K + 1) hchain.2 hTk1 n
+        (by simp only [List.length_cons] at hn; omega)
+
+/-- Base 4-interval union $U_{7/12} = [0, 1/6) \cup [1/4, 1/3) \cup [5/12, 2/3) \cup [3/4, 5/6)$
+of total length $7 / 12 = 0.5833\ldots > 20 / 39 > 1 / 2$ scaled by $D = 8748$. -/
+def unionSevenTwelfthsBase : List (ℤ × ℤ) :=
+  [(0, 1458), (2187, 2916), (3645, 5832), (6561, 7290)]
+
+/-- 7-step integer funnel for $U_{7/12}$ over $D = 8748$, collapsing to the single
+interval $[(0, 440)]$. -/
+def funnelSevenTwelfthsLevels : List (List (ℤ × ℤ)) :=
+  [ [(0, 972), (2430, 2916), (3645, 3888), (4374, 4860), (5346, 5832), (6561, 6804)],
+    [(0, 972), (2430, 2592), (3645, 3888), (4374, 4860), (5346, 5508), (6561, 6804)],
+    [(0, 756), (2430, 2592), (3645, 3672), (4374, 4644), (5346, 5508), (6561, 6588)],
+    [(0, 756), (2430, 2448), (3645, 3672), (4374, 4392), (4536, 4644), (5346, 5364), (6561, 6588)],
+    [(0, 660), (2430, 2448), (4374, 4392), (4536, 4548), (5346, 5364)],
+    [(0, 660), (4536, 4548)],
+    [(0, 440)] ]
+
+private theorem funnelSevenTwelfths_valid :
+    funnelChainOk 8748 unionSevenTwelfthsBase [(0, 440)] unionSevenTwelfthsBase
+      funnelSevenTwelfthsLevels = true := by
+  decide
+
+/-- Predicate for membership in the 4-interval union
+$U_{7/12} = [0, 1/6) \cup [1/4, 1/3) \cup [5/12, 2/3) \cup [3/4, 5/6)$ of total length $7/12 > 1/2$. -/
+def InUnionSevenTwelfths (y : ℝ) : Prop :=
+  (0 ≤ y ∧ y < (1 / 6 : ℝ)) ∨
+    ((1 / 4 : ℝ) ≤ y ∧ y < (1 / 3 : ℝ)) ∨
+    ((5 / 12 : ℝ) ≤ y ∧ y < (2 / 3 : ℝ)) ∨
+    ((3 / 4 : ℝ) ≤ y ∧ y < (5 / 6 : ℝ))
+
+/-- **Explicit $W + 12$ Finite-Horizon Escape Bound & Infinite-Horizon Emptiness for the
+$7/12 > 20/39 > 1/2$ Union $U_{7/12}$ (`union_seven_twelfths_explicit_and_infinite_escape`)**:
+1. **Explicit $W + 12$ Escape Bound:** For **every** $\xi \in [1, 2^W)$, there exists an
+   index $n \le W + 12$ such that $\{\xi (3/2)^n\} \notin U_{7/12}$.
+2. **Infinite-Horizon Emptiness:** For **every** real $\xi > 0$ and threshold $N_0 \in \mathbb{N}$,
+   there exists $n \ge N_0$ such that $\{\xi (3/2)^n\} \notin U_{7/12}$. -/
+theorem union_seven_twelfths_explicit_and_infinite_escape :
+    (∀ {ξ : ℝ} {W : ℕ}, (1 : ℝ) ≤ ξ → ξ < (2 : ℝ) ^ W →
+      ∃ n ≤ W + 12, ¬ InUnionSevenTwelfths (Int.fract (ξ * (3 / 2 : ℝ) ^ n))) ∧
+    (∀ {ξ : ℝ}, 0 < ξ → ∀ N_0 : ℕ,
+      ∃ n ≥ N_0, ¬ InUnionSevenTwelfths (Int.fract (ξ * (3 / 2 : ℝ) ^ n))) := by
+  have hexplicit :
+      ∀ {ξ : ℝ} {W : ℕ}, (1 : ℝ) ≤ ξ → ξ < (2 : ℝ) ^ W →
+        ∃ n ≤ W + 12, ¬ InUnionSevenTwelfths (Int.fract (ξ * (3 / 2 : ℝ) ^ n)) := by
+    intro ξ W hξ1 hξW
+    by_contra hno
+    push_neg at hno
+    set N := W + 12
+    have hmemU : ∀ n ≤ N, InRatIntervalList 8748 unionSevenTwelfthsBase (dubY ξ 0 n) := by
+      intro n hn
+      have hu := hno n hn
+      unfold InUnionSevenTwelfths at hu
+      unfold InRatIntervalList unionSevenTwelfthsBase dubY
+      rw [add_zero]
+      rcases hu with ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩
+      · exact ⟨(0, 1458), by simp, by linarith, by linarith⟩
+      · exact ⟨(2187, 2916), by simp, by linarith, by linarith⟩
+      · exact ⟨(3645, 5832), by simp, by linarith, by linarith⟩
+      · exact ⟨(6561, 7290), by simp, by linarith, by linarith⟩
+    have hterm :=
+      inRatIntervalList_terminal_of_funnelChainOk (by decide : (0 : ℤ) < 8748) hmemU
+        funnelSevenTwelfthsLevels unionSevenTwelfthsBase 0 funnelSevenTwelfths_valid
+        (fun n hn => hmemU n (by omega))
+    have h440 : ∀ n ≤ W + 5, 0 ≤ dubY ξ 0 n ∧ dubY ξ 0 n < (440 / 8748 : ℝ) := by
+      intro n hn
+      have ht := hterm n (by simp [funnelSevenTwelfthsLevels, N]; omega)
+      unfold InRatIntervalList at ht
+      rcases ht with ⟨ab, hab_mem, hlo, hhi⟩
+      simp only [List.mem_singleton] at hab_mem
+      subst hab_mem
+      dsimp at hlo hhi
+      push_cast at hlo hhi
+      exact ⟨by linarith, by linarith⟩
+    have hzero : ∀ n ≤ W + 4, dubCarry ξ 0 n = 0 := by
+      intro n hn
+      have hy0 := h440 n (by omega)
+      have hy1 := h440 (n + 1) (by omega)
+      have hlin := dubCarry_eq_fract_linear ξ 0 n
+      have hlo : (-1 : ℝ) < (dubCarry ξ 0 n : ℝ) := by linarith
+      have hhi : (dubCarry ξ 0 n : ℝ) < (1 : ℝ) := by linarith
+      have hz1 : -1 < dubCarry ξ 0 n := by exact_mod_cast hlo
+      have hz2 : dubCarry ξ 0 n < 1 := by exact_mod_cast hhi
+      omega
+    have hmatch : ∀ t < W + 2, dubCarry ξ 0 (2 + t) = dubCarry ξ 0 (3 + t) := by
+      intro t ht
+      rw [hzero (2 + t) (by omega), hzero (3 + t) (by omega)]
+    have hexp :=
+      dubX_repeated_window_exp_bound (i := 2) (j := 3) (L := W + 2)
+        hξ1 hξW (by norm_num) (by norm_num) le_rfl (by omega) hmatch
+    have hpow : 3 ^ 3 * 2 ^ W < 2 ^ ((W + 2) + 3) := by
+      calc
+        3 ^ 3 * 2 ^ W = 27 * 2 ^ W := by ring
+        _ < 32 * 2 ^ W := Nat.mul_lt_mul_of_pos_right (by decide) (Nat.pow_pos (by decide))
+        _ = 2 ^ ((W + 2) + 3) := by
+          have h : (W + 2) + 3 = 5 + W := by omega
+          rw [h, Nat.pow_add]
+    omega
+  refine ⟨hexplicit, ?_⟩
+  intro ξ hξ N_0
+  obtain ⟨k, W, hk_ge, _, hge1, hltW⟩ := exists_pow_shift_ge_one_and_lt_two_pow hξ N_0
+  obtain ⟨m, _, hm_out⟩ := hexplicit hge1 hltW
+  refine ⟨k + m, by omega, ?_⟩
+  have hmul : ξ * (3 / 2 : ℝ) ^ k * (3 / 2 : ℝ) ^ m = ξ * (3 / 2 : ℝ) ^ (k + m) := by
+    rw [pow_add, mul_assoc]
+  rwa [← hmul]
+
 end Mahler.DubickasExtension

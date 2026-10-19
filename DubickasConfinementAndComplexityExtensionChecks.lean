@@ -76,6 +76,32 @@ example {m : ℕ} (hm3 : 3 ≤ m) {ξ : ℝ} (hξ : 0 < ξ) (N_0 : ℕ) :
       ⌊ξ * (3 / 2 : ℝ) ^ n⌋ % (m : ℤ) ≠ ⌊ξ * (3 / 2 : ℝ) ^ N_0⌋ % (m : ℤ) :=
   (floor_mod_non_stabilization_of_three_le hm3).2 hξ N_0
 
+-- 5. Verify full general-base Dubickas (2009) Theorem 1 for 1 < q < p < q^2, open-regime p >= 2q cell escape, and 7/12 union escape
+example {p q : ℕ} {s : ℝ}
+    (hq2 : 2 ≤ q) (hqp : q < p) (hpq2 : p < q ^ 2) (hcop_pq : Nat.Coprime p q)
+    (hs0 : 0 ≤ s) (hs_hi : s + 1 / (p : ℝ) ≤ 1)
+    {ξ : ℝ} (hξ : 0 < ξ) (N_0 : ℕ) :
+    ∃ n ≥ N_0,
+      Int.fract (ξ * ((p : ℝ) / (q : ℝ)) ^ n) < s ∨
+        s + 1 / (p : ℝ) < Int.fract (ξ * ((p : ℝ) / (q : ℝ)) ^ n) :=
+  (dubickas2009_general_base_explicit_and_infinite_escape hq2 hqp hpq2 hcop_pq hs0 hs_hi).2 hξ N_0
+
+example {ξ : ℝ} {W : ℕ} (hξ1 : (1 : ℝ) ≤ ξ) (hξW : ξ < (2 : ℝ) ^ W) :
+    ∃ n ≤ W + 12, ¬ InUnionSevenTwelfths (Int.fract (ξ * (3 / 2 : ℝ) ^ n)) :=
+  union_seven_twelfths_explicit_and_infinite_escape.1 hξ1 hξW
+
+#print axioms Mahler.DubickasExtension.dubBaseCarry_eq_fract_linear
+#print axioms Mahler.DubickasExtension.dubBaseY_multi_step_carry_identity
+#print axioms Mahler.DubickasExtension.dubBaseCarry_mem_two_letters
+#print axioms Mahler.DubickasExtension.dubBaseCarry_no_bispecial_pair
+#print axioms Mahler.DubickasExtension.dubBaseCarryNat_prefixFactorCount_le
+#print axioms Mahler.DubickasExtension.dubickas2009_general_base_explicit_and_infinite_escape
+#print axioms Mahler.DubickasExtension.general_base_non_straddling_cell_escape
+#print axioms Mahler.DubickasExtension.general_base_floor_mod_non_stabilization
+#print axioms Mahler.DubickasExtension.inRatIntervalList_next_of_funnelStepOk
+#print axioms Mahler.DubickasExtension.inRatIntervalList_terminal_of_funnelChainOk
+#print axioms Mahler.DubickasExtension.union_seven_twelfths_explicit_and_infinite_escape
+
 #print axioms Mahler.DubickasExtension.prefixFactorCount_succ_le_of_no_bispecial
 #print axioms Mahler.DubickasExtension.prefixFactorCount_le_add_one_of_no_bispecial
 #print axioms Mahler.DubickasExtension.dubCarryNat_shifted_third_prefixFactorCount_le
