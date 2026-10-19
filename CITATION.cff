@@ -1,11 +1,10 @@
 cff-version: 1.2.0
 title: "Formalizing the Reduced Mahler 3/2 Dynamical System in Lean 4: Exact 1D Slack Reduction, Constructive Coasting Survivors, Conditional Finiteness Theorems, and Certified Transcendence Barriers"
-message: "If you use this Lean 4 formalization or paper, please cite it using the metadata below."
+message: "If you use this Lean 4 formalization or paper (developed by Joshua Coon with Astra and Argon AI assistance via GitHub Copilot), please cite it using the metadata below."
 type: software
 authors:
   - family-names: Coon
     given-names: Joshua
-  - name: "Astra & Argon AI (via GitHub Copilot)"
 repository-code: "https://github.com/jjc16/mahler-3-2-lean4"
 url: "https://github.com/jjc16/mahler-3-2-lean4"
 license: Apache-2.0

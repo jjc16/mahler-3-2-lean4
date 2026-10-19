@@ -1,0 +1,23 @@
+import SubstitutionMahlerMethodAndGrandSynthesis
+
+/-!
+# Verification Checks for `SubstitutionMahlerMethodAndGrandSynthesis`
+-/
+
+namespace Mahler.SubstitutionAndGrandSynthesis.Checks
+
+open Mahler.SubstitutionAndGrandSynthesis
+
+#check @dual_place_rational_limit_sign_split
+#check @uniform_macro_block_remainder_geometric_sum
+#check @periodic_macro_block_seed_divisibility
+#check @three_point_macro_block_remainder_syzygy
+#check @mahler_grand_122_module_synthesis
+
+#print axioms dual_place_rational_limit_sign_split
+#print axioms uniform_macro_block_remainder_geometric_sum
+#print axioms periodic_macro_block_seed_divisibility
+#print axioms three_point_macro_block_remainder_syzygy
+#print axioms mahler_grand_122_module_synthesis
+
+end Mahler.SubstitutionAndGrandSynthesis.Checks

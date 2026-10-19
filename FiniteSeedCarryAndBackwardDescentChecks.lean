@@ -1,0 +1,32 @@
+import FiniteSeedCarryAndBackwardDescent
+
+/-!
+# Verification Checks for `FiniteSeedCarryAndBackwardDescent`
+-/
+
+namespace Mahler.FiniteSeedAndBackwardDescent.Checks
+
+open Mahler.FiniteSeedAndBackwardDescent
+
+#check @g3_6_false_positive_cycle_and_real_orbit
+#check @constant_three_step_aff_invariant
+#check @constant_three_block_chain_eight_pow_dvd
+#check @constant_three_block_chain_horizon_bound
+#check @arith_block_parameters_unique
+#check @finite_positive_seed_coasting_isolation
+#check @predecessor_lt_boundary
+#check @exists_odd_predecessor_iff_mod_three
+#check @fracPart_backward_lift_identity
+#check @backward_archimedean_survival_dichotomy
+
+#print axioms g3_6_false_positive_cycle_and_real_orbit
+#print axioms constant_three_block_chain_eight_pow_dvd
+#print axioms constant_three_block_chain_horizon_bound
+#print axioms arith_block_parameters_unique
+#print axioms finite_positive_seed_coasting_isolation
+#print axioms predecessor_lt_boundary
+#print axioms exists_odd_predecessor_iff_mod_three
+#print axioms fracPart_backward_lift_identity
+#print axioms backward_archimedean_survival_dichotomy
+
+end Mahler.FiniteSeedAndBackwardDescent.Checks

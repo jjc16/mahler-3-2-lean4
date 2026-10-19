@@ -1,0 +1,33 @@
+import InfiniteZNumberBridgeAndRationalBase
+
+/-!
+# Verification Checks for `InfiniteZNumberBridgeAndRationalBase`
+-/
+
+namespace Mahler.InfiniteZNumberBridge.Checks
+
+open Mahler.InfiniteZNumberBridge
+
+#check @floor_eq_and_fract_lt_half_iff
+#check @odd_step_floor_exceeds_half_and_forces_ceil
+#check @validCompanionAt_succ_of_fract_lt_half
+#check @validCompanionUpTo_iff_floor_and_fract_lt_half
+#check @exists_validCompanionUpTo_iff_exists_unit_offset_fract_lt_half
+#check @recordHolderA0_fract_offset_113_survival_and_114_death
+#check @validCompanionForever_iff_forall_upTo
+#check @validCompanionForever_iff_floor_and_forall_fract_lt_half
+#check @forall_minSlack_pos_of_validCompanionForever
+#check @validCompanionForever_of_block_boundary_separation
+#check @step_eq_rational_base_ceil
+#check @no_validCompanionForever_of_consecutive_odd_steps
+#check @no_validCompanionForever_of_coasting_mod_four_eq_three
+
+#print axioms odd_step_floor_exceeds_half_and_forces_ceil
+#print axioms validCompanionUpTo_iff_floor_and_fract_lt_half
+#print axioms exists_validCompanionUpTo_iff_exists_unit_offset_fract_lt_half
+#print axioms recordHolderA0_fract_offset_113_survival_and_114_death
+#print axioms validCompanionForever_iff_floor_and_forall_fract_lt_half
+#print axioms validCompanionForever_of_block_boundary_separation
+#print axioms no_validCompanionForever_of_consecutive_odd_steps
+
+end Mahler.InfiniteZNumberBridge.Checks

@@ -1,0 +1,31 @@
+import SturmianAndBalancedComplexityExclusion
+
+/-!
+# Verification Checks for `SturmianAndBalancedComplexityExclusion`
+-/
+
+namespace Mahler.SturmianComplexityExclusion.Checks
+
+open Mahler.SturmianComplexityExclusion
+
+#check @three_pow_succ_pow_five_lt_two_pow
+#check @three_pow_succ_pow_seventeen_lt_two_pow
+#check @weighted_five_three_repeated_subword_cutoff
+#check @weighted_seventeen_ten_repeated_subword_cutoff
+#check @weighted_five_three_block_count_cutoff
+#check @weighted_seventeen_ten_block_count_cutoff
+#check @exists_repeated_subword_of_pattern_classifier
+#check @exists_repeated_subword_of_sturmian_complexity
+#check @aperiodic_sturmian_three_four_exclusion
+#check @aperiodic_sturmian_three_five_exclusion
+#check @minSlack_pos_of_le
+#check @balanced_subcritical_complexity_exclusion
+
+#print axioms weighted_five_three_repeated_subword_cutoff
+#print axioms weighted_seventeen_ten_repeated_subword_cutoff
+#print axioms exists_repeated_subword_of_pattern_classifier
+#print axioms aperiodic_sturmian_three_four_exclusion
+#print axioms aperiodic_sturmian_three_five_exclusion
+#print axioms balanced_subcritical_complexity_exclusion
+
+end Mahler.SturmianComplexityExclusion.Checks
