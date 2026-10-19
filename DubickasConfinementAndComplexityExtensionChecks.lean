@@ -140,6 +140,24 @@ example {g : ℕ} (hg : 3 ≤ g) :
 #print axioms Mahler.DubickasExtension.gap_ladder_short_gap_cost_and_cap
 #print axioms Mahler.DubickasExtension.general_rung_first_defect_valuation_lock
 
+-- 8. Verify punctured [8/57, 1/2) homoclinic catapult trap and phase transition
+example {ξ : ℝ} {W : ℕ} (hξ1 : (1 : ℝ) ≤ ξ) (hξW : ξ < (2 : ℝ) ^ W) :
+    (∃ n ≤ W + 8,
+      Int.fract (ξ * (3 / 2 : ℝ) ^ n) < (4 / 27 : ℝ) ∨
+        (1 / 2 : ℝ) ≤ Int.fract (ξ * (3 / 2 : ℝ) ^ n)) ∧
+    (∃ n ≤ 3 * W + 20,
+      Int.fract (ξ * (3 / 2 : ℝ) ^ n) < (8 / 57 : ℝ) ∨
+        (1 / 2 : ℝ) ≤ Int.fract (ξ * (3 / 2 : ℝ) ^ n)) :=
+  ⟨punctured_four_twenty_sevenths_period_three_lock_and_escape.2.1 hξ1 hξW,
+    punctured_eight_fifty_sevenths_explicit_and_infinite_escape.1 hξ1 hξW⟩
+
+#print axioms Mahler.DubickasExtension.punctured_half_step_dichotomy_and_forbidden_short_gaps
+#print axioms Mahler.DubickasExtension.punctured_four_twenty_sevenths_period_three_lock_and_escape
+#print axioms Mahler.DubickasExtension.punctured_eight_fifty_sevenths_catapult_and_absorbing_trap
+#print axioms Mahler.DubickasExtension.punctured_eight_fifty_sevenths_explicit_and_infinite_escape
+#print axioms Mahler.DubickasExtension.homoclinicCycleMin_closed_form_and_strictMono
+#print axioms Mahler.DubickasExtension.cantorPuncturedHalf_phase_transition_counts
+
 #print axioms Mahler.DubickasExtension.dubBaseCarry_eq_fract_linear
 #print axioms Mahler.DubickasExtension.dubBaseY_multi_step_carry_identity
 #print axioms Mahler.DubickasExtension.dubBaseCarry_mem_two_letters

@@ -4335,4 +4335,702 @@ theorem general_rung_first_defect_valuation_lock
     omega
   exact ⟨hdvd, hnot_dvd, Nat.le_of_dvd hpos_inv hdvd⟩
 
+/-! ## 12. Punctured $[0, 1/2)$ Homoclinic Catapult Trap on $[8/57, 1/2)$ and the $\varepsilon^* = 8/57$ Phase Transition
+
+When Mahler's interval $[0, 1/2)$ is punctured at the origin to $[\varepsilon, 1/2)$, the unbounded
+runs of consecutive zeros (`0^g`) near $0$ are cut off and the Cantor cylinder tree undergoes an
+exact homoclinic phase transition at $\varepsilon^* = \frac{8}{57} = \frac{2}{3}\cdot\frac{4}{19} \approx 0.140351$:
+1. **Pure Period-3 Plateau ($\frac{4}{27} \le \varepsilon \le \frac{4}{19}$):** On $[4/27, 1/2)$,
+   each of `11`, `101`, and `000` is forbidden, locking every carry word into pure period $3$
+   ($s_{k+3} = s_k$ for all $k \ge 0$) and forcing escape in at most $n \le W + 8$ steps.
+2. **The Homoclinic Catapult Trap ($\frac{8}{57} \le \varepsilon < \frac{4}{27}$):** On $[8/57, 1/2)$,
+   four consecutive zeros (`0000`) are forbidden, and any three-zero block (`000`) at step $k$
+   forces $s_{k+3} = 1$ and **catapults** $y_{k+4}$ into the forward-invariant period-3 trap
+   $[4/19, 1/4)$, where every subsequent block is forced to be `(001)` forever. Hence at most
+   **one** `000` defect can occur in an entire orbit, the Cantor cylinder count at depth $d$ is
+   exactly $d + 1$, and every $\xi \in [1, 2^W)$ escapes $[8/57, 1/2)$ in at most $n \le 3W + 16$ steps.
+3. **Sub-$8/57$ Homoclinic Cycle Cascade ($\varepsilon < \frac{8}{57}$):** Below $\frac{8}{57}$,
+   the periodic cycles $\mathcal{O}_m = \mathtt{(001)^m(0001)}$ of period $3m + 4$ appear at
+   $\varepsilon_m = \frac{8}{57} - \frac{4\cdot 2^{3m+4}}{57(3^{3m+4} - 2^{3m+4})} \uparrow \frac{8}{57}$,
+   causing the Cantor cylinder count to bifurcate above $d + 1$ at depth $d = 7$ on $[1/8, 1/2)$. -/
+
+/-- **Forbidden `11` and `101` on Any Punctured Bottom Window $[\varepsilon, 1/2)$ with $\varepsilon \ge 1/16$
+(`punctured_half_step_dichotomy_and_forbidden_short_gaps`)**:
+Whenever $\varepsilon \ge 1/16$ and consecutive fractional parts $y_k = \text{dubY } \xi\ 0\ k$ lie in
+$[\varepsilon, 1/2)$:
+1. $s_k = \text{dubCarry } \xi\ 0\ k \in \{0, 1\}$,
+2. If $s_k = 1$, then $y_{k+1} < 1/4$ and $s_{k+1} = 0$ (no `11`),
+3. If $s_k = 1$, then $y_{k+2} < 3/8$ and $s_{k+2} = 0$ (no `101`). -/
+theorem punctured_half_step_dichotomy_and_forbidden_short_gaps
+    {ε ξ : ℝ} (hε : (1 / 16 : ℝ) ≤ ε) :
+    (∀ k : ℕ,
+      ε ≤ dubY ξ 0 k → dubY ξ 0 k < (1 / 2 : ℝ) →
+      ε ≤ dubY ξ 0 (k + 1) → dubY ξ 0 (k + 1) < (1 / 2 : ℝ) →
+      (dubCarry ξ 0 k = 0 ∨ dubCarry ξ 0 k = 1) ∧
+      (dubCarry ξ 0 k = 1 → dubY ξ 0 (k + 1) < (1 / 4 : ℝ))) ∧
+    (∀ k : ℕ,
+      ε ≤ dubY ξ 0 k → dubY ξ 0 k < (1 / 2 : ℝ) →
+      ε ≤ dubY ξ 0 (k + 1) → dubY ξ 0 (k + 1) < (1 / 2 : ℝ) →
+      ε ≤ dubY ξ 0 (k + 2) → dubY ξ 0 (k + 2) < (1 / 2 : ℝ) →
+      dubCarry ξ 0 k = 1 → dubCarry ξ 0 (k + 1) = 0 ∧ dubY ξ 0 (k + 2) < (3 / 8 : ℝ)) ∧
+    (∀ k : ℕ,
+      ε ≤ dubY ξ 0 k → dubY ξ 0 k < (1 / 2 : ℝ) →
+      ε ≤ dubY ξ 0 (k + 1) → dubY ξ 0 (k + 1) < (1 / 2 : ℝ) →
+      ε ≤ dubY ξ 0 (k + 2) → dubY ξ 0 (k + 2) < (1 / 2 : ℝ) →
+      ε ≤ dubY ξ 0 (k + 3) → dubY ξ 0 (k + 3) < (1 / 2 : ℝ) →
+      dubCarry ξ 0 k = 1 → dubCarry ξ 0 (k + 2) = 0) := by
+  have h1 :
+      ∀ k : ℕ,
+        ε ≤ dubY ξ 0 k → dubY ξ 0 k < (1 / 2 : ℝ) →
+        ε ≤ dubY ξ 0 (k + 1) → dubY ξ 0 (k + 1) < (1 / 2 : ℝ) →
+        (dubCarry ξ 0 k = 0 ∨ dubCarry ξ 0 k = 1) ∧
+        (dubCarry ξ 0 k = 1 → dubY ξ 0 (k + 1) < (1 / 4 : ℝ)) := by
+    intro k hy0_lo hy0_hi hy1_lo hy1_hi
+    have hlin0 := dubCarry_eq_fract_linear ξ 0 k
+    have hs_lo : (-1 : ℝ) < (dubCarry ξ 0 k : ℝ) := by linarith
+    have hs_hi : (dubCarry ξ 0 k : ℝ) < (2 : ℝ) := by linarith
+    have hz_lo : (-1 : ℤ) < dubCarry ξ 0 k := by exact_mod_cast hs_lo
+    have hz_hi : dubCarry ξ 0 k < (2 : ℤ) := by exact_mod_cast hs_hi
+    have hbit : dubCarry ξ 0 k = 0 ∨ dubCarry ξ 0 k = 1 := by omega
+    refine ⟨hbit, ?_⟩
+    intro hs1
+    have hs1_r : (dubCarry ξ 0 k : ℝ) = 1 := by exact_mod_cast hs1
+    linarith
+  have h2 :
+      ∀ k : ℕ,
+        ε ≤ dubY ξ 0 k → dubY ξ 0 k < (1 / 2 : ℝ) →
+        ε ≤ dubY ξ 0 (k + 1) → dubY ξ 0 (k + 1) < (1 / 2 : ℝ) →
+        ε ≤ dubY ξ 0 (k + 2) → dubY ξ 0 (k + 2) < (1 / 2 : ℝ) →
+        dubCarry ξ 0 k = 1 → dubCarry ξ 0 (k + 1) = 0 ∧ dubY ξ 0 (k + 2) < (3 / 8 : ℝ) := by
+    intro k hy0_lo hy0_hi hy1_lo hy1_hi hy2_lo hy2_hi hs0_1
+    have hy1_lt := (h1 k hy0_lo hy0_hi hy1_lo hy1_hi).2 hs0_1
+    have hbit1 := (h1 (k + 1) hy1_lo hy1_hi hy2_lo hy2_hi).1
+    have hlin1 := dubCarry_eq_fract_linear ξ 0 (k + 1)
+    rcases hbit1 with hs1_0 | hs1_1
+    · have hs1_r : (dubCarry ξ 0 (k + 1) : ℝ) = 0 := by exact_mod_cast hs1_0
+      exact ⟨hs1_0, by linarith⟩
+    · exfalso
+      have hs1_r : (dubCarry ξ 0 (k + 1) : ℝ) = 1 := by exact_mod_cast hs1_1
+      linarith
+  refine ⟨h1, h2, ?_⟩
+  intro k hy0_lo hy0_hi hy1_lo hy1_hi hy2_lo hy2_hi hy3_lo hy3_hi hs0_1
+  have ⟨_, hy2_lt⟩ := h2 k hy0_lo hy0_hi hy1_lo hy1_hi hy2_lo hy2_hi hs0_1
+  have hbit2 := (h1 (k + 2) hy2_lo hy2_hi hy3_lo hy3_hi).1
+  have hlin2 := dubCarry_eq_fract_linear ξ 0 (k + 2)
+  rcases hbit2 with hs2_0 | hs2_1
+  · exact hs2_0
+  · exfalso
+    have hs2_r : (dubCarry ξ 0 (k + 2) : ℝ) = 1 := by exact_mod_cast hs2_1
+    linarith
+
+/-- **Pure Period-3 Lock and Explicit $n \le W + 8$ Escape on $[4/27, 1/2)$
+(`punctured_four_twenty_sevenths_period_three_lock_and_escape`)**:
+1. On $[4/27, 1/2)$, three consecutive zeros (`000`) are impossible (`8 y_{k+3} = 27 y_k ≥ 4`),
+   so every 3-step carry sum is $s_k + s_{k+1} + s_{k+2} = 1$ and **$s_{k+3} = s_k$ for all $k$**.
+2. For every $\xi \in [1, 2^W)$, there exists $n \le W + 8$ such that $\{\xi(3/2)^n\} \notin [4/27, 1/2)$.
+3. For every $\xi > 0$ and $N_0 \in \mathbb{N}$, there exists $n \ge N_0$ such that
+   $\{\xi(3/2)^n\} \notin [4/27, 1/2)$ ($Z_{3/2}([4/27, 1/2)) = \emptyset$). -/
+theorem punctured_four_twenty_sevenths_period_three_lock_and_escape :
+    (∀ {ξ : ℝ} {N : ℕ},
+      (∀ n ≤ N + 4, (4 / 27 : ℝ) ≤ dubY ξ 0 n ∧ dubY ξ 0 n < (1 / 2 : ℝ)) →
+      ∀ k ≤ N, dubCarry ξ 0 (k + 3) = dubCarry ξ 0 k) ∧
+    (∀ {ξ : ℝ} {W : ℕ},
+      (1 : ℝ) ≤ ξ → ξ < (2 : ℝ) ^ W →
+      ∃ n ≤ W + 8,
+        Int.fract (ξ * (3 / 2 : ℝ) ^ n) < (4 / 27 : ℝ) ∨
+          (1 / 2 : ℝ) ≤ Int.fract (ξ * (3 / 2 : ℝ) ^ n)) ∧
+    (∀ {ξ : ℝ}, 0 < ξ → ∀ N_0 : ℕ,
+      ∃ n ≥ N_0,
+        Int.fract (ξ * (3 / 2 : ℝ) ^ n) < (4 / 27 : ℝ) ∨
+          (1 / 2 : ℝ) ≤ Int.fract (ξ * (3 / 2 : ℝ) ^ n)) := by
+  have hε : (1 / 16 : ℝ) ≤ (4 / 27 : ℝ) := by norm_num
+  have hsum_one :
+      ∀ {ξ : ℝ} {k : ℕ},
+        (∀ r ≤ 3, (4 / 27 : ℝ) ≤ dubY ξ 0 (k + r) ∧ dubY ξ 0 (k + r) < (1 / 2 : ℝ)) →
+        dubCarry ξ 0 k + dubCarry ξ 0 (k + 1) + dubCarry ξ 0 (k + 2) = 1 := by
+    intro ξ k hmem
+    have hd := punctured_half_step_dichotomy_and_forbidden_short_gaps (ξ := ξ) hε
+    have hm0 := hmem 0 (by omega)
+    have hm1 := hmem 1 (by omega)
+    have hm2 := hmem 2 (by omega)
+    have hm3 := hmem 3 (by omega)
+    rw [Nat.add_zero] at hm0
+    have hb0 := (hd.1 k hm0.1 hm0.2 hm1.1 hm1.2).1
+    have hb1 := (hd.1 (k + 1) hm1.1 hm1.2 hm2.1 hm2.2).1
+    have hb2 := (hd.1 (k + 2) hm2.1 hm2.2 hm3.1 hm3.2).1
+    have hno11_0 : dubCarry ξ 0 k = 1 → dubCarry ξ 0 (k + 1) = 0 :=
+      fun h1 => (hd.2.1 k hm0.1 hm0.2 hm1.1 hm1.2 hm2.1 hm2.2 h1).1
+    have hno101_0 : dubCarry ξ 0 k = 1 → dubCarry ξ 0 (k + 2) = 0 :=
+      hd.2.2 k hm0.1 hm0.2 hm1.1 hm1.2 hm2.1 hm2.2 hm3.1 hm3.2
+    have hno11_1 : dubCarry ξ 0 (k + 1) = 1 → dubCarry ξ 0 (k + 2) = 0 :=
+      fun h1 => (hd.2.1 (k + 1) hm1.1 hm1.2 hm2.1 hm2.2 hm3.1 hm3.2 h1).1
+    have hno000 : ¬ (dubCarry ξ 0 k = 0 ∧ dubCarry ξ 0 (k + 1) = 0 ∧ dubCarry ξ 0 (k + 2) = 0) := by
+      rintro ⟨hc0, hc1, hc2⟩
+      have hl0 := dubCarry_eq_fract_linear ξ 0 k
+      have hl1 := dubCarry_eq_fract_linear ξ 0 (k + 1)
+      have hl2 := dubCarry_eq_fract_linear ξ 0 (k + 2)
+      have hc0_r : (dubCarry ξ 0 k : ℝ) = 0 := by exact_mod_cast hc0
+      have hc1_r : (dubCarry ξ 0 (k + 1) : ℝ) = 0 := by exact_mod_cast hc1
+      have hc2_r : (dubCarry ξ 0 (k + 2) : ℝ) = 0 := by exact_mod_cast hc2
+      linarith [hm0.1, hm3.2]
+    rcases hb0 with h0 | h0 <;> rcases hb1 with h1 | h1 <;> rcases hb2 with h2 | h2
+    · exfalso; exact hno000 ⟨h0, h1, h2⟩
+    · omega
+    · omega
+    · exfalso; have := hno11_1 h1; omega
+    · omega
+    · exfalso; have := hno101_0 h0; omega
+    · exfalso; have := hno11_0 h0; omega
+    · exfalso; have := hno11_0 h0; omega
+  have hper3 :
+      ∀ {ξ : ℝ} {N : ℕ},
+        (∀ n ≤ N + 4, (4 / 27 : ℝ) ≤ dubY ξ 0 n ∧ dubY ξ 0 n < (1 / 2 : ℝ)) →
+        ∀ k ≤ N, dubCarry ξ 0 (k + 3) = dubCarry ξ 0 k := by
+    intro ξ N hmem k hk
+    have hs1 := hsum_one (ξ := ξ) (k := k) (fun r hr => hmem (k + r) (by omega))
+    have hs2 := hsum_one (ξ := ξ) (k := k + 1) (fun r hr => hmem (k + 1 + r) (by omega))
+    have hidx1 : k + 1 + 1 = k + 2 := by omega
+    have hidx2 : k + 1 + 2 = k + 3 := by omega
+    rw [hidx1, hidx2] at hs2
+    omega
+  have hexplicit :
+      ∀ {ξ : ℝ} {W : ℕ},
+        (1 : ℝ) ≤ ξ → ξ < (2 : ℝ) ^ W →
+        ∃ n ≤ W + 8,
+          Int.fract (ξ * (3 / 2 : ℝ) ^ n) < (4 / 27 : ℝ) ∨
+            (1 / 2 : ℝ) ≤ Int.fract (ξ * (3 / 2 : ℝ) ^ n) := by
+    intro ξ W hξ1 hξW
+    by_contra hno
+    have hmem : ∀ n ≤ W + 8, (4 / 27 : ℝ) ≤ dubY ξ 0 n ∧ dubY ξ 0 n < (1 / 2 : ℝ) := by
+      intro n hn
+      unfold dubY
+      rw [add_zero]
+      by_contra hout
+      rcases lt_or_ge (Int.fract (ξ * (3 / 2 : ℝ) ^ n)) (4 / 27 : ℝ) with hlt | hge
+      · exact hno ⟨n, hn, Or.inl hlt⟩
+      · have hge2 : (1 / 2 : ℝ) ≤ Int.fract (ξ * (3 / 2 : ℝ) ^ n) := by
+          by_contra hlt2
+          exact hout ⟨hge, not_le.mp hlt2⟩
+        exact hno ⟨n, hn, Or.inr hge2⟩
+    have hper := hper3 (N := W + 4) (fun n hn => hmem n (by omega))
+    have hmatch : ∀ t < W + 3, dubCarry ξ 0 (2 + t) = dubCarry ξ 0 (5 + t) := by
+      intro t ht
+      have h := hper (2 + t) (by omega)
+      have hidx : 2 + t + 3 = 5 + t := by omega
+      rw [hidx] at h
+      exact h.symm
+    have hexp :=
+      dubX_repeated_window_exp_bound (i := 2) (j := 5) (L := W + 3)
+        hξ1 hξW (by norm_num) (by norm_num) le_rfl (by omega) hmatch
+    have hpow : 3 ^ 5 * 2 ^ W < 2 ^ ((W + 3) + 5) := by
+      calc
+        3 ^ 5 * 2 ^ W = 243 * 2 ^ W := by ring
+        _ < 256 * 2 ^ W := Nat.mul_lt_mul_of_pos_right (by decide) (Nat.pow_pos (by decide))
+        _ = 2 ^ ((W + 3) + 5) := by
+          have h : (W + 3) + 5 = 8 + W := by omega
+          rw [h, Nat.pow_add]
+    omega
+  refine ⟨hper3, hexplicit, ?_⟩
+  have h2k_all : ∀ n : ℕ, (1 : ℝ) + (n : ℝ) ≤ (3 / 2 : ℝ) ^ (2 * n) := by
+    intro n
+    induction n with
+    | zero => simp
+    | succ m ih =>
+        push_cast
+        have hstep : (3 / 2 : ℝ) ^ (2 * (m + 1)) = (9 / 4 : ℝ) * (3 / 2 : ℝ) ^ (2 * m) := by
+          have h2m : 2 * (m + 1) = 2 * m + 2 := by ring
+          rw [h2m, pow_add]
+          norm_num
+          ring
+        have hpos : (0 : ℝ) ≤ (m : ℝ) := Nat.cast_nonneg m
+        nlinarith
+  intro ξ hξ N_0
+  obtain ⟨k, hk⟩ := exists_nat_gt (max (1 / ξ) (ξ * (3 / 2 : ℝ) ^ N_0))
+  have hk_inv : 1 / ξ < (k : ℝ) := lt_of_le_of_lt (le_max_left _ _) hk
+  have h1_lt : (1 : ℝ) < ξ * (k : ℝ) := (div_lt_iff₀' hξ).mp hk_inv
+  have h32_gt1 : (1 : ℝ) < (3 / 2 : ℝ) := by norm_num
+  have hpow_ge1 : (1 : ℝ) ≤ (3 / 2 : ℝ) ^ N_0 := one_le_pow₀ (le_of_lt h32_gt1)
+  have hξ_N0_ge1 : (1 : ℝ) ≤ ξ * (3 / 2 : ℝ) ^ (N_0 + 2 * k) := by
+    have h2k := h2k_all k
+    have hmul : ξ * (1 + (k : ℝ)) ≤ ξ * (3 / 2 : ℝ) ^ (2 * k) :=
+      mul_le_mul_of_nonneg_left h2k (le_of_lt hξ)
+    have hpow_add :
+        ξ * (3 / 2 : ℝ) ^ (N_0 + 2 * k) =
+          (3 / 2 : ℝ) ^ N_0 * (ξ * (3 / 2 : ℝ) ^ (2 * k)) := by
+      rw [pow_add]; ring
+    nlinarith
+  set ξ' := ξ * (3 / 2 : ℝ) ^ (N_0 + 2 * k)
+  obtain ⟨W, hW⟩ := exists_nat_gt ξ'
+  have hξ'W : ξ' < (2 : ℝ) ^ W := by
+    have hlt2 : (W : ℝ) < (2 : ℝ) ^ W := by
+      exact_mod_cast Nat.lt_two_pow_self
+    linarith
+  obtain ⟨m, _, hout⟩ := hexplicit hξ_N0_ge1 hξ'W
+  refine ⟨N_0 + 2 * k + m, by omega, ?_⟩
+  have heq : ξ * (3 / 2 : ℝ) ^ (N_0 + 2 * k + m) = ξ' * (3 / 2 : ℝ) ^ m := by
+    dsimp [ξ']
+    rw [pow_add, pow_add]
+    ring
+  rw [heq]
+  exact hout
+
+/-- **Homoclinic Catapult Trap and Absorbing Period-3 Region $[4/19, 1/4)$ on $[8/57, 1/2)$
+(`punctured_eight_fifty_sevenths_catapult_and_absorbing_trap`)**:
+Suppose $y_n = \text{dubY } \xi\ 0\ n \in [8/57, 1/2)$ for $0 \le n \le N$:
+1. **No `0000`:** If $s_k = s_{k+1} = s_{k+2} = 0$ ($k + 4 \le N$), then $s_{k+3} = 1$.
+2. **Homoclinic Catapult:** If $s_k = s_{k+1} = s_{k+2} = 0$ ($k + 4 \le N$), then
+   $\frac{4}{19} \le y_{k+4} < \frac{1}{4}$.
+3. **One-Step Absorbing Period-3 Trap on $[4/19, 1/4)$:** Whenever $\frac{4}{19} \le y_m < \frac{1}{4}$
+   ($m + 3 \le N$), we have $(s_m, s_{m+1}, s_{m+2}) = (0, 0, 1)$ and $\frac{4}{19} \le y_{m+3} < \frac{1}{4}$.
+4. **Infinite Period-3 Lock After Entering $[4/19, 1/4)$:** Whenever $\frac{4}{19} \le y_m < \frac{1}{4}$
+   and $s_{m-1} = 1$, we have $s_{t+3} = s_t$ for all $m - 1 \le t$ with $t + 4 \le N$. -/
+theorem punctured_eight_fifty_sevenths_catapult_and_absorbing_trap
+    {ξ : ℝ} {N : ℕ}
+    (hmem : ∀ n ≤ N, (8 / 57 : ℝ) ≤ dubY ξ 0 n ∧ dubY ξ 0 n < (1 / 2 : ℝ)) :
+    (∀ k, k + 4 ≤ N →
+      dubCarry ξ 0 k = 0 → dubCarry ξ 0 (k + 1) = 0 → dubCarry ξ 0 (k + 2) = 0 →
+      dubCarry ξ 0 (k + 3) = 1 ∧ (4 / 19 : ℝ) ≤ dubY ξ 0 (k + 4) ∧ dubY ξ 0 (k + 4) < (1 / 4 : ℝ)) ∧
+    (∀ m, m + 3 ≤ N →
+      (4 / 19 : ℝ) ≤ dubY ξ 0 m → dubY ξ 0 m < (1 / 4 : ℝ) →
+      dubCarry ξ 0 m = 0 ∧ dubCarry ξ 0 (m + 1) = 0 ∧ dubCarry ξ 0 (m + 2) = 1 ∧
+      (4 / 19 : ℝ) ≤ dubY ξ 0 (m + 3) ∧ dubY ξ 0 (m + 3) < (1 / 4 : ℝ)) ∧
+    (∀ m, 1 ≤ m → m ≤ N →
+      dubCarry ξ 0 (m - 1) = 1 → (4 / 19 : ℝ) ≤ dubY ξ 0 m → dubY ξ 0 m < (1 / 4 : ℝ) →
+      ∀ t, m - 1 ≤ t → t + 6 ≤ N → dubCarry ξ 0 (t + 3) = dubCarry ξ 0 t) := by
+  have hε : (1 / 16 : ℝ) ≤ (8 / 57 : ℝ) := by norm_num
+  have hd := punctured_half_step_dichotomy_and_forbidden_short_gaps (ξ := ξ) hε
+  have hcat :
+      ∀ k, k + 4 ≤ N →
+        dubCarry ξ 0 k = 0 → dubCarry ξ 0 (k + 1) = 0 → dubCarry ξ 0 (k + 2) = 0 →
+        dubCarry ξ 0 (k + 3) = 1 ∧ (4 / 19 : ℝ) ≤ dubY ξ 0 (k + 4) ∧ dubY ξ 0 (k + 4) < (1 / 4 : ℝ) := by
+    intro k hk4 hc0 hc1 hc2
+    have hm0 := hmem k (by omega)
+    have hm1 := hmem (k + 1) (by omega)
+    have hm2 := hmem (k + 2) (by omega)
+    have hm3 := hmem (k + 3) (by omega)
+    have hm4 := hmem (k + 4) (by omega)
+    have hl0 := dubCarry_eq_fract_linear ξ 0 k
+    have hl1 := dubCarry_eq_fract_linear ξ 0 (k + 1)
+    have hl2 := dubCarry_eq_fract_linear ξ 0 (k + 2)
+    have hl3 := dubCarry_eq_fract_linear ξ 0 (k + 3)
+    have hc0_r : (dubCarry ξ 0 k : ℝ) = 0 := by exact_mod_cast hc0
+    have hc1_r : (dubCarry ξ 0 (k + 1) : ℝ) = 0 := by exact_mod_cast hc1
+    have hc2_r : (dubCarry ξ 0 (k + 2) : ℝ) = 0 := by exact_mod_cast hc2
+    have hb3 := (hd.1 (k + 3) hm3.1 hm3.2 hm4.1 hm4.2).1
+    rcases hb3 with hc3_0 | hc3_1
+    · exfalso
+      have hc3_r : (dubCarry ξ 0 (k + 3) : ℝ) = 0 := by exact_mod_cast hc3_0
+      linarith [hm0.1, hm4.2]
+    · have hc3_r : (dubCarry ξ 0 (k + 3) : ℝ) = 1 := by exact_mod_cast hc3_1
+      have hy4_lt := (hd.1 (k + 3) hm3.1 hm3.2 hm4.1 hm4.2).2 hc3_1
+      refine ⟨hc3_1, by linarith [hm0.1], hy4_lt⟩
+  have htrap_step :
+      ∀ m, m + 3 ≤ N →
+        (4 / 19 : ℝ) ≤ dubY ξ 0 m → dubY ξ 0 m < (1 / 4 : ℝ) →
+        dubCarry ξ 0 m = 0 ∧ dubCarry ξ 0 (m + 1) = 0 ∧ dubCarry ξ 0 (m + 2) = 1 ∧
+        (4 / 19 : ℝ) ≤ dubY ξ 0 (m + 3) ∧ dubY ξ 0 (m + 3) < (1 / 4 : ℝ) := by
+    intro m hm3 hym_lo hym_hi
+    have hm0 := hmem m (by omega)
+    have hm1 := hmem (m + 1) (by omega)
+    have hm2 := hmem (m + 2) (by omega)
+    have hm3_mem := hmem (m + 3) (by omega)
+    have hl0 := dubCarry_eq_fract_linear ξ 0 m
+    have hl1 := dubCarry_eq_fract_linear ξ 0 (m + 1)
+    have hl2 := dubCarry_eq_fract_linear ξ 0 (m + 2)
+    have hb0 := (hd.1 m hm0.1 hm0.2 hm1.1 hm1.2).1
+    have hc0 : dubCarry ξ 0 m = 0 := by
+      rcases hb0 with h0 | h1
+      · exact h0
+      · exfalso
+        have h1_r : (dubCarry ξ 0 m : ℝ) = 1 := by exact_mod_cast h1
+        linarith [hm1.1]
+    have hc0_r : (dubCarry ξ 0 m : ℝ) = 0 := by exact_mod_cast hc0
+    have hb1 := (hd.1 (m + 1) hm1.1 hm1.2 hm2.1 hm2.2).1
+    have hc1 : dubCarry ξ 0 (m + 1) = 0 := by
+      rcases hb1 with h0 | h1
+      · exact h0
+      · exfalso
+        have h1_r : (dubCarry ξ 0 (m + 1) : ℝ) = 1 := by exact_mod_cast h1
+        linarith [hm2.1]
+    have hc1_r : (dubCarry ξ 0 (m + 1) : ℝ) = 0 := by exact_mod_cast hc1
+    have hb2 := (hd.1 (m + 2) hm2.1 hm2.2 hm3_mem.1 hm3_mem.2).1
+    have hc2 : dubCarry ξ 0 (m + 2) = 1 := by
+      rcases hb2 with h0 | h1
+      · exfalso
+        have h0_r : (dubCarry ξ 0 (m + 2) : ℝ) = 0 := by exact_mod_cast h0
+        linarith [hm3_mem.2]
+      · exact h1
+    have hc2_r : (dubCarry ξ 0 (m + 2) : ℝ) = 1 := by exact_mod_cast hc2
+    have hy3_lt := (hd.1 (m + 2) hm2.1 hm2.2 hm3_mem.1 hm3_mem.2).2 hc2
+    exact ⟨hc0, hc1, hc2, by linarith, hy3_lt⟩
+  refine ⟨hcat, htrap_step, ?_⟩
+  intro m hm1 hmN hcm_prev hym_lo hym_hi
+  have htrap_iter :
+      ∀ r : ℕ, m + 3 * r ≤ N →
+        (4 / 19 : ℝ) ≤ dubY ξ 0 (m + 3 * r) ∧ dubY ξ 0 (m + 3 * r) < (1 / 4 : ℝ) := by
+    intro r
+    induction r with
+    | zero =>
+        intro _
+        rw [Nat.mul_zero, Nat.add_zero]
+        exact ⟨hym_lo, hym_hi⟩
+    | succ r ih =>
+        intro hr_le
+        have ihr := ih (by omega)
+        have hst := htrap_step (m + 3 * r) (by omega) ihr.1 ihr.2
+        have hidx : m + 3 * r + 3 = m + 3 * (r + 1) := by omega
+        rw [← hidx]
+        exact ⟨hst.2.2.2.1, hst.2.2.2.2⟩
+  have hcarry_at :
+      ∀ d : ℕ, m + d + 3 ≤ N →
+        dubCarry ξ 0 (m + d) = if d % 3 = 2 then 1 else 0 := by
+    intro d hd_le
+    set r := d / 3
+    have hr_le : m + 3 * (r + 1) ≤ N := by omega
+    have ihr := htrap_iter r (by omega)
+    have hst := htrap_step (m + 3 * r) (by omega) ihr.1 ihr.2
+    have hmod : d % 3 = 0 ∨ d % 3 = 1 ∨ d % 3 = 2 := by omega
+    rcases hmod with hm0 | hm1 | hm2
+    · have hd_eq : m + d = m + 3 * r := by omega
+      rw [hd_eq, if_neg (by omega)]
+      exact hst.1
+    · have hd_eq : m + d = m + 3 * r + 1 := by omega
+      rw [hd_eq, if_neg (by omega)]
+      exact hst.2.1
+    · have hd_eq : m + d = m + 3 * r + 2 := by omega
+      rw [hd_eq, if_pos hm2]
+      exact hst.2.2.1
+  intro t hmt ht4
+  by_cases hteq : t = m - 1
+  · rw [hteq] at ht4 ⊢
+    have ht3 : m - 1 + 3 = m + 2 := by omega
+    rw [ht3, hcm_prev]
+    have hc2 := hcarry_at 2 (by omega)
+    simpa using hc2
+  · have hmt_le : m ≤ t := by omega
+    set d := t - m
+    have ht_eq : t = m + d := by omega
+    have ht3_eq : m + d + 3 = m + (d + 3) := by omega
+    rw [ht_eq, ht3_eq, hcarry_at d (by omega), hcarry_at (d + 3) (by omega)]
+    have hmod : (d + 3) % 3 = d % 3 := Nat.add_mod_right d 3
+    rw [hmod]
+
+/-- **Explicit $n \le 3W + 20$ Escape Bound and Infinite-Horizon Confinement Exclusion on $[8/57, 1/2)$
+(`punctured_eight_fifty_sevenths_explicit_and_infinite_escape`)**:
+1. For every $\xi \in [1, 2^W)$, there exists an index $n \le 3W + 20$ such that
+   $\{\xi(3/2)^n\} \notin [8/57, 1/2)$.
+2. For every $\xi > 0$ and $N_0 \in \mathbb{N}$, there exists $n \ge N_0$ such that
+   $\{\xi(3/2)^n\} \notin [8/57, 1/2)$ ($Z_{3/2}([8/57, 1/2)) = \emptyset$). -/
+theorem punctured_eight_fifty_sevenths_explicit_and_infinite_escape :
+    (∀ {ξ : ℝ} {W : ℕ},
+      (1 : ℝ) ≤ ξ → ξ < (2 : ℝ) ^ W →
+      ∃ n ≤ 3 * W + 20,
+        Int.fract (ξ * (3 / 2 : ℝ) ^ n) < (8 / 57 : ℝ) ∨
+          (1 / 2 : ℝ) ≤ Int.fract (ξ * (3 / 2 : ℝ) ^ n)) ∧
+    (∀ {ξ : ℝ}, 0 < ξ → ∀ N_0 : ℕ,
+      ∃ n ≥ N_0,
+        Int.fract (ξ * (3 / 2 : ℝ) ^ n) < (8 / 57 : ℝ) ∨
+          (1 / 2 : ℝ) ≤ Int.fract (ξ * (3 / 2 : ℝ) ^ n)) := by
+  have hε : (1 / 16 : ℝ) ≤ (8 / 57 : ℝ) := by norm_num
+  have hexplicit :
+      ∀ {ξ : ℝ} {W : ℕ},
+        (1 : ℝ) ≤ ξ → ξ < (2 : ℝ) ^ W →
+        ∃ n ≤ 3 * W + 20,
+          Int.fract (ξ * (3 / 2 : ℝ) ^ n) < (8 / 57 : ℝ) ∨
+            (1 / 2 : ℝ) ≤ Int.fract (ξ * (3 / 2 : ℝ) ^ n) := by
+    intro ξ W hξ1 hξW
+    by_contra hno
+    set N := 3 * W + 20
+    have hmem : ∀ n ≤ N, (8 / 57 : ℝ) ≤ dubY ξ 0 n ∧ dubY ξ 0 n < (1 / 2 : ℝ) := by
+      intro n hn
+      unfold dubY
+      rw [add_zero]
+      by_contra hout
+      rcases lt_or_ge (Int.fract (ξ * (3 / 2 : ℝ) ^ n)) (8 / 57 : ℝ) with hlt | hge
+      · exact hno ⟨n, hn, Or.inl hlt⟩
+      · have hge2 : (1 / 2 : ℝ) ≤ Int.fract (ξ * (3 / 2 : ℝ) ^ n) := by
+          by_contra hlt2
+          exact hout ⟨hge, not_le.mp hlt2⟩
+        exact hno ⟨n, hn, Or.inr hge2⟩
+    have hcat_trap := punctured_eight_fifty_sevenths_catapult_and_absorbing_trap hmem
+    by_cases hex000 :
+        ∃ k ≤ W + 5,
+          dubCarry ξ 0 k = 0 ∧ dubCarry ξ 0 (k + 1) = 0 ∧ dubCarry ξ 0 (k + 2) = 0
+    · rcases hex000 with ⟨k, hk_le, hc0, hc1, hc2⟩
+      have hcat := hcat_trap.1 k (by omega) hc0 hc1 hc2
+      have hlock :=
+        hcat_trap.2.2 (k + 4) (by omega) (by omega)
+          (by simpa using hcat.1)
+          hcat.2.1 hcat.2.2
+      set i0 := W + 8
+      set j0 := W + 11
+      set L0 := 2 * W + 7
+      have hmatch : ∀ t < L0, dubCarry ξ 0 (i0 + t) = dubCarry ξ 0 (j0 + t) := by
+        intro t ht
+        have h := hlock (i0 + t) (by omega) (by omega)
+        have hidx : i0 + t + 3 = j0 + t := by omega
+        rw [hidx] at h
+        exact h.symm
+      have hexp :=
+        dubX_repeated_window_exp_bound (i := i0) (j := j0) (L := L0)
+          hξ1 hξW (by norm_num) (by norm_num) (by omega) (by omega) hmatch
+      have hpow_j : 3 ^ 11 * 4 ^ W ≤ 2 ^ (2 * W + 18) := by
+        have h11 : 3 ^ 11 ≤ 2 ^ 18 := by decide
+        have h4W : 4 ^ W = 2 ^ (2 * W) := by
+          have h4 : (4 : ℕ) = 2 ^ 2 := rfl
+          rw [h4, ← Nat.pow_mul]
+        rw [h4W, Nat.pow_add 2 (2 * W) 18, Nat.mul_comm (2 ^ (2 * W))]
+        exact Nat.mul_le_mul_right (2 ^ (2 * W)) h11
+      have h3j_le : 3 ^ j0 * 2 ^ W ≤ 2 ^ (L0 + j0) := by
+        have hj0_split : 3 ^ j0 = 3 ^ 11 * 3 ^ W := by
+          dsimp [j0]
+          rw [Nat.add_comm W 11, Nat.pow_add]
+        have h3_le_4 : 3 ^ W ≤ 4 ^ W := Nat.pow_le_pow_left (by decide) W
+        have hmul1 : 3 ^ 11 * 3 ^ W ≤ 3 ^ 11 * 4 ^ W :=
+          Nat.mul_le_mul_left (3 ^ 11) h3_le_4
+        have hmul2 : 3 ^ j0 * 2 ^ W ≤ 2 ^ (2 * W + 18) * 2 ^ W := by
+          rw [hj0_split]
+          exact Nat.mul_le_mul_right (2 ^ W) (le_trans hmul1 hpow_j)
+        have hexp_eq : 2 ^ (2 * W + 18) * 2 ^ W = 2 ^ (L0 + j0) := by
+          rw [← Nat.pow_add]
+          have h : 2 * W + 18 + W = L0 + j0 := by omega
+          rw [h]
+        linarith
+      omega
+    · push_neg at hex000
+      have hd := punctured_half_step_dichotomy_and_forbidden_short_gaps (ξ := ξ) hε
+      have hsum1 :
+          ∀ k ≤ W + 5,
+            dubCarry ξ 0 k + dubCarry ξ 0 (k + 1) + dubCarry ξ 0 (k + 2) = 1 := by
+        intro k hk
+        have hm0 := hmem k (by omega)
+        have hm1 := hmem (k + 1) (by omega)
+        have hm2 := hmem (k + 2) (by omega)
+        have hm3 := hmem (k + 3) (by omega)
+        have hb0 := (hd.1 k hm0.1 hm0.2 hm1.1 hm1.2).1
+        have hb1 := (hd.1 (k + 1) hm1.1 hm1.2 hm2.1 hm2.2).1
+        have hb2 := (hd.1 (k + 2) hm2.1 hm2.2 hm3.1 hm3.2).1
+        have hno11_0 : dubCarry ξ 0 k = 1 → dubCarry ξ 0 (k + 1) = 0 :=
+          fun h1 => (hd.2.1 k hm0.1 hm0.2 hm1.1 hm1.2 hm2.1 hm2.2 h1).1
+        have hno101_0 : dubCarry ξ 0 k = 1 → dubCarry ξ 0 (k + 2) = 0 :=
+          hd.2.2 k hm0.1 hm0.2 hm1.1 hm1.2 hm2.1 hm2.2 hm3.1 hm3.2
+        have hno11_1 : dubCarry ξ 0 (k + 1) = 1 → dubCarry ξ 0 (k + 2) = 0 :=
+          fun h1 => (hd.2.1 (k + 1) hm1.1 hm1.2 hm2.1 hm2.2 hm3.1 hm3.2 h1).1
+        have hno000 := hex000 k hk
+        rcases hb0 with h0 | h0 <;> rcases hb1 with h1 | h1 <;> rcases hb2 with h2 | h2
+        · exfalso; exact hno000 h0 h1 h2
+        · omega
+        · omega
+        · exfalso; have := hno11_1 h1; omega
+        · omega
+        · exfalso; have := hno101_0 h0; omega
+        · exfalso; have := hno11_0 h0; omega
+        · exfalso; have := hno11_0 h0; omega
+      have hmatch : ∀ t < W + 3, dubCarry ξ 0 (2 + t) = dubCarry ξ 0 (5 + t) := by
+        intro t ht
+        have hs1 := hsum1 (2 + t) (by omega)
+        have hs2 := hsum1 (3 + t) (by omega)
+        have hidx1 : 3 + t = 2 + t + 1 := by omega
+        have hidx2 : 3 + t + 1 = 2 + t + 2 := by omega
+        have hidx3 : 3 + t + 2 = 5 + t := by omega
+        rw [hidx2, hidx3] at hs2
+        rw [hidx1] at hs2
+        omega
+      have hexp :=
+        dubX_repeated_window_exp_bound (i := 2) (j := 5) (L := W + 3)
+          hξ1 hξW (by norm_num) (by norm_num) le_rfl (by omega) hmatch
+      have hpow : 3 ^ 5 * 2 ^ W < 2 ^ ((W + 3) + 5) := by
+        calc
+          3 ^ 5 * 2 ^ W = 243 * 2 ^ W := by ring
+          _ < 256 * 2 ^ W := Nat.mul_lt_mul_of_pos_right (by decide) (Nat.pow_pos (by decide))
+          _ = 2 ^ ((W + 3) + 5) := by
+            have h : (W + 3) + 5 = 8 + W := by omega
+            rw [h, Nat.pow_add]
+      omega
+  refine ⟨hexplicit, ?_⟩
+  have h2k_all : ∀ n : ℕ, (1 : ℝ) + (n : ℝ) ≤ (3 / 2 : ℝ) ^ (2 * n) := by
+    intro n
+    induction n with
+    | zero => simp
+    | succ m ih =>
+        push_cast
+        have hstep : (3 / 2 : ℝ) ^ (2 * (m + 1)) = (9 / 4 : ℝ) * (3 / 2 : ℝ) ^ (2 * m) := by
+          have h2m : 2 * (m + 1) = 2 * m + 2 := by ring
+          rw [h2m, pow_add]
+          norm_num
+          ring
+        have hpos : (0 : ℝ) ≤ (m : ℝ) := Nat.cast_nonneg m
+        nlinarith
+  intro ξ hξ N_0
+  obtain ⟨k, hk⟩ := exists_nat_gt (max (1 / ξ) (ξ * (3 / 2 : ℝ) ^ N_0))
+  have hk_inv : 1 / ξ < (k : ℝ) := lt_of_le_of_lt (le_max_left _ _) hk
+  have h1_lt : (1 : ℝ) < ξ * (k : ℝ) := (div_lt_iff₀' hξ).mp hk_inv
+  have h32_gt1 : (1 : ℝ) < (3 / 2 : ℝ) := by norm_num
+  have hpow_ge1 : (1 : ℝ) ≤ (3 / 2 : ℝ) ^ N_0 := one_le_pow₀ (le_of_lt h32_gt1)
+  have hξ_N0_ge1 : (1 : ℝ) ≤ ξ * (3 / 2 : ℝ) ^ (N_0 + 2 * k) := by
+    have h2k := h2k_all k
+    have hmul : ξ * (1 + (k : ℝ)) ≤ ξ * (3 / 2 : ℝ) ^ (2 * k) :=
+      mul_le_mul_of_nonneg_left h2k (le_of_lt hξ)
+    have hpow_add :
+        ξ * (3 / 2 : ℝ) ^ (N_0 + 2 * k) =
+          (3 / 2 : ℝ) ^ N_0 * (ξ * (3 / 2 : ℝ) ^ (2 * k)) := by
+      rw [pow_add]; ring
+    nlinarith
+  set ξ' := ξ * (3 / 2 : ℝ) ^ (N_0 + 2 * k)
+  obtain ⟨W, hW⟩ := exists_nat_gt ξ'
+  have hξ'W : ξ' < (2 : ℝ) ^ W := by
+    have hlt2 : (W : ℝ) < (2 : ℝ) ^ W := by
+      exact_mod_cast Nat.lt_two_pow_self
+    linarith
+  obtain ⟨m, _, hout⟩ := hexplicit hξ_N0_ge1 hξ'W
+  refine ⟨N_0 + 2 * k + m, by omega, ?_⟩
+  have heq : ξ * (3 / 2 : ℝ) ^ (N_0 + 2 * k + m) = ξ' * (3 / 2 : ℝ) ^ m := by
+    dsimp [ξ']
+    rw [pow_add, pow_add]
+    ring
+  rw [heq]
+  exact hout
+
+/-- Minimum element $\varepsilon_m = \frac{8}{57} - \frac{4 \cdot 2^{3m+4}}{57 (3^{3m+4} - 2^{3m+4})}$
+of the period-$(3m+4)$ homoclinic cycle $\mathcal{O}_m = \mathtt{(001)^m(0001)}$ accumulating at
+$\varepsilon^* = \frac{8}{57}$ from below. -/
+noncomputable def homoclinicCycleMin (m : ℕ) : ℝ :=
+  (8 / 57 : ℝ) -
+    (4 * (2 : ℝ) ^ (3 * m + 4)) / (57 * ((3 : ℝ) ^ (3 * m + 4) - (2 : ℝ) ^ (3 * m + 4)))
+
+/-- **Exact Fixed-Point Return, Strict Monotonicity, and Explicit Rational Values of the
+Sub-$8/57$ Homoclinic Periodic Cascade (`homoclinicCycleMin_closed_form_and_strictMono`)**:
+For every $m \ge 1$, the point $\varepsilon_m = \text{homoclinicCycleMin } m$ satisfies:
+1. **Exact $(3m+4)$-step return under `0001` followed by $m$ blocks of `001`:**
+   $$\left(\frac{27}{8}\right)^m \left(\left(\frac{81}{16} \varepsilon_m - \frac{1}{2}\right) - \frac{4}{19}\right) = \varepsilon_m - \frac{4}{19},$$
+2. **Strict monotonic accumulation at $8/57$ from below:**
+   $\varepsilon_m < \varepsilon_{m+1} < \frac{8}{57}$,
+3. **Explicit rational values and $1/8$ comparison:**
+   $\varepsilon_1 = \frac{280}{2059}$, $\varepsilon_2 = \frac{8072}{58025}$,
+   $\varepsilon_3 = \frac{222040}{1586131}$, and
+   $\frac{1}{8} < \varepsilon_1 < \varepsilon_2 < \varepsilon_3 < \frac{8}{57}$. -/
+theorem homoclinicCycleMin_closed_form_and_strictMono :
+    (∀ m : ℕ,
+      ((27 / 8 : ℝ) ^ m) * (((81 / 16 : ℝ) * homoclinicCycleMin m - (1 / 2 : ℝ)) - (4 / 19 : ℝ)) =
+        homoclinicCycleMin m - (4 / 19 : ℝ) ∧
+      homoclinicCycleMin m < homoclinicCycleMin (m + 1) ∧
+      homoclinicCycleMin (m + 1) < (8 / 57 : ℝ)) ∧
+    homoclinicCycleMin 1 = (280 / 2059 : ℝ) ∧
+    homoclinicCycleMin 2 = (8072 / 58025 : ℝ) ∧
+    homoclinicCycleMin 3 = (222040 / 1586131 : ℝ) ∧
+    (1 / 8 : ℝ) < homoclinicCycleMin 1 ∧
+    homoclinicCycleMin 1 < homoclinicCycleMin 2 ∧
+    homoclinicCycleMin 2 < homoclinicCycleMin 3 ∧
+    homoclinicCycleMin 3 < (8 / 57 : ℝ) := by
+  have hgen :
+      ∀ m : ℕ,
+        ((27 / 8 : ℝ) ^ m) * (((81 / 16 : ℝ) * homoclinicCycleMin m - (1 / 2 : ℝ)) - (4 / 19 : ℝ)) =
+          homoclinicCycleMin m - (4 / 19 : ℝ) ∧
+        homoclinicCycleMin m < homoclinicCycleMin (m + 1) ∧
+        homoclinicCycleMin (m + 1) < (8 / 57 : ℝ) := by
+    intro m
+    set L := 3 * m + 4
+    set L1 := 3 * (m + 1) + 4
+    have hL1_eq : L1 = L + 3 := by dsimp [L, L1]; omega
+    have h2L_lt_3L : (2 : ℝ) ^ L < (3 : ℝ) ^ L := by
+      exact_mod_cast Nat.pow_lt_pow_left (by decide : 2 < 3) (by dsimp [L]; omega)
+    have h2L1_lt_3L1 : (2 : ℝ) ^ L1 < (3 : ℝ) ^ L1 := by
+      exact_mod_cast Nat.pow_lt_pow_left (by decide : 2 < 3) (by dsimp [L1]; omega)
+    have hden_pos : 0 < (3 : ℝ) ^ L - (2 : ℝ) ^ L := by linarith
+    have hden1_pos : 0 < (3 : ℝ) ^ L1 - (2 : ℝ) ^ L1 := by linarith
+    have hpow27_8 :
+        ((27 / 8 : ℝ) ^ m) * (81 / 16 : ℝ) = ((3 : ℝ) ^ L) / ((2 : ℝ) ^ L) := by
+      have h27 : (27 / 8 : ℝ) ^ m = ((3 : ℝ) ^ 3 / (2 : ℝ) ^ 3) ^ m := by norm_num
+      have h81 : (81 / 16 : ℝ) = ((3 : ℝ) ^ 4) / ((2 : ℝ) ^ 4) := by norm_num
+      rw [h27, h81, div_pow, ← pow_mul, ← pow_mul, div_mul_div_comm, ← pow_add, ← pow_add]
+    have hshift :
+        ((81 / 16 : ℝ) * homoclinicCycleMin m - (1 / 2 : ℝ)) - (4 / 19 : ℝ) =
+          (81 / 16 : ℝ) * (homoclinicCycleMin m - (8 / 57 : ℝ)) := by
+      ring
+    have hret :
+        ((27 / 8 : ℝ) ^ m) * (((81 / 16 : ℝ) * homoclinicCycleMin m - (1 / 2 : ℝ)) - (4 / 19 : ℝ)) =
+          homoclinicCycleMin m - (4 / 19 : ℝ) := by
+      rw [hshift, ← mul_assoc, hpow27_8]
+      unfold homoclinicCycleMin
+      change ((3 : ℝ) ^ L / (2 : ℝ) ^ L) *
+        ((8 / 57 : ℝ) - (4 * (2 : ℝ) ^ L) / (57 * ((3 : ℝ) ^ L - (2 : ℝ) ^ L)) - (8 / 57 : ℝ)) =
+        (8 / 57 : ℝ) - (4 * (2 : ℝ) ^ L) / (57 * ((3 : ℝ) ^ L - (2 : ℝ) ^ L)) - (4 / 19 : ℝ)
+      have h2L_pos : (0 : ℝ) < (2 : ℝ) ^ L := by positivity
+      field_simp [ne_of_gt h2L_pos, ne_of_gt hden_pos]
+      ring
+    have hlt_8_57 : homoclinicCycleMin (m + 1) < (8 / 57 : ℝ) := by
+      unfold homoclinicCycleMin
+      change (8 / 57 : ℝ) - (4 * (2 : ℝ) ^ L1) / (57 * ((3 : ℝ) ^ L1 - (2 : ℝ) ^ L1)) < (8 / 57 : ℝ)
+      have hpos_frac : 0 < (4 * (2 : ℝ) ^ L1) / (57 * ((3 : ℝ) ^ L1 - (2 : ℝ) ^ L1)) := by positivity
+      linarith
+    have hmono : homoclinicCycleMin m < homoclinicCycleMin (m + 1) := by
+      unfold homoclinicCycleMin
+      change (8 / 57 : ℝ) - (4 * (2 : ℝ) ^ L) / (57 * ((3 : ℝ) ^ L - (2 : ℝ) ^ L)) <
+        (8 / 57 : ℝ) - (4 * (2 : ℝ) ^ L1) / (57 * ((3 : ℝ) ^ L1 - (2 : ℝ) ^ L1))
+      have h3L1 : (3 : ℝ) ^ L1 = 27 * (3 : ℝ) ^ L := by
+        rw [hL1_eq, pow_add]; ring
+      have h2L1 : (2 : ℝ) ^ L1 = 8 * (2 : ℝ) ^ L := by
+        rw [hL1_eq, pow_add]; ring
+      have hdiff :
+          (4 * (2 : ℝ) ^ L) / (57 * ((3 : ℝ) ^ L - (2 : ℝ) ^ L)) -
+            (4 * (2 : ℝ) ^ L1) / (57 * ((3 : ℝ) ^ L1 - (2 : ℝ) ^ L1)) =
+            (4332 * (2 : ℝ) ^ L * (3 : ℝ) ^ L) /
+              (57 * ((3 : ℝ) ^ L - (2 : ℝ) ^ L) * (57 * ((3 : ℝ) ^ L1 - (2 : ℝ) ^ L1))) := by
+        field_simp [ne_of_gt hden_pos, ne_of_gt hden1_pos]
+        rw [h3L1, h2L1]
+        ring
+      have hpos_rhs :
+          0 < (4332 * (2 : ℝ) ^ L * (3 : ℝ) ^ L) /
+            (57 * ((3 : ℝ) ^ L - (2 : ℝ) ^ L) * (57 * ((3 : ℝ) ^ L1 - (2 : ℝ) ^ L1))) := by
+        positivity
+      linarith
+    exact ⟨hret, hmono, hlt_8_57⟩
+  refine ⟨hgen, ?_⟩
+  unfold homoclinicCycleMin
+  refine ⟨by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num, by norm_num⟩
+
+/-- Exact integer-scaled step of the Cantor cylinder tree on a punctured bottom window $[p/q, 1/2)$
+from depth $d$ (denominator $2 q \cdot 2^d$) to depth $d + 1$ (denominator $2 q \cdot 2^{d+1}$). -/
+def cantorPuncturedHalfStep (p q : ℤ) (d : ℕ) (ivs : List (ℤ × ℤ)) : List (ℤ × ℤ) :=
+  let loBound : ℤ := 2 * p * (2 : ℤ) ^ (d + 1)
+  let hiBound : ℤ := q * (2 : ℤ) ^ (d + 1)
+  ivs.flatMap fun (x, y) =>
+    let lo0 := if loBound ≤ 3 * x then 3 * x else loBound
+    let hi0 := if 3 * y ≤ hiBound then 3 * y else hiBound
+    let lo1 := if loBound ≤ 3 * x - hiBound then 3 * x - hiBound else loBound
+    let hi1 := if 3 * y - hiBound ≤ hiBound then 3 * y - hiBound else hiBound
+    (if lo0 < hi0 then [(lo0, hi0)] else []) ++
+      (if lo1 < hi1 then [(lo1, hi1)] else [])
+
+/-- Single-pass accumulator returning `[|C_0|, |C_1|, ..., |C_n|]` on $[p/q, 1/2)$. -/
+def cantorPuncturedHalfLengthsAux (p q : ℤ) : ℕ → ℕ → List (ℤ × ℤ) → List ℕ
+  | 0, _, ivs => [ivs.length]
+  | k + 1, d, ivs =>
+      ivs.length :: cantorPuncturedHalfLengthsAux p q k (d + 1) (cantorPuncturedHalfStep p q d ivs)
+
+/-- List of Cantor cylinder counts $|C_d([p/q, 1/2))|$ for $0 \le d \le n$. -/
+def cantorPuncturedHalfLengths (p q : ℤ) (n : ℕ) : List ℕ :=
+  cantorPuncturedHalfLengthsAux p q n 0 [(2 * p, q)]
+
+set_option maxRecDepth 200000 in
+/-- **Kernel-Certified Cantor Cylinder Counts Across the $\varepsilon^* = 8/57$ Phase Transition
+(`cantorPuncturedHalf_phase_transition_counts`)**:
+1. On $[4/27, 1/2)$ ($\varepsilon = 4/27 \approx 0.14815$), the cylinder counts stabilize at $3$:
+   `[1, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3]`.
+2. On $[1/7, 1/2)$ ($\varepsilon = 1/7 \approx 0.14286 \in (8/57, 4/27)$), the cylinder counts stabilize at $6$:
+   `[1, 2, 3, 4, 5, 6, 6, 6, 6, 6, 6]`.
+3. At the exact homoclinic threshold $[8/57, 1/2)$ ($\varepsilon^* = 8/57 \approx 0.140351$),
+   the cylinder counts equal $d + 1$ for $0 \le d \le 10$:
+   `[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]`.
+4. Below the first homoclinic cycle ($[1/8, 1/2)$ with $1/8 < \varepsilon_1 = 280/2059 < 8/57$),
+   the cylinder counts match $d + 1$ up to $d = 6$ and bifurcate at $d = 7$ (period $7$ of $\mathcal{O}_1$):
+   `[1, 2, 3, 4, 5, 6, 7, 9, 11, 13, 16]`. -/
+theorem cantorPuncturedHalf_phase_transition_counts :
+    cantorPuncturedHalfLengths 4 27 10 = [1, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3] ∧
+    cantorPuncturedHalfLengths 1 7 10 = [1, 2, 3, 4, 5, 6, 6, 6, 6, 6, 6] ∧
+    cantorPuncturedHalfLengths 8 57 10 = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11] ∧
+    cantorPuncturedHalfLengths 1 8 10 = [1, 2, 3, 4, 5, 6, 7, 9, 11, 13, 16] := by
+  decide
+
 end Mahler.DubickasExtension
+
