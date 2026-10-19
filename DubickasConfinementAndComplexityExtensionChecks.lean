@@ -179,6 +179,18 @@ example :
 #print axioms Mahler.DubickasExtension.rungDeathBand_step_and_measure_decomposition
 #print axioms Mahler.DubickasExtension.catapult_into_death_band_seven_step_escape
 
+-- 11. Verify higher-order gap bijection and 2059 leak-threading survivor lock
+example :
+    1 - rungCleanedMeasure 3 (8 / 57 : ℝ) / rungLeakWidth 3 = (1 / 19 : ℝ) ∧
+    ((2 : ℤ) ^ 7 ∣ (2059 * 56 + 280)) ∧
+    ((2 : ℤ) ^ 14 ∣ (2059 * 1464 + 280)) ∧
+    ((2 : ℤ) ^ 21 ∣ (2059 * 1443256 + 280)) :=
+  ⟨rungDeathGap_maps_onto_catapult_zone.2.1,
+    homoclinic_seven_cycle_in_gap_and_divisibility_lock.2.2⟩
+
+#print axioms Mahler.DubickasExtension.rungDeathGap_maps_onto_catapult_zone
+#print axioms Mahler.DubickasExtension.homoclinic_seven_cycle_in_gap_and_divisibility_lock
+
 #print axioms Mahler.DubickasExtension.dubBaseCarry_eq_fract_linear
 #print axioms Mahler.DubickasExtension.dubBaseY_multi_step_carry_identity
 #print axioms Mahler.DubickasExtension.dubBaseCarry_mem_two_letters
