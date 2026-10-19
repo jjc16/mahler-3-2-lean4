@@ -61,6 +61,33 @@ example {ξ : ℝ} (hξ : 0 < ξ) (N_0 : ℕ) :
     window_three_eighths_infinite_escape hξ N_0,
     dubickas2008_closed_union_infinite_escape hξ N_0⟩
 
+-- 4. Verify unconditional shifted 1/3-window escape (Dubickas 2009 Theorem 1 for 3/2), floor residue non-stabilization for m >= 3, and general-base p/q carry cancellation
+example {ξ s : ℝ} {W : ℕ}
+    (hξ1 : (1 : ℝ) ≤ ξ) (hξW : ξ < (2 : ℝ) ^ W)
+    (hs0 : 0 ≤ s) (hs23 : s ≤ (2 / 3 : ℝ)) :
+    (∃ n ≤ 5 * W + 14, (1 / 3 : ℝ) < Int.fract (ξ * (3 / 2 : ℝ) ^ n - s)) ∧
+      (∃ n ≤ 5 * W + 14,
+        Int.fract (ξ * (3 / 2 : ℝ) ^ n) < s ∨
+          s + (1 / 3 : ℝ) < Int.fract (ξ * (3 / 2 : ℝ) ^ n)) :=
+  shifted_third_unconditional_explicit_escape hξ1 hξW hs0 hs23
+
+example {m : ℕ} (hm3 : 3 ≤ m) {ξ : ℝ} (hξ : 0 < ξ) (N_0 : ℕ) :
+    ∃ n ≥ N_0,
+      ⌊ξ * (3 / 2 : ℝ) ^ n⌋ % (m : ℤ) ≠ ⌊ξ * (3 / 2 : ℝ) ^ N_0⌋ % (m : ℤ) :=
+  (floor_mod_non_stabilization_of_three_le hm3).2 hξ N_0
+
+#print axioms Mahler.DubickasExtension.prefixFactorCount_succ_le_of_no_bispecial
+#print axioms Mahler.DubickasExtension.prefixFactorCount_le_add_one_of_no_bispecial
+#print axioms Mahler.DubickasExtension.dubCarryNat_shifted_third_prefixFactorCount_le
+#print axioms Mahler.DubickasExtension.shifted_third_unconditional_explicit_escape
+#print axioms Mahler.DubickasExtension.shifted_third_unconditional_infinite_escape
+#print axioms Mahler.DubickasExtension.floor_emod_eq_iff_fract_div_mem_cell
+#print axioms Mahler.DubickasExtension.floor_mod_non_stabilization_of_three_le
+#print axioms Mahler.DubickasExtension.dubickas2008_four_cycle_two_pow_dvd
+#print axioms Mahler.DubickasExtension.dubBaseX_multi_step_carry_identity
+#print axioms Mahler.DubickasExtension.dubBaseX_repeat_factor_cancellation
+#print axioms Mahler.DubickasExtension.dubBaseX_repeated_window_exp_and_power_cutoff
+
 #print axioms Mahler.DubickasExtension.dubCarry_eq_fract_linear
 #print axioms Mahler.DubickasExtension.dubX_multi_step_carry_identity
 #print axioms Mahler.DubickasExtension.dubY_multi_step_carry_identity
