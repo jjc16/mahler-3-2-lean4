@@ -118,6 +118,28 @@ example {ξ : ℝ} {W : ℕ} (hξ1 : (1 : ℝ) ≤ ξ) (hξW : ξ < (2 : ℝ) ^ 
 #print axioms Mahler.DubickasExtension.union_two_thirds_explicit_and_infinite_escape
 #print axioms Mahler.DubickasExtension.union_twenty_five_thirty_sixths_explicit_and_infinite_escape
 
+-- 7. Verify Thue-Morse Cantor cascade and general g-rung window ladder & valuation lock
+example :
+    tmCascadeEntry 5 < (2 / 7 : ℝ) ∧ (2 / 7 : ℝ) < tmCascadeEntry 4 :=
+  ⟨tmCascadeEntry_explicit_values_and_two_sevenths_cutoff.2.2.2.2.2.2.2.1,
+    tmCascadeEntry_explicit_values_and_two_sevenths_cutoff.2.2.2.2.2.2.2.2⟩
+
+example {g : ℕ} (hg : 3 ≤ g) :
+    (1 / 3 : ℝ) < rungAlpha g ∧ rungAlpha g < rungBeta g ∧ rungBeta g < (1 / 2 : ℝ) :=
+  ⟨(rungAlpha_lt_rungBeta_lt_half hg).1,
+    (rungAlpha_lt_rungBeta_lt_half hg).2.1,
+    (rungAlpha_lt_rungBeta_lt_half hg).2.2.1⟩
+
+#print axioms Mahler.DubickasExtension.tmCascadeCarryAcc_mahlerProd_identity
+#print axioms Mahler.DubickasExtension.tmCascadeEntry_closed_form
+#print axioms Mahler.DubickasExtension.tmCascadeEntry_step_ratio_and_strictAnti
+#print axioms Mahler.DubickasExtension.tmCascadeEntry_explicit_values_and_two_sevenths_cutoff
+#print axioms Mahler.DubickasExtension.tmCascade_periodic_orbit_two_pow_dvd
+#print axioms Mahler.DubickasExtension.cantorTwoSevenths_matches_mahlerBinaryPartition_up_to_15_and_splits_at_16
+#print axioms Mahler.DubickasExtension.rungAlpha_lt_rungBeta_lt_half
+#print axioms Mahler.DubickasExtension.gap_ladder_short_gap_cost_and_cap
+#print axioms Mahler.DubickasExtension.general_rung_first_defect_valuation_lock
+
 #print axioms Mahler.DubickasExtension.dubBaseCarry_eq_fract_linear
 #print axioms Mahler.DubickasExtension.dubBaseY_multi_step_carry_identity
 #print axioms Mahler.DubickasExtension.dubBaseCarry_mem_two_letters

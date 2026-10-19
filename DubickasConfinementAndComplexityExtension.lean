@@ -3737,4 +3737,602 @@ theorem union_twenty_five_thirty_sixths_explicit_and_infinite_escape :
     rw [pow_add, mul_assoc]
   rwa [← hmul]
 
+/-! ## 10. The Thue–Morse Period-Doubling Cantor Cascade on $[c, 1-c]$, Exact Fermat-Denominator Reduction, and the $[2/7, 5/7]$ Cutoff Between $k = 4$ and $k = 5$ -/
+
+/-- Carry accumulator $A(T_k) = \sum_{t=0}^{2^k - 1} 3^{2^k - 1 - t} 2^t \operatorname{tmBit}(t)$
+of the length-$2^k$ Thue–Morse prefix $T_k = T_{k-1} \overline{T_{k-1}}$. -/
+def tmCascadeCarryAcc : ℕ → ℤ
+  | 0 => 0
+  | k + 1 =>
+      (3 : ℤ) ^ (2 ^ k) * tmCascadeCarryAcc k +
+        (2 : ℤ) ^ (2 ^ k) * (((3 : ℤ) ^ (2 ^ k) - (2 : ℤ) ^ (2 ^ k)) - tmCascadeCarryAcc k)
+
+/-- Homogeneous Thue–Morse Mahler product
+$\operatorname{tmMahlerProd}(k) = \prod_{n=0}^{k-1} (3^{2^n} - 2^{2^n})$. -/
+def tmMahlerProd : ℕ → ℤ
+  | 0 => 1
+  | k + 1 => tmMahlerProd k * ((3 : ℤ) ^ (2 ^ k) - (2 : ℤ) ^ (2 ^ k))
+
+/-- **Exact Factorization of the Thue–Morse Carry Accumulator (`tmCascadeCarryAcc_succ_factored`)**:
+Because $T_{k+1} = T_k \overline{T_k}$, the carry accumulator $A(T_{k+1})$ factors by
+$(3^{2^k} - 2^{2^k})$, reducing the period-$2^{k+1}$ denominator from $3^{2^{k+1}} - 2^{2^{k+1}}$
+to the Fermat-like factor $3^{2^k} + 2^{2^k}$:
+`tmCascadeCarryAcc (k + 1) = (3^(2^k) - 2^(2^k)) * (tmCascadeCarryAcc k + 2^(2^k))`. -/
+theorem tmCascadeCarryAcc_succ_factored (k : ℕ) :
+    tmCascadeCarryAcc (k + 1) =
+      ((3 : ℤ) ^ (2 ^ k) - (2 : ℤ) ^ (2 ^ k)) * (tmCascadeCarryAcc k + (2 : ℤ) ^ (2 ^ k)) := by
+  conv_lhs => rw [tmCascadeCarryAcc]
+  ring
+
+/-- **Exact Thue–Morse Mahler Product Identity (`tmCascadeCarryAcc_mahlerProd_identity`)**:
+For every $k \in \mathbb{N}$:
+$$(3^{2^k} - 2^{2^k}) - 2 A(T_k) = \prod_{n=0}^{k-1} \left(3^{2^n} - 2^{2^n}\right).$$ -/
+theorem tmCascadeCarryAcc_mahlerProd_identity (k : ℕ) :
+    ((3 : ℤ) ^ (2 ^ k) - (2 : ℤ) ^ (2 ^ k)) - 2 * tmCascadeCarryAcc k = tmMahlerProd k := by
+  induction k with
+  | zero => decide
+  | succ k ih =>
+      have hpow3 : (3 : ℤ) ^ (2 ^ (k + 1)) = ((3 : ℤ) ^ (2 ^ k)) ^ 2 := by
+        rw [Nat.pow_succ, pow_mul]
+      have hpow2 : (2 : ℤ) ^ (2 ^ (k + 1)) = ((2 : ℤ) ^ (2 ^ k)) ^ 2 := by
+        rw [Nat.pow_succ, pow_mul]
+      rw [tmCascadeCarryAcc_succ_factored, tmMahlerProd, hpow3, hpow2, ← ih]
+      ring
+
+/-- Fermat-like denominator $F_m = 3^{2^m} + 2^{2^m}$ of the period-$2^{m+1}$ Thue–Morse cycle. -/
+def tmFermatDenom (m : ℕ) : ℤ :=
+  (3 : ℤ) ^ (2 ^ m) + (2 : ℤ) ^ (2 ^ m)
+
+theorem tmFermatDenom_pos (m : ℕ) : 0 < tmFermatDenom m := by
+  unfold tmFermatDenom
+  positivity
+
+/-- Half-period orbit numerator $3^{2^m} - A(T_m)$ at index $r = 2^m$ of the period-$2^{m+1}$
+Thue–Morse cycle, and minimum orbit numerator $N_{\min}(m) = \frac{3(3^{2^m} - A(T_m)) - (3^{2^m} + 2^{2^m})}{2}$
+at index $r = 2^m + 1$. -/
+noncomputable def tmCascadeEntry (k : ℕ) : ℝ :=
+  let m := k - 1
+  (3 * ((3 : ℝ) ^ (2 ^ m) - (tmCascadeCarryAcc m : ℝ)) - (tmFermatDenom m : ℝ)) /
+    (2 * (tmFermatDenom m : ℝ))
+
+/-- **Exact Closed-Form Thue–Morse Cantor Cascade Entry Formula (`tmCascadeEntry_closed_form`)**:
+For every cascade level $k \ge 1$ ($m = k - 1$, period $2^k$):
+1. $(3^{2^{k-1}} + 2^{2^{k-1}})(4 c_k - 1) = 3 \prod_{n=0}^{k-2} (3^{2^n} - 2^{2^n})$, and
+2. $4 c_k - 1 = \frac{3 \cdot \operatorname{tmMahlerProd}(k - 1)}{3^{2^{k-1}} + 2^{2^{k-1}}}$. -/
+theorem tmCascadeEntry_closed_form {k : ℕ} (_hk : 1 ≤ k) :
+    (tmFermatDenom (k - 1) : ℝ) * (4 * tmCascadeEntry k - 1) =
+      3 * (tmMahlerProd (k - 1) : ℝ) ∧
+    4 * tmCascadeEntry k - 1 =
+      (3 * (tmMahlerProd (k - 1) : ℝ)) / (tmFermatDenom (k - 1) : ℝ) := by
+  set m := k - 1
+  have hF_pos : (0 : ℝ) < (tmFermatDenom m : ℝ) := by exact_mod_cast tmFermatDenom_pos m
+  have hF_ne : (tmFermatDenom m : ℝ) ≠ 0 := ne_of_gt hF_pos
+  have hid_int := tmCascadeCarryAcc_mahlerProd_identity m
+  have hid_real :
+      ((3 : ℝ) ^ (2 ^ m) - (2 : ℝ) ^ (2 ^ m)) - 2 * (tmCascadeCarryAcc m : ℝ) =
+        (tmMahlerProd m : ℝ) := by
+    exact_mod_cast hid_int
+  have hF_def : (tmFermatDenom m : ℝ) = (3 : ℝ) ^ (2 ^ m) + (2 : ℝ) ^ (2 ^ m) := by
+    unfold tmFermatDenom
+    push_cast
+    rfl
+  have hmul :
+      (tmFermatDenom m : ℝ) * (4 * tmCascadeEntry k - 1) = 3 * (tmMahlerProd m : ℝ) := by
+    unfold tmCascadeEntry
+    dsimp [m]
+    have h1 :
+        (tmFermatDenom m : ℝ) *
+          (4 * ((3 * ((3 : ℝ) ^ (2 ^ m) - (tmCascadeCarryAcc m : ℝ)) - (tmFermatDenom m : ℝ)) /
+            (2 * (tmFermatDenom m : ℝ))) - 1) =
+          6 * ((3 : ℝ) ^ (2 ^ m) - (tmCascadeCarryAcc m : ℝ)) - 3 * (tmFermatDenom m : ℝ) := by
+      field_simp [hF_ne]
+      ring
+    rw [h1, hF_def, ← hid_real]
+    ring
+  refine ⟨hmul, ?_⟩
+  rw [eq_div_iff hF_ne]
+  linarith
+
+/-- **Exact Difference-of-Squares Ratio & Strict Descent of the Thue–Morse Cascade
+(`tmCascadeEntry_step_ratio_and_strictAnti`)**:
+For every cascade level $k \ge 1$:
+1. $(3^{2^k} + 2^{2^k})(4 c_{k+1} - 1) = (3^{2^k} - 2^{2^k})(4 c_k - 1)$,
+2. $\frac{1}{4} < c_{k+1} < c_k$. -/
+theorem tmCascadeEntry_step_ratio_and_strictAnti {k : ℕ} (hk : 1 ≤ k) :
+    ((3 : ℝ) ^ (2 ^ k) + (2 : ℝ) ^ (2 ^ k)) * (4 * tmCascadeEntry (k + 1) - 1) =
+      ((3 : ℝ) ^ (2 ^ k) - (2 : ℝ) ^ (2 ^ k)) * (4 * tmCascadeEntry k - 1) ∧
+    (1 / 4 : ℝ) < tmCascadeEntry (k + 1) ∧
+    tmCascadeEntry (k + 1) < tmCascadeEntry k := by
+  have hk1 : (k + 1) - 1 = k := by omega
+  have hcf_k := (tmCascadeEntry_closed_form hk).1
+  have hcf_k1 := (tmCascadeEntry_closed_form (by omega : 1 ≤ k + 1)).1
+  rw [hk1] at hcf_k1
+  set m := k - 1
+  have hm_succ : k = m + 1 := by omega
+  have hdiff_sq :
+      (tmFermatDenom m : ℝ) * ((3 : ℝ) ^ (2 ^ m) - (2 : ℝ) ^ (2 ^ m)) =
+        (3 : ℝ) ^ (2 ^ k) - (2 : ℝ) ^ (2 ^ k) := by
+    unfold tmFermatDenom
+    push_cast
+    rw [hm_succ, Nat.pow_succ, pow_mul, pow_mul]
+    ring
+  have hprod_succ :
+      (tmMahlerProd k : ℝ) =
+        (tmMahlerProd m : ℝ) * ((3 : ℝ) ^ (2 ^ m) - (2 : ℝ) ^ (2 ^ m)) := by
+    conv_lhs => rw [hm_succ, tmMahlerProd]
+    push_cast
+    rfl
+  have hFk_def : (tmFermatDenom k : ℝ) = (3 : ℝ) ^ (2 ^ k) + (2 : ℝ) ^ (2 ^ k) := by
+    unfold tmFermatDenom
+    push_cast
+    rfl
+  have hratio :
+      ((3 : ℝ) ^ (2 ^ k) + (2 : ℝ) ^ (2 ^ k)) * (4 * tmCascadeEntry (k + 1) - 1) =
+        ((3 : ℝ) ^ (2 ^ k) - (2 : ℝ) ^ (2 ^ k)) * (4 * tmCascadeEntry k - 1) := by
+    rw [← hFk_def, hcf_k1, hprod_succ, ← hdiff_sq]
+    linear_combination ((3 : ℝ) ^ (2 ^ m) - (2 : ℝ) ^ (2 ^ m)) * hcf_k.symm
+  have hprod_pos : ∀ n : ℕ, 0 < tmMahlerProd n := by
+    intro n
+    induction n with
+    | zero => decide
+    | succ n ih =>
+        unfold tmMahlerProd
+        have hlt : (2 : ℤ) ^ (2 ^ n) < (3 : ℤ) ^ (2 ^ n) := by
+          exact_mod_cast Nat.pow_lt_pow_left (by decide : 2 < 3) (Nat.pos_iff_ne_zero.mp (Nat.pow_pos (by decide)))
+        exact mul_pos ih (by linarith)
+  have h4ck1_pos : 0 < 4 * tmCascadeEntry (k + 1) - 1 := by
+    rw [(tmCascadeEntry_closed_form (by omega : 1 ≤ k + 1)).2, hk1]
+    have h1 : (0 : ℝ) < (tmMahlerProd k : ℝ) := by exact_mod_cast hprod_pos k
+    have h2 : (0 : ℝ) < (tmFermatDenom k : ℝ) := by exact_mod_cast tmFermatDenom_pos k
+    positivity
+  have h2pow_pos : (0 : ℝ) < (2 : ℝ) ^ (2 ^ k) := by positivity
+  have h3pow_gt : (2 : ℝ) ^ (2 ^ k) < (3 : ℝ) ^ (2 ^ k) := by
+    exact_mod_cast Nat.pow_lt_pow_left (by decide : 2 < 3) (Nat.pos_iff_ne_zero.mp (Nat.pow_pos (by decide)))
+  have hlt_4 : 4 * tmCascadeEntry (k + 1) - 1 < 4 * tmCascadeEntry k - 1 := by
+    have hdiff :
+        ((3 : ℝ) ^ (2 ^ k) - (2 : ℝ) ^ (2 ^ k)) * (4 * tmCascadeEntry k - 1) -
+          ((3 : ℝ) ^ (2 ^ k) - (2 : ℝ) ^ (2 ^ k)) * (4 * tmCascadeEntry (k + 1) - 1) =
+          2 * (2 : ℝ) ^ (2 ^ k) * (4 * tmCascadeEntry (k + 1) - 1) := by
+      linarith [hratio]
+    have hpos_rhs : 0 < 2 * (2 : ℝ) ^ (2 ^ k) * (4 * tmCascadeEntry (k + 1) - 1) := by positivity
+    nlinarith
+  exact ⟨hratio, by linarith, by linarith⟩
+
+/-- **Exact Rational Values of $c_1, \dots, c_5$ and the $[2/7, 5/7]$ Cutoff Between $k = 4$ and $k = 5$
+(`tmCascadeEntry_explicit_values_and_two_sevenths_cutoff`)**:
+1. $c_1 = 2/5$, $c_2 = 4/13$, $c_3 = 28/97$, $c_4 = 1948/6817$, $c_5 = 12314908/43112257$,
+2. $c_5 < 2/7 < c_4 < c_3 < c_2 < c_1$, with exact margins
+   $c_4 - 2/7 = \frac{2}{47719} > 0$ and $2/7 - c_5 = \frac{20198}{301785799} > 0$.
+This explains why the centred window $[2/7, 5/7]$ admits the first 4 levels of the
+Thue–Morse period-doubling cascade (periods $2, 4, 8, 16$, matching the binary partition
+growth $2, 4, 6, 10, \dots, 166$ up to depth $2^4 - 1 = 15$) and cuts off the 5th bifurcation
+at depth $2^4 = 16$ (period $32$). -/
+theorem tmCascadeEntry_explicit_values_and_two_sevenths_cutoff :
+    tmCascadeEntry 1 = (2 / 5 : ℝ) ∧
+    tmCascadeEntry 2 = (4 / 13 : ℝ) ∧
+    tmCascadeEntry 3 = (28 / 97 : ℝ) ∧
+    tmCascadeEntry 4 = (1948 / 6817 : ℝ) ∧
+    tmCascadeEntry 5 = (12314908 / 43112257 : ℝ) ∧
+    tmCascadeEntry 4 - (2 / 7 : ℝ) = (2 / 47719 : ℝ) ∧
+    (2 / 7 : ℝ) - tmCascadeEntry 5 = (20158 / 301785799 : ℝ) ∧
+    tmCascadeEntry 5 < (2 / 7 : ℝ) ∧
+    (2 / 7 : ℝ) < tmCascadeEntry 4 := by
+  have hacc :
+      tmCascadeCarryAcc 0 = 0 ∧ tmCascadeCarryAcc 1 = 2 ∧
+      tmCascadeCarryAcc 2 = 30 ∧ tmCascadeCarryAcc 3 = 2990 ∧
+      tmCascadeCarryAcc 4 = 20466030 := by
+    decide
+  have hF :
+      tmFermatDenom 0 = 5 ∧ tmFermatDenom 1 = 13 ∧
+      tmFermatDenom 2 = 97 ∧ tmFermatDenom 3 = 6817 ∧
+      tmFermatDenom 4 = 43112257 := by
+    decide
+  have h1 : tmCascadeEntry 1 = (2 / 5 : ℝ) := by
+    unfold tmCascadeEntry; dsimp; rw [hacc.1, hF.1]; norm_num
+  have h2 : tmCascadeEntry 2 = (4 / 13 : ℝ) := by
+    unfold tmCascadeEntry; dsimp; rw [hacc.2.1, hF.2.1]; norm_num
+  have h3 : tmCascadeEntry 3 = (28 / 97 : ℝ) := by
+    unfold tmCascadeEntry; dsimp; rw [hacc.2.2.1, hF.2.2.1]; norm_num
+  have h4 : tmCascadeEntry 4 = (1948 / 6817 : ℝ) := by
+    unfold tmCascadeEntry; dsimp; rw [hacc.2.2.2.1, hF.2.2.2.1]; norm_num
+  have h5 : tmCascadeEntry 5 = (12314908 / 43112257 : ℝ) := by
+    unfold tmCascadeEntry; dsimp; rw [hacc.2.2.2.2, hF.2.2.2.2]; norm_num
+  refine ⟨h1, h2, h3, h4, h5,
+    by rw [h4]; norm_num,
+    by rw [h5]; norm_num,
+    by rw [h5]; norm_num,
+    by rw [h4]; norm_num⟩
+
+/-- **General Fermat-Denominator $2^{2^k m}$-Divisibility Trap on Level-$k$ Thue–Morse Cycles
+(`tmCascade_periodic_orbit_two_pow_dvd`)**:
+Generalizes `dubickas2008_four_cycle_two_pow_dvd` ($k = 2, F_1 = 13$) to **every** level
+$k \ge 1$ of the Thue–Morse cascade ($F_{k-1} = 3^{2^{k-1}} + 2^{2^{k-1}} \in \{5, 13, 97, 6817, \dots\}$):
+whenever $y_r = \frac{v}{F_{k-1}}$ and $y_{r + 2^k m} = \frac{v}{F_{k-1}}$, the integer part
+$x_r = \lfloor \xi (3/2)^r \rfloor$ satisfies:
+$$2^{2^k m} \;\Big|\; \Big(\big(3^{2^{k-1}} + 2^{2^{k-1}}\big) x_r + v\Big).$$ -/
+theorem tmCascade_periodic_orbit_two_pow_dvd {ξ : ℝ} {k r m : ℕ} {v : ℤ}
+    (hy_r : dubY ξ 0 r = (v : ℝ) / (tmFermatDenom (k - 1) : ℝ))
+    (hy_rm : dubY ξ 0 (r + 2 ^ k * m) = (v : ℝ) / (tmFermatDenom (k - 1) : ℝ)) :
+    ((2 : ℤ) ^ (2 ^ k * m)) ∣ (tmFermatDenom (k - 1) * dubX ξ 0 r + v) := by
+  set L := 2 ^ k * m
+  set F := tmFermatDenom (k - 1)
+  have hF_pos : (0 : ℝ) < (F : ℝ) := by exact_mod_cast tmFermatDenom_pos (k - 1)
+  have hF_ne : (F : ℝ) ≠ 0 := ne_of_gt hF_pos
+  have hX := dubX_multi_step_carry_identity ξ 0 r L
+  have hY := dubY_multi_step_carry_identity ξ 0 r L
+  rw [hy_r, hy_rm] at hY
+  have hY_cleared :
+      (2 : ℝ) ^ L * (v : ℝ) =
+        (3 : ℝ) ^ L * (v : ℝ) - (F : ℝ) * (dubCarryAcc (dubCarry ξ 0) r L : ℝ) := by
+    have h := congrArg ((F : ℝ) * ·) hY
+    field_simp [hF_ne] at h
+    linarith
+  have hY_int :
+      (2 : ℤ) ^ L * v = (3 : ℤ) ^ L * v - F * dubCarryAcc (dubCarry ξ 0) r L := by
+    exact_mod_cast hY_cleared
+  have hcomb :
+      (2 : ℤ) ^ L * (F * dubX ξ 0 (r + L) + v) =
+        (3 : ℤ) ^ L * (F * dubX ξ 0 r + v) := by
+    linear_combination F * hX + hY_int
+  have hdvd_nat : 2 ^ L ∣ 3 ^ L * (F * dubX ξ 0 r + v).natAbs := by
+    have habs :
+        ((2 : ℤ) ^ L * (F * dubX ξ 0 (r + L) + v)).natAbs =
+          ((3 : ℤ) ^ L * (F * dubX ξ 0 r + v)).natAbs := by
+      rw [hcomb]
+    rw [Int.natAbs_mul, Int.natAbs_mul, Int.natAbs_pow, Int.natAbs_pow] at habs
+    exact ⟨(F * dubX ξ 0 (r + L) + v).natAbs, habs.symm⟩
+  have hcop : Nat.Coprime (2 ^ L) (3 ^ L) :=
+    ((by decide : Nat.Coprime 2 3).pow_left L).pow_right L
+  have hdvd_abs : 2 ^ L ∣ (F * dubX ξ 0 r + v).natAbs :=
+    hcop.dvd_of_dvd_mul_left hdvd_nat
+  simpa [Nat.cast_pow] using Int.ofNat_dvd_left.mpr hdvd_abs
+
+/-- Exact integer-scaled step of the Cantor cylinder tree on $(2/7, 5/7)$ from depth $d$
+(denominator $7 \cdot 2^d$) to depth $d + 1$ (denominator $7 \cdot 2^{d+1}$). -/
+def cantorTwoSeventhsStep (d : ℕ) (ivs : List (ℤ × ℤ)) : List (ℤ × ℤ) :=
+  let loBound : ℤ := 2 * (2 : ℤ) ^ (d + 1)
+  let hiBound : ℤ := 5 * (2 : ℤ) ^ (d + 1)
+  let shift1 : ℤ := 7 * (2 : ℤ) ^ d
+  ivs.flatMap fun (x, y) =>
+    let lo0 := if loBound ≤ 3 * x then 3 * x else loBound
+    let hi0 := if 3 * y ≤ hiBound then 3 * y else hiBound
+    let lo1 := if loBound ≤ 3 * x - shift1 then 3 * x - shift1 else loBound
+    let hi1 := if 3 * y - shift1 ≤ hiBound then 3 * y - shift1 else hiBound
+    (if lo0 < hi0 then [(lo0, hi0)] else []) ++
+      (if lo1 < hi1 then [(lo1, hi1)] else [])
+
+/-- Single-pass accumulator returning the list of surviving Cantor interval counts
+`[|C_0|, |C_1|, ..., |C_n|]` on $(2/7, 5/7)$ without recomputing earlier depths. -/
+def cantorTwoSeventhsLengthsAux : ℕ → ℕ → List (ℤ × ℤ) → List ℕ
+  | 0, _, ivs => [ivs.length]
+  | k + 1, d, ivs => ivs.length :: cantorTwoSeventhsLengthsAux k (d + 1) (cantorTwoSeventhsStep d ivs)
+
+def cantorTwoSeventhsLengths (n : ℕ) : List ℕ :=
+  cantorTwoSeventhsLengthsAux n 0 [(2, 5)]
+
+/-- Structural step appending the next Mahler binary partition term
+$B(n) = B(n - 1) + B(\lfloor n / 2 \rfloor)$ ($B(0) = 1, B(1) = 2$) to the prefix table `acc`. -/
+def mahlerBinaryPartitionStep (acc : List ℕ) : List ℕ :=
+  let n := acc.length
+  let nextVal :=
+    if n = 0 then 1
+    else if n = 1 then 2
+    else acc.getD (n - 1) 0 + acc.getD (n / 2) 0
+  acc ++ [nextVal]
+
+/-- Prefix table `[B(0), B(1), ..., B(n)]` of Mahler's binary partition sequence. -/
+def mahlerBinaryPartitionList : ℕ → List ℕ
+  | 0 => [1]
+  | k + 1 => mahlerBinaryPartitionStep (mahlerBinaryPartitionList k)
+
+set_option maxRecDepth 400000 in
+/-- **Exact Match Between the $(2/7, 5/7)$ Cantor Tree and Mahler's Binary Partition Sequence
+through Depth $15$, and Truncation of the $k = 5$ Bifurcation at Depth $16$
+(`cantorTwoSevenths_matches_mahlerBinaryPartition_up_to_15_and_splits_at_16`)**:
+1. For every depth $d \in \{0, \dots, 15\}$, the number of surviving Cantor cylinder intervals
+   of $(2/7, 5/7)$ equals Mahler's binary partition number $B(d)$:
+   `[1, 2, 4, 6, 10, 14, 20, 26, 36, 46, 60, 74, 94, 114, 140, 166]`.
+2. At depth $d = 2^4 = 16$ (where the period-32 Thue–Morse orbit $c_5 = \frac{12314908}{43112257} < \frac{2}{7}$
+   falls outside $(2/7, 5/7)$), `mahlerBinaryPartitionList 16` reaches `202` whereas the $(2/7, 5/7)$
+   Cantor tree has `200` intervals (exact deficit $2$ from the two mirror period-doubling
+   branches clipped at $2/7$ and $5/7$). -/
+theorem cantorTwoSevenths_matches_mahlerBinaryPartition_up_to_15_and_splits_at_16 :
+    cantorTwoSeventhsLengths 15 = mahlerBinaryPartitionList 15 ∧
+    cantorTwoSeventhsLengths 15 =
+      [1, 2, 4, 6, 10, 14, 20, 26, 36, 46, 60, 74, 94, 114, 140, 166] ∧
+    cantorTwoSeventhsLengths 16 =
+      [1, 2, 4, 6, 10, 14, 20, 26, 36, 46, 60, 74, 94, 114, 140, 166, 200] ∧
+    mahlerBinaryPartitionList 16 =
+      [1, 2, 4, 6, 10, 14, 20, 26, 36, 46, 60, 74, 94, 114, 140, 166, 202] := by
+  decide
+
+/-! ## 11. The General Gap-$g$ Window-to-Residue Ladder ($g \ge 3$), $\alpha_g < \beta_g < 1/2$, and General $g$-Rung First-Defect Valuation Lock -/
+
+/-- Lower endpoint $\alpha_g = \frac{3^{g-1}}{3^g - 2^g}$ of the gap-$g$ window ladder ($g \ge 3$),
+equal to the real value of the periodic code $(1 0^{g-1})^\infty$. -/
+noncomputable def rungAlpha (g : ℕ) : ℝ :=
+  (3 : ℝ) ^ (g - 1) / ((3 : ℝ) ^ g - (2 : ℝ) ^ g)
+
+/-- Upper endpoint $\beta_g = \frac{1 + (2/3)^{g-1}}{3} = \frac{3^{g-1} + 2^{g-1}}{3^g}$ of the
+gap-$g$ window ladder ($g \ge 3$). -/
+noncomputable def rungBeta (g : ℕ) : ℝ :=
+  ((3 : ℝ) ^ (g - 1) + (2 : ℝ) ^ (g - 1)) / (3 : ℝ) ^ g
+
+private theorem two_pow_lt_three_pow_pred {g : ℕ} (hg : 3 ≤ g) :
+    2 ^ g < 3 ^ (g - 1) := by
+  obtain ⟨d, rfl⟩ : ∃ d, g = d + 3 := ⟨g - 3, by omega⟩
+  have hsub : d + 3 - 1 = d + 2 := by omega
+  rw [hsub]
+  induction d with
+  | zero => decide
+  | succ d ih =>
+      have h2 : 2 ^ (d + 1 + 3) = 2 * 2 ^ (d + 3) := by rw [Nat.pow_succ']
+      have h3 : 3 ^ (d + 1 + 2) = 3 * 3 ^ (d + 2) := by rw [Nat.pow_succ']
+      omega
+
+/-- **Strict Ordering of the Gap-$g$ Window Ladder (`rungAlpha_lt_rungBeta_lt_half`)**:
+For every rung $g \ge 3$:
+$$\frac{1}{3} < \alpha_g < \beta_g < \frac{1}{2}, \qquad \beta_g - \alpha_g = \frac{2^{g-1}(3^{g-1} - 2^g)}{3^g(3^g - 2^g)} > 0.$$ -/
+theorem rungAlpha_lt_rungBeta_lt_half {g : ℕ} (hg : 3 ≤ g) :
+    (1 / 3 : ℝ) < rungAlpha g ∧
+    rungAlpha g < rungBeta g ∧
+    rungBeta g < (1 / 2 : ℝ) ∧
+    rungBeta g - rungAlpha g =
+      (2 : ℝ) ^ (g - 1) * ((3 : ℝ) ^ (g - 1) - (2 : ℝ) ^ g) /
+        ((3 : ℝ) ^ g * ((3 : ℝ) ^ g - (2 : ℝ) ^ g)) := by
+  have hlt_nat := two_pow_lt_three_pow_pred hg
+  have hlt_real : (2 : ℝ) ^ g < (3 : ℝ) ^ (g - 1) := by exact_mod_cast hlt_nat
+  obtain ⟨m, rfl⟩ : ∃ m, g = m + 1 := ⟨g - 1, by omega⟩
+  simp only [Nat.add_sub_cancel] at hlt_real ⊢
+  have h3g_eq : (3 : ℝ) ^ (m + 1) = 3 * (3 : ℝ) ^ m := pow_succ' (3 : ℝ) m
+  have h2g_eq : (2 : ℝ) ^ (m + 1) = 2 * (2 : ℝ) ^ m := pow_succ' (2 : ℝ) m
+  have h3g1_pos : (0 : ℝ) < (3 : ℝ) ^ m := by positivity
+  have h2g1_pos : (0 : ℝ) < (2 : ℝ) ^ m := by positivity
+  have h3g_pos : (0 : ℝ) < (3 : ℝ) ^ (m + 1) := by positivity
+  have hdiff_pos : (0 : ℝ) < (3 : ℝ) ^ (m + 1) - (2 : ℝ) ^ (m + 1) := by linarith
+  have hgap_eq :
+      rungBeta (m + 1) - rungAlpha (m + 1) =
+        (2 : ℝ) ^ m * ((3 : ℝ) ^ m - (2 : ℝ) ^ (m + 1)) /
+          ((3 : ℝ) ^ (m + 1) * ((3 : ℝ) ^ (m + 1) - (2 : ℝ) ^ (m + 1))) := by
+    unfold rungBeta rungAlpha
+    simp only [Nat.add_sub_cancel]
+    have h1 : (3 : ℝ) ^ (m + 1) ≠ 0 := ne_of_gt h3g_pos
+    have h2 : (3 : ℝ) ^ (m + 1) - (2 : ℝ) ^ (m + 1) ≠ 0 := ne_of_gt hdiff_pos
+    field_simp [h1, h2]
+    rw [h3g_eq, h2g_eq]
+    ring
+  have hgap_pos : 0 < rungBeta (m + 1) - rungAlpha (m + 1) := by
+    rw [hgap_eq]
+    have hsub : 0 < (3 : ℝ) ^ m - (2 : ℝ) ^ (m + 1) := by linarith
+    positivity
+  have halpha_gt : (1 / 3 : ℝ) < rungAlpha (m + 1) := by
+    unfold rungAlpha
+    simp only [Nat.add_sub_cancel]
+    rw [div_lt_div_iff₀ (by norm_num) hdiff_pos]
+    linarith [h3g_eq, h2g1_pos, h2g_eq]
+  have hbeta_lt : rungBeta (m + 1) < (1 / 2 : ℝ) := by
+    unfold rungBeta
+    simp only [Nat.add_sub_cancel]
+    rw [div_lt_div_iff₀ h3g_pos (by norm_num)]
+    linarith [h3g_eq, h2g_eq, hlt_real]
+  exact ⟨halpha_gt, by linarith, hbeta_lt, hgap_eq⟩
+
+/-- **Short-Gap Fractional Cost & Invariance of $[0, \alpha_g]$ (`gap_ladder_short_gap_cost_and_cap`)**:
+For any rung $g \ge 3$:
+1. **Short-gap cost ($\ge \beta_g$):** If $1 \le d \le g - 1$ and $r_{n+d} \ge 1/3$, then
+   $\frac{1}{3} + (2/3)^d r_{n+d} \ge \beta_g$. Thus any odd step with another odd step at
+   distance $d \le g - 1$ has fractional part $\ge \beta_g$.
+2. **Long-gap cap ($\le \alpha_g$):** If $c \ge g$ and $0 \le r_{n+c} \le \alpha_g$, then
+   $\frac{1}{3} + (2/3)^c r_{n+c} \le \alpha_g$ (with equality if and only if $c = g$ and $r_{n+c} = \alpha_g$). -/
+theorem gap_ladder_short_gap_cost_and_cap {g : ℕ} (hg : 3 ≤ g) :
+    (∀ {d : ℕ} {r_next : ℝ}, 1 ≤ d → d ≤ g - 1 → (1 / 3 : ℝ) ≤ r_next →
+      rungBeta g ≤ (1 / 3 : ℝ) + (2 / 3 : ℝ) ^ d * r_next) ∧
+    (∀ {c : ℕ} {r_next : ℝ}, g ≤ c → 0 ≤ r_next → r_next ≤ rungAlpha g →
+      (1 / 3 : ℝ) + (2 / 3 : ℝ) ^ c * r_next ≤ rungAlpha g) := by
+  have h23_le : ∀ {a b : ℕ}, a ≤ b → (2 / 3 : ℝ) ^ b ≤ (2 / 3 : ℝ) ^ a := by
+    intro a b hab
+    exact pow_le_pow_of_le_one (by norm_num) (by norm_num) hab
+  have hlt_real : (2 : ℝ) ^ g < (3 : ℝ) ^ (g - 1) := by
+    exact_mod_cast two_pow_lt_three_pow_pred hg
+  obtain ⟨m, rfl⟩ : ∃ m, g = m + 1 := ⟨g - 1, by omega⟩
+  simp only [Nat.add_sub_cancel] at hlt_real ⊢
+  have h3g_eq : (3 : ℝ) ^ (m + 1) = 3 * (3 : ℝ) ^ m := pow_succ' (3 : ℝ) m
+  have hbeta_eq : rungBeta (m + 1) = (1 / 3 : ℝ) + (2 / 3 : ℝ) ^ m * (1 / 3 : ℝ) := by
+    unfold rungBeta
+    simp only [Nat.add_sub_cancel]
+    have h3m_ne : (3 : ℝ) ^ m ≠ 0 := by positivity
+    rw [h3g_eq, div_pow]
+    apply mul_right_cancel₀ h3m_ne
+    calc
+      ((3 : ℝ) ^ m + (2 : ℝ) ^ m) / (3 * (3 : ℝ) ^ m) * (3 : ℝ) ^ m =
+          (((3 : ℝ) ^ m + (2 : ℝ) ^ m) / 3) * ((3 : ℝ) ^ m / (3 : ℝ) ^ m) := by ring
+      _ = ((3 : ℝ) ^ m + (2 : ℝ) ^ m) / 3 := by rw [div_self h3m_ne, mul_one]
+      _ = (1 / 3 : ℝ) * (3 : ℝ) ^ m + ((2 : ℝ) ^ m / (3 : ℝ) ^ m * (3 : ℝ) ^ m) * (1 / 3 : ℝ) := by
+        rw [div_mul_cancel₀ _ h3m_ne]
+        ring
+      _ = ((1 / 3 : ℝ) + (2 : ℝ) ^ m / (3 : ℝ) ^ m * (1 / 3 : ℝ)) * (3 : ℝ) ^ m := by ring
+  have halpha_fixed : (1 / 3 : ℝ) + (2 / 3 : ℝ) ^ (m + 1) * rungAlpha (m + 1) = rungAlpha (m + 1) := by
+    unfold rungAlpha
+    simp only [Nat.add_sub_cancel]
+    have h3g1_pos : (0 : ℝ) < (3 : ℝ) ^ m := by positivity
+    have h3g_pos : (0 : ℝ) < (3 : ℝ) ^ (m + 1) := by positivity
+    have hdiff_ne : (3 : ℝ) ^ (m + 1) - (2 : ℝ) ^ (m + 1) ≠ 0 := ne_of_gt (by linarith)
+    have h3g_ne : (3 : ℝ) ^ (m + 1) ≠ 0 := ne_of_gt h3g_pos
+    rw [div_pow]
+    field_simp [hdiff_ne, h3g_ne]
+    rw [h3g_eq]
+    ring
+  refine ⟨?_, ?_⟩
+  · intro d r_next _ hd_hi hr_next
+    have hpow := h23_le hd_hi
+    have hmul1 : (2 / 3 : ℝ) ^ m * (1 / 3 : ℝ) ≤ (2 / 3 : ℝ) ^ d * (1 / 3 : ℝ) :=
+      mul_le_mul_of_nonneg_right hpow (by norm_num)
+    have hmul2 : (2 / 3 : ℝ) ^ d * (1 / 3 : ℝ) ≤ (2 / 3 : ℝ) ^ d * r_next :=
+      mul_le_mul_of_nonneg_left hr_next (by positivity)
+    linarith [hbeta_eq]
+  · intro c r_next hgc hr0 hr_hi
+    have hpow := h23_le hgc
+    have halpha_pos : 0 ≤ rungAlpha (m + 1) :=
+      le_of_lt (lt_trans (by norm_num) (rungAlpha_lt_rungBeta_lt_half hg).1)
+    have hmul1 : (2 / 3 : ℝ) ^ c * r_next ≤ (2 / 3 : ℝ) ^ c * rungAlpha (m + 1) :=
+      mul_le_mul_of_nonneg_left hr_hi (by positivity)
+    have hmul2 : (2 / 3 : ℝ) ^ c * rungAlpha (m + 1) ≤ (2 / 3 : ℝ) ^ (m + 1) * rungAlpha (m + 1) :=
+      mul_le_mul_of_nonneg_right hpow halpha_pos
+    linarith [halpha_fixed]
+
+/-- The general rung-$g$ affine invariant $I_g(b) = (3^g - 2^g) b + 3^{g-1}$ ($g \ge 1$).
+At $g = 3$, $I_3(b) = 19 b + 9$; at $g = 4$, $I_4(b) = 65 b + 27$; at $g = 5$, $I_5(b) = 211 b + 81$. -/
+def rungAffInv (g b : ℕ) : ℕ :=
+  (3 ^ g - 2 ^ g) * b + 3 ^ (g - 1)
+
+private theorem two_pow_le_three_pow (g : ℕ) : 2 ^ g ≤ 3 ^ g :=
+  Nat.pow_le_pow_left (by decide) g
+
+/-- **Universal Single-Block Identity for `rungAffInv g b` (`rungAffInv_single_block_identity`)**:
+For any rung $g \ge 1$ and any block boundary $b$ with $3 b + 1 = 2^c u$:
+$$3 \cdot \operatorname{rungAffInv}(g, b) = (3^g - 2^g) \cdot 2^c \cdot u + 2^g.$$ -/
+theorem rungAffInv_single_block_identity {g b c u : ℕ} (hg : 1 ≤ g)
+    (hdecomp : 3 * b + 1 = 2 ^ c * u) :
+    3 * rungAffInv g b = (3 ^ g - 2 ^ g) * 2 ^ c * u + 2 ^ g := by
+  have h3g_eq : 3 * 3 ^ (g - 1) = 3 ^ g := by
+    have hg_eq : g = (g - 1) + 1 := by omega
+    conv_rhs => rw [hg_eq, Nat.pow_succ']
+  have hle := two_pow_le_three_pow g
+  unfold rungAffInv
+  zify [hle] at h3g_eq hdecomp ⊢
+  linear_combination ((3 : ℤ) ^ g - (2 : ℤ) ^ g) * hdecomp + h3g_eq
+
+/-- **Single-Defect Valuation $v_2(I_g(b)) = g$ for Any $c \ge g + 1$ (`rungAffInv_single_defect_valuation`)**:
+Whenever $c \ge g + 1$ ($g \ge 1$) and $3 b + 1 = 2^c u$:
+$$2^g \;\big|\; \operatorname{rungAffInv}(g, b) \quad \text{and} \quad 2^{g + 1} \;\nmid\; \operatorname{rungAffInv}(g, b).$$ -/
+theorem rungAffInv_single_defect_valuation {g b c u : ℕ}
+    (hg : 1 ≤ g) (hc : g + 1 ≤ c) (hdecomp : 3 * b + 1 = 2 ^ c * u) :
+    2 ^ g ∣ rungAffInv g b ∧ ¬ (2 ^ (g + 1) ∣ rungAffInv g b) := by
+  have hid := rungAffInv_single_block_identity hg hdecomp
+  have hpow : 2 ^ c = 2 ^ g * (2 * 2 ^ (c - (g + 1))) := by
+    have hc_eq : c = g + (1 + (c - (g + 1))) := by omega
+    calc
+      2 ^ c = 2 ^ (g + (1 + (c - (g + 1)))) := by rw [← hc_eq]
+      _ = 2 ^ g * 2 ^ (1 + (c - (g + 1))) := Nat.pow_add 2 g _
+      _ = 2 ^ g * (2 * 2 ^ (c - (g + 1))) := by rw [Nat.pow_add 2 1, pow_one]
+  set k := (3 ^ g - 2 ^ g) * 2 ^ (c - (g + 1)) * u
+  have hid_k : 3 * rungAffInv g b = 2 ^ g * (2 * k + 1) := by
+    calc
+      3 * rungAffInv g b = (3 ^ g - 2 ^ g) * 2 ^ c * u + 2 ^ g := hid
+      _ = (3 ^ g - 2 ^ g) * (2 ^ g * (2 * 2 ^ (c - (g + 1)))) * u + 2 ^ g := by rw [hpow]
+      _ = 2 ^ g * (2 * k + 1) := by unfold k; ring
+  have hdvd_3 : 2 ^ g ∣ 3 * rungAffInv g b := ⟨2 * k + 1, hid_k⟩
+  have hcop : Nat.Coprime (2 ^ g) 3 := (by decide : Nat.Coprime 2 3).pow_left g
+  have hdvd : 2 ^ g ∣ rungAffInv g b := hcop.dvd_of_dvd_mul_left hdvd_3
+  refine ⟨hdvd, ?_⟩
+  rintro ⟨q, hq⟩
+  have hpow_g1 : 2 ^ (g + 1) = 2 ^ g * 2 := by rw [Nat.pow_succ]
+  rw [hq, hpow_g1] at hid_k
+  have hmul_eq : 2 ^ g * (3 * (2 * q)) = 2 ^ g * (2 * k + 1) := by linarith
+  have hcancel := Nat.eq_of_mul_eq_mul_left (Nat.pow_pos (by decide)) hmul_eq
+  omega
+
+/-- **Multi-Step Pure Rung-$g$ Transition Identity (`rungAffInv_pure_prefix_identity`)**:
+Along any `ValidBlockChain a_0 s u K` whose first $m \le K$ blocks all have length $s(k) = g$ ($g \ge 1$):
+$$2^{g m} \cdot \operatorname{rungAffInv}\big(g,\, \operatorname{orbit}(a_0, \operatorname{blockSteps}(s, m))\big) = 3^{g m} \cdot \operatorname{rungAffInv}(g, a_0).$$ -/
+theorem rungAffInv_pure_prefix_identity {g a_0 K m : ℕ} {s u : ℕ → ℕ}
+    (hg : 1 ≤ g) (hmK : m ≤ K) (hchain : ValidBlockChain a_0 s u K)
+    (hpure : ∀ k < m, s k = g) :
+    (2 ^ g) ^ m * rungAffInv g (orbit a_0 (blockSteps s m)) =
+      (3 ^ g) ^ m * rungAffInv g a_0 := by
+  induction m with
+  | zero => simp [blockSteps, orbit]
+  | succ m ih =>
+      have ihm := ih (by omega) (fun k hk => hpure k (by omega))
+      have hsm : s m = g := hpure m (Nat.lt_succ_self m)
+      rcases hchain m (by omega) with ⟨hsk_pos, _, hdecomp⟩
+      have horb_next : orbit a_0 (blockSteps s (m + 1)) = 3 ^ (g - 1) * u m := by
+        have hsteps : blockSteps s (m + 1) = blockSteps s m + s m := rfl
+        rw [hsteps, orbit_add, ← hsm]
+        exact orbit_odd_block_return hsk_pos hdecomp
+      rw [hsm] at hdecomp
+      have hid_m := rungAffInv_single_block_identity hg hdecomp
+      have hstep : 2 ^ g * rungAffInv g (orbit a_0 (blockSteps s (m + 1))) =
+          3 ^ g * rungAffInv g (orbit a_0 (blockSteps s m)) := by
+        have h3g_eq : 3 ^ g = 3 * 3 ^ (g - 1) := by
+          have hg_eq : g = (g - 1) + 1 := by omega
+          conv_lhs => rw [hg_eq, Nat.pow_succ']
+        calc
+          2 ^ g * rungAffInv g (orbit a_0 (blockSteps s (m + 1))) =
+              2 ^ g * ((3 ^ g - 2 ^ g) * (3 ^ (g - 1) * u m) + 3 ^ (g - 1)) := by
+            rw [horb_next]; rfl
+          _ = 3 ^ (g - 1) * ((3 ^ g - 2 ^ g) * 2 ^ g * u m + 2 ^ g) := by ring
+          _ = 3 ^ (g - 1) * (3 * rungAffInv g (orbit a_0 (blockSteps s m))) := by rw [← hid_m]
+          _ = (3 * 3 ^ (g - 1)) * rungAffInv g (orbit a_0 (blockSteps s m)) := by ring
+          _ = 3 ^ g * rungAffInv g (orbit a_0 (blockSteps s m)) := by rw [← h3g_eq]
+      calc
+        (2 ^ g) ^ (m + 1) * rungAffInv g (orbit a_0 (blockSteps s (m + 1))) =
+            (2 ^ g) ^ m * (2 ^ g * rungAffInv g (orbit a_0 (blockSteps s (m + 1)))) := by
+          rw [Nat.pow_succ]
+          ring
+        _ = (2 ^ g) ^ m * (3 ^ g * rungAffInv g (orbit a_0 (blockSteps s m))) := by
+          rw [hstep]
+        _ = 3 ^ g * ((2 ^ g) ^ m * rungAffInv g (orbit a_0 (blockSteps s m))) := by
+          ring
+        _ = 3 ^ g * ((3 ^ g) ^ m * rungAffInv g a_0) := by
+          rw [ihm]
+        _ = (3 ^ g) ^ (m + 1) * rungAffInv g a_0 := by
+          rw [Nat.pow_succ]
+          ring
+
+/-- **General $g$-Rung First-Defect Valuation Lock (`general_rung_first_defect_valuation_lock`)**:
+Generalizes `local_prefix_first_defect_valuation_lock` ($g = 3, I_3(a_0) = 19 a_0 + 9$) to **every**
+rung $g \ge 1$ ($I_g(a_0) = (3^g - 2^g) a_0 + 3^{g-1}$):
+Whenever `ValidBlockChain a_0 s u (j_0 + 1)` has $s(0) = \dots = s(j_0 - 1) = g$ and a first
+defect $s(j_0) \ge g + 1$ at block $j_0$:
+1. $2^{g(j_0 + 1)} \;\big|\; \big((3^g - 2^g) a_0 + 3^{g-1}\big)$,
+2. $2^{g(j_0 + 1) + 1} \;\nmid\; \big((3^g - 2^g) a_0 + 3^{g-1}\big)$, and
+3. $2^{g(j_0 + 1)} \le (3^g - 2^g) a_0 + 3^{g-1}$. -/
+theorem general_rung_first_defect_valuation_lock
+    {g a_0 j_0 : ℕ} {s u : ℕ → ℕ}
+    (hg : 1 ≤ g)
+    (hchain : ValidBlockChain a_0 s u (j_0 + 1))
+    (hpure : ∀ k < j_0, s k = g)
+    (hdefect : g + 1 ≤ s j_0) :
+    2 ^ (g * (j_0 + 1)) ∣ rungAffInv g a_0 ∧
+    ¬ (2 ^ (g * (j_0 + 1) + 1) ∣ rungAffInv g a_0) ∧
+    2 ^ (g * (j_0 + 1)) ≤ rungAffInv g a_0 := by
+  have hpre := rungAffInv_pure_prefix_identity hg (Nat.le_succ j_0) hchain hpure
+  rcases hchain j_0 (Nat.lt_succ_self j_0) with ⟨_, _, hdecomp_j0⟩
+  have hval_j0 := rungAffInv_single_defect_valuation hg hdefect hdecomp_j0
+  rcases hval_j0.1 with ⟨q0, hq0⟩
+  have hpow_mul : (2 ^ g) ^ j_0 * 2 ^ g = 2 ^ (g * (j_0 + 1)) := by
+    rw [← Nat.pow_mul, ← Nat.pow_add, Nat.mul_add, Nat.mul_one]
+  have hpre_q0 : 2 ^ (g * (j_0 + 1)) * q0 = (3 ^ g) ^ j_0 * rungAffInv g a_0 := by
+    calc
+      2 ^ (g * (j_0 + 1)) * q0 = (2 ^ g) ^ j_0 * (2 ^ g * q0) := by
+        rw [← hpow_mul]
+        ring
+      _ = (2 ^ g) ^ j_0 * rungAffInv g (orbit a_0 (blockSteps s j_0)) := by rw [← hq0]
+      _ = (3 ^ g) ^ j_0 * rungAffInv g a_0 := hpre
+  have hdvd_mul : 2 ^ (g * (j_0 + 1)) ∣ (3 ^ g) ^ j_0 * rungAffInv g a_0 :=
+    ⟨q0, hpre_q0.symm⟩
+  have hcop : Nat.Coprime (2 ^ (g * (j_0 + 1))) ((3 ^ g) ^ j_0) :=
+    (((by decide : Nat.Coprime 2 3).pow_left (g * (j_0 + 1))).pow_right g).pow_right j_0
+  have hdvd : 2 ^ (g * (j_0 + 1)) ∣ rungAffInv g a_0 :=
+    hcop.dvd_of_dvd_mul_left hdvd_mul
+  have hnot_dvd : ¬ (2 ^ (g * (j_0 + 1) + 1) ∣ rungAffInv g a_0) := by
+    rintro ⟨q1, hq1⟩
+    have hpow_succ : 2 ^ (g * (j_0 + 1) + 1) = (2 ^ g) ^ j_0 * 2 ^ (g + 1) := by
+      rw [← Nat.pow_mul, ← Nat.pow_add]
+      have h : g * (j_0 + 1) + 1 = g * j_0 + (g + 1) := by ring
+      rw [h]
+    rw [hq1, hpow_succ] at hpre
+    have hmul_eq :
+        (2 ^ g) ^ j_0 * rungAffInv g (orbit a_0 (blockSteps s j_0)) =
+          (2 ^ g) ^ j_0 * (2 ^ (g + 1) * ((3 ^ g) ^ j_0 * q1)) := by
+      linarith
+    have hcancel := Nat.eq_of_mul_eq_mul_left (Nat.pow_pos (Nat.pow_pos (by decide))) hmul_eq
+    exact hval_j0.2 ⟨(3 ^ g) ^ j_0 * q1, hcancel⟩
+  have hpos_inv : 0 < rungAffInv g a_0 := by
+    unfold rungAffInv
+    have h : 0 < 3 ^ (g - 1) := Nat.pow_pos (by decide)
+    omega
+  exact ⟨hdvd, hnot_dvd, Nat.le_of_dvd hpos_inv hdvd⟩
+
 end Mahler.DubickasExtension
