@@ -1,6 +1,98 @@
 # Mahler $3/2$ Problem — 142-File Lean 4 Formalization (`mahler_demand_a`)
 
-This repository contains a **142-file (`sorry`-free) Lean 4.19.0 + Mathlib v4.19.0 formalization** of the reduced Mahler $3/2$ dynamical system ($Z$-numbers), including:
+This repository contains a **142-file (`sorry`-free) Lean 4.19.0 + Mathlib v4.19.0 formalization** of the reduced Mahler $3/2$ dynamical system ($Z$-numbers) and its interval- and union-confinement relaxations ([`MAHLER_FORMALIZATION_PAPER.pdf`](./MAHLER_FORMALIZATION_PAPER.pdf)).
+
+---
+
+## Plain-English Overview: The Big Picture & How Fractals Play In
+
+Before diving into the technical theorems and Lean module index below, here is a plain-English guide to what Mahler’s problem actually is, why Cantor fractals appear inside it, and where this project stands today.
+
+### 1. The Game We Are Playing (Mahler’s $3/2$ Problem)
+
+Imagine a simple game on a calculator:
+1. Pick any starting number (say, $x_0 = 8$).
+2. At every turn, **multiply by $1.5$** (which is $\frac{3}{2}$).
+3. Look at the **decimal part** (the fractional part after the decimal point, between $0$ and $1$).
+
+Mahler’s original question (from 1968) is:
+> **Is there any starting number whose decimal part stays below $0.5$ forever?**
+
+Every turn you multiply by $1.5$, the decimal part gets stretched by $1.5\times$ (and wraps around if it passes $1$). Because $1.5$ is an awkward multiplier relative to $1$, the decimal part usually bounces around chaotically and eventually lands above $0.5$.
+- **A "$Z$-number"** is a mythical starting number that somehow dodges the upper half $[0.5, 1)$ at **every single step forever**.
+- **Nobody knows** if a $Z$-number exists for $[0, 0.5)$. That full question remains open worldwide.
+
+### 2. Why Does a Fractal (Cantor Set) Appear?
+
+Instead of asking *"Can a number stay in $[0, 0.5)$ forever?"*, researchers (such as Dubickas, Stephan, and Gareth) also study a closely related question:
+> **What if we change the "safe zone" from $[0, 0.5)$ to a shifted interval—say, the middle window $(2/7, 5/7) \approx (0.286, 0.714)$—or a collection of separate islands?**
+
+Watch what happens when you try to keep a number inside a safe zone turn after turn:
+
+* **Turn 0:** Your decimal part has to start inside the safe zone (1 solid bar).
+* **Turn 1:** When you multiply by $1.5$, the middle of that bar gets stretched **outside** the safe zone and dies. Only **2 smaller sub-bars** (one on the left, one on the right) survive Turn 1.
+* **Turn 2:** Each of those 2 sub-bars gets stretched by $1.5$ again. Their middles die, leaving **4 even tinier bars**.
+* **Turn 3:** Those split and get clipped again, leaving **6 tiny bars**, then **10**, then **14**, then **20**...
+
+If you draw the surviving safe spots at Step 1, Step 2, Step 3, Step 4..., **you are literally carving out a Cantor fractal**:
+
+```text
+Step 0 (start):   [========================]   (1 bar)
+Step 1:           [========]      [========]   (2 bars)
+Step 2:           [===]  [===]  [===]  [===]   (4 bars)
+Step 3:           [=] [=]  [=]  [=]  [=] [=]   (6 bars)
+...
+Step ∞:            .   .    .    .    .   .    (fractal dust!)
+```
+
+Here is the crucial difference between a **real number** (a continuous decimal) and a **whole-number Mahler orbit**:
+1. **In pure geometry (real numbers):** If you keep carving out middles forever, you can still have an infinite "fractal dust" of points left over at Step $\infty$.
+2. **In Mahler’s problem (whole-number powers):** Every time you multiply by $\frac{3}{2}$, the denominator grows by a power of $2$ ($\frac{1}{2}, \frac{1}{4}, \frac{1}{8}, \frac{1}{16}\dots$). That means at Step $d$, your number **must sit on a rigid grid of spacing $\frac{1}{2^d}$**.
+
+So a number can only survive if **the surviving fractal bars are wide enough and lined up well enough to catch grid points at every single step**.
+
+### 3. What We Discovered About That Fractal
+
+When we analyzed the centered safe zone $[c, 1-c]$ (such as $(2/7, 5/7)$) in [`DubickasConfinementAndComplexityExtension.lean`](./DubickasConfinementAndComplexityExtension.lean), we found out *why* the $(2/7, 5/7)$ problem was so tricky:
+
+1. **The Period-Doubling Cascade (Chaos Theory in Disguise):**
+   As you widen the centered window $[c, 1-c]$ by shrinking $c$ down toward $0.25$:
+   - At $c_1 = 2/5 = 0.4000$: a 2-step loop appears.
+   - At $c_2 = 4/13 \approx 0.3077$: it splits into a 4-step loop.
+   - At $c_3 = 28/97 \approx 0.2887$: it splits into an 8-step loop.
+   - At $c_4 = 1948/6817 \approx 0.285756$: it splits into a 16-step loop.
+   - At $c_5 = 12314908/43112257 \approx 0.2856475$: it splits into a 32-step loop.
+   - At $c_\infty \approx 0.2856473$: it hits the **Thue–Morse fractal limit**, where infinitely many loops exist!
+
+2. **Why $(2/7, 5/7)$ Was Such a Close Call:**
+   Notice where $2/7 \approx 0.285714$ sits: **right between Step 4 ($c_4 \approx 0.285756$) and Step 5 ($c_5 \approx 0.2856475$)**.
+   - For the first **15 steps** ($d = 0$ to $15$), the fractal for $(2/7, 5/7)$ acts **exactly** as if it were the full infinite fractal—the number of surviving bars (`1, 2, 4, 6, 10, 14, 20, 26, 36, 46, 60, 74, 94, 114, 140, 166`) follows Mahler’s classic binary partition sequence $B(d) = B(d-1) + B(\lfloor d/2 \rfloor)$.
+   - Then, at **Step 16**, the boundary $2/7$ finally clips off the 5th period-doubling branch ($200$ bars survive instead of $202$).
+   - Once that 5th branch is clipped, the fractal stops growing fast and slows down to polynomial growth ($\Theta(d^3)$), which is **too thin** to hide a Mahler orbit forever.
+
+3. **Why Our Proof Method Beats Brute-Force Fractal Carving:**
+   If you try to prove a safe zone is empty just by tracking the fractal bars (the "interval certificate" method), you get stuck at $c_\infty \approx 0.2856473$ because the fractal dust never disappears.
+   Our approach adds a **second weapon (2-adic divisibility)**: even when a point stays inside the fractal dust on a repeating loop, the $\frac{3}{2}$ multiplier forces the whole number to be divisible by higher and higher powers of $2$ until the number would have to be infinitely large—which is impossible! That is how we push all the way past $c_\infty$ down to $0.25$.
+
+### 4. Where the Project Stands Right Now (Scorecard)
+
+Every result below is 100% computer-verified in Lean 4 (zero `sorry`s, standard axioms only) and documented in [`MAHLER_FORMALIZATION_PAPER.pdf`](./MAHLER_FORMALIZATION_PAPER.pdf):
+
+| Part of the Project | What It Means in Plain English | Status |
+| :--- | :--- | :--- |
+| **1. The Original $[0, 0.5)$ Problem** | Can a number stay in the bottom half $[0, 0.5)$ forever? | **Still Open Worldwide.** We proved that *if* a culprit exists, it must follow an extraordinarily rigid "staircase" of near-misses (Sections 2–5 of the paper & Section 11's general $g$-rung ladder), and we ruled out all repeating and low-complexity patterns—but a completely chaotic culprit is not ruled out yet. |
+| **2. Single Safe Zones (Width up to $0.5$)** | What if we shift the safe zone away from $0$, like $[0.25, 0.75)$ or $[1/3, 5/6)$? | **Completely Solved & Formalized.** Not only did we prove no number stays inside forever, we proved an exact **speed limit**: any number with $W$ binary digits must get kicked out in at most **$W + \text{constant}$ steps** (e.g., $W + 5$ steps for $(2/7, 5/7)$). |
+| **3. Multi-Island Safe Zones (Width $> 0.5$, up to $69.4\%$)** | What if the safe zone is 5 or 6 separate islands covering **nearly $70\%$ of the entire number line** ($25/36 \approx 69.4\%$)? | **Completely Solved & Formalized.** Even when the safe zone covers $69.4\%$ of $[0,1)$, any $W$-bit number gets funneled and kicked out in at most **$W + 16$ steps**. |
+| **4. Other Multiplier Games (like $4/3$, $5/3$, general $p/q$)** | Does our method work if you multiply by $\frac{4}{3}$ or $\frac{p}{q}$ instead of $\frac{3}{2}$? | **Completely Solved & Formalized.** We proved the general logarithmic complexity threshold for all bases $p/q$ and broke the $1/4$ barrier for base $4/3$ with a 4-line human-readable proof on $[1/3, 5/8)$. |
+| **5. The Fractal Cascade on $[c, 1-c]$** | Why do interval searches explode near $2/7$, and how do the fractals behave? | **Completely Solved & Formalized.** We proved the exact formula for every period-doubling threshold $c_k$, why $(2/7, 5/7)$ splits at Step 16, and how the fractal structure works. |
+
+**Bottom Line:** Think of Mahler's original $[0, 0.5)$ problem as the **summit of Mount Everest**. Nobody has reached the summit of $[0, 0.5)$ yet because the boundary at $0$ acts like a "trapdoor" where powers of $3/2$ can linger without repeating. However, we mapped the exact geometry of that trapdoor (the $g$-rung staircase ladder), **and** we conquered the surrounding peaks—showing with machine-checked certainty that shifted windows up to width $0.5$, multi-island unions covering nearly $70\%$ of the line, and the entire Thue–Morse fractal cascade cannot hide a $Z$-number.
+
+---
+
+## Technical Summary of Formalized Contributions
+
+This repository formalizes:
 
 - **Exact 1D Dynamical Reduction, Infinite-Horizon Bridge & Perpetual Endpoint Alternative:** Equivalence between the existence of a real Mahler companion (in both nested-interval and direct `Int.fract` form) and the 1D `minSlack` recurrence (`ConverseCompanionReconstruction.lean`, `InfiniteZNumberBridgeAndRationalBase.lean`), together with the supremum construction `supCompanion a_0 = ⨆ n, lowerBound a_0 n` proving that perpetual finite survival implies either strict infinite survival of $a_0$ or a unique dyadic upper-endpoint hit at step $j$ followed by strict infinite survival of the shifted positive seed $\text{orbit } a_0\ (j+1)$, plus the global forward-shift reduction `exists_positive_seed_ge_one_of_pos_companion` from any $\alpha > 0$ to $\beta \ge 1$ and $b_0 \ge 1$ (`EndpointCompactnessAndBalancedExclusion.lean`). Also includes the shift-free ceiling comparison (`MultiOriginSubspaceSyzygy.lean`), the carryless Base-3 frozen-prefix condition (`SimultaneousBaseDigitRigidity.lean`), and the normalized 1D slack update $\mu_2(s, m+1) = \min\big(1,\, (3/2)^{s(m)} \mu_2(s, m) - 2\big)$ on $(0, 1]$ driven by the arithmetic-controlled block length $s(m) = v_2(3 b_m + 1)$ (`CoupledFractionalPartDynamics.lean`, `FiniteSeedCarryAndBackwardDescent.lean`).
 - **Constructive Survivors & 113-Step Record-Holder:** Closed-form arbitrary-length pre-exit survivors (`ExplicitHorizonCutoffs.lean`) and machine-checked **113-step survival / 114-step death** of the 55-bit integer `recordHolderA0 = 29871555608238677 < 2^55` in both interval and `Int.fract` formats (`MahlerGrandSynthesis.lean`, `InfiniteZNumberBridgeAndRationalBase.lean`).
