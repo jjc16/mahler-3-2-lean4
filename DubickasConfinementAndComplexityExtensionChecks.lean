@@ -169,6 +169,16 @@ example {G : ℕ} {z : ℕ → ℝ} {s : ℕ → ℕ}
 #print axioms Mahler.DubickasExtension.universal_rung_catapult_and_upward_expansion
 #print axioms Mahler.DubickasExtension.leak_free_inductive_elevator_monotone_rung_descent
 
+-- 10. Verify self-cleaning leak-window death bands and 7-step catapult-death trap
+example :
+    rungCleanedMeasure 3 (8 / 57 : ℝ) / rungLeakWidth 3 = (18 / 19 : ℝ) ∧
+    rungResidualLeakMeasure 3 (8 / 57 : ℝ) = (32 / 9747 : ℝ) :=
+  ⟨rungDeathBand_step_and_measure_decomposition.2.2.2,
+    rungDeathBand_step_and_measure_decomposition.2.2.1⟩
+
+#print axioms Mahler.DubickasExtension.rungDeathBand_step_and_measure_decomposition
+#print axioms Mahler.DubickasExtension.catapult_into_death_band_seven_step_escape
+
 #print axioms Mahler.DubickasExtension.dubBaseCarry_eq_fract_linear
 #print axioms Mahler.DubickasExtension.dubBaseY_multi_step_carry_identity
 #print axioms Mahler.DubickasExtension.dubBaseCarry_mem_two_letters

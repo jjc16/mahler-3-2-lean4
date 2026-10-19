@@ -5415,6 +5415,329 @@ theorem leak_free_inductive_elevator_monotone_rung_descent
     have hord := (rungCatapult_ordering_and_corridor_overlap.1 (s m) htr_cur.1).2.2.2.2.1
     linarith [htr_next.2.2.2, hb_le, hord, hzm1_ge_fp]
 
+/-! ## 14. Self-Cleaning Death-Band Decomposition of Leak Windows $L_g = [b_g, z_g^*)$ and the $280/2059$ Seven-Step Catapult-Death Trap
+
+Even without manually puncturing the leak windows $L_g = [b_g, z_g^*)$, almost the entire leak
+window is **automatically self-cleaning** on $[\varepsilon, 1/2)$:
+1. **The $m$-Step Automatic Death-Band Ladder $D_{g, m}(\varepsilon) \subset [b_g, z_g^*)$
+   (`rungDeathBand_step_and_measure_decomposition`):**
+   For every rung $g \ge 3$ and depth $m \ge 1$, define
+   $$D_{g, m}(\varepsilon) := \big[\text{rungDeathBandLo}(g, m),\; \text{rungDeathBandHi}(g, m, \varepsilon)\big)$$
+   where $\text{rungDeathBandLo}(g, m) = z_g^* (1 - (2/3)^{gm})$ and
+   $\text{rungDeathBandHi}(g, m, \varepsilon) = \text{rungDeathBandLo}(g, m) + (2/3)^{gm} \varepsilon$.
+   - At $m = 1$, $\text{rungDeathBandLo}(g, 1) = b_g$, and $w \in D_{g, 1}(\varepsilon) \iff 0 \le T_g(w) < \varepsilon$
+     (any point in $D_{g, 1}(\varepsilon)$ falls into the forbidden zone $[0, \varepsilon)$ in one $g$-step block).
+   - For $m \ge 1$, $T_g$ maps $D_{g, m+1}(\varepsilon)$ bijectively onto $D_{g, m}(\varepsilon)$,
+     so every point in $D_{g, m}(\varepsilon)$ falls into $[0, \varepsilon)$ in $m$ blocks of length $g$.
+   - For $0 \le \varepsilon \le b_g$, the bands $D_{g, m}(\varepsilon)$ are pairwise disjoint inside $[b_g, z_g^*)$,
+     with total geometric-series measure $\frac{2^g}{3^g - 2^g} \varepsilon$ and residual uncleaned measure
+     $$\text{rungLeakWidth}(g) - \frac{2^g}{3^g - 2^g} \varepsilon = \frac{2^g}{3^g - 2^g} (b_g - \varepsilon).$$
+   - At the catapult threshold $\varepsilon = \varepsilon_g^* = \frac{2^g}{3(3^g - 2^g)}$, the automatic
+     death bands clean out a fraction $\frac{2 \cdot 3^{g-1}}{3^g - 2^g} > \frac{2}{3}$ of the leak window
+     (for $g = 3$, **$\frac{18}{19} \approx 94.74\%$** of $L_3 = [4/27, 4/19)$ is self-cleaning, leaving
+     a residual measure of only $\frac{32}{9747} \approx 0.003283$).
+2. **The 7-Step Catapult-into-Death-Band Trap Below $8/57$ (`catapult_into_death_band_seven_step_escape`):**
+   For $\varepsilon \ge 1/8$, any point $y_k \in \left[\frac{280}{2187},\, \frac{280 + 128\varepsilon}{2187}\right)$
+   is forced to take the 4-step block `0001` into the 1-step death band
+   $D_{3, 1}(\varepsilon) = \left[\frac{4}{27},\, \frac{4 + 8\varepsilon}{27}\right)$, followed by the
+   3-step block `001` into $[0, \varepsilon)$—dying in $4 + 3 = 7$ steps (`0001001`)! Moreover,
+   $\varepsilon < \frac{280 + 128\varepsilon}{2187} \iff \varepsilon < \frac{280}{2059} = \varepsilon_1$. -/
+
+/-- Lower endpoint $z_g^*(1 - (2/3)^{gm})$ of the $m$-block automatic death band $D_{g, m}(\varepsilon) \subset [b_g, z_g^*)$. -/
+noncomputable def rungDeathBandLo (g m : ℕ) : ℝ :=
+  rungFixedPoint g * (1 - (2 / 3 : ℝ) ^ (g * m))
+
+/-- Upper endpoint $z_g^*(1 - (2/3)^{gm}) + (2/3)^{gm}\varepsilon$ of the $m$-block automatic death band $D_{g, m}(\varepsilon)$. -/
+noncomputable def rungDeathBandHi (g m : ℕ) (ε : ℝ) : ℝ :=
+  rungDeathBandLo g m + ((2 / 3 : ℝ) ^ (g * m)) * ε
+
+/-- Total measure $\sum_{m=1}^\infty |D_{g, m}(\varepsilon)| = \frac{2^g}{3^g - 2^g}\varepsilon$ cleaned out of the
+leak window $L_g = [b_g, z_g^*)$ by all $m$-step death bands. -/
+noncomputable def rungCleanedMeasure (g : ℕ) (ε : ℝ) : ℝ :=
+  (((2 : ℝ) ^ g) / ((3 : ℝ) ^ g - (2 : ℝ) ^ g)) * ε
+
+/-- Residual uncleaned measure $|L_g| - \text{rungCleanedMeasure}(g, \varepsilon)$ of the leak window $L_g$. -/
+noncomputable def rungResidualLeakMeasure (g : ℕ) (ε : ℝ) : ℝ :=
+  rungLeakWidth g - rungCleanedMeasure g ε
+
+/-- **Self-Cleaning Death-Band Decomposition of Leak Windows $L_g = [b_g, z_g^*)$
+(`rungDeathBand_step_and_measure_decomposition`)**:
+For every rung $g \ge 3$:
+1. **Base Band $m = 1$ Starts at $b_g$ and Maps onto $[0, \varepsilon)$:**
+   $\text{rungDeathBandLo}(g, 1) = b_g$, $\text{rungReturnMap}(g, b_g) = 0$, and
+   $\text{rungReturnMap}(g, \text{rungDeathBandHi}(g, 1, \varepsilon)) = \varepsilon$.
+2. **Exact Step Preimage Recurrence ($m + 1 \to m$):**
+   For every $m \ge 1$ and $\varepsilon \in \mathbb{R}$,
+   $$\text{rungReturnMap}(g, \text{rungDeathBandLo}(g, m + 1)) = \text{rungDeathBandLo}(g, m),$$
+   $$\text{rungReturnMap}(g, \text{rungDeathBandHi}(g, m + 1, \varepsilon)) = \text{rungDeathBandHi}(g, m, \varepsilon).$$
+3. **Disjoint Ordering Inside $[b_g, z_g^*)$ for $0 \le \varepsilon \le b_g$:**
+   For every $m \ge 1$ and $0 \le \varepsilon \le b_g$,
+   $$\text{rungDeathBandLo}(g, m) \le \text{rungDeathBandHi}(g, m, \varepsilon) \le \text{rungDeathBandLo}(g, m + 1) < z_g^*.$$
+4. **Residual Uncleaned Leak Measure Formula & Self-Cleaning Fraction at $\varepsilon_g^*$:**
+   $$\text{rungResidualLeakMeasure}(g, \varepsilon) = \frac{2^g}{3^g - 2^g}(b_g - \varepsilon),$$
+   and at $\varepsilon = \varepsilon_3^* = 8/57$ ($g = 3$), the cleaned measure is $\frac{64}{1083}$,
+   the residual uncleaned width is $\frac{32}{9747} \approx 0.003283$, and the self-cleaning ratio is
+   $\frac{\text{rungCleanedMeasure}(3, 8/57)}{\text{rungLeakWidth}(3)} = \frac{18}{19} \approx 94.74\%$. -/
+theorem rungDeathBand_step_and_measure_decomposition :
+    (∀ g : ℕ, 3 ≤ g →
+      rungDeathBandLo g 1 = rungBoundary g ∧
+      rungReturnMap g (rungBoundary g) = 0 ∧
+      (∀ ε : ℝ, rungReturnMap g (rungDeathBandHi g 1 ε) = ε) ∧
+      (∀ m : ℕ, ∀ ε : ℝ,
+        rungReturnMap g (rungDeathBandLo g (m + 1)) = rungDeathBandLo g m ∧
+        rungReturnMap g (rungDeathBandHi g (m + 1) ε) = rungDeathBandHi g m ε) ∧
+      (∀ m : ℕ, ∀ ε : ℝ, 0 ≤ ε → ε ≤ rungBoundary g →
+        rungDeathBandLo g m ≤ rungDeathBandHi g m ε ∧
+        rungDeathBandHi g m ε ≤ rungDeathBandLo g (m + 1) ∧
+        rungDeathBandLo g (m + 1) < rungFixedPoint g) ∧
+      (∀ ε : ℝ,
+        rungResidualLeakMeasure g ε =
+          (((2 : ℝ) ^ g) / ((3 : ℝ) ^ g - (2 : ℝ) ^ g)) * (rungBoundary g - ε))) ∧
+    rungCleanedMeasure 3 (8 / 57 : ℝ) = (64 / 1083 : ℝ) ∧
+    rungResidualLeakMeasure 3 (8 / 57 : ℝ) = (32 / 9747 : ℝ) ∧
+    rungCleanedMeasure 3 (8 / 57 : ℝ) / rungLeakWidth 3 = (18 / 19 : ℝ) := by
+  refine ⟨?_, ?_⟩
+  · intro g hg
+    obtain ⟨k, rfl⟩ : ∃ k : ℕ, g = k + 3 := ⟨g - 3, by omega⟩
+    have h2k_le_3k : (2 : ℝ) ^ k ≤ (3 : ℝ) ^ k := by
+      exact_mod_cast Nat.pow_le_pow_left (by decide : 2 ≤ 3) k
+    have h2k_pos : (0 : ℝ) < (2 : ℝ) ^ k := by positivity
+    have h3G_eq : (3 : ℝ) ^ (k + 3) = 27 * (3 : ℝ) ^ k := by rw [pow_add]; ring
+    have h2G_eq : (2 : ℝ) ^ (k + 3) = 8 * (2 : ℝ) ^ k := by rw [pow_add]; ring
+    have hden_pos : 0 < (3 : ℝ) ^ (k + 3) - (2 : ℝ) ^ (k + 3) := by linarith
+    have h3G_pos : 0 < (3 : ℝ) ^ (k + 3) := by positivity
+    have h2G_pos : 0 < (2 : ℝ) ^ (k + 3) := by positivity
+    have hsub1 : k + 3 - 1 = k + 2 := by omega
+    have h2G_split : (2 : ℝ) ^ (k + 3) = 2 * (2 : ℝ) ^ (k + 2) := by rw [pow_succ']
+    have hlo1 : rungDeathBandLo (k + 3) 1 = rungBoundary (k + 3) := by
+      unfold rungDeathBandLo rungFixedPoint rungBoundary
+      rw [Nat.mul_one, hsub1, div_pow]
+      field_simp [ne_of_gt hden_pos, ne_of_gt h3G_pos]
+    have hret_b : rungReturnMap (k + 3) (rungBoundary (k + 3)) = 0 := by
+      unfold rungReturnMap rungBoundary
+      rw [hsub1, div_pow]
+      field_simp [ne_of_gt h2G_pos, ne_of_gt h3G_pos]
+      rw [h2G_split]
+      ring
+    have hret_hi1 : ∀ ε : ℝ, rungReturnMap (k + 3) (rungDeathBandHi (k + 3) 1 ε) = ε := by
+      intro ε
+      unfold rungDeathBandHi
+      rw [hlo1, Nat.mul_one]
+      have hmul_Add :
+          rungReturnMap (k + 3) (rungBoundary (k + 3) + ((2 / 3 : ℝ) ^ (k + 3)) * ε) =
+            rungReturnMap (k + 3) (rungBoundary (k + 3)) +
+              (((3 / 2 : ℝ) ^ (k + 3) * (2 / 3 : ℝ) ^ (k + 3))) * ε := by
+        unfold rungReturnMap
+        ring
+      rw [hmul_Add, hret_b, zero_add, ← mul_pow]
+      norm_num
+    have hstep_rec :
+        ∀ m : ℕ, ∀ ε : ℝ,
+          rungReturnMap (k + 3) (rungDeathBandLo (k + 3) (m + 1)) = rungDeathBandLo (k + 3) m ∧
+          rungReturnMap (k + 3) (rungDeathBandHi (k + 3) (m + 1) ε) = rungDeathBandHi (k + 3) m ε := by
+      intro m ε
+      have hcat := (universal_rung_catapult_and_upward_expansion hg (rungDeathBandLo (k + 3) (m + 1))).1
+      have hpow_cancel :
+          ((3 / 2 : ℝ) ^ (k + 3)) * ((2 / 3 : ℝ) ^ ((k + 3) * (m + 1))) =
+            (2 / 3 : ℝ) ^ ((k + 3) * m) := by
+        have hmul_s : (k + 3) * (m + 1) = (k + 3) * m + (k + 3) := Nat.mul_succ (k + 3) m
+        rw [hmul_s, pow_add ((2 / 3 : ℝ)) ((k + 3) * m) (k + 3)]
+        have h1 : ((3 / 2 : ℝ) ^ (k + 3)) * ((2 / 3 : ℝ) ^ (k + 3)) = 1 := by
+          rw [← mul_pow]; norm_num
+        calc
+          ((3 / 2 : ℝ) ^ (k + 3)) * ((2 / 3 : ℝ) ^ ((k + 3) * m) * (2 / 3 : ℝ) ^ (k + 3))
+              = (((3 / 2 : ℝ) ^ (k + 3)) * ((2 / 3 : ℝ) ^ (k + 3))) *
+                  (2 / 3 : ℝ) ^ ((k + 3) * m) := by ring
+          _ = (2 / 3 : ℝ) ^ ((k + 3) * m) := by rw [h1, one_mul]
+      have hlo_rec : rungReturnMap (k + 3) (rungDeathBandLo (k + 3) (m + 1)) = rungDeathBandLo (k + 3) m := by
+        have hdiff_lo :
+            rungDeathBandLo (k + 3) (m + 1) - rungFixedPoint (k + 3) =
+              -(rungFixedPoint (k + 3) * (2 / 3 : ℝ) ^ ((k + 3) * (m + 1))) := by
+          unfold rungDeathBandLo; ring
+        have h1 :
+            rungReturnMap (k + 3) (rungDeathBandLo (k + 3) (m + 1)) - rungFixedPoint (k + 3) =
+              -(rungFixedPoint (k + 3) * (2 / 3 : ℝ) ^ ((k + 3) * m)) := by
+          rw [hcat, hdiff_lo]
+          calc
+            ((3 / 2 : ℝ) ^ (k + 3)) * -(rungFixedPoint (k + 3) * (2 / 3 : ℝ) ^ ((k + 3) * (m + 1)))
+                = -(rungFixedPoint (k + 3) *
+                    (((3 / 2 : ℝ) ^ (k + 3)) * (2 / 3 : ℝ) ^ ((k + 3) * (m + 1)))) := by ring
+            _ = -(rungFixedPoint (k + 3) * (2 / 3 : ℝ) ^ ((k + 3) * m)) := by rw [hpow_cancel]
+        have hdef_m :
+            rungDeathBandLo (k + 3) m =
+              rungFixedPoint (k + 3) - rungFixedPoint (k + 3) * (2 / 3 : ℝ) ^ ((k + 3) * m) := by
+          unfold rungDeathBandLo; ring
+        linarith
+      have hhi_rec : rungReturnMap (k + 3) (rungDeathBandHi (k + 3) (m + 1) ε) = rungDeathBandHi (k + 3) m ε := by
+        unfold rungDeathBandHi
+        have hlin :
+            rungReturnMap (k + 3)
+                (rungDeathBandLo (k + 3) (m + 1) + (2 / 3 : ℝ) ^ ((k + 3) * (m + 1)) * ε) =
+              rungReturnMap (k + 3) (rungDeathBandLo (k + 3) (m + 1)) +
+                (((3 / 2 : ℝ) ^ (k + 3)) * (2 / 3 : ℝ) ^ ((k + 3) * (m + 1))) * ε := by
+          unfold rungReturnMap
+          ring
+        rw [hlin, hlo_rec, hpow_cancel]
+      exact ⟨hlo_rec, hhi_rec⟩
+    have hdisj :
+        ∀ m : ℕ, ∀ ε : ℝ, 0 ≤ ε → ε ≤ rungBoundary (k + 3) →
+          rungDeathBandLo (k + 3) m ≤ rungDeathBandHi (k + 3) m ε ∧
+          rungDeathBandHi (k + 3) m ε ≤ rungDeathBandLo (k + 3) (m + 1) ∧
+          rungDeathBandLo (k + 3) (m + 1) < rungFixedPoint (k + 3) := by
+      intro m ε hε0 hεb
+      have hpow_pos : (0 : ℝ) < (2 / 3 : ℝ) ^ ((k + 3) * m) := by positivity
+      have hlo_le_hi : rungDeathBandLo (k + 3) m ≤ rungDeathBandHi (k + 3) m ε := by
+        unfold rungDeathBandHi
+        have hnonneg : 0 ≤ ((2 / 3 : ℝ) ^ ((k + 3) * m)) * ε := mul_nonneg (le_of_lt hpow_pos) hε0
+        linarith
+      have hfp_mul : rungFixedPoint (k + 3) * (1 - (2 / 3 : ℝ) ^ (k + 3)) = rungBoundary (k + 3) := by
+        simpa [rungDeathBandLo] using hlo1
+      have hhi_eq_b : rungDeathBandHi (k + 3) m (rungBoundary (k + 3)) = rungDeathBandLo (k + 3) (m + 1) := by
+        unfold rungDeathBandHi rungDeathBandLo
+        have hmul_s : (k + 3) * (m + 1) = (k + 3) * m + (k + 3) := Nat.mul_succ (k + 3) m
+        rw [← hfp_mul, hmul_s, pow_add ((2 / 3 : ℝ)) ((k + 3) * m) (k + 3)]
+        ring
+      have hhi_le_next : rungDeathBandHi (k + 3) m ε ≤ rungDeathBandLo (k + 3) (m + 1) := by
+        rw [← hhi_eq_b]
+        unfold rungDeathBandHi
+        have hmul_le := mul_le_mul_of_nonneg_left hεb (le_of_lt hpow_pos)
+        linarith
+      have hfp_pos : 0 < rungFixedPoint (k + 3) := by
+        unfold rungFixedPoint
+        positivity
+      have hpow1_pos : (0 : ℝ) < (2 / 3 : ℝ) ^ ((k + 3) * (m + 1)) := by positivity
+      have hlo_lt_fp : rungDeathBandLo (k + 3) (m + 1) < rungFixedPoint (k + 3) := by
+        unfold rungDeathBandLo
+        nlinarith
+      exact ⟨hlo_le_hi, hhi_le_next, hlo_lt_fp⟩
+    have hres_eq :
+        ∀ ε : ℝ,
+          rungResidualLeakMeasure (k + 3) ε =
+            (((2 : ℝ) ^ (k + 3)) / ((3 : ℝ) ^ (k + 3) - (2 : ℝ) ^ (k + 3))) *
+              (rungBoundary (k + 3) - ε) := by
+      intro ε
+      unfold rungResidualLeakMeasure rungLeakWidth rungCleanedMeasure rungFixedPoint rungBoundary
+      rw [hsub1]
+      field_simp [ne_of_gt hden_pos, ne_of_gt h3G_pos]
+      rw [h2G_split]
+      ring
+    exact ⟨hlo1, hret_b, hret_hi1, hstep_rec, hdisj, hres_eq⟩
+  · refine ⟨by unfold rungCleanedMeasure; norm_num,
+      ⟨by unfold rungResidualLeakMeasure rungLeakWidth rungCleanedMeasure rungFixedPoint rungBoundary; norm_num,
+       by unfold rungCleanedMeasure rungLeakWidth rungFixedPoint rungBoundary; norm_num⟩⟩
+
+/-- **The 7-Step Catapult-into-Death-Band Trap Below $8/57$ (`catapult_into_death_band_seven_step_escape`)**:
+1. **Return-Map Factorization Across `0001001`:** For every $\varepsilon, z \in \mathbb{R}$,
+   - $z \in \left[\frac{280}{2187},\, \frac{280 + 128\varepsilon}{2187}\right) \iff
+     \text{rungReturnMap}(4, z) \in \left[\frac{4}{27},\, \frac{4 + 8\varepsilon}{27}\right) = D_{3, 1}(\varepsilon)$,
+   - $\text{rungReturnMap}(3, \text{rungReturnMap}(4, z)) < \varepsilon \iff z < \frac{280 + 128\varepsilon}{2187}$, and
+   - $\varepsilon < \frac{280 + 128\varepsilon}{2187} \iff \varepsilon < \frac{280}{2059} = \varepsilon_1$.
+2. **Direct 7-Step Mahler Orbit Exclusion on $[\varepsilon, 1/2)$:**
+   For every $\varepsilon \ge 1/8$ and $\xi \in \mathbb{R}$, no 8-step segment
+   $y_k, y_{k+1}, \dots, y_{k+7} \in [\varepsilon, 1/2)$ ($y_n = \text{dubY } \xi\ 0\ n$) can start in
+   the catapult-death interval $y_k \in \left[\frac{280}{2187},\, \frac{280 + 128\varepsilon}{2187}\right)$. -/
+theorem catapult_into_death_band_seven_step_escape :
+    (∀ ε z : ℝ,
+      (((280 / 2187 : ℝ) ≤ z ∧ z < (280 + 128 * ε) / 2187) ↔
+        ((4 / 27 : ℝ) ≤ rungReturnMap 4 z ∧ rungReturnMap 4 z < (4 + 8 * ε) / 27)) ∧
+      (rungReturnMap 3 (rungReturnMap 4 z) < ε ↔ z < (280 + 128 * ε) / 2187) ∧
+      (ε < (280 + 128 * ε) / 2187 ↔ ε < homoclinicCycleMin 1)) ∧
+    (∀ {ε ξ : ℝ} {k : ℕ},
+      (1 / 8 : ℝ) ≤ ε →
+      (∀ r ≤ 7, ε ≤ dubY ξ 0 (k + r) ∧ dubY ξ 0 (k + r) < (1 / 2 : ℝ)) →
+      ¬ ((280 / 2187 : ℝ) ≤ dubY ξ 0 k ∧ dubY ξ 0 k < (280 + 128 * ε) / 2187)) := by
+  have h1 :
+      ∀ ε z : ℝ,
+        (((280 / 2187 : ℝ) ≤ z ∧ z < (280 + 128 * ε) / 2187) ↔
+          ((4 / 27 : ℝ) ≤ rungReturnMap 4 z ∧ rungReturnMap 4 z < (4 + 8 * ε) / 27)) ∧
+        (rungReturnMap 3 (rungReturnMap 4 z) < ε ↔ z < (280 + 128 * ε) / 2187) ∧
+        (ε < (280 + 128 * ε) / 2187 ↔ ε < homoclinicCycleMin 1) := by
+    intro ε z
+    have hEps1 : homoclinicCycleMin 1 = (280 / 2059 : ℝ) :=
+      homoclinicCycleMin_closed_form_and_strictMono.2.1
+    rw [hEps1]
+    unfold rungReturnMap
+    refine ⟨⟨fun h => ⟨by linarith, by linarith⟩, fun h => ⟨by linarith, by linarith⟩⟩,
+      ⟨fun h => by linarith, fun h => by linarith⟩,
+      ⟨fun h => by linarith, fun h => by linarith⟩⟩
+  refine ⟨h1, ?_⟩
+  intro ε ξ k hε8 hmem ⟨hyk_lo, hyk_hi⟩
+  have hε16 : (1 / 16 : ℝ) ≤ ε := by linarith
+  have hd := punctured_half_step_dichotomy_and_forbidden_short_gaps (ξ := ξ) hε16
+  have hm : ∀ r ≤ 7, ε ≤ dubY ξ 0 (k + r) ∧ dubY ξ 0 (k + r) < (1 / 2 : ℝ) := hmem
+  have hm0 := hm 0 (by omega); rw [Nat.add_zero] at hm0
+  have hm1 := hm 1 (by omega)
+  have hm2 := hm 2 (by omega)
+  have hm3 := hm 3 (by omega)
+  have hm4 := hm 4 (by omega)
+  have hm5 := hm 5 (by omega)
+  have hm6 := hm 6 (by omega)
+  have hm7 := hm 7 (by omega)
+  have hl0 := dubCarry_eq_fract_linear ξ 0 k
+  have hl1 := dubCarry_eq_fract_linear ξ 0 (k + 1)
+  have hl2 := dubCarry_eq_fract_linear ξ 0 (k + 2)
+  have hl3 := dubCarry_eq_fract_linear ξ 0 (k + 3)
+  have hl4 := dubCarry_eq_fract_linear ξ 0 (k + 4)
+  have hl5 := dubCarry_eq_fract_linear ξ 0 (k + 5)
+  have hl6 := dubCarry_eq_fract_linear ξ 0 (k + 6)
+  have hb0 := (hd.1 k hm0.1 hm0.2 hm1.1 hm1.2).1
+  have hb1 := (hd.1 (k + 1) hm1.1 hm1.2 hm2.1 hm2.2).1
+  have hb2 := (hd.1 (k + 2) hm2.1 hm2.2 hm3.1 hm3.2).1
+  have hb3 := (hd.1 (k + 3) hm3.1 hm3.2 hm4.1 hm4.2).1
+  have hb4 := (hd.1 (k + 4) hm4.1 hm4.2 hm5.1 hm5.2).1
+  have hb5 := (hd.1 (k + 5) hm5.1 hm5.2 hm6.1 hm6.2).1
+  have hb6 := (hd.1 (k + 6) hm6.1 hm6.2 hm7.1 hm7.2).1
+  have hyk_lt_4_27 : dubY ξ 0 k < (4 / 27 : ℝ) := by
+    by_cases hε_lt : ε < (1 / 2 : ℝ)
+    · linarith
+    · linarith [hm0.1, hm0.2]
+  have hc0 : (dubCarry ξ 0 k : ℝ) = 0 := by
+    rcases hb0 with h0 | h1
+    · exact_mod_cast h0
+    · exfalso
+      have h1_r : (dubCarry ξ 0 k : ℝ) = 1 := by exact_mod_cast h1
+      linarith [hm1.1]
+  have hc1 : (dubCarry ξ 0 (k + 1) : ℝ) = 0 := by
+    rcases hb1 with h0 | h1
+    · exact_mod_cast h0
+    · exfalso
+      have h1_r : (dubCarry ξ 0 (k + 1) : ℝ) = 1 := by exact_mod_cast h1
+      linarith [hm2.1]
+  have hc2 : (dubCarry ξ 0 (k + 2) : ℝ) = 0 := by
+    rcases hb2 with h0 | h1
+    · exact_mod_cast h0
+    · exfalso
+      have h1_r : (dubCarry ξ 0 (k + 2) : ℝ) = 1 := by exact_mod_cast h1
+      linarith [hm3.1]
+  have hc3 : (dubCarry ξ 0 (k + 3) : ℝ) = 1 := by
+    rcases hb3 with h0 | h1
+    · exfalso
+      have h0_r : (dubCarry ξ 0 (k + 3) : ℝ) = 0 := by exact_mod_cast h0
+      linarith [hm4.2]
+    · exact_mod_cast h1
+  have hy4_lo : (4 / 27 : ℝ) ≤ dubY ξ 0 (k + 4) := by linarith
+  have hy4_hi : dubY ξ 0 (k + 4) < (4 + 8 * ε) / 27 := by linarith
+  have hc4 : (dubCarry ξ 0 (k + 4) : ℝ) = 0 := by
+    rcases hb4 with h0 | h1
+    · exact_mod_cast h0
+    · exfalso
+      have h1_r : (dubCarry ξ 0 (k + 4) : ℝ) = 1 := by exact_mod_cast h1
+      linarith [hm5.1, hm0.2]
+  have hc5 : (dubCarry ξ 0 (k + 5) : ℝ) = 0 := by
+    rcases hb5 with h0 | h1
+    · exact_mod_cast h0
+    · exfalso
+      have h1_r : (dubCarry ξ 0 (k + 5) : ℝ) = 1 := by exact_mod_cast h1
+      linarith [hm6.1, hm0.2]
+  have hc6 : (dubCarry ξ 0 (k + 6) : ℝ) = 1 := by
+    rcases hb6 with h0 | h1
+    · exfalso
+      have h0_r : (dubCarry ξ 0 (k + 6) : ℝ) = 0 := by exact_mod_cast h0
+      linarith [hm7.2]
+    · exact_mod_cast h1
+  linarith [hm7.1]
+
 end Mahler.DubickasExtension
+
 
 
