@@ -278,6 +278,14 @@ example (m : ℕ) :
 #print axioms Mahler.DubickasExtension.ternary_cantor_dust_min_seed_of_certifyTernaryDustDepth
 #print axioms Mahler.DubickasExtension.ternary_cantor_dust_certified_horizon_bounds_up_to_depth_six
 
+-- 22. Verify Section 28: Single-exponent homogeneous identity, archimedean floor invariant V(0)-1, cyclotomic mod-7/13/19 automata, and 101-bit Mahler Depth-12 bound
+#print axioms Mahler.DubickasExtension.defectStepSum_shift_cancellation_and_single_exponent_identity
+#print axioms Mahler.DubickasExtension.defectNormalizedQuotient_archimedean_floor_invariant
+#print axioms Mahler.DubickasExtension.defectNormalizedQuotient_cyclotomic_mod_7_13_19_locks
+#print axioms Mahler.DubickasExtension.mahler_min_seed_of_mahlerLeafOk
+#print axioms Mahler.DubickasExtension.mahler_binary_cantor_dust_min_seed_of_certifyMahlerBinaryDustDepth
+#print axioms Mahler.DubickasExtension.mahler_binary_cantor_dust_certified_bounds_up_to_depth_12
+
 #print axioms Mahler.DubickasExtension.dubBaseCarry_eq_fract_linear
 #print axioms Mahler.DubickasExtension.dubBaseY_multi_step_carry_identity
 #print axioms Mahler.DubickasExtension.dubBaseCarry_mem_two_letters

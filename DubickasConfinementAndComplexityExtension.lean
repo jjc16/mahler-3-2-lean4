@@ -9772,6 +9772,645 @@ theorem ternary_cantor_dust_certified_horizon_bounds_up_to_depth_six :
   intro V j hj hj7 hrec
   exact ternary_cantor_dust_min_seed_of_certifyTernaryDustDepth hcerts.2.2.2.2.2 hj hj7 hrec
 
+/-!
+## Section 28: Single-Exponent Homogeneous Reduction, the Universal Archimedean Floor
+## Invariant $\lfloor 2^{E_d} V(d) / 3^{S_d} \rfloor = V(0) - 1$, Cyclotomic Mod-7/13/19
+## Automata, and Crossing the 100-Bit Barrier ($V(0) > 2^{92},\; 19 b_1 + 9 > 2^{101}$)
+
+In this section we pull together tools from **archimedean Diophantine approximation**, **cyclotomic
+modular arithmetic** ($\mathbb{F}_7, \mathbb{F}_{13}, \mathbb{F}_{19}$), and **2-adic renormalization**
+to establish four new structural results on the Cantor-dust recurrence
+$2^{3 j(r+1) + 4} V(r+1) + 1 = 3^{3 j(r) + 4} V(r)$:
+
+1. **Exact Endpoint Exponent Cancellation & Single-Exponent Homogeneous Identity
+   (`defectStepSum_shift_cancellation_and_single_exponent_identity`)**:
+   The shifted 2-adic exponent sum $E_d = \sum_{t=1}^d (3 j(t) + 4)$ and the 3-adic exponent sum
+   $S_d = \sum_{t=0}^{d-1} (3 j(t) + 4)$ are not independent sequences: all intermediate terms
+   $1 \le t \le d - 1$ cancel telescopically, giving
+   $$(3 j(0) + 4) + E_d = S_{d+1}, \qquad E_d + 3 j(0) = S_d + 3 j(d).$$
+   Consequently, multiplying the $d$-step telescoped recurrence by $2^{S_1} = 2^{3 j(0) + 4}$
+   eliminates $E_d$ completely and yields the **single-exponent homogeneous equation**:
+   $$2^{S_{d+1}} V(d) + \Delta(j, d) = 2^{3 j(0) + 4} \cdot 3^{S_d} V(0),$$
+   where $\Delta(j, 0) = 0$ and $\Delta(j, d + 1) = 3^{3 j(d) + 4} \Delta(j, d) + 2^{S_{d+1}}$.
+
+2. **The Universal Archimedean Floor Invariant $\lfloor 2^{E_d} V(d) / 3^{S_d} \rfloor = V(0) - 1$
+   (`defectNormalizedQuotient_archimedean_floor_invariant`)**:
+   Because $5 \cdot 2^{3 j(d) + 4} < 3^{3 j(d) + 4}$ for all $j(d) \in \mathbb{N}$, induction on $d$
+   proves the universal linear bound
+   $$4 \cdot \Delta(j, d) \;\le\; 3^{S_d} - 2^{S_d} \;<\; 3^{S_d}.$$
+   Since $2^{3 j(0) + 4} \ge 16$, this pins $2^{E_d} V(d)$ into a narrow archimedean corridor of
+   width $< \frac{1}{64} \cdot 3^{S_d}$ below $3^{S_d} V(0)$:
+   $$64 \cdot 3^{S_d} V(0) \;<\; 64 \cdot 2^{E_d} V(d) + 3^{S_d}, \qquad
+     3^{S_d} \big(V(0) - 1\big) \;<\; 2^{E_d} V(d) \;<\; 3^{S_d} V(0),$$
+   making the integer floor a **global constant of motion** across all $d \ge 1$:
+   $$\left\lfloor \frac{2^{E_d}\, V(d)}{3^{S_d}} \right\rfloor \;=\; V(0) - 1 \qquad (\forall d \ge 1).$$
+
+3. **Cyclotomic Mod-7 Forward Automaton, Mod-13 Backward Automaton & Mod-19 Mahler Integrality Lock
+   (`defectNormalizedQuotient_cyclotomic_mod_7_13_19_locks`)**:
+   - **Mod $7$ ($2^3 \equiv 1 \pmod 7,\; 3^3 \equiv -1 \pmod 7$)**: $2^{3 j_2 + 4} \equiv 2 \pmod 7$ is
+     independent of $j_2$, so $V_2 \bmod 7$ is a deterministic forward function of $(V_1 \bmod 7, j_1 \bmod 2)$:
+     $V_2 \equiv 5 V_1 + 3 \pmod 7$ when $j_1$ is odd, and $V_2 \equiv 2 V_1 + 3 \pmod 7$ when $j_1$ is even.
+   - **Mod $13$ ($3^3 \equiv 1 \pmod{13}$)**: $3^{3 j_1 + 4} \equiv 3 \pmod{13}$ is independent of $j_1$,
+     so $(2^{3 j_2 + 4} V_2 + 1) \bmod 13 = (3 V_1) \bmod 13$.
+   - **Mod $19$ ($3^3 \equiv 2^3 \pmod{19}$)**: Because $3^3 = 27 \equiv 8 = 2^3 \pmod{19}$, the
+     Mahler integrality condition $(2^{3 j_r + 3} V_r) \bmod 19 = 1$ (from $19 b_{m_r} + 9 = 9 \cdot 2^{3 j_r + 3} V_r$)
+     is **conserved across every transition** and locks $V_r \bmod 19 = 11$ ($j_r = 1$), $18$ ($j_r = 2$),
+     and $7$ ($j_r = 3$).
+
+4. **Mod-19 Enhanced Backward Tree Engine & Crossing the 100-Bit Barrier at Depth 12
+   (`mahler_binary_cantor_dust_certified_bounds_up_to_depth_12`)**:
+   Combining the Mod-19 Mahler Integrality Lock $(2^{3 j_0 + 3} V_0) \bmod 19 = 1$ with our backward
+   2-adic tree via `Nat.ModEq.cancel_left_of_coprime` on $\gcd(19, 2^{e_0 + 3 j_0 + 3}) = 1$ lifts each
+   leaf residue $R_0 \pmod{2^{e_0}}$ to $2^{e_0} \ell_{19} + R_0 \pmod{19 \cdot 2^{e_0}}$, pushing
+   the kernel-certified minimum seed across $\{1, 2\}^{13}$ ($d = 12$) to
+   $$V(0) \;\ge\; 6{,}644{,}210{,}551{,}001{,}288{,}379{,}891{,}372{,}825 \;>\; 2^{92},$$
+   which forces the underlying Mahler integer at the first defect ($19 b_1 + 9 \ge 576 V(0)$) to exceed
+   $$3{,}827{,}065{,}277{,}376{,}742{,}106{,}817{,}430{,}747{,}200 \;>\; 2^{101}$$
+   —breaking the **100-bit barrier** in the Lean 4 kernel!
+-/
+
+/-- Recursive single-exponent homogeneous accumulator $\Delta(j, d) = \sum_{r=1}^d 2^{S_r} 3^{S_d - S_r}$. -/
+def singleExpDefectAcc (j : ℕ → ℕ) : ℕ → ℕ
+  | 0 => 0
+  | d + 1 =>
+      3 ^ (3 * j d + 4) * singleExpDefectAcc j d +
+        2 ^ (defectStepSum j (d + 1))
+
+/-- **Exact Endpoint Exponent Cancellation and Single-Exponent Homogeneous Identity
+(`defectStepSum_shift_cancellation_and_single_exponent_identity`)**:
+1. For every $j : \mathbb{N} \to \mathbb{N}$ and $d \in \mathbb{N}$,
+   $$(3 j(0) + 4) + \text{defectStepSum}(\text{fun } t \Rightarrow j(1 + t),\, d) =
+     \text{defectStepSum}(j, d + 1),$$
+   $$\text{defectStepSum}(\text{fun } t \Rightarrow j(1 + t),\, d) + 3 j(0) =
+     \text{defectStepSum}(j, d) + 3 j(d).$$
+2. For any solution $V, j : \mathbb{N} \to \mathbb{N}$ of
+   $2^{3 j(r + 1) + 4} V(r + 1) + 1 = 3^{3 j(r) + 4} V(r)$, every $d \in \mathbb{N}$ satisfies
+   $$2^{\text{defectStepSum}(j, d + 1)} \cdot V(d) + \text{singleExpDefectAcc}(j, d) =
+     2^{3 j(0) + 4} \cdot 3^{\text{defectStepSum}(j, d)} \cdot V(0).$$ -/
+theorem defectStepSum_shift_cancellation_and_single_exponent_identity
+    (j : ℕ → ℕ) :
+    (∀ d : ℕ,
+      (3 * j 0 + 4) + defectStepSum (fun t => j (1 + t)) d = defectStepSum j (d + 1) ∧
+      defectStepSum (fun t => j (1 + t)) d + 3 * j 0 = defectStepSum j d + 3 * j d) ∧
+    (∀ (V : ℕ → ℕ),
+      (∀ r : ℕ, 2 ^ (3 * j (r + 1) + 4) * V (r + 1) + 1 = 3 ^ (3 * j r + 4) * V r) →
+      ∀ d : ℕ,
+        2 ^ (defectStepSum j (d + 1)) * V d + singleExpDefectAcc j d =
+          2 ^ (3 * j 0 + 4) * 3 ^ (defectStepSum j d) * V 0) := by
+  have hshift :
+      ∀ d : ℕ,
+        (3 * j 0 + 4) + defectStepSum (fun t => j (1 + t)) d = defectStepSum j (d + 1) ∧
+        defectStepSum (fun t => j (1 + t)) d + 3 * j 0 = defectStepSum j d + 3 * j d := by
+    intro d
+    induction d with
+    | zero =>
+        change (3 * j 0 + 4) + 0 = 0 + (3 * j 0 + 4) ∧ 0 + 3 * j 0 = 0 + 3 * j 0
+        omega
+    | succ d ih =>
+        have h1 : defectStepSum (fun t => j (1 + t)) (d + 1) =
+            defectStepSum (fun t => j (1 + t)) d + (3 * j (1 + d) + 4) := rfl
+        have h2 : defectStepSum j (d + 1 + 1) =
+            defectStepSum j (d + 1) + (3 * j (d + 1) + 4) := rfl
+        have h3 : defectStepSum j (d + 1) =
+            defectStepSum j d + (3 * j d + 4) := rfl
+        have hidx : 1 + d = d + 1 := by omega
+        rw [hidx] at h1
+        omega
+  refine ⟨hshift, ?_⟩
+  intro V hrec d
+  induction d with
+  | zero =>
+      change 2 ^ (0 + (3 * j 0 + 4)) * V 0 + 0 = 2 ^ (3 * j 0 + 4) * 3 ^ 0 * V 0
+      simp only [Nat.zero_add, Nat.add_zero, Nat.pow_zero, Nat.mul_one]
+  | succ d ih =>
+      have hstep := hrec d
+      have hP2_step :
+          2 ^ (defectStepSum j (d + 1 + 1)) =
+            2 ^ (defectStepSum j (d + 1)) * 2 ^ (3 * j (d + 1) + 4) :=
+        Nat.pow_add 2 (defectStepSum j (d + 1)) (3 * j (d + 1) + 4)
+      have hP3_step :
+          3 ^ (defectStepSum j (d + 1)) =
+            3 ^ (defectStepSum j d) * 3 ^ (3 * j d + 4) :=
+        Nat.pow_add 3 (defectStepSum j d) (3 * j d + 4)
+      have hacc : singleExpDefectAcc j (d + 1) =
+          3 ^ (3 * j d + 4) * singleExpDefectAcc j d + 2 ^ (defectStepSum j (d + 1)) := rfl
+      rw [hP2_step, hP3_step, hacc]
+      set P2 := 2 ^ (defectStepSum j (d + 1))
+      set B := 2 ^ (3 * j (d + 1) + 4)
+      set A := 3 ^ (3 * j d + 4)
+      set P3 := 3 ^ (defectStepSum j d)
+      set P0 := 2 ^ (3 * j 0 + 4)
+      have hmul_ih : A * (P2 * V d + singleExpDefectAcc j d) = A * (P0 * P3 * V 0) :=
+        congrArg (fun x => A * x) ih
+      have hmul_step : P2 * (B * V (d + 1) + 1) = P2 * (A * V d) :=
+        congrArg (fun x => P2 * x) hstep
+      have hexp1 : A * (P2 * V d + singleExpDefectAcc j d) =
+          P2 * (A * V d) + A * singleExpDefectAcc j d := by ring
+      have hexp2 : A * (P0 * P3 * V 0) = P0 * (P3 * A) * V 0 := by ring
+      have hexp3 : P2 * (B * V (d + 1) + 1) = P2 * B * V (d + 1) + P2 := by ring
+      linarith only [hmul_ih, hmul_step, hexp1, hexp2, hexp3]
+
+/-- **Universal Archimedean Floor Invariant $\lfloor 2^{E_d} V(d) / 3^{S_d} \rfloor = V(0) - 1$
+(`defectNormalizedQuotient_archimedean_floor_invariant`)**:
+For any solution $V, j : \mathbb{N} \to \mathbb{N}$ of
+$2^{3 j(r + 1) + 4} V(r + 1) + 1 = 3^{3 j(r) + 4} V(r)$ with $V(0) \ge 1$:
+1. **Universal Linear Bound on $\Delta(j, d)$**: For every $d \in \mathbb{N}$,
+   $$4 \cdot \text{singleExpDefectAcc}(j, d) + 2^{\text{defectStepSum}(j, d)} \;\le\;
+     3^{\text{defectStepSum}(j, d)}.$$
+2. **Narrow Archimedean Corridor & Global Floor Conservation**: For every $d \ge 1$,
+   $$64 \cdot 3^{\text{defectStepSum}(j, d)} \cdot V(0) \;<\;
+     64 \cdot 2^{\text{defectStepSum}(\text{fun } t \Rightarrow j(1 + t),\, d)} \cdot V(d) +
+       3^{\text{defectStepSum}(j, d)},$$
+   $$3^{\text{defectStepSum}(j, d)} \cdot \big(V(0) - 1\big) \;<\;
+     2^{\text{defectStepSum}(\text{fun } t \Rightarrow j(1 + t),\, d)} \cdot V(d) \;<\;
+     3^{\text{defectStepSum}(j, d)} \cdot V(0),$$
+   and therefore the integer floor is an **exact invariant** for all $d \ge 1$:
+   $$\frac{2^{\text{defectStepSum}(\text{fun } t \Rightarrow j(1 + t),\, d)} \cdot V(d)}{3^{\text{defectStepSum}(j, d)}} \;=\; V(0) - 1.$$ -/
+theorem defectNormalizedQuotient_archimedean_floor_invariant
+    {V j : ℕ → ℕ}
+    (hV0 : 1 ≤ V 0)
+    (hrec : ∀ r : ℕ, 2 ^ (3 * j (r + 1) + 4) * V (r + 1) + 1 = 3 ^ (3 * j r + 4) * V r) :
+    (∀ d : ℕ,
+      4 * singleExpDefectAcc j d + 2 ^ (defectStepSum j d) ≤ 3 ^ (defectStepSum j d)) ∧
+    (∀ d : ℕ, 1 ≤ d →
+      64 * (3 ^ (defectStepSum j d) * V 0) <
+        64 * (2 ^ (defectStepSum (fun t => j (1 + t)) d) * V d) + 3 ^ (defectStepSum j d) ∧
+      3 ^ (defectStepSum j d) * (V 0 - 1) <
+        2 ^ (defectStepSum (fun t => j (1 + t)) d) * V d ∧
+      2 ^ (defectStepSum (fun t => j (1 + t)) d) * V d <
+        3 ^ (defectStepSum j d) * V 0 ∧
+      (2 ^ (defectStepSum (fun t => j (1 + t)) d) * V d) / 3 ^ (defectStepSum j d) = V 0 - 1) := by
+  have hpow_step : ∀ k : ℕ, 5 * 2 ^ (3 * k + 4) ≤ 3 ^ (3 * k + 4) := by
+    intro k
+    induction k with
+    | zero => decide
+    | succ k ih =>
+        have hexp2 : 3 * (k + 1) + 4 = (3 * k + 4) + 3 := by omega
+        rw [hexp2, Nat.pow_add 2 (3 * k + 4) 3, Nat.pow_add 3 (3 * k + 4) 3]
+        change 5 * (2 ^ (3 * k + 4) * 8) ≤ 3 ^ (3 * k + 4) * 27
+        omega
+  have hacc_bound :
+      ∀ d : ℕ,
+        4 * singleExpDefectAcc j d + 2 ^ (defectStepSum j d) ≤ 3 ^ (defectStepSum j d) := by
+    intro d
+    induction d with
+    | zero =>
+        simp only [singleExpDefectAcc, defectStepSum, Nat.pow_zero, Nat.mul_zero, Nat.zero_add, le_refl]
+    | succ d ih =>
+        have hstep_pow := hpow_step (j d)
+        have hacc : singleExpDefectAcc j (d + 1) =
+            3 ^ (3 * j d + 4) * singleExpDefectAcc j d + 2 ^ (defectStepSum j (d + 1)) := rfl
+        have hP2_step :
+            2 ^ (defectStepSum j (d + 1)) =
+              2 ^ (defectStepSum j d) * 2 ^ (3 * j d + 4) :=
+          Nat.pow_add 2 (defectStepSum j d) (3 * j d + 4)
+        have hP3_step :
+            3 ^ (defectStepSum j (d + 1)) =
+              3 ^ (defectStepSum j d) * 3 ^ (3 * j d + 4) :=
+          Nat.pow_add 3 (defectStepSum j d) (3 * j d + 4)
+        rw [hacc, hP2_step, hP3_step]
+        set A := 3 ^ (3 * j d + 4)
+        set B := 2 ^ (3 * j d + 4)
+        set P3 := 3 ^ (defectStepSum j d)
+        set P2 := 2 ^ (defectStepSum j d)
+        have hmul1 : A * (4 * singleExpDefectAcc j d + P2) ≤ A * P3 :=
+          Nat.mul_le_mul_left A ih
+        have hmul2 : P2 * (5 * B) ≤ P2 * A :=
+          Nat.mul_le_mul_left P2 hstep_pow
+        have hexp1 : A * (4 * singleExpDefectAcc j d + P2) =
+            4 * (A * singleExpDefectAcc j d) + P2 * A := by ring
+        have hexp2 : A * P3 = P3 * A := by ring
+        have hexp3 : 4 * (A * singleExpDefectAcc j d + P2 * B) + P2 * B =
+            4 * (A * singleExpDefectAcc j d) + P2 * (5 * B) := by ring
+        linarith only [hmul1, hmul2, hexp1, hexp2, hexp3]
+  refine ⟨hacc_bound, ?_⟩
+  intro d hd1
+  have hid := (defectStepSum_shift_cancellation_and_single_exponent_identity j).2 V hrec d
+  have hshift := ((defectStepSum_shift_cancellation_and_single_exponent_identity j).1 d).1
+  have hpow_split :
+      2 ^ (defectStepSum j (d + 1)) =
+        2 ^ (3 * j 0 + 4) * 2 ^ (defectStepSum (fun t => j (1 + t)) d) := by
+    rw [← hshift, Nat.pow_add]
+  rw [hpow_split] at hid
+  set P0 := 2 ^ (3 * j 0 + 4)
+  set E2 := 2 ^ (defectStepSum (fun t => j (1 + t)) d)
+  set S3 := 3 ^ (defectStepSum j d)
+  have hP0_ge : 16 ≤ P0 := by
+    change 16 ≤ 2 ^ (3 * j 0 + 4)
+    have hexp : 3 * j 0 + 4 = (3 * j 0) + 4 := by omega
+    rw [hexp, Nat.pow_add]
+    have hp : 1 ≤ 2 ^ (3 * j 0) := Nat.pow_pos (by decide)
+    omega
+  have hP2_pos : 1 ≤ 2 ^ (defectStepSum j d) := Nat.pow_pos (by decide)
+  have hacc_lt : 4 * singleExpDefectAcc j d < S3 := by
+    have hb := hacc_bound d
+    omega
+  have hacc_pos : 1 ≤ singleExpDefectAcc j d := by
+    obtain ⟨m, rfl⟩ : ∃ m : ℕ, d = m + 1 := ⟨d - 1, by omega⟩
+    change 1 ≤ 3 ^ (3 * j m + 4) * singleExpDefectAcc j m + 2 ^ (defectStepSum j (m + 1))
+    have hp : 1 ≤ 2 ^ (defectStepSum j (m + 1)) := Nat.pow_pos (by decide)
+    omega
+  have hmul_eq : P0 * (S3 * V 0) = P0 * (E2 * V d) + singleExpDefectAcc j d := by
+    linarith only [hid]
+  have hdiff_pos : E2 * V d < S3 * V 0 := by
+    have hlt_P0 : P0 * (E2 * V d) < P0 * (S3 * V 0) := by omega
+    exact Nat.lt_of_mul_lt_mul_left hlt_P0
+  have h64_lt : 64 * (S3 * V 0) < 64 * (E2 * V d) + S3 := by
+    have h1 : 64 * (S3 * V 0 - E2 * V d) ≤ 4 * (P0 * (S3 * V 0 - E2 * V d)) := by
+      have hsub : 16 * (S3 * V 0 - E2 * V d) ≤ P0 * (S3 * V 0 - E2 * V d) :=
+        Nat.mul_le_mul_right (S3 * V 0 - E2 * V d) hP0_ge
+      omega
+    have h2 : P0 * (S3 * V 0 - E2 * V d) = singleExpDefectAcc j d := by
+      have hdist : P0 * (S3 * V 0) = P0 * (E2 * V d) + P0 * (S3 * V 0 - E2 * V d) := by
+        rw [← Nat.mul_add, Nat.add_sub_of_le (by omega)]
+      omega
+    omega
+  have hlow_lt : S3 * (V 0 - 1) < E2 * V d := by
+    have hdist : S3 * (V 0 - 1) + S3 = S3 * V 0 := by
+      have hv : (V 0 - 1) + 1 = V 0 := by omega
+      calc S3 * (V 0 - 1) + S3 = S3 * ((V 0 - 1) + 1) := by ring
+      _ = S3 * V 0 := by rw [hv]
+    omega
+  refine ⟨h64_lt, hlow_lt, hdiff_pos, ?_⟩
+  set rem := E2 * V d - S3 * (V 0 - 1)
+  have hrem_lt : rem < S3 := by
+    have hdist : S3 * (V 0 - 1) + S3 = S3 * V 0 := by
+      have hv : (V 0 - 1) + 1 = V 0 := by omega
+      calc S3 * (V 0 - 1) + S3 = S3 * ((V 0 - 1) + 1) := by ring
+      _ = S3 * V 0 := by rw [hv]
+    omega
+  have hbez := mod_and_div_of_bezout (V := E2 * V d) (M := S3) (a := 0) (b := V 0 - 1)
+    (r := rem) (by omega) hrem_lt
+  have hS3_pos : 0 < S3 := Nat.pow_pos (by decide)
+  have hmul_S3 : S3 * ((E2 * V d) / S3) = S3 * (V 0 - 1) := by omega
+  exact Nat.eq_of_mul_eq_mul_left hS3_pos hmul_S3
+
+/-- **Cyclotomic Mod-7 Forward Automaton, Mod-13 Backward Automaton, and Mod-19 Mahler Integrality Lock
+(`defectNormalizedQuotient_cyclotomic_mod_7_13_19_locks`)**:
+Across any defect transition $2^{3 j_2 + 4} V_2 + 1 = 3^{3 j_1 + 4} V_1$:
+1. **Mod-7 Forward Automaton**: $2^{3 j_2 + 4} \bmod 7 = 2$ for all $j_2 \in \mathbb{N}$, and
+   $$(j_1 % 2 = 1 → V_2 % 7 = (5 * V_1 + 3) % 7) ∧ (j_1 % 2 = 0 → V_2 % 7 = (2 * V_1 + 3) % 7).$$
+2. **Mod-13 Backward Automaton**: $3^{3 j_1 + 4} \bmod 13 = 3$ for all $j_1 \in \mathbb{N}$, so
+   $(2^{3 j_2 + 4} * V_2 + 1) % 13 = (3 * V_1) % 13$.
+3. **Mod-19 Mahler Integrality Conservation**: For all $j_1, j_2 \in \mathbb{N}$,
+   $$(2^{3 * j_1 + 3} * V_1) % 19 = 1 ↔ (2^{3 * j_2 + 3} * V_2) % 19 = 1,$$
+   and when $(2^{3 * j_1 + 3} * V_1) % 19 = 1$:
+   $$(j_1 = 1 → V_1 % 19 = 11) ∧ (j_1 = 2 → V_1 % 19 = 18) ∧ (j_1 = 3 → V_1 % 19 = 7).$$ -/
+theorem defectNormalizedQuotient_cyclotomic_mod_7_13_19_locks
+    {V_1 V_2 j_1 j_2 : ℕ}
+    (hrec : 2 ^ (3 * j_2 + 4) * V_2 + 1 = 3 ^ (3 * j_1 + 4) * V_1) :
+    (2 ^ (3 * j_2 + 4) % 7 = 2 ∧
+     (j_1 % 2 = 1 → V_2 % 7 = (5 * V_1 + 3) % 7) ∧
+     (j_1 % 2 = 0 → V_2 % 7 = (2 * V_1 + 3) % 7)) ∧
+    (3 ^ (3 * j_1 + 4) % 13 = 3 ∧
+     (2 ^ (3 * j_2 + 4) * V_2 + 1) % 13 = (3 * V_1) % 13) ∧
+    (((2 ^ (3 * j_1 + 3) * V_1) % 19 = 1 ↔ (2 ^ (3 * j_2 + 3) * V_2) % 19 = 1) ∧
+     ((2 ^ (3 * j_1 + 3) * V_1) % 19 = 1 →
+       (j_1 = 1 → V_1 % 19 = 11) ∧
+       (j_1 = 2 → V_1 % 19 = 18) ∧
+       (j_1 = 3 → V_1 % 19 = 7))) := by
+  have hpow2_mod7 : ∀ k : ℕ, 2 ^ (3 * k + 4) % 7 = 2 := by
+    intro k
+    induction k with
+    | zero => decide
+    | succ k ih =>
+        have hexp : 3 * (k + 1) + 4 = (3 * k + 4) + 3 := by omega
+        rw [hexp, Nat.pow_add, Nat.mul_mod, ih]
+  have hpow3_mod7 : ∀ k : ℕ,
+      (k % 2 = 0 → 3 ^ (3 * k + 4) % 7 = 4) ∧
+      (k % 2 = 1 → 3 ^ (3 * k + 4) % 7 = 3) := by
+    intro k
+    induction k with
+    | zero => decide
+    | succ k ih =>
+        have hexp : 3 * (k + 1) + 4 = (3 * k + 4) + 3 := by omega
+        rw [hexp, Nat.pow_add, Nat.mul_mod]
+        have hk2 : k % 2 = 0 ∨ k % 2 = 1 := by omega
+        rcases hk2 with h0 | h1
+        · have h := ih.1 h0
+          rw [h]
+          omega
+        · have h := ih.2 h1
+          rw [h]
+          omega
+  have hpow3_mod13 : ∀ k : ℕ, 3 ^ (3 * k + 4) % 13 = 3 := by
+    intro k
+    induction k with
+    | zero => decide
+    | succ k ih =>
+        have hexp : 3 * (k + 1) + 4 = (3 * k + 4) + 3 := by omega
+        rw [hexp, Nat.pow_add, Nat.mul_mod, ih]
+  have hpow_mod19 : ∀ k : ℕ, 3 ^ (3 * k + 4) % 19 = (3 * 2 ^ (3 * k + 3)) % 19 := by
+    intro k
+    induction k with
+    | zero => decide
+    | succ k ih =>
+        have hexp1 : 3 * (k + 1) + 4 = (3 * k + 4) + 3 := by omega
+        have hexp2 : 3 * (k + 1) + 3 = (3 * k + 3) + 3 := by omega
+        rw [hexp1, hexp2, Nat.pow_add 3 (3 * k + 4) 3, Nat.pow_add 2 (3 * k + 3) 3,
+          Nat.mul_mod (3 ^ (3 * k + 4)) (3 ^ 3) 19, ih]
+        have h27 : (3 ^ 3) % 19 = 8 := by decide
+        rw [h27]
+        have hassoc : 3 * (2 ^ (3 * k + 3) * 2 ^ 3) = (3 * 2 ^ (3 * k + 3)) * 8 := by ring
+        rw [hassoc, Nat.mul_mod (3 * 2 ^ (3 * k + 3)) 8 19]
+  refine ⟨?_, ?_, ?_⟩
+  · refine ⟨hpow2_mod7 j_2, ?_, ?_⟩
+    · intro hj1_odd
+      have hmod7 : (2 ^ (3 * j_2 + 4) * V_2 + 1) % 7 = (3 ^ (3 * j_1 + 4) * V_1) % 7 :=
+        congrArg (fun x => x % 7) hrec
+      have hlhs : (2 ^ (3 * j_2 + 4) * V_2 + 1) % 7 = (2 * (V_2 % 7) + 1) % 7 := by
+        rw [Nat.add_mod, Nat.mul_mod, hpow2_mod7 j_2]
+        omega
+      have hrhs : (3 ^ (3 * j_1 + 4) * V_1) % 7 = (3 * (V_1 % 7)) % 7 := by
+        rw [Nat.mul_mod, (hpow3_mod7 j_1).2 hj1_odd]
+      omega
+    · intro hj1_even
+      have hmod7 : (2 ^ (3 * j_2 + 4) * V_2 + 1) % 7 = (3 ^ (3 * j_1 + 4) * V_1) % 7 :=
+        congrArg (fun x => x % 7) hrec
+      have hlhs : (2 ^ (3 * j_2 + 4) * V_2 + 1) % 7 = (2 * (V_2 % 7) + 1) % 7 := by
+        rw [Nat.add_mod, Nat.mul_mod, hpow2_mod7 j_2]
+        omega
+      have hrhs : (3 ^ (3 * j_1 + 4) * V_1) % 7 = (4 * (V_1 % 7)) % 7 := by
+        rw [Nat.mul_mod, (hpow3_mod7 j_1).1 hj1_even]
+      omega
+  · refine ⟨hpow3_mod13 j_1, ?_⟩
+    have hmod13 : (2 ^ (3 * j_2 + 4) * V_2 + 1) % 13 = (3 ^ (3 * j_1 + 4) * V_1) % 13 :=
+      congrArg (fun x => x % 13) hrec
+    have hrhs13 : (3 ^ (3 * j_1 + 4) * V_1) % 13 = (3 * (V_1 % 13)) % 13 := by
+      rw [Nat.mul_mod, hpow3_mod13 j_1]
+    omega
+  · have hmod19 : (2 ^ (3 * j_2 + 4) * V_2 + 1) % 19 = (3 ^ (3 * j_1 + 4) * V_1) % 19 :=
+      congrArg (fun x => x % 19) hrec
+    have hlhs19 : (2 ^ (3 * j_2 + 4) * V_2 + 1) % 19 =
+        (2 * ((2 ^ (3 * j_2 + 3) * V_2) % 19) + 1) % 19 := by
+      have hexp : 3 * j_2 + 4 = (3 * j_2 + 3) + 1 := by omega
+      have hmul : 2 ^ (3 * j_2 + 4) * V_2 = 2 * (2 ^ (3 * j_2 + 3) * V_2) := by
+        rw [hexp, Nat.pow_add]; ring
+      rw [hmul, Nat.add_mod, Nat.mul_mod]
+      omega
+    have hrhs19 : (3 ^ (3 * j_1 + 4) * V_1) % 19 =
+        (3 * ((2 ^ (3 * j_1 + 3) * V_1) % 19)) % 19 := by
+      rw [Nat.mul_mod, hpow_mod19 j_1]
+      have hassoc : ((3 * 2 ^ (3 * j_1 + 3)) % 19 * (V_1 % 19)) % 19 =
+          (3 * 2 ^ (3 * j_1 + 3) * V_1) % 19 := (Nat.mul_mod _ _ 19).symm
+      rw [hassoc]
+      have hassoc2 : 3 * 2 ^ (3 * j_1 + 3) * V_1 = 3 * (2 ^ (3 * j_1 + 3) * V_1) := by ring
+      rw [hassoc2, Nat.mul_mod 3]
+    have hiff : (2 ^ (3 * j_1 + 3) * V_1) % 19 = 1 ↔ (2 ^ (3 * j_2 + 3) * V_2) % 19 = 1 := by
+      have hcomb19 :
+          (2 * ((2 ^ (3 * j_2 + 3) * V_2) % 19) + 1) % 19 =
+            (3 * ((2 ^ (3 * j_1 + 3) * V_1) % 19)) % 19 := by
+        rw [← hlhs19, ← hrhs19, hmod19]
+      have hlt1 : (2 ^ (3 * j_1 + 3) * V_1) % 19 < 19 := Nat.mod_lt _ (by decide)
+      have hlt2 : (2 ^ (3 * j_2 + 3) * V_2) % 19 < 19 := Nat.mod_lt _ (by decide)
+      clear hrec hmod19 hlhs19 hrhs19 hpow2_mod7 hpow3_mod7 hpow3_mod13 hpow_mod19
+      generalize (2 ^ (3 * j_1 + 3) * V_1) % 19 = x1 at *
+      generalize (2 ^ (3 * j_2 + 3) * V_2) % 19 = x2 at *
+      omega
+    refine ⟨hiff, ?_⟩
+    intro h19
+    clear hrec hmod19 hlhs19 hrhs19 hiff hpow2_mod7 hpow3_mod7 hpow3_mod13 hpow_mod19
+    refine ⟨?_, ?_, ?_⟩
+    · intro hj1; subst hj1
+      have h : (7 * (V_1 % 19)) % 19 = 1 := by
+        change ((2 ^ (3 * 1 + 3) % 19) * (V_1 % 19)) % 19 = 1
+        rw [← Nat.mul_mod]; exact h19
+      omega
+    · intro hj1; subst hj1
+      have h : (18 * (V_1 % 19)) % 19 = 1 := by
+        change ((2 ^ (3 * 2 + 3) % 19) * (V_1 % 19)) % 19 = 1
+        rw [← Nat.mul_mod]; exact h19
+      omega
+    · intro hj1; subst hj1
+      have h : (11 * (V_1 % 19)) % 19 = 1 := by
+        change ((2 ^ (3 * 3 + 3) % 19) * (V_1 % 19)) % 19 = 1
+        rw [← Nat.mul_mod]; exact h19
+      omega
+
+/-- At a leaf $(j_0, e_0, R_0)$ of the backward 2-adic tree, computes the Mod-19 Mahler-lifted
+minimum seed $2^{e_0} \ell_{19} + R_0$ where $\ell_{19} \in \{0, \dots, 18\}$ is the unique
+residue satisfying $(2^{3 j_0 + 3} (2^{e_0} \ell_{19} + R_0)) \bmod 19 = 1$. -/
+def mahlerLeafSeed (j_0 e_0 R_0 : ℕ) : ℕ :=
+  let M := 2 ^ e_0
+  let inv2_mod19 := (2 ^ (18 - ((e_0 + 3 * j_0 + 3) % 18))) % 19
+  let rem19 := (2 ^ (3 * j_0 + 3) * (R_0 % 19)) % 19
+  let l19 := ((19 + 1 - rem19) * inv2_mod19) % 19
+  M * l19 + R_0
+
+/-- Decidable certificate verifying that at leaf $(j_0, e_0, R_0)$, the Mod-19 Mahler-lifted seed
+satisfies $V_0 \ge \text{minBound}$. -/
+def mahlerLeafOk (j_0 e_0 R_0 minBound : ℕ) : Bool :=
+  let M := 2 ^ e_0
+  let inv2_mod19 := (2 ^ (18 - ((e_0 + 3 * j_0 + 3) % 18))) % 19
+  let rem19 := (2 ^ (3 * j_0 + 3) * (R_0 % 19)) % 19
+  let l19 := ((19 + 1 - rem19) * inv2_mod19) % 19
+  decide (l19 < 19) &&
+  (((2 ^ (3 * j_0 + 3) * (M * l19 + R_0)) % 19) == 1) &&
+  decide (minBound ≤ M * l19 + R_0)
+
+/-- **Polymorphic Mod-19 Mahler Leaf Lift Theorem (`mahler_min_seed_of_mahlerLeafOk`)**:
+If $V_0 \bmod 2^{e_0} = R_0$, $(2^{3 j_0 + 3} V_0) \bmod 19 = 1$, and
+`mahlerLeafOk j_0 e_0 R_0 minBound = true`, then $\text{minBound} \le V_0$. -/
+theorem mahler_min_seed_of_mahlerLeafOk
+    {V_0 j_0 e_0 R_0 minBound : ℕ}
+    (hmod2 : V_0 % 2 ^ e_0 = R_0)
+    (hmod19 : (2 ^ (3 * j_0 + 3) * V_0) % 19 = 1)
+    (hok : mahlerLeafOk j_0 e_0 R_0 minBound = true) :
+    minBound ≤ V_0 := by
+  unfold mahlerLeafOk at hok
+  simp only [Bool.and_eq_true, beq_iff_eq, decide_eq_true_eq] at hok
+  rcases hok with ⟨⟨hl19_lt, hcong19⟩, hbound⟩
+  set M := 2 ^ e_0
+  set inv2_mod19 := (2 ^ (18 - ((e_0 + 3 * j_0 + 3) % 18))) % 19
+  set rem19 := (2 ^ (3 * j_0 + 3) * (R_0 % 19)) % 19
+  set l19 := ((19 + 1 - rem19) * inv2_mod19) % 19
+  set q := V_0 / M
+  have hV0_div : V_0 = M * q + R_0 := by
+    rw [← hmod2]
+    exact (Nat.div_add_mod V_0 M).symm
+  have hmodeq_V0 :
+      Nat.ModEq 19 (2 ^ (3 * j_0 + 3) * (M * q + R_0))
+        (2 ^ (3 * j_0 + 3) * (M * l19 + R_0)) := by
+    change (2 ^ (3 * j_0 + 3) * (M * q + R_0)) % 19 =
+      (2 ^ (3 * j_0 + 3) * (M * l19 + R_0)) % 19
+    rw [← hV0_div, hmod19, hcong19]
+  have hcop1 : Nat.Coprime 19 (2 ^ (3 * j_0 + 3)) :=
+    Nat.Coprime.pow_right (3 * j_0 + 3) (by decide : Nat.Coprime 19 2)
+  have hmodeq_add : Nat.ModEq 19 (M * q + R_0) (M * l19 + R_0) :=
+    Nat.ModEq.cancel_left_of_coprime hcop1 hmodeq_V0
+  have hmodeq_mul : Nat.ModEq 19 (M * q) (M * l19) :=
+    Nat.ModEq.add_right_cancel' R_0 hmodeq_add
+  have hcop2 : Nat.Coprime 19 M :=
+    Nat.Coprime.pow_right e_0 (by decide : Nat.Coprime 19 2)
+  have hmodeq_q : Nat.ModEq 19 q l19 :=
+    Nat.ModEq.cancel_left_of_coprime hcop2 hmodeq_mul
+  have hq_mod : q % 19 = l19 := by
+    change q % 19 = l19 % 19 at hmodeq_q
+    rw [hmodeq_q, Nat.mod_eq_of_lt hl19_lt]
+  have hq_ge : l19 ≤ q := hq_mod ▸ Nat.mod_le q 19
+  have hmul_le : M * l19 ≤ M * q := Nat.mul_le_mul_left M hq_ge
+  omega
+
+/-- Recursive Mod-19 enhanced backward 2-adic tree verifier over $\{1, 2\}^d$. -/
+def certifyMahlerBinaryDustTree : ℕ → ℕ → ℕ → ℕ → ℕ → Bool
+  | 0, j_0, e_0, R_0, minBound => mahlerLeafOk j_0 e_0 R_0 minBound
+  | d + 1, j_next, e, R, minBound =>
+      let p1 := backwardLiftResidue 1 j_next e R
+      let p2 := backwardLiftResidue 2 j_next e R
+      backwardLiftStepOk 1 j_next e R p1.1 p1.2 &&
+      backwardLiftStepOk 2 j_next e R p2.1 p2.2 &&
+      certifyMahlerBinaryDustTree d 1 p1.1 p1.2 minBound &&
+      certifyMahlerBinaryDustTree d 2 p2.1 p2.2 minBound
+
+/-- Top-level Mod-19 enhanced certificate verifying that every $d$-transition Mahler trajectory in
+$\{1, 2\}^{d+1}$ (satisfying $(2^{3 j(0) + 3} V(0)) \bmod 19 = 1$ and $j(d + 1) \ge 1$) has
+$V(0) \ge \text{minBound}$. -/
+def certifyMahlerBinaryDustDepth (d minBound : ℕ) : Bool :=
+  certifyMahlerBinaryDustTree d 1 7 35 minBound &&
+  certifyMahlerBinaryDustTree d 2 7 25 minBound
+
+/-- Soundness of `certifyMahlerBinaryDustTree` along any suffix of length $d$. -/
+theorem mahler_min_seed_of_certifyMahlerBinaryDustTree :
+    ∀ (d : ℕ) (V j : ℕ → ℕ) (e R minBound : ℕ),
+      (2 ^ (3 * j 0 + 3) * V 0) % 19 = 1 →
+      (∀ r < d, j r = 1 ∨ j r = 2) →
+      (∀ r < d, 2 ^ (3 * j (r + 1) + 4) * V (r + 1) + 1 = 3 ^ (3 * j r + 4) * V r) →
+      V d % 2 ^ e = R →
+      certifyMahlerBinaryDustTree d (j d) e R minBound = true →
+      minBound ≤ V 0
+  | 0, V, j, e, R, minBound, hmod19, _, _, hmod2, hcert => by
+      unfold certifyMahlerBinaryDustTree at hcert
+      exact mahler_min_seed_of_mahlerLeafOk hmod2 hmod19 hcert
+  | d + 1, V, j, e, R, minBound, hmod19, hj, hrec, hmod2, hcert => by
+      unfold certifyMahlerBinaryDustTree at hcert
+      simp only [Bool.and_eq_true] at hcert
+      rcases hcert with ⟨⟨⟨hok1, hok2⟩, htree1⟩, htree2⟩
+      have hjd : j d = 1 ∨ j d = 2 := hj d (by omega)
+      have hstep_d : 2 ^ (3 * j (d + 1) + 4) * V (d + 1) + 1 = 3 ^ (3 * j d + 4) * V d :=
+        hrec d (by omega)
+      have hj_pre : ∀ r < d, j r = 1 ∨ j r = 2 := fun r hr => hj r (by omega)
+      have hrec_pre : ∀ r < d, 2 ^ (3 * j (r + 1) + 4) * V (r + 1) + 1 = 3 ^ (3 * j r + 4) * V r :=
+        fun r hr => hrec r (by omega)
+      rcases hjd with hjd1 | hjd2
+      · rw [hjd1] at hstep_d
+        have hlift := backward_two_adic_residue_lift_of_stepOk hstep_d hmod2 hok1
+        have htree1' :
+            certifyMahlerBinaryDustTree d (j d)
+              (backwardLiftResidue 1 (j (d + 1)) e R).1
+              (backwardLiftResidue 1 (j (d + 1)) e R).2 minBound = true := by
+          rw [hjd1]; exact htree1
+        exact mahler_min_seed_of_certifyMahlerBinaryDustTree d V j
+          (backwardLiftResidue 1 (j (d + 1)) e R).1
+          (backwardLiftResidue 1 (j (d + 1)) e R).2
+          minBound hmod19 hj_pre hrec_pre hlift.1 htree1'
+      · rw [hjd2] at hstep_d
+        have hlift := backward_two_adic_residue_lift_of_stepOk hstep_d hmod2 hok2
+        have htree2' :
+            certifyMahlerBinaryDustTree d (j d)
+              (backwardLiftResidue 2 (j (d + 1)) e R).1
+              (backwardLiftResidue 2 (j (d + 1)) e R).2 minBound = true := by
+          rw [hjd2]; exact htree2
+        exact mahler_min_seed_of_certifyMahlerBinaryDustTree d V j
+          (backwardLiftResidue 2 (j (d + 1)) e R).1
+          (backwardLiftResidue 2 (j (d + 1)) e R).2
+          minBound hmod19 hj_pre hrec_pre hlift.1 htree2'
+
+/-- **Universal Mod-19 Enhanced Binary-Dust Minimum Seed Theorem
+(`mahler_binary_cantor_dust_min_seed_of_certifyMahlerBinaryDustDepth`)**:
+For any depth $d \in \mathbb{N}$ and lower bound $\text{minBound} \in \mathbb{N}$, if
+`certifyMahlerBinaryDustDepth d minBound = true`, then every Mahler defect sequence
+$V, j : \mathbb{N} \to \mathbb{N}$ satisfying $(2^{3 j(0) + 3} V(0)) \bmod 19 = 1$,
+$j(r) \in \{1, 2\}$ for all $r \le d$, $j(d + 1) \ge 1$, and
+$2^{3 j(r + 1) + 4} V(r + 1) + 1 = 3^{3 j(r) + 4} V(r)$ for all $r \le d + 1$ satisfies
+$$\text{minBound} \le V(0).$$ -/
+theorem mahler_binary_cantor_dust_min_seed_of_certifyMahlerBinaryDustDepth
+    {d minBound : ℕ}
+    (hcert : certifyMahlerBinaryDustDepth d minBound = true)
+    {V j : ℕ → ℕ}
+    (hmod19 : (2 ^ (3 * j 0 + 3) * V 0) % 19 = 1)
+    (hj : ∀ r ≤ d, j r = 1 ∨ j r = 2)
+    (hjd1 : 1 ≤ j (d + 1))
+    (hrec : ∀ r ≤ d + 1, 2 ^ (3 * j (r + 1) + 4) * V (r + 1) + 1 = 3 ^ (3 * j r + 4) * V r) :
+    minBound ≤ V 0 := by
+  unfold certifyMahlerBinaryDustDepth at hcert
+  simp only [Bool.and_eq_true] at hcert
+  rcases hcert with ⟨hcert1, hcert2⟩
+  have hcool := defectNormalizedQuotient_cooldown_mod_128_and_three_adic_lock.1
+    (V d) (V (d + 1)) (j d) (j (d + 1)) hjd1 (hrec d (by omega))
+  have hj_lt : ∀ r < d, j r = 1 ∨ j r = 2 := fun r hr => hj r (by omega)
+  have hrec_lt : ∀ r < d, 2 ^ (3 * j (r + 1) + 4) * V (r + 1) + 1 = 3 ^ (3 * j r + 4) * V r :=
+    fun r hr => hrec r (by omega)
+  rcases hj d (by omega) with hjd_one | hjd_two
+  · have hmod : V d % 2 ^ 7 = 35 := hcool.1 hjd_one
+    rw [← hjd_one] at hcert1
+    exact mahler_min_seed_of_certifyMahlerBinaryDustTree d V j 7 35 minBound
+      hmod19 hj_lt hrec_lt hmod hcert1
+  · have hmod : V d % 2 ^ 7 = 25 := hcool.2 hjd_two
+    rw [← hjd_two] at hcert2
+    exact mahler_min_seed_of_certifyMahlerBinaryDustTree d V j 7 25 minBound
+      hmod19 hj_lt hrec_lt hmod hcert2
+
+/-- Helper lemma: left half (`j_last = 1`, `4,096` words) of Mod-19 Depth-12 certificate. -/
+theorem certifyMahlerBinaryDustTree_12_left_eq_true :
+    certifyMahlerBinaryDustTree 12 1 7 35 6644210551001288379891372825 = true := by
+  decide
+
+/-- Helper lemma: right half (`j_last = 2`, `4,096` words) of Mod-19 Depth-12 certificate. -/
+theorem certifyMahlerBinaryDustTree_12_right_eq_true :
+    certifyMahlerBinaryDustTree 12 2 7 25 6644210551001288379891372825 = true := by
+  decide
+
+/-- **Mod-19 Enhanced Certified Bounds Through Depth 12 — Crossing the 100-Bit Mahler Barrier
+(`mahler_binary_cantor_dust_certified_bounds_up_to_depth_12`)**:
+1. Across all $512$ words in $\{1, 2\}^9$ ($d = 8$) and all $1{,}024$ words in $\{1, 2\}^{10}$ ($d = 9$),
+   the Mod-19 Mahler Integrality Lock raises the minimum seed from $5.90 \times 10^{17}$ to
+   $95{,}781{,}681{,}640{,}796{,}771{,}097 > 2^{66}$ ($d = 8$) and
+   $1{,}790{,}650{,}209{,}299{,}156{,}814{,}627 > 2^{70}$ ($d = 9$).
+2. Across all $8{,}192$ words in $\{1, 2\}^{13}$ ($d = 12$, with $j(13) \ge 1$), every Mahler
+   defect sequence satisfying $(2^{3 j(0) + 3} V(0)) \bmod 19 = 1$ satisfies
+   $$V(0) \;\ge\; 6{,}644{,}210{,}551{,}001{,}288{,}379{,}891{,}372{,}825 \;>\; 2^{92},$$
+   forcing $9 \cdot 2^{3 j(0) + 3} V(0) \ge 3{,}827{,}065{,}277{,}376{,}742{,}106{,}817{,}430{,}747{,}200 > 2^{101}$! -/
+theorem mahler_binary_cantor_dust_certified_bounds_up_to_depth_12 :
+    (certifyMahlerBinaryDustDepth 8 95781681640796771097 = true ∧
+     certifyMahlerBinaryDustDepth 9 1790650209299156814627 = true ∧
+     certifyMahlerBinaryDustDepth 10 138107331254513982952217 = true ∧
+     certifyMahlerBinaryDustDepth 12 6644210551001288379891372825 = true) ∧
+    (∀ V j : ℕ → ℕ,
+      (2 ^ (3 * j 0 + 3) * V 0) % 19 = 1 →
+      (∀ r ≤ 12, j r = 1 ∨ j r = 2) →
+      1 ≤ j 13 →
+      (∀ r ≤ 13, 2 ^ (3 * j (r + 1) + 4) * V (r + 1) + 1 = 3 ^ (3 * j r + 4) * V r) →
+      6644210551001288379891372825 ≤ V 0 ∧
+      2 ^ 101 < 9 * 2 ^ (3 * j 0 + 3) * V 0) := by
+  have h8_9_10 :
+      certifyMahlerBinaryDustDepth 8 95781681640796771097 = true ∧
+      certifyMahlerBinaryDustDepth 9 1790650209299156814627 = true ∧
+      certifyMahlerBinaryDustDepth 10 138107331254513982952217 = true := by decide
+  have h12 : certifyMahlerBinaryDustDepth 12 6644210551001288379891372825 = true := by
+    unfold certifyMahlerBinaryDustDepth
+    rw [certifyMahlerBinaryDustTree_12_left_eq_true, certifyMahlerBinaryDustTree_12_right_eq_true]
+    rfl
+  refine ⟨⟨h8_9_10.1, h8_9_10.2.1, h8_9_10.2.2, h12⟩, ?_⟩
+  intro V j hmod19 hj hj13 hrec
+  have hV0_ge := mahler_binary_cantor_dust_min_seed_of_certifyMahlerBinaryDustDepth
+    h12 hmod19 hj hj13 hrec
+  refine ⟨hV0_ge, ?_⟩
+  have hj0 : j 0 = 1 ∨ j 0 = 2 := hj 0 (by omega)
+  rcases hj0 with hj0_1 | hj0_2
+  · rw [hj0_1]
+    change 2 ^ 101 < 576 * V 0
+    have hmul : 576 * 6644210551001288379891372825 ≤ 576 * V 0 :=
+      Nat.mul_le_mul_left 576 hV0_ge
+    have hgt : 2 ^ 101 < 576 * 6644210551001288379891372825 := by decide
+    exact lt_of_lt_of_le hgt hmul
+  · rw [hj0_2]
+    change 2 ^ 101 < 4608 * V 0
+    have hmul : 4608 * 6644210551001288379891372825 ≤ 4608 * V 0 :=
+      Nat.mul_le_mul_left 4608 hV0_ge
+    have hgt : 2 ^ 101 < 4608 * 6644210551001288379891372825 := by decide
+    exact lt_of_lt_of_le hgt hmul
+
+
 
 
 
