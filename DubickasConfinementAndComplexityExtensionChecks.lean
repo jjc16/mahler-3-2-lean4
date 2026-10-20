@@ -216,6 +216,15 @@ example {ξ : ℝ} {W : ℕ} (hξ1 : (1 : ℝ) ≤ ξ) (hξW : ξ < (2 : ℝ) ^ 
 #print axioms Mahler.DubickasExtension.rungDefectCocycle_tower_identity
 #print axioms Mahler.DubickasExtension.general_rung_multi_defect_valuation_tower
 
+-- 14. Verify Section 20: k-block defect spacing law and (3, 3k+4) Perron-Fibonacci hierarchy in the Cantor dust
+example {k : ℕ} {z : ℝ} (hk : 1 ≤ k) (hz : homoclinicCycleMin k ≤ z) :
+    homoclinicCycleMin k ≤ rungReturnMapIter 3 k (rungReturnMap 4 z) :=
+  (cantor_dust_minimum_defect_spacing_law hk hz).1
+
+#print axioms Mahler.DubickasExtension.cantor_dust_minimum_defect_spacing_law
+#print axioms Mahler.DubickasExtension.punctured_eps1_forced_seven_step_macro_block
+#print axioms Mahler.DubickasExtension.cantorDust_perron_fibonacci_counts
+
 #print axioms Mahler.DubickasExtension.dubBaseCarry_eq_fract_linear
 #print axioms Mahler.DubickasExtension.dubBaseY_multi_step_carry_identity
 #print axioms Mahler.DubickasExtension.dubBaseCarry_mem_two_letters
