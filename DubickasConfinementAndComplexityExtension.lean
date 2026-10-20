@@ -9360,6 +9360,419 @@ theorem binary_cantor_dust_certified_horizon_bounds_up_to_depth_ten :
   · intro V j hj hj11 hrec
     exact binary_cantor_dust_min_seed_of_certifyBinaryDustDepth hcerts.2.2.2.2.2.2.2.2.2 hj hj11 hrec
 
+/-!
+## Section 27: The Universal $(2, 3)$-Adic Quotient-Remainder Conservation Law,
+## Multi-Step Quotient Duality, Ternary $\{1, 2, 3\}$ Cooldown Sieve, and
+## Kernel-Certified Horizon Bounds Through Depth 12 ($V_0 > 1.13 \times 10^{27} > 2^{89}$)
+
+Pushing the renormalization analysis of Section 26 one level deeper uncovers a universal
+conservation law for every affine recurrence of the form $B V_2 + 1 = A V_1$ ($B \ge 2, A \ge 1$):
+
+1. **Universal One-Step Quotient-Remainder Conservation Law
+   (`one_step_quotient_and_remainder_conservation`)**:
+   For **any** integers $A \ge 1$, $B \ge 2$, $V_1, V_2 \in \mathbb{N}$ satisfying $B V_2 + 1 = A V_1$,
+   and **any** positive scale factor $M \ge 1$:
+   - The Euclidean remainder $r = V_1 \bmod (M B)$ is strictly positive ($1 \le r < M B$), because
+     $B \mid V_1$ would imply $B \mid 1$.
+   - **Quotient Conservation**: $\displaystyle \frac{V_2}{M A} = \frac{V_1}{M B}$.
+   - **Remainder Recurrence Invariance**: The reduced remainders $R_1 = V_1 \bmod (M B)$ and
+     $R_2 = V_2 \bmod (M A)$ satisfy the **exact same inhomogeneous recurrence in $\mathbb{N}$**:
+     $$B \cdot \big(V_2 \bmod (M A)\big) + 1 = A \cdot \big(V_1 \bmod (M B)\big).$$
+
+2. **Multi-Step $(2, 3)$-Adic Quotient Duality Across Arbitrary Horizon $d \in \mathbb{N}$
+   (`universal_two_three_adic_quotient_duality`)**:
+   Iterating the one-step conservation law across $d$ defect transitions proves that for **every**
+   starting index $r_0 \in \mathbb{N}$, **every** horizon $d \in \mathbb{N}$, and **every** positive
+   scale factor $M \ge 1$, the 3-adic quotient of $V(r_0 + d)$ and the 2-adic quotient of $V(r_0)$
+   are **identically equal**:
+   $$\frac{V(r_0 + d)}{M \cdot 3^{\text{defectStepSum}(\text{fun } t \Rightarrow j(r_0 + t),\, d)}} \;=\;
+     \frac{V(r_0)}{M \cdot 2^{\text{defectStepSum}(\text{fun } t \Rightarrow j(r_0 + 1 + t),\, d)}}.$$
+   In particular, $V(r_0 + d) < M \cdot 3^{\text{defectStepSum}(\text{fun } t \Rightarrow j(r_0 + t),\, d)}$
+   if and only if $V(r_0) < M \cdot 2^{\text{defectStepSum}(\text{fun } t \Rightarrow j(r_0 + 1 + t),\, d)}$.
+
+3. **Depth-11 & Depth-12 Binary Certification ($V_0 > 2^{89}$ Across $8{,}192$ Words) and
+   Ternary $\{1, 2, 3\}^{d+1}$ Cooldown Sieve & Tree Certification
+   (`binary_cantor_dust_certified_depth_11_and_12`, `ternary_cantor_dust_min_seed_of_certifyTernaryDustDepth`,
+   `ternary_cantor_dust_certified_horizon_bounds_up_to_depth_six`)**:
+   - Pushing the binary tree verifier to $d = 11$ ($4{,}096$ words) and $d = 12$ ($8{,}192$ words)
+     certifies $V(0) \ge 2{,}425{,}581{,}233{,}956{,}690{,}499{,}486{,}627 > 2^{81}$ at $d = 11$ and
+     $V(0) \ge 1{,}130{,}319{,}219{,}940{,}026{,}671{,}593{,}178{,}019 > 2^{89}$ at $d = 12$.
+   - Extending the Mod-128 Cooldown Sieve to $j_r = 3$ (`0001001001001`, $3 j_r + 4 = 13$, where
+     $j_r = 3 \implies V_r \bmod 128 = 91$) and certifying the ternary tree $\{1, 2, 3\}^{d+1}$
+     through Depth $d = 6$ ($2{,}187$ words) proves $V(0) \ge 12{,}576{,}832{,}373{,}667 > 2^{43}$
+     across all $2{,}187$ words in $\{1, 2, 3\}^7$.
+-/
+
+/-- **Universal One-Step Quotient-Remainder Conservation Law
+(`one_step_quotient_and_remainder_conservation`)**:
+For any natural numbers $A \ge 1$, $B \ge 2$, $M \ge 1$, and $V_1, V_2 \in \mathbb{N}$ satisfying
+$B V_2 + 1 = A V_1$:
+1. $1 \le V_1 \bmod (M B) < M B$.
+2. $\displaystyle \frac{V_2}{M A} = \frac{V_1}{M B}$.
+3. $\displaystyle B \cdot \big(V_2 \bmod (M A)\big) + 1 = A \cdot \big(V_1 \bmod (M B)\big)$. -/
+theorem one_step_quotient_and_remainder_conservation
+    {A B M V_1 V_2 : ℕ}
+    (hA : 1 ≤ A) (hB : 2 ≤ B) (hM : 1 ≤ M)
+    (hrec : B * V_2 + 1 = A * V_1) :
+    (1 ≤ V_1 % (M * B) ∧ V_1 % (M * B) < M * B) ∧
+    V_2 / (M * A) = V_1 / (M * B) ∧
+    B * (V_2 % (M * A)) + 1 = A * (V_1 % (M * B)) := by
+  set q := V_1 / (M * B)
+  set r := V_1 % (M * B)
+  have hMB_pos : 0 < M * B := Nat.mul_pos (by omega) (by omega)
+  have hMA_pos : 0 < M * A := Nat.mul_pos (by omega) (by omega)
+  have hr_lt : r < M * B := Nat.mod_lt V_1 hMB_pos
+  have hV1_div : V_1 = (M * B) * q + r := (Nat.div_add_mod V_1 (M * B)).symm
+  have hr_pos : 1 ≤ r := by
+    rcases Nat.eq_zero_or_pos r with hr0 | hpos
+    · exfalso
+      have hV1_mul : V_1 = B * (M * q) := by
+        calc V_1 = (M * B) * q + r := hV1_div
+        _ = (M * B) * q + 0 := by rw [hr0]
+        _ = B * (M * q) := by ring
+      have hB_eq : B * V_2 + 1 = B * (A * (M * q)) := by
+        calc B * V_2 + 1 = A * V_1 := hrec
+        _ = A * (B * (M * q)) := by rw [hV1_mul]
+        _ = B * (A * (M * q)) := by ring
+      have hmodB : (B * V_2 + 1) % B = (B * (A * (M * q))) % B :=
+        congrArg (fun x => x % B) hB_eq
+      have hlhs : (B * V_2 + 1) % B = 1 := by
+        rw [Nat.add_comm, Nat.mul_comm B V_2, Nat.add_mul_mod_self_right, Nat.mod_eq_of_lt hB]
+      have hrhs : (B * (A * (M * q))) % B = 0 := by
+        rw [Nat.mul_comm B, Nat.mul_mod_left]
+      omega
+    · exact hpos
+  have hAr_ge : 1 ≤ A * r := Nat.mul_le_mul hA hr_pos
+  have hAr_le : A * (r + 1) ≤ A * (M * B) := Nat.mul_le_mul_left A (by omega)
+  have hAr_lt : A * r - 1 < B * (M * A) := by
+    have hexp1 : A * (r + 1) = A * r + A := by ring
+    have hexp2 : A * (M * B) = B * (M * A) := by ring
+    omega
+  have hBV2_eq : B * V_2 + 1 = B * ((M * A) * q) + A * r := by
+    calc B * V_2 + 1 = A * V_1 := hrec
+    _ = A * ((M * B) * q + r) := by rw [hV1_div]
+    _ = B * ((M * A) * q) + A * r := by ring
+  have hBV2_sub : B * V_2 = B * ((M * A) * q) + (A * r - 1) := by omega
+  have hdiv_B : (A * r - 1) % B = 0 := by
+    have hmod : (B * V_2) % B = (B * ((M * A) * q) + (A * r - 1)) % B :=
+      congrArg (fun x => x % B) hBV2_sub
+    have hlhs : (B * V_2) % B = 0 := by rw [Nat.mul_comm B, Nat.mul_mod_left]
+    have hrhs : (B * ((M * A) * q) + (A * r - 1)) % B = (A * r - 1) % B := by
+      rw [Nat.add_comm, Nat.mul_comm B, Nat.add_mul_mod_self_right]
+    omega
+  set r2 := (A * r - 1) / B
+  have hAr_sub_eq : A * r - 1 = B * r2 := by
+    calc A * r - 1 = B * r2 + (A * r - 1) % B := (Nat.div_add_mod (A * r - 1) B).symm
+    _ = B * r2 := by rw [hdiv_B, Nat.add_zero]
+  have hr2_lt : r2 < M * A := by
+    have hlt : B * r2 < B * (M * A) := by omega
+    exact Nat.lt_of_mul_lt_mul_left hlt
+  have hV2_eq : V_2 = (M * A) * q + r2 := by
+    have hmul_B : B * V_2 = B * ((M * A) * q + r2) := by
+      calc B * V_2 = B * ((M * A) * q) + (A * r - 1) := hBV2_sub
+      _ = B * ((M * A) * q) + B * r2 := by rw [hAr_sub_eq]
+      _ = B * ((M * A) * q + r2) := by ring
+    exact Nat.eq_of_mul_eq_mul_left (by omega : 0 < B) hmul_B
+  have hbez := mod_and_div_of_bezout (V := V_2) (M := M * A) (a := 0) (b := q) (r := r2)
+    (by omega) hr2_lt
+  have hq_eq : V_2 / (M * A) = q := by
+    have hmul_MA : (M * A) * (V_2 / (M * A)) = (M * A) * q := by omega
+    exact Nat.eq_of_mul_eq_mul_left hMA_pos hmul_MA
+  refine ⟨⟨hr_pos, hr_lt⟩, hq_eq, ?_⟩
+  rw [hbez.1]
+  omega
+
+/-- **Universal Multi-Step $(2, 3)$-Adic Quotient Duality (`universal_two_three_adic_quotient_duality`)**:
+For any sequence $V, j : \mathbb{N} \to \mathbb{N}$ satisfying
+$2^{3 j(r + 1) + 4} V(r + 1) + 1 = 3^{3 j(r) + 4} V(r)$ for all $r \in \mathbb{N}$, and for
+every starting index $r_0 \in \mathbb{N}$, horizon $d \in \mathbb{N}$, and positive scale factor
+$M \ge 1$, the 3-adic integer quotient of $V(r_0 + d)$ and the 2-adic integer quotient of $V(r_0)$
+are **identically equal**:
+$$\frac{V(r_0 + d)}{M \cdot 3^{\text{defectStepSum}(\text{fun } t \Rightarrow j(r_0 + t),\, d)}} \;=\;
+  \frac{V(r_0)}{M \cdot 2^{\text{defectStepSum}(\text{fun } t \Rightarrow j(r_0 + 1 + t),\, d)}},$$
+and therefore
+$$V(r_0 + d) < M \cdot 3^{\text{defectStepSum}(\text{fun } t \Rightarrow j(r_0 + t),\, d)} \iff
+  V(r_0) < M \cdot 2^{\text{defectStepSum}(\text{fun } t \Rightarrow j(r_0 + 1 + t),\, d)}.$$ -/
+theorem universal_two_three_adic_quotient_duality
+    {V j : ℕ → ℕ}
+    (hrec : ∀ r : ℕ, 2 ^ (3 * j (r + 1) + 4) * V (r + 1) + 1 = 3 ^ (3 * j r + 4) * V r) :
+    (∀ (d r_0 M : ℕ), 1 ≤ M →
+      V (r_0 + d) / (M * 3 ^ (defectStepSum (fun t => j (r_0 + t)) d)) =
+        V r_0 / (M * 2 ^ (defectStepSum (fun t => j (r_0 + 1 + t)) d))) ∧
+    (∀ (d r_0 M : ℕ), 1 ≤ M →
+      (V (r_0 + d) < M * 3 ^ (defectStepSum (fun t => j (r_0 + t)) d) ↔
+        V r_0 < M * 2 ^ (defectStepSum (fun t => j (r_0 + 1 + t)) d))) := by
+  have hquot :
+      ∀ (d r_0 M : ℕ), 1 ≤ M →
+        V (r_0 + d) / (M * 3 ^ (defectStepSum (fun t => j (r_0 + t)) d)) =
+          V r_0 / (M * 2 ^ (defectStepSum (fun t => j (r_0 + 1 + t)) d)) := by
+    intro d
+    induction d with
+    | zero =>
+        intro r_0 M _
+        simp only [defectStepSum, Nat.pow_zero, Nat.add_zero]
+    | succ d ih =>
+        intro r_0 M hM
+        have hstep := hrec (r_0 + d)
+        have hidx1 : r_0 + d + 1 = r_0 + (d + 1) := by omega
+        have hidx2 : r_0 + 1 + d = r_0 + (d + 1) := by omega
+        rw [hidx1] at hstep
+        set S_d := defectStepSum (fun t => j (r_0 + t)) d
+        set E_d := defectStepSum (fun t => j (r_0 + 1 + t)) d
+        set A_d := 3 ^ (3 * j (r_0 + d) + 4)
+        set B_d := 2 ^ (3 * j (r_0 + (d + 1)) + 4)
+        have hA_ge : 1 ≤ A_d := Nat.pow_pos (by decide)
+        have hB_ge : 2 ≤ B_d := by
+          change 2 ≤ 2 ^ (3 * j (r_0 + (d + 1)) + 4)
+          have hexp : 3 * j (r_0 + (d + 1)) + 4 = (3 * j (r_0 + (d + 1)) + 3) + 1 := by omega
+          rw [hexp, Nat.pow_add]
+          have hp : 1 ≤ 2 ^ (3 * j (r_0 + (d + 1)) + 3) := Nat.pow_pos (by decide)
+          omega
+        have hM3_ge : 1 ≤ M * 3 ^ S_d := Nat.mul_pos hM (Nat.pow_pos (by decide))
+        have hM2_ge : 1 ≤ M * B_d := Nat.mul_pos hM (by omega)
+        have hone := (one_step_quotient_and_remainder_conservation hA_ge hB_ge hM3_ge hstep).2.1
+        have hpow3 :
+            M * 3 ^ (defectStepSum (fun t => j (r_0 + t)) (d + 1)) =
+              (M * 3 ^ S_d) * A_d := by
+          change M * 3 ^ (S_d + (3 * j (r_0 + d) + 4)) = (M * 3 ^ S_d) * A_d
+          rw [Nat.pow_add]
+          ring
+        have hpow2 :
+            M * 2 ^ (defectStepSum (fun t => j (r_0 + 1 + t)) (d + 1)) =
+              (M * B_d) * 2 ^ E_d := by
+          change M * 2 ^ (E_d + (3 * j (r_0 + 1 + d) + 4)) = (M * B_d) * 2 ^ E_d
+          rw [hidx2, Nat.pow_add]
+          ring
+        have hmid : (M * 3 ^ S_d) * B_d = (M * B_d) * 3 ^ S_d := by ring
+        rw [hpow3, hone, hmid, ih r_0 (M * B_d) hM2_ge, hpow2]
+  refine ⟨hquot, ?_⟩
+  intro d r_0 M hM
+  have hq := hquot d r_0 M hM
+  have hpos3 : 0 < M * 3 ^ (defectStepSum (fun t => j (r_0 + t)) d) :=
+    Nat.mul_pos hM (Nat.pow_pos (by decide))
+  have hpos2 : 0 < M * 2 ^ (defectStepSum (fun t => j (r_0 + 1 + t)) d) :=
+    Nat.mul_pos hM (Nat.pow_pos (by decide))
+  rw [← Nat.div_eq_zero_iff_lt hpos3, ← Nat.div_eq_zero_iff_lt hpos2, hq]
+
+/-- Helper lemma: Depth-11 binary tree certificate (`4,096` words). -/
+theorem certifyBinaryDustDepth_11_eq_true :
+    certifyBinaryDustDepth 11 2425581233956690499486627 = true := by
+  decide
+
+/-- Helper lemma: left half (`j_last = 1`, `4,096` words) of Depth-12 binary tree certificate. -/
+theorem certifyBinaryDustTree_12_left_eq_true :
+    certifyBinaryDustTree 12 1 7 35 1130319219940026671593178019 = true := by
+  decide
+
+/-- Helper lemma: right half (`j_last = 2`, `4,096` words) of Depth-12 binary tree certificate. -/
+theorem certifyBinaryDustTree_12_right_eq_true :
+    certifyBinaryDustTree 12 2 7 25 1130319219940026671593178019 = true := by
+  decide
+
+/-- **Kernel-Certified Depth-11 and Depth-12 Binary Cantor-Dust Bounds
+(`binary_cantor_dust_certified_depth_11_and_12`)**:
+1. Across all $4{,}096$ words in $\{1, 2\}^{12}$ ($d = 11$, with $j(12) \ge 1$),
+   $V(0) \ge 2{,}425{,}581{,}233{,}956{,}690{,}499{,}486{,}627 > 2^{81}$.
+2. Across all $8{,}192$ words in $\{1, 2\}^{13}$ ($d = 12$, with $j(13) \ge 1$),
+   $V(0) \ge 1{,}130{,}319{,}219{,}940{,}026{,}671{,}593{,}178{,}019 > 2^{89}$. -/
+theorem binary_cantor_dust_certified_depth_11_and_12 :
+    (certifyBinaryDustDepth 11 2425581233956690499486627 = true ∧
+     certifyBinaryDustDepth 12 1130319219940026671593178019 = true) ∧
+    (∀ V j : ℕ → ℕ,
+      (∀ r ≤ 11, j r = 1 ∨ j r = 2) →
+      1 ≤ j 12 →
+      (∀ r ≤ 12, 2 ^ (3 * j (r + 1) + 4) * V (r + 1) + 1 = 3 ^ (3 * j r + 4) * V r) →
+      2425581233956690499486627 ≤ V 0) ∧
+    (∀ V j : ℕ → ℕ,
+      (∀ r ≤ 12, j r = 1 ∨ j r = 2) →
+      1 ≤ j 13 →
+      (∀ r ≤ 13, 2 ^ (3 * j (r + 1) + 4) * V (r + 1) + 1 = 3 ^ (3 * j r + 4) * V r) →
+      1130319219940026671593178019 ≤ V 0) := by
+  have h11 := certifyBinaryDustDepth_11_eq_true
+  have h12 : certifyBinaryDustDepth 12 1130319219940026671593178019 = true := by
+    unfold certifyBinaryDustDepth
+    rw [certifyBinaryDustTree_12_left_eq_true, certifyBinaryDustTree_12_right_eq_true]
+    rfl
+  refine ⟨⟨h11, h12⟩, ?_, ?_⟩
+  · intro V j hj hj12 hrec
+    exact binary_cantor_dust_min_seed_of_certifyBinaryDustDepth h11 hj hj12 hrec
+  · intro V j hj hj13 hrec
+    exact binary_cantor_dust_min_seed_of_certifyBinaryDustDepth h12 hj hj13 hrec
+
+/-- **Ternary Cooldown Mod-128 Sieve (`defectNormalizedQuotient_ternary_cooldown_mod_128_sieve`)**:
+When $j_2 \ge 1$ and $2^{3 j_2 + 4} V_2 + 1 = 3^{3 j_1 + 4} V_1$, if $j_1 = 3$ (the 13-step
+macro-block `0001001001001`), then $V_1 \bmod 128 = 91$. Thus across $j_1 \in \{1, 2, 3\}$,
+$V_1 \bmod 128$ is locked to $\{35, 25, 91\}$ (eliminating $125$ of $128$ residue classes). -/
+theorem defectNormalizedQuotient_ternary_cooldown_mod_128_sieve
+    {V_1 V_2 j_1 j_2 : ℕ}
+    (hj2 : 1 ≤ j_2)
+    (hrec : 2 ^ (3 * j_2 + 4) * V_2 + 1 = 3 ^ (3 * j_1 + 4) * V_1) :
+    (j_1 = 1 → V_1 % 128 = 35) ∧
+    (j_1 = 2 → V_1 % 128 = 25) ∧
+    (j_1 = 3 → V_1 % 128 = 91) := by
+  have h12 := defectNormalizedQuotient_cooldown_mod_128_and_three_adic_lock.1
+    V_1 V_2 j_1 j_2 hj2 hrec
+  refine ⟨h12.1, h12.2, ?_⟩
+  intro hj1
+  subst hj1
+  have hsplit : 2 ^ (3 * j_2 + 4) * V_2 + 1 = 128 * (2 ^ (3 * (j_2 - 1)) * V_2) + 1 := by
+    have hexp : 3 * j_2 + 4 = (3 * (j_2 - 1)) + 7 := by omega
+    rw [hexp, Nat.pow_add]
+    ring
+  have hlin : 128 * (2 ^ (3 * (j_2 - 1)) * V_2) + 1 = 1594323 * V_1 := by
+    calc 128 * (2 ^ (3 * (j_2 - 1)) * V_2) + 1 = 2 ^ (3 * j_2 + 4) * V_2 + 1 := hsplit.symm
+    _ = 3 ^ (3 * 3 + 4) * V_1 := hrec
+    _ = 1594323 * V_1 := by ring
+  have hbez : V_1 + 128 * (1133464 * V_1) = 128 * (91 * (2 ^ (3 * (j_2 - 1)) * V_2)) + 91 := by
+    linarith only [hlin]
+  exact (mod_and_div_of_bezout (V := V_1) (M := 128) (a := 1133464 * V_1)
+    (b := 91 * (2 ^ (3 * (j_2 - 1)) * V_2)) (r := 91) hbez (by decide)).1
+
+/-- Recursive backward 2-adic tree verifier over all ternary words in $\{1, 2, 3\}^d$. -/
+def certifyTernaryDustTree : ℕ → ℕ → ℕ → ℕ → ℕ → Bool
+  | 0, _, _, R, minBound => decide (minBound ≤ R)
+  | d + 1, j_next, e, R, minBound =>
+      let p1 := backwardLiftResidue 1 j_next e R
+      let p2 := backwardLiftResidue 2 j_next e R
+      let p3 := backwardLiftResidue 3 j_next e R
+      backwardLiftStepOk 1 j_next e R p1.1 p1.2 &&
+      backwardLiftStepOk 2 j_next e R p2.1 p2.2 &&
+      backwardLiftStepOk 3 j_next e R p3.1 p3.2 &&
+      certifyTernaryDustTree d 1 p1.1 p1.2 minBound &&
+      certifyTernaryDustTree d 2 p2.1 p2.2 minBound &&
+      certifyTernaryDustTree d 3 p3.1 p3.2 minBound
+
+/-- Top-level decidable certificate verifying that **every** $d$-transition trajectory in the
+ternary Cantor dust $\{1, 2, 3\}^{d+1}$ (followed by any $j(d + 1) \ge 1$) satisfies $V(0) \ge \text{minBound}$. -/
+def certifyTernaryDustDepth (d minBound : ℕ) : Bool :=
+  certifyTernaryDustTree d 1 7 35 minBound &&
+  certifyTernaryDustTree d 2 7 25 minBound &&
+  certifyTernaryDustTree d 3 7 91 minBound
+
+/-- Helper lemma: soundness of `certifyTernaryDustTree` along any ternary suffix of length $d$. -/
+theorem min_seed_of_certifyTernaryDustTree :
+    ∀ (d : ℕ) (V j : ℕ → ℕ) (e R minBound : ℕ),
+      (∀ r < d, j r = 1 ∨ j r = 2 ∨ j r = 3) →
+      (∀ r < d, 2 ^ (3 * j (r + 1) + 4) * V (r + 1) + 1 = 3 ^ (3 * j r + 4) * V r) →
+      V d % 2 ^ e = R →
+      R ≤ V d →
+      certifyTernaryDustTree d (j d) e R minBound = true →
+      minBound ≤ V 0
+  | 0, V, _, _, R, minBound, _, _, _, hR_le, hcert => by
+      unfold certifyTernaryDustTree at hcert
+      simp only [decide_eq_true_eq] at hcert
+      omega
+  | d + 1, V, j, e, R, minBound, hj, hrec, hmod, _, hcert => by
+      unfold certifyTernaryDustTree at hcert
+      simp only [Bool.and_eq_true] at hcert
+      rcases hcert with ⟨⟨⟨⟨⟨hok1, hok2⟩, hok3⟩, htree1⟩, htree2⟩, htree3⟩
+      have hjd : j d = 1 ∨ j d = 2 ∨ j d = 3 := hj d (by omega)
+      have hstep_d : 2 ^ (3 * j (d + 1) + 4) * V (d + 1) + 1 = 3 ^ (3 * j d + 4) * V d :=
+        hrec d (by omega)
+      have hj_pre : ∀ r < d, j r = 1 ∨ j r = 2 ∨ j r = 3 := fun r hr => hj r (by omega)
+      have hrec_pre : ∀ r < d, 2 ^ (3 * j (r + 1) + 4) * V (r + 1) + 1 = 3 ^ (3 * j r + 4) * V r :=
+        fun r hr => hrec r (by omega)
+      rcases hjd with hjd1 | hjd2 | hjd3
+      · rw [hjd1] at hstep_d
+        have hlift := backward_two_adic_residue_lift_of_stepOk hstep_d hmod hok1
+        have htree1' :
+            certifyTernaryDustTree d (j d)
+              (backwardLiftResidue 1 (j (d + 1)) e R).1
+              (backwardLiftResidue 1 (j (d + 1)) e R).2 minBound = true := by
+          rw [hjd1]; exact htree1
+        exact min_seed_of_certifyTernaryDustTree d V j
+          (backwardLiftResidue 1 (j (d + 1)) e R).1
+          (backwardLiftResidue 1 (j (d + 1)) e R).2
+          minBound hj_pre hrec_pre hlift.1 hlift.2 htree1'
+      · rw [hjd2] at hstep_d
+        have hlift := backward_two_adic_residue_lift_of_stepOk hstep_d hmod hok2
+        have htree2' :
+            certifyTernaryDustTree d (j d)
+              (backwardLiftResidue 2 (j (d + 1)) e R).1
+              (backwardLiftResidue 2 (j (d + 1)) e R).2 minBound = true := by
+          rw [hjd2]; exact htree2
+        exact min_seed_of_certifyTernaryDustTree d V j
+          (backwardLiftResidue 2 (j (d + 1)) e R).1
+          (backwardLiftResidue 2 (j (d + 1)) e R).2
+          minBound hj_pre hrec_pre hlift.1 hlift.2 htree2'
+      · rw [hjd3] at hstep_d
+        have hlift := backward_two_adic_residue_lift_of_stepOk hstep_d hmod hok3
+        have htree3' :
+            certifyTernaryDustTree d (j d)
+              (backwardLiftResidue 3 (j (d + 1)) e R).1
+              (backwardLiftResidue 3 (j (d + 1)) e R).2 minBound = true := by
+          rw [hjd3]; exact htree3
+        exact min_seed_of_certifyTernaryDustTree d V j
+          (backwardLiftResidue 3 (j (d + 1)) e R).1
+          (backwardLiftResidue 3 (j (d + 1)) e R).2
+          minBound hj_pre hrec_pre hlift.1 hlift.2 htree3'
+
+/-- **Universal Ternary-Dust Depth-$d$ Minimum Seed Theorem
+(`ternary_cantor_dust_min_seed_of_certifyTernaryDustDepth`)**:
+For any depth $d \in \mathbb{N}$ and lower bound $\text{minBound} \in \mathbb{N}$, if
+`certifyTernaryDustDepth d minBound = true`, then **every** sequence $V, j : \mathbb{N} \to \mathbb{N}$
+with $j(r) \in \{1, 2, 3\}$ for all $r \le d$, $j(d + 1) \ge 1$, and
+$2^{3 j(r + 1) + 4} V(r + 1) + 1 = 3^{3 j(r) + 4} V(r)$ for all $r \le d + 1$ satisfies
+$$\text{minBound} \le V(0).$$ -/
+theorem ternary_cantor_dust_min_seed_of_certifyTernaryDustDepth
+    {d minBound : ℕ}
+    (hcert : certifyTernaryDustDepth d minBound = true)
+    {V j : ℕ → ℕ}
+    (hj : ∀ r ≤ d, j r = 1 ∨ j r = 2 ∨ j r = 3)
+    (hjd1 : 1 ≤ j (d + 1))
+    (hrec : ∀ r ≤ d + 1, 2 ^ (3 * j (r + 1) + 4) * V (r + 1) + 1 = 3 ^ (3 * j r + 4) * V r) :
+    minBound ≤ V 0 := by
+  unfold certifyTernaryDustDepth at hcert
+  simp only [Bool.and_eq_true] at hcert
+  rcases hcert with ⟨⟨hcert1, hcert2⟩, hcert3⟩
+  have hcool := defectNormalizedQuotient_ternary_cooldown_mod_128_sieve
+    hjd1 (hrec d (by omega))
+  have hj_lt : ∀ r < d, j r = 1 ∨ j r = 2 ∨ j r = 3 := fun r hr => hj r (by omega)
+  have hrec_lt : ∀ r < d, 2 ^ (3 * j (r + 1) + 4) * V (r + 1) + 1 = 3 ^ (3 * j r + 4) * V r :=
+    fun r hr => hrec r (by omega)
+  rcases hj d (by omega) with hjd_one | hjd_two | hjd_three
+  · have hmod : V d % 2 ^ 7 = 35 := hcool.1 hjd_one
+    have hle : 35 ≤ V d := hmod ▸ Nat.mod_le (V d) (2 ^ 7)
+    rw [← hjd_one] at hcert1
+    exact min_seed_of_certifyTernaryDustTree d V j 7 35 minBound hj_lt hrec_lt hmod hle hcert1
+  · have hmod : V d % 2 ^ 7 = 25 := hcool.2.1 hjd_two
+    have hle : 25 ≤ V d := hmod ▸ Nat.mod_le (V d) (2 ^ 7)
+    rw [← hjd_two] at hcert2
+    exact min_seed_of_certifyTernaryDustTree d V j 7 25 minBound hj_lt hrec_lt hmod hle hcert2
+  · have hmod : V d % 2 ^ 7 = 91 := hcool.2.2 hjd_three
+    have hle : 91 ≤ V d := hmod ▸ Nat.mod_le (V d) (2 ^ 7)
+    rw [← hjd_three] at hcert3
+    exact min_seed_of_certifyTernaryDustTree d V j 7 91 minBound hj_lt hrec_lt hmod hle hcert3
+
+/-- **Kernel-Certified Ternary Cantor-Dust Horizon Bounds Through Depth 6 Across All $2{,}187$ Words in $\{1, 2, 3\}^7$
+(`ternary_cantor_dust_certified_horizon_bounds_up_to_depth_six`)**:
+Across the ternary Cantor dust $j(r) \in \{1, 2, 3\}$ (covering $[\varepsilon_3, \varepsilon_1)$),
+kernel evaluation (`by decide`) certifies all $3{,}276$ ternary words from $d = 1$ through $d = 6$,
+proving $V(0) \ge 12{,}576{,}832{,}373{,}667 > 2^{43}$ for every 6-transition trajectory in $\{1, 2, 3\}^7$. -/
+theorem ternary_cantor_dust_certified_horizon_bounds_up_to_depth_six :
+    (certifyTernaryDustDepth 1 931 = true ∧
+     certifyTernaryDustDepth 2 17315 = true ∧
+     certifyTernaryDustDepth 3 94389155 = true ∧
+     certifyTernaryDustDepth 4 1168130979 = true ∧
+     certifyTernaryDustDepth 5 976496882907 = true ∧
+     certifyTernaryDustDepth 6 12576832373667 = true) ∧
+    (∀ V j : ℕ → ℕ,
+      (∀ r ≤ 6, j r = 1 ∨ j r = 2 ∨ j r = 3) →
+      1 ≤ j 7 →
+      (∀ r ≤ 7, 2 ^ (3 * j (r + 1) + 4) * V (r + 1) + 1 = 3 ^ (3 * j r + 4) * V r) →
+      12576832373667 ≤ V 0) := by
+  have hcerts :
+      certifyTernaryDustDepth 1 931 = true ∧
+      certifyTernaryDustDepth 2 17315 = true ∧
+      certifyTernaryDustDepth 3 94389155 = true ∧
+      certifyTernaryDustDepth 4 1168130979 = true ∧
+      certifyTernaryDustDepth 5 976496882907 = true ∧
+      certifyTernaryDustDepth 6 12576832373667 = true := by decide
+  refine ⟨hcerts, ?_⟩
+  intro V j hj hj7 hrec
+  exact ternary_cantor_dust_min_seed_of_certifyTernaryDustDepth hcerts.2.2.2.2.2 hj hj7 hrec
+
+
 
 
 end Mahler.DubickasExtension

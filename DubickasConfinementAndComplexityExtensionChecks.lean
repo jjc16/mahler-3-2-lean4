@@ -269,6 +269,15 @@ example (m : ℕ) :
 #print axioms Mahler.DubickasExtension.binary_cantor_dust_min_seed_of_certifyBinaryDustDepth
 #print axioms Mahler.DubickasExtension.binary_cantor_dust_certified_horizon_bounds_up_to_depth_ten
 
+-- 21. Verify Section 27: Universal (2,3)-adic quotient-remainder conservation law, multi-step quotient duality, depth-11/12 binary bounds (V_0 > 2^89), and ternary {1,2,3} tree certification
+#print axioms Mahler.DubickasExtension.one_step_quotient_and_remainder_conservation
+#print axioms Mahler.DubickasExtension.universal_two_three_adic_quotient_duality
+#print axioms Mahler.DubickasExtension.binary_cantor_dust_certified_depth_11_and_12
+#print axioms Mahler.DubickasExtension.defectNormalizedQuotient_ternary_cooldown_mod_128_sieve
+#print axioms Mahler.DubickasExtension.min_seed_of_certifyTernaryDustTree
+#print axioms Mahler.DubickasExtension.ternary_cantor_dust_min_seed_of_certifyTernaryDustDepth
+#print axioms Mahler.DubickasExtension.ternary_cantor_dust_certified_horizon_bounds_up_to_depth_six
+
 #print axioms Mahler.DubickasExtension.dubBaseCarry_eq_fract_linear
 #print axioms Mahler.DubickasExtension.dubBaseY_multi_step_carry_identity
 #print axioms Mahler.DubickasExtension.dubBaseCarry_mem_two_letters
