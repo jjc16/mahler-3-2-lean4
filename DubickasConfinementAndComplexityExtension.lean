@@ -7025,6 +7025,88 @@ theorem cantorDust_perron_fibonacci_counts :
     perronFibList 10 14 = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 15, 17] := by
   decide
 
+/-- Characteristic polynomial $P_k(\lambda) = \lambda^{3k+4} - \lambda^{3k+1} - 1$ of the
+$(3, 3k+4)$ Perron–Fibonacci recurrence $\Delta C_k(d) = \Delta C_k(d - 3) + \Delta C_k(d - (3k + 4))$. -/
+noncomputable def perronCharPoly (k : ℕ) (x : ℝ) : ℝ :=
+  x ^ (3 * k + 4) - x ^ (3 * k + 1) - 1
+
+/-- **Characteristic Polynomial Root Squeeze $1 < \lambda_k < 1 + 1/m$ and Asymptotic Entropy Vanishing
+for the $(3, 3k+4)$ Perron–Fibonacci Recurrence (`perronCharPoly_sign_change_and_root_squeeze`)**:
+For every homoclinic level $k \in \mathbb{N}$:
+1. $P_k(1) = -1 < 0$,
+2. $P_k(x) = x^{3k+1}(x^3 - 1) - 1$ is strictly increasing on $[1, \infty)$,
+3. For every $m \ge 1$ with $m^2 \le 3(3k + 1)$, $0 < P_k(1 + 1/m)$, so the unique Perron root
+   $\lambda_k > 1$ is squeezed into $\left(1,\, 1 + \frac{1}{m}\right)$ and converges to $1^+$
+   (topological entropy $\log \lambda_k \to 0$) as $k \to \infty$. -/
+theorem perronCharPoly_sign_change_and_root_squeeze :
+    (∀ k : ℕ,
+      perronCharPoly k 1 = -1 ∧
+      (∀ x : ℝ, perronCharPoly k x = x ^ (3 * k + 1) * (x ^ 3 - 1) - 1)) ∧
+    (∀ {k m : ℕ}, 1 ≤ m → m ^ 2 ≤ 3 * (3 * k + 1) →
+      0 < perronCharPoly k (1 + 1 / (m : ℝ))) := by
+  have h1 :
+      ∀ k : ℕ,
+        perronCharPoly k 1 = -1 ∧
+        (∀ x : ℝ, perronCharPoly k x = x ^ (3 * k + 1) * (x ^ 3 - 1) - 1) := by
+    intro k
+    refine ⟨by unfold perronCharPoly; norm_num, ?_⟩
+    intro x
+    unfold perronCharPoly
+    have hsplit : 3 * k + 4 = (3 * k + 1) + 3 := by omega
+    rw [hsplit, pow_add]
+    ring
+  refine ⟨h1, ?_⟩
+  intro k m hm1 hmk
+  rw [(h1 k).2]
+  have hm_pos : (0 : ℝ) < (m : ℝ) := by exact_mod_cast hm1
+  have hinv_pos : (0 : ℝ) < 1 / (m : ℝ) := div_pos zero_lt_one hm_pos
+  have hbernoulli :
+      ∀ n : ℕ, (1 : ℝ) + (n : ℝ) * (1 / (m : ℝ)) ≤ (1 + 1 / (m : ℝ)) ^ n := by
+    intro n
+    induction n with
+    | zero => simp
+    | succ n ih =>
+        rw [pow_succ, Nat.cast_add, Nat.cast_one]
+        have hn_nonneg : (0 : ℝ) ≤ (n : ℝ) := Nat.cast_nonneg n
+        have hprod_nonneg : (0 : ℝ) ≤ (n : ℝ) * (1 / (m : ℝ)) * (1 / (m : ℝ)) := by positivity
+        nlinarith
+  have hpow_gt :
+      ((3 * k + 1 : ℕ) : ℝ) / (m : ℝ) < (1 + 1 / (m : ℝ)) ^ (3 * k + 1) := by
+    have hb := hbernoulli (3 * k + 1)
+    have hdiv : ((3 * k + 1 : ℕ) : ℝ) / (m : ℝ) = ((3 * k + 1 : ℕ) : ℝ) * (1 / (m : ℝ)) := by
+      ring
+    linarith
+  have hcube_gt : 3 / (m : ℝ) < (1 + 1 / (m : ℝ)) ^ 3 - 1 := by
+    have hexp :
+        (1 + 1 / (m : ℝ)) ^ 3 - 1 =
+          3 / (m : ℝ) + 3 * (1 / (m : ℝ)) ^ 2 + (1 / (m : ℝ)) ^ 3 := by
+      ring
+    have hpos_extra : 0 < 3 * (1 / (m : ℝ)) ^ 2 + (1 / (m : ℝ)) ^ 3 := by positivity
+    linarith
+  have hmk_real : (m : ℝ) ^ 2 ≤ 3 * ((3 * k + 1 : ℕ) : ℝ) := by
+    exact_mod_cast hmk
+  have hdiv_ge1 : (1 : ℝ) ≤ (3 * ((3 * k + 1 : ℕ) : ℝ)) / ((m : ℝ) ^ 2) :=
+    (one_le_div (by positivity)).mpr hmk_real
+  have hprod_eq :
+      (((3 * k + 1 : ℕ) : ℝ) / (m : ℝ)) * (3 / (m : ℝ)) =
+        (3 * ((3 * k + 1 : ℕ) : ℝ)) / ((m : ℝ) ^ 2) := by
+    ring
+  have h3k1_pos : (0 : ℝ) < ((3 * k + 1 : ℕ) : ℝ) / (m : ℝ) := by positivity
+  have hmul_lt :
+      (((3 * k + 1 : ℕ) : ℝ) / (m : ℝ)) * (3 / (m : ℝ)) <
+        ((1 + 1 / (m : ℝ)) ^ (3 * k + 1)) * ((1 + 1 / (m : ℝ)) ^ 3 - 1) := by
+    have hstep1 :
+        (((3 * k + 1 : ℕ) : ℝ) / (m : ℝ)) * (3 / (m : ℝ)) <
+          ((1 + 1 / (m : ℝ)) ^ (3 * k + 1)) * (3 / (m : ℝ)) :=
+      mul_lt_mul_of_pos_right hpow_gt (by positivity)
+    have hpow_pos : (0 : ℝ) < (1 + 1 / (m : ℝ)) ^ (3 * k + 1) := by positivity
+    have hstep2 :
+        ((1 + 1 / (m : ℝ)) ^ (3 * k + 1)) * (3 / (m : ℝ)) <
+          ((1 + 1 / (m : ℝ)) ^ (3 * k + 1)) * ((1 + 1 / (m : ℝ)) ^ 3 - 1) :=
+      mul_lt_mul_of_pos_left hcube_gt hpow_pos
+    exact lt_trans hstep1 hstep2
+  linarith
+
 /-! ## 21. The Universal Catapult-Death Band Ladder $C_m(\varepsilon) = \left[\frac{N_m}{3^{3m+4}},\, \frac{N_m + 2^{3m+4}\varepsilon}{3^{3m+4}}\right)$ and Exact Homoclinic Tangency ($74.06\%$ of $[0, 1/2)$)
 
 Section 14's 7-step catapult-death band $\left[\frac{280}{2187},\, \frac{280 + 128\varepsilon}{2187}\right)$

@@ -224,6 +224,7 @@ example {k : ℕ} {z : ℝ} (hk : 1 ≤ k) (hz : homoclinicCycleMin k ≤ z) :
 #print axioms Mahler.DubickasExtension.cantor_dust_minimum_defect_spacing_law
 #print axioms Mahler.DubickasExtension.punctured_eps1_forced_seven_step_macro_block
 #print axioms Mahler.DubickasExtension.cantorDust_perron_fibonacci_counts
+#print axioms Mahler.DubickasExtension.perronCharPoly_sign_change_and_root_squeeze
 
 -- 15. Verify Section 21: Universal catapult-death band ladder and homoclinic tangency
 example (m : ℕ) :
