@@ -7983,7 +7983,499 @@ theorem no_infinite_cumulative_sparse_epoch_cantor_dust_chain :
   have hcontra := hbound (U (R 0) + 1)
   omega
 
+/-!
+## Section 24: Exact 2-Adic Valuation Determinism, Mod-16 & Mod-128 Spacing Bijections,
+## Zero-Branching Trajectory Uniqueness, and Dual (2, 3)-Adic CRT Renormalization
+
+In Section 23, we reduced any $\{3, 4\}$-confined Cantor-dust orbit on $[8/81, 1/2)$ to the
+coprime normalized defect-to-defect recurrence
+$$2^{3 j_{r+1} + 4} V_{r+1} + 1 = 3^{3 j_r + 4} V_r, \qquad \gcd(V_r, 6) = 1.$$
+At first glance, the binary Cantor dust $j_r \in \{1, 2\}$ (or more generally $j_r \in \{0, 1, 2, 3\}$)
+appears to allow a binary (or 4-ary) branching tree of $2^{\aleph_0}$ sequences for a given seed.
+In this section we prove four new structural theorems showing that **no such branching exists**
+for any fixed integer seed $V_0$, and that each transition is simultaneously locked both
+2-adically and 3-adically:
+
+1. **Exact 2-Adic Valuation & Forward Transition Uniqueness
+   (`defectNormalizedQuotient_exact_two_adic_valuation_and_forward_uniqueness`)**:
+   Since $V_{r+1}$ is odd, $2^{3 j_{r+1} + 4}$ is the **exact** power of $2$ dividing
+   $3^{3 j_r + 4} V_r - 1$ ($2^{3 j_{r+1} + 4} \mid (3^{3 j_r + 4} V_r - 1)$ and
+   $2^{3 j_{r+1} + 5} \nmid (3^{3 j_r + 4} V_r - 1)$). Consequently, $(V_r, j_r)$ uniquely
+   and deterministically forces $(j_{r+1}, V_{r+1})$.
+2. **Universal Mod-16 Spacing Bijection (`defectNormalizedQuotient_mod_sixteen_spacing_bijection`)**:
+   Because $3 j_{r+1} + 4 \ge 4$, every transition satisfies $3^{3 j_r + 4} V_r \equiv 1 \pmod{16}$.
+   Since $3^4 = 81 \equiv 1 \pmod{16}$, $V_r \bmod 16$ is restricted to $\{1, 3, 9, 11\}$
+   (locking $V_r \bmod 48$ to the $8$ coprime classes $\{1, 11, 17, 19, 25, 35, 41, 43\}$)
+   and **bijectively determines $j_r \bmod 4$**:
+   $$j_r \bmod 4 = 0 \iff V_r \bmod 16 = 1, \qquad j_r \bmod 4 = 1 \iff V_r \bmod 16 = 3,$$
+   $$j_r \bmod 4 = 2 \iff V_r \bmod 16 = 9, \qquad j_r \bmod 4 = 3 \iff V_r \bmod 16 = 11.$$
+   In particular, $V_r \bmod 8$ uniquely determines the parity $j_r \bmod 2$, so in the binary
+   Cantor dust $j_r \in \{1, 2\}$, **$V_r$ cannot choose between $j_r = 1$ and $j_r = 2$**:
+   $j_r = 1 \iff V_r \bmod 8 = 3$ and $j_r = 2 \iff V_r \bmod 8 = 1$.
+3. **Zero-Branching Trajectory Uniqueness (`defectNormalizedQuotient_orbit_unique_of_V0`)**:
+   Any two defect sequences $(V, j)$ and $(V', j')$ with $j(r), j'(r) < 4$ (in particular, any
+   two sequences in the binary Cantor dust $\{1, 2\}^\mathbb{N}$) that share the same initial
+   integer $V(0) = V'(0)$ are **identically equal at every step**: $V(r) = V'(r)$ and
+   $j(r) = j'(r)$ for all $r \in \mathbb{N}$.
+4. **Mod-128 Cooldown Sieve, Dual $(2, 3)$-Adic CRT Parametrization, and Two-Step Renormalization
+   (`defectNormalizedQuotient_cooldown_mod_128_and_crt_renormalization`)**:
+   When $j_{r+1} \ge 1$ (the Cooldown Law regime on $[280/2059, 1/2)$), $3^{3 j_r + 4} V_r \equiv 1 \pmod{128}$,
+   forcing $V_r \bmod 128 = 35$ for $j_r = 1$ and $V_r \bmod 128 = 25$ for $j_r = 2$ (eliminating
+   $126$ of $128$ residue classes). Combining this 2-adic lock with the 3-adic lock
+   $3^{3 j_r + 4} \mid (2^{3 j_{r+1} + 4} V_{r+1} + 1)$ yields an exact single-parameter
+   Chinese Remainder Theorem representation $(V_r, V_{r+1}) = (A k_r + R_0, B k_r + R_1)$ with
+   composite $V_{r+1}$-moduli $2^7 \cdot 3^7 = 279{,}936$ and $2^7 \cdot 3^{10} = 7{,}558{,}272$,
+   and an exact renormalized Diophantine recurrence $3^{3 j_r + 4} k_r - 2^{3 j_{r+2} + 4} k_{r+1} = C(j_r, j_{r+1}, j_{r+2})$
+   across all $8$ triples in $\{1, 2\}^3$.
+-/
+
+/-- **Exact 2-Adic Valuation and Forward Transition Uniqueness
+(`defectNormalizedQuotient_exact_two_adic_valuation_and_forward_uniqueness`)**:
+In the normalized defect recurrence $2^{3 j_2 + 4} V_2 + 1 = 3^{3 j_1 + 4} V_1$ with $V_2$ odd:
+1. $2^{3 j_2 + 4}$ is the exact power of $2$ dividing $3^{3 j_1 + 4} V_1 - 1$:
+   $2^{3 j_2 + 4} \mid (3^{3 j_1 + 4} V_1 - 1)$ and $2^{3 j_2 + 5} \nmid (3^{3 j_1 + 4} V_1 - 1)$.
+2. Given $(V_1, j_1)$, the next pair $(j_2, V_2)$ with $V_2$ odd is **uniquely determined**:
+   if $2^{3 j_2 + 4} V_2 + 1 = 3^{3 j_1 + 4} V_1$ and $2^{3 j_2' + 4} V_2' + 1 = 3^{3 j_1 + 4} V_1$
+   with $V_2 \bmod 2 = 1$ and $V_2' \bmod 2 = 1$, then $j_2 = j_2'$ and $V_2 = V_2'$. -/
+theorem defectNormalizedQuotient_exact_two_adic_valuation_and_forward_uniqueness
+    {V_1 V_2 j_1 j_2 : ℕ}
+    (hrec : 2 ^ (3 * j_2 + 4) * V_2 + 1 = 3 ^ (3 * j_1 + 4) * V_1)
+    (hodd2 : V_2 % 2 = 1) :
+    (2 ^ (3 * j_2 + 4) ∣ (3 ^ (3 * j_1 + 4) * V_1 - 1)) ∧
+    (¬ (2 ^ (3 * j_2 + 5) ∣ (3 ^ (3 * j_1 + 4) * V_1 - 1))) ∧
+    (∀ j_2' V_2' : ℕ,
+      2 ^ (3 * j_2' + 4) * V_2' + 1 = 3 ^ (3 * j_1 + 4) * V_1 →
+      V_2' % 2 = 1 →
+      j_2 = j_2' ∧ V_2 = V_2') := by
+  have hsub : 3 ^ (3 * j_1 + 4) * V_1 - 1 = 2 ^ (3 * j_2 + 4) * V_2 := by omega
+  refine ⟨⟨V_2, hsub⟩, ?_, ?_⟩
+  · rintro ⟨m, hm⟩
+    have hpow : 2 ^ (3 * j_2 + 5) * m = 2 ^ (3 * j_2 + 4) * (2 * m) := by
+      have hexp : 3 * j_2 + 5 = (3 * j_2 + 4) + 1 := by omega
+      rw [hexp, Nat.pow_add]
+      ring
+    have heq : 2 ^ (3 * j_2 + 4) * V_2 = 2 ^ (3 * j_2 + 4) * (2 * m) := by
+      omega
+    have hpos : 0 < 2 ^ (3 * j_2 + 4) := Nat.pos_of_ne_zero (by positivity)
+    have hV2 : V_2 = 2 * m := Nat.eq_of_mul_eq_mul_left hpos heq
+    omega
+  · intro j_2' V_2' hrec' hodd2'
+    have heq_prod : 2 ^ (3 * j_2 + 4) * V_2 = 2 ^ (3 * j_2' + 4) * V_2' := by omega
+    have hj_eq : j_2 = j_2' := by
+      rcases lt_trichotomy j_2 j_2' with hlt | rfl | hgt
+      · exfalso
+        have hexp : 3 * j_2' + 4 = (3 * j_2 + 4) + (3 * (j_2' - j_2 - 1) + 3) := by omega
+        have hsplit :
+            2 ^ (3 * j_2' + 4) * V_2' =
+              2 ^ (3 * j_2 + 4) * (2 ^ (3 * (j_2' - j_2 - 1) + 3) * V_2') := by
+          rw [hexp, Nat.pow_add]
+          ring
+        rw [hsplit] at heq_prod
+        have hpos : 0 < 2 ^ (3 * j_2 + 4) := Nat.pos_of_ne_zero (by positivity)
+        have hV2 : V_2 = 2 ^ (3 * (j_2' - j_2 - 1) + 3) * V_2' :=
+          Nat.eq_of_mul_eq_mul_left hpos heq_prod
+        have heven : 2 ^ (3 * (j_2' - j_2 - 1) + 3) * V_2' =
+            2 * (2 ^ (3 * (j_2' - j_2 - 1) + 2) * V_2') := by
+          have hexp2 : 3 * (j_2' - j_2 - 1) + 3 = (3 * (j_2' - j_2 - 1) + 2) + 1 := by omega
+          rw [hexp2, Nat.pow_add]
+          ring
+        omega
+      · rfl
+      · exfalso
+        have hexp : 3 * j_2 + 4 = (3 * j_2' + 4) + (3 * (j_2 - j_2' - 1) + 3) := by omega
+        have hsplit :
+            2 ^ (3 * j_2 + 4) * V_2 =
+              2 ^ (3 * j_2' + 4) * (2 ^ (3 * (j_2 - j_2' - 1) + 3) * V_2) := by
+          rw [hexp, Nat.pow_add]
+          ring
+        rw [hsplit] at heq_prod
+        have hpos : 0 < 2 ^ (3 * j_2' + 4) := Nat.pos_of_ne_zero (by positivity)
+        have hV2' : V_2' = 2 ^ (3 * (j_2 - j_2' - 1) + 3) * V_2 :=
+          (Nat.eq_of_mul_eq_mul_left hpos heq_prod).symm
+        have heven : 2 ^ (3 * (j_2 - j_2' - 1) + 3) * V_2 =
+            2 * (2 ^ (3 * (j_2 - j_2' - 1) + 2) * V_2) := by
+          have hexp2 : 3 * (j_2 - j_2' - 1) + 3 = (3 * (j_2 - j_2' - 1) + 2) + 1 := by omega
+          rw [hexp2, Nat.pow_add]
+          ring
+        omega
+    subst hj_eq
+    have hpos : 0 < 2 ^ (3 * j_2 + 4) := Nat.pos_of_ne_zero (by positivity)
+    exact ⟨rfl, Nat.eq_of_mul_eq_mul_left hpos heq_prod⟩
+
+/-- Helper lemma: $3^{4 q} \equiv 1 \pmod{16}$ for all $q \in \mathbb{N}$, so
+$3^{3 j + 4} \bmod 16$ depends only on $j \bmod 4$. -/
+theorem three_pow_step_mod_sixteen (j : ℕ) :
+    (3 ^ (3 * j + 4)) % 16 = (3 ^ (3 * (j % 4) + 4)) % 16 := by
+  have hpow4 : ∀ q : ℕ, (3 ^ (4 * q)) % 16 = 1 := by
+    intro q
+    induction q with
+    | zero => decide
+    | succ q ih =>
+        have hexp : 4 * (q + 1) = 4 * q + 4 := by omega
+        rw [hexp, Nat.pow_add, Nat.mul_mod, ih]
+  have hj : 3 * j + 4 = 4 * (3 * (j / 4)) + (3 * (j % 4) + 4) := by omega
+  rw [hj, Nat.pow_add, Nat.mul_mod, hpow4 (3 * (j / 4))]
+  omega
+
+/-- **Universal Mod-16 Spacing Bijection (`defectNormalizedQuotient_mod_sixteen_spacing_bijection`)**:
+For any normalized defect transition $2^{3 j_2 + 4} V_2 + 1 = 3^{3 j_1 + 4} V_1$:
+1. $V_1 \bmod 16 \in \{1, 3, 9, 11\}$ (eliminating $12$ of the $16$ residue classes mod $16$).
+2. $V_1 \bmod 16$ **bijectively determines $j_1 \bmod 4$**:
+   $$j_1 \bmod 4 = 0 \iff V_1 \bmod 16 = 1, \qquad j_1 \bmod 4 = 1 \iff V_1 \bmod 16 = 3,$$
+   $$j_1 \bmod 4 = 2 \iff V_1 \bmod 16 = 9, \qquad j_1 \bmod 4 = 3 \iff V_1 \bmod 16 = 11.$$
+3. $V_1 \bmod 8$ **bijectively determines the parity $j_1 \bmod 2$**:
+   $$j_1 \bmod 2 = 0 \iff V_1 \bmod 8 = 1, \qquad j_1 \bmod 2 = 1 \iff V_1 \bmod 8 = 3.$$
+4. In the binary Cantor dust $j_1 \in \{1, 2\}$, $V_1$ **cannot choose** between $j_1 = 1$ and $j_1 = 2$:
+   $$j_1 = 1 \iff V_1 \bmod 8 = 3 \quad (\text{and } V_1 \bmod 16 = 3),$$
+   $$j_1 = 2 \iff V_1 \bmod 8 = 1 \quad (\text{and } V_1 \bmod 16 = 9).$$ -/
+theorem defectNormalizedQuotient_mod_sixteen_spacing_bijection
+    {V_1 V_2 j_1 j_2 : ℕ}
+    (hrec : 2 ^ (3 * j_2 + 4) * V_2 + 1 = 3 ^ (3 * j_1 + 4) * V_1) :
+    (V_1 % 16 = 1 ∨ V_1 % 16 = 3 ∨ V_1 % 16 = 9 ∨ V_1 % 16 = 11) ∧
+    ((j_1 % 4 = 0 ↔ V_1 % 16 = 1) ∧
+     (j_1 % 4 = 1 ↔ V_1 % 16 = 3) ∧
+     (j_1 % 4 = 2 ↔ V_1 % 16 = 9) ∧
+     (j_1 % 4 = 3 ↔ V_1 % 16 = 11)) ∧
+    ((j_1 % 2 = 0 ↔ V_1 % 8 = 1) ∧
+     (j_1 % 2 = 1 ↔ V_1 % 8 = 3)) ∧
+    (j_1 = 1 ∨ j_1 = 2 →
+      (j_1 = 1 ↔ V_1 % 8 = 3) ∧ (j_1 = 2 ↔ V_1 % 8 = 1)) := by
+  have hlhs_mod16 : (2 ^ (3 * j_2 + 4) * V_2 + 1) % 16 = 1 := by
+    have hsplit : 2 ^ (3 * j_2 + 4) * V_2 + 1 = 16 * (2 ^ (3 * j_2) * V_2) + 1 := by
+      have hexp : 3 * j_2 + 4 = (3 * j_2) + 4 := by omega
+      rw [hexp, Nat.pow_add]
+      ring
+    omega
+  have hrhs_mod16 : (3 ^ (3 * j_1 + 4) * V_1) % 16 = 1 := by
+    rw [← hrec, hlhs_mod16]
+  have hmul_mod16 : (((3 ^ (3 * (j_1 % 4) + 4)) % 16) * (V_1 % 16)) % 16 = 1 := by
+    rw [← three_pow_step_mod_sixteen j_1, ← Nat.mul_mod]
+    exact hrhs_mod16
+  have hj4 : j_1 % 4 = 0 ∨ j_1 % 4 = 1 ∨ j_1 % 4 = 2 ∨ j_1 % 4 = 3 := by omega
+  rcases hj4 with h0 | h1 | h2 | h3
+  · rw [h0] at hmul_mod16
+    change (81 % 16 * (V_1 % 16)) % 16 = 1 at hmul_mod16
+    omega
+  · rw [h1] at hmul_mod16
+    change (2187 % 16 * (V_1 % 16)) % 16 = 1 at hmul_mod16
+    omega
+  · rw [h2] at hmul_mod16
+    change (59049 % 16 * (V_1 % 16)) % 16 = 1 at hmul_mod16
+    omega
+  · rw [h3] at hmul_mod16
+    change (1594323 % 16 * (V_1 % 16)) % 16 = 1 at hmul_mod16
+    omega
+
+/-- **Zero-Branching Trajectory Uniqueness (`defectNormalizedQuotient_orbit_unique_of_V0`)**:
+In the Cantor dust with bounded defect spacings $j(r) < 4$ (which includes the binary dust
+$j(r) \in \{1, 2\}$ as well as $\{0, 1, 2, 3\}^\mathbb{N}$), there is **zero branching**:
+if two trajectories $(V, j)$ and $(V', j')$ start at the same initial integer $V(0) = V'(0)$,
+then $V(r) = V'(r)$ and $j(r) = j'(r)$ for every $r \in \mathbb{N}$. -/
+theorem defectNormalizedQuotient_orbit_unique_of_V0
+    {V j V' j' : ℕ → ℕ}
+    (hodd : ∀ r : ℕ, V r % 2 = 1)
+    (hodd' : ∀ r : ℕ, V' r % 2 = 1)
+    (hj : ∀ r : ℕ, j r < 4)
+    (hj' : ∀ r : ℕ, j' r < 4)
+    (hrec : ∀ r : ℕ, 2 ^ (3 * j (r + 1) + 4) * V (r + 1) + 1 = 3 ^ (3 * j r + 4) * V r)
+    (hrec' : ∀ r : ℕ, 2 ^ (3 * j' (r + 1) + 4) * V' (r + 1) + 1 = 3 ^ (3 * j' r + 4) * V' r)
+    (hV0 : V 0 = V' 0) :
+    ∀ r : ℕ, V r = V' r ∧ j r = j' r := by
+  have hV_eq : ∀ r : ℕ, V r = V' r := by
+    intro r
+    induction r with
+    | zero => exact hV0
+    | succ r ih =>
+        have hbij := (defectNormalizedQuotient_mod_sixteen_spacing_bijection (hrec r)).2.1
+        have hbij' := (defectNormalizedQuotient_mod_sixteen_spacing_bijection (hrec' r)).2.1
+        have hjr_lt := hj r
+        have hjr'_lt := hj' r
+        have hjr_eq : j r = j' r := by omega
+        have huniq :=
+          (defectNormalizedQuotient_exact_two_adic_valuation_and_forward_uniqueness
+            (hrec r) (hodd (r + 1))).2.2 (j' (r + 1)) (V' (r + 1))
+        rw [hjr_eq, ih] at huniq
+        exact (huniq (hrec' r) (hodd' (r + 1))).2
+  intro r
+  have hVr := hV_eq r
+  have hbij := (defectNormalizedQuotient_mod_sixteen_spacing_bijection (hrec r)).2.1
+  have hbij' := (defectNormalizedQuotient_mod_sixteen_spacing_bijection (hrec' r)).2.1
+  have hjr_lt := hj r
+  have hjr'_lt := hj' r
+  exact ⟨hVr, by omega⟩
+
+/-- Universal helper lemma: from a linear Bézout identity $V + M a = M b + r$ with $r < M$,
+we immediately obtain both $V \bmod M = r$ and $V = M (V / M) + r$ without large-modulus
+Presburger case-splitting. -/
+theorem mod_and_div_of_bezout {V M a b r : ℕ} (h : V + M * a = M * b + r) (hr : r < M) :
+    V % M = r ∧ V = M * (V / M) + r := by
+  have hmod : V % M = r := by
+    have h1 : (V + M * a) % M = V % M := by
+      rw [Nat.mul_comm M a, Nat.add_mul_mod_self_right]
+    have h2 : (M * b + r) % M = r := by
+      rw [Nat.add_comm, Nat.mul_comm M b, Nat.add_mul_mod_self_right, Nat.mod_eq_of_lt hr]
+    rw [← h1, h, h2]
+  refine ⟨hmod, ?_⟩
+  have hdiv := (Nat.div_add_mod V M).symm
+  linarith
+
+/-- **Exact Joint Affine CRT Parametrization of Binary Defect Transitions
+(`defectNormalizedQuotient_binary_crt_parametrization`)**:
+Whenever $(j_1, j_2) \in \{1, 2\}^2$ and $V_2$ satisfies the next-step Mod-128 Cooldown Sieve
+($V_2 \bmod 128 = 35$ if $j_2 = 1$, or $25$ if $j_2 = 2$), setting $k = V_1 / 2^{3 j_2 + 11}$
+gives the exact single-parameter joint affine representation:
+- $(1, 1)$: $V_1 = 16384 k + 931 \land V_2 = 279936 k + 15907$ (so $V_2 \ge 15907$),
+- $(1, 2)$: $V_1 = 131072 k + 117539 \land V_2 = 279936 k + 251033$ (so $V_2 \ge 251033$),
+- $(2, 1)$: $V_1 = 16384 k + 4889 \land V_2 = 7558272 k + 2255395$ (so $V_2 \ge 2255395$),
+- $(2, 2)$: $V_1 = 131072 k + 57753 \land V_2 = 7558272 k + 3330329$ (so $V_2 \ge 3330329$). -/
+theorem defectNormalizedQuotient_binary_crt_parametrization (V_1 V_2 : ℕ) :
+    (2 ^ 7 * V_2 + 1 = 3 ^ 7 * V_1 ∧ V_2 % 128 = 35 →
+      V_1 = 16384 * (V_1 / 16384) + 931 ∧ V_2 = 279936 * (V_1 / 16384) + 15907) ∧
+    (2 ^ 10 * V_2 + 1 = 3 ^ 7 * V_1 ∧ V_2 % 128 = 25 →
+      V_1 = 131072 * (V_1 / 131072) + 117539 ∧ V_2 = 279936 * (V_1 / 131072) + 251033) ∧
+    (2 ^ 7 * V_2 + 1 = 3 ^ 10 * V_1 ∧ V_2 % 128 = 35 →
+      V_1 = 16384 * (V_1 / 16384) + 4889 ∧ V_2 = 7558272 * (V_1 / 16384) + 2255395) ∧
+    (2 ^ 10 * V_2 + 1 = 3 ^ 10 * V_1 ∧ V_2 % 128 = 25 →
+      V_1 = 131072 * (V_1 / 131072) + 57753 ∧ V_2 = 7558272 * (V_1 / 131072) + 3330329) := by
+  refine ⟨?_, ?_, ?_, ?_⟩
+  · rintro ⟨h1, h2⟩
+    change 128 * V_2 + 1 = 2187 * V_1 at h1
+    have hq : V_2 = 128 * (V_2 / 128) + 35 := by
+      have hd := (Nat.div_add_mod V_2 128).symm
+      linarith only [hd, h2]
+    have hbez : V_1 + 16384 * (1064 * V_1) = 16384 * (7971 * (V_2 / 128) + 2180) + 931 := by
+      linarith only [h1, hq]
+    have hV1 := (mod_and_div_of_bezout hbez (by decide)).2
+    exact ⟨hV1, by linarith only [h1, hV1]⟩
+  · rintro ⟨h1, h2⟩
+    change 1024 * V_2 + 1 = 2187 * V_1 at h1
+    have hq : V_2 = 128 * (V_2 / 128) + 25 := by
+      have hd := (Nat.div_add_mod V_2 128).symm
+      linarith only [hd, h2]
+    have hbez : V_1 + 131072 * (133 * V_1) = 131072 * (7971 * (V_2 / 128) + 1556) + 117539 := by
+      linarith only [h1, hq]
+    have hV1 := (mod_and_div_of_bezout hbez (by decide)).2
+    exact ⟨hV1, by linarith only [h1, hV1]⟩
+  · rintro ⟨h1, h2⟩
+    change 128 * V_2 + 1 = 59049 * V_1 at h1
+    have hq : V_2 = 128 * (V_2 / 128) + 35 := by
+      have hd := (Nat.div_add_mod V_2 128).symm
+      linarith only [hd, h2]
+    have hbez : V_1 + 16384 * (27308 * V_1) = 16384 * (7577 * (V_2 / 128) + 2072) + 4889 := by
+      linarith only [h1, hq]
+    have hV1 := (mod_and_div_of_bezout hbez (by decide)).2
+    exact ⟨hV1, by linarith only [h1, hV1]⟩
+  · rintro ⟨h1, h2⟩
+    change 1024 * V_2 + 1 = 59049 * V_1 at h1
+    have hq : V_2 = 128 * (V_2 / 128) + 25 := by
+      have hd := (Nat.div_add_mod V_2 128).symm
+      linarith only [hd, h2]
+    have hbez : V_1 + 131072 * (32938 * V_1) = 131072 * (73113 * (V_2 / 128) + 14280) + 57753 := by
+      linarith only [h1, hq]
+    have hV1 := (mod_and_div_of_bezout hbez (by decide)).2
+    exact ⟨hV1, by linarith only [h1, hV1]⟩
+
+/-- **Mod-128 Cooldown Sieve and 3-Adic Next-Step Lock
+(`defectNormalizedQuotient_cooldown_mod_128_and_three_adic_lock`)**:
+1. **Mod-128 Cooldown Sieve**: Whenever $j_2 \ge 1$ (which holds on $[280/2059, 1/2)$ by the
+   Section 20 Cooldown Law) and $j_1 \in \{1, 2\}$, $V_1 \bmod 128$ is locked to $\{35, 25\}$:
+   $$j_1 = 1 \implies V_1 \bmod 128 = 35, \qquad j_1 = 2 \implies V_1 \bmod 128 = 25,$$
+   eliminating $126$ out of $128$ residue classes modulo $128$ ($62$ of $64$ odd classes).
+2. **3-Adic Next-Step Lock**: For $(j_1, j_2) \in \{1, 2\}^2$, reading
+   $2^{3 j_2 + 4} V_2 + 1 = 3^{3 j_1 + 4} V_1$ modulo $3^{3 j_1 + 4}$ locks $V_2$ modulo
+   $3^7 = 2187$ (when $j_1 = 1$) or $3^{10} = 59049$ (when $j_1 = 2$):
+   $$(1, 1) \Rightarrow V_2 \bmod 2187 = 598, \qquad (1, 2) \Rightarrow V_2 \bmod 2187 = 1715,$$
+   $$(2, 1) \Rightarrow V_2 \bmod 59049 = 11533, \qquad (2, 2) \Rightarrow V_2 \bmod 59049 = 23585.$$ -/
+theorem defectNormalizedQuotient_cooldown_mod_128_and_three_adic_lock :
+    (∀ V_1 V_2 j_1 j_2 : ℕ,
+      1 ≤ j_2 →
+      2 ^ (3 * j_2 + 4) * V_2 + 1 = 3 ^ (3 * j_1 + 4) * V_1 →
+      (j_1 = 1 → V_1 % 128 = 35) ∧
+      (j_1 = 2 → V_1 % 128 = 25)) ∧
+    (∀ V_1 V_2 : ℕ,
+      (2 ^ 7 * V_2 + 1 = 3 ^ 7 * V_1 → V_2 % 2187 = 598) ∧
+      (2 ^ 10 * V_2 + 1 = 3 ^ 7 * V_1 → V_2 % 2187 = 1715) ∧
+      (2 ^ 7 * V_2 + 1 = 3 ^ 10 * V_1 → V_2 % 59049 = 11533) ∧
+      (2 ^ 10 * V_2 + 1 = 3 ^ 10 * V_1 → V_2 % 59049 = 23585)) := by
+  refine ⟨?_, ?_⟩
+  · intro V_1 V_2 j_1 j_2 hj2 hrec
+    have hsplit : 2 ^ (3 * j_2 + 4) * V_2 + 1 = 128 * (2 ^ (3 * (j_2 - 1)) * V_2) + 1 := by
+      have hexp : 3 * j_2 + 4 = (3 * (j_2 - 1)) + 7 := by omega
+      rw [hexp, Nat.pow_add]
+      ring
+    refine ⟨?_, ?_⟩
+    · intro hj1
+      subst hj1
+      have hlin : 128 * (2 ^ (3 * (j_2 - 1)) * V_2) + 1 = 2187 * V_1 := by
+        calc 128 * (2 ^ (3 * (j_2 - 1)) * V_2) + 1 = 2 ^ (3 * j_2 + 4) * V_2 + 1 := hsplit.symm
+        _ = 3 ^ (3 * 1 + 4) * V_1 := hrec
+        _ = 2187 * V_1 := by ring
+      have hbez : V_1 + 128 * (598 * V_1) = 128 * (35 * (2 ^ (3 * (j_2 - 1)) * V_2)) + 35 := by
+        linarith
+      exact (mod_and_div_of_bezout hbez (by norm_num)).1
+    · intro hj1
+      subst hj1
+      have hlin : 128 * (2 ^ (3 * (j_2 - 1)) * V_2) + 1 = 59049 * V_1 := by
+        calc 128 * (2 ^ (3 * (j_2 - 1)) * V_2) + 1 = 2 ^ (3 * j_2 + 4) * V_2 + 1 := hsplit.symm
+        _ = 3 ^ (3 * 2 + 4) * V_1 := hrec
+        _ = 59049 * V_1 := by ring
+      have hbez : V_1 + 128 * (11533 * V_1) = 128 * (25 * (2 ^ (3 * (j_2 - 1)) * V_2)) + 25 := by
+        linarith
+      exact (mod_and_div_of_bezout hbez (by norm_num)).1
+  · intro V_1 V_2
+    refine ⟨?_, ?_, ?_, ?_⟩
+    · intro h
+      have hbez : V_2 + 2187 * (598 * V_1) = 2187 * (35 * V_2) + 598 := by linarith
+      exact (mod_and_div_of_bezout hbez (by norm_num)).1
+    · intro h
+      have hbez : V_2 + 2187 * (1715 * V_1) = 2187 * (803 * V_2) + 1715 := by linarith
+      exact (mod_and_div_of_bezout hbez (by norm_num)).1
+    · intro h
+      have hbez : V_2 + 59049 * (11533 * V_1) = 59049 * (25 * V_2) + 11533 := by linarith
+      exact (mod_and_div_of_bezout hbez (by norm_num)).1
+    · intro h
+      have hbez : V_2 + 59049 * (23585 * V_1) = 59049 * (409 * V_2) + 23585 := by linarith
+      exact (mod_and_div_of_bezout hbez (by norm_num)).1
+
+/-- **Two-Step Renormalized Recurrence in the Binary Cantor Dust
+(`defectNormalizedQuotient_renormalized_k_recurrence`)**:
+Across two consecutive transitions $(j_1, j_2, j_3) \in \{1, 2\}^3$ with renormalized parameters
+$k_1 = V_1 / 2^{3 j_2 + 11}$ and $k_2 = V_2 / 2^{3 j_3 + 11}$, eliminating $V_2$ and dividing by
+$128$ yields the exact renormalized Diophantine recurrence between $k_1$ and $k_2$ together with
+forced parity and mod-$9$ congruences on $(k_1, k_2)$ across all $8$ triples in $\{1, 2\}^3$:
+- $(1, 1, 1)$: $2187 k_1 + 117 = 128 k_2$ ($k_1 \bmod 2 = 1 \land k_2 \bmod 9 = 0$),
+- $(1, 1, 2)$: $2187 k_1 = 1024 k_2 + 794$ ($k_1 \bmod 4 = 2 \land k_2 \bmod 9 = 1$),
+- $(1, 2, 1)$: $2187 k_1 + 1923 = 128 k_2$ ($k_1 \bmod 2 = 1 \land k_2 \bmod 9 = 3$),
+- $(1, 2, 2)$: $2187 k_1 + 1510 = 1024 k_2$ ($k_1 \bmod 4 = 2 \land k_2 \bmod 9 = 1$),
+- $(2, 1, 1)$: $59049 k_1 + 17613 = 128 k_2$ ($k_1 \bmod 2 = 1 \land k_2 \bmod 9 = 0$),
+- $(2, 1, 2)$: $59049 k_1 + 16702 = 1024 k_2$ ($k_1 \bmod 4 = 2 \land k_2 \bmod 9 = 1$),
+- $(2, 2, 1)$: $59049 k_1 + 25980 = 128 k_2$ ($k_1 \bmod 4 = 0 \land k_2 \bmod 9 = 3$),
+- $(2, 2, 2)$: $59049 k_1 + 25567 = 1024 k_2$ ($k_1 \bmod 2 = 1 \land k_2 \bmod 9 = 1$). -/
+theorem defectNormalizedQuotient_renormalized_k_recurrence (V_1 V_2 V_3 : ℕ) :
+    (2 ^ 7 * V_2 + 1 = 3 ^ 7 * V_1 ∧ 2 ^ 7 * V_3 + 1 = 3 ^ 7 * V_2 ∧ V_3 % 128 = 35 →
+      2187 * (V_1 / 16384) + 117 = 128 * (V_2 / 16384) ∧
+      (V_1 / 16384) % 2 = 1 ∧ (V_2 / 16384) % 9 = 0) ∧
+    (2 ^ 7 * V_2 + 1 = 3 ^ 7 * V_1 ∧ 2 ^ 10 * V_3 + 1 = 3 ^ 7 * V_2 ∧ V_3 % 128 = 25 →
+      2187 * (V_1 / 16384) = 1024 * (V_2 / 131072) + 794 ∧
+      (V_1 / 16384) % 4 = 2 ∧ (V_2 / 131072) % 9 = 1) ∧
+    (2 ^ 10 * V_2 + 1 = 3 ^ 7 * V_1 ∧ 2 ^ 7 * V_3 + 1 = 3 ^ 10 * V_2 ∧ V_3 % 128 = 35 →
+      2187 * (V_1 / 131072) + 1923 = 128 * (V_2 / 16384) ∧
+      (V_1 / 131072) % 2 = 1 ∧ (V_2 / 16384) % 9 = 3) ∧
+    (2 ^ 10 * V_2 + 1 = 3 ^ 7 * V_1 ∧ 2 ^ 10 * V_3 + 1 = 3 ^ 10 * V_2 ∧ V_3 % 128 = 25 →
+      2187 * (V_1 / 131072) + 1510 = 1024 * (V_2 / 131072) ∧
+      (V_1 / 131072) % 4 = 2 ∧ (V_2 / 131072) % 9 = 1) ∧
+    (2 ^ 7 * V_2 + 1 = 3 ^ 10 * V_1 ∧ 2 ^ 7 * V_3 + 1 = 3 ^ 7 * V_2 ∧ V_3 % 128 = 35 →
+      59049 * (V_1 / 16384) + 17613 = 128 * (V_2 / 16384) ∧
+      (V_1 / 16384) % 2 = 1 ∧ (V_2 / 16384) % 9 = 0) ∧
+    (2 ^ 7 * V_2 + 1 = 3 ^ 10 * V_1 ∧ 2 ^ 10 * V_3 + 1 = 3 ^ 7 * V_2 ∧ V_3 % 128 = 25 →
+      59049 * (V_1 / 16384) + 16702 = 1024 * (V_2 / 131072) ∧
+      (V_1 / 16384) % 4 = 2 ∧ (V_2 / 131072) % 9 = 1) ∧
+    (2 ^ 10 * V_2 + 1 = 3 ^ 10 * V_1 ∧ 2 ^ 7 * V_3 + 1 = 3 ^ 10 * V_2 ∧ V_3 % 128 = 35 →
+      59049 * (V_1 / 131072) + 25980 = 128 * (V_2 / 16384) ∧
+      (V_1 / 131072) % 4 = 0 ∧ (V_2 / 16384) % 9 = 3) ∧
+    (2 ^ 10 * V_2 + 1 = 3 ^ 10 * V_1 ∧ 2 ^ 10 * V_3 + 1 = 3 ^ 10 * V_2 ∧ V_3 % 128 = 25 →
+      59049 * (V_1 / 131072) + 25567 = 1024 * (V_2 / 131072) ∧
+      (V_1 / 131072) % 2 = 1 ∧ (V_2 / 131072) % 9 = 1) := by
+  refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
+  · rintro ⟨h1, h2, h3⟩
+    have hs2 := ((defectNormalizedQuotient_binary_crt_parametrization V_2 V_3).1 ⟨h2, h3⟩).1
+    have hV2_mod : V_2 % 128 = 35 :=
+      (mod_and_div_of_bezout (M := 128) (a := 0) (b := 128 * (V_2 / 16384) + 7) (r := 35)
+        (by linarith only [hs2]) (by decide)).1
+    have hs1 := ((defectNormalizedQuotient_binary_crt_parametrization V_1 V_2).1 ⟨h1, hV2_mod⟩).2
+    have hren : 2187 * (V_1 / 16384) + 117 = 128 * (V_2 / 16384) := by linarith only [hs1, hs2]
+    refine ⟨hren, ?_, ?_⟩
+    · exact (mod_and_div_of_bezout (M := 2) (a := 1093 * (V_1 / 16384) + 59) (b := 64 * (V_2 / 16384))
+        (r := 1) (by linarith only [hren]) (by decide)).1
+    · exact (mod_and_div_of_bezout (M := 9) (a := 71 * (V_2 / 16384)) (b := 1215 * (V_1 / 16384) + 65)
+        (r := 0) (by linarith only [hren]) (by decide)).1
+  · rintro ⟨h1, h2, h3⟩
+    have hs2 := ((defectNormalizedQuotient_binary_crt_parametrization V_2 V_3).2.1 ⟨h2, h3⟩).1
+    have hV2_mod : V_2 % 128 = 35 :=
+      (mod_and_div_of_bezout (M := 128) (a := 0) (b := 1024 * (V_2 / 131072) + 918) (r := 35)
+        (by linarith only [hs2]) (by decide)).1
+    have hs1 := ((defectNormalizedQuotient_binary_crt_parametrization V_1 V_2).1 ⟨h1, hV2_mod⟩).2
+    have hren : 2187 * (V_1 / 16384) = 1024 * (V_2 / 131072) + 794 := by linarith only [hs1, hs2]
+    refine ⟨hren, ?_, ?_⟩
+    · exact (mod_and_div_of_bezout (M := 4) (a := 256 * (V_2 / 131072) + 199) (b := 547 * (V_1 / 16384))
+        (r := 2) (by linarith only [hren]) (by decide)).1
+    · exact (mod_and_div_of_bezout (M := 9) (a := 455 * (V_2 / 131072) + 353) (b := 972 * (V_1 / 16384))
+        (r := 1) (by linarith only [hren]) (by decide)).1
+  · rintro ⟨h1, h2, h3⟩
+    have hs2 := ((defectNormalizedQuotient_binary_crt_parametrization V_2 V_3).2.2.1 ⟨h2, h3⟩).1
+    have hV2_mod : V_2 % 128 = 25 :=
+      (mod_and_div_of_bezout (M := 128) (a := 0) (b := 128 * (V_2 / 16384) + 38) (r := 25)
+        (by linarith only [hs2]) (by decide)).1
+    have hs1 := ((defectNormalizedQuotient_binary_crt_parametrization V_1 V_2).2.1 ⟨h1, hV2_mod⟩).2
+    have hren : 2187 * (V_1 / 131072) + 1923 = 128 * (V_2 / 16384) := by linarith only [hs1, hs2]
+    refine ⟨hren, ?_, ?_⟩
+    · exact (mod_and_div_of_bezout (M := 2) (a := 1093 * (V_1 / 131072) + 962) (b := 64 * (V_2 / 16384))
+        (r := 1) (by linarith only [hren]) (by decide)).1
+    · exact (mod_and_div_of_bezout (M := 9) (a := 71 * (V_2 / 16384)) (b := 1215 * (V_1 / 131072) + 1068)
+        (r := 3) (by linarith only [hren]) (by decide)).1
+  · rintro ⟨h1, h2, h3⟩
+    have hs2 := ((defectNormalizedQuotient_binary_crt_parametrization V_2 V_3).2.2.2 ⟨h2, h3⟩).1
+    have hV2_mod : V_2 % 128 = 25 :=
+      (mod_and_div_of_bezout (M := 128) (a := 0) (b := 1024 * (V_2 / 131072) + 451) (r := 25)
+        (by linarith only [hs2]) (by decide)).1
+    have hs1 := ((defectNormalizedQuotient_binary_crt_parametrization V_1 V_2).2.1 ⟨h1, hV2_mod⟩).2
+    have hren : 2187 * (V_1 / 131072) + 1510 = 1024 * (V_2 / 131072) := by linarith only [hs1, hs2]
+    refine ⟨hren, ?_, ?_⟩
+    · exact (mod_and_div_of_bezout (M := 4) (a := 256 * (V_2 / 131072)) (b := 547 * (V_1 / 131072) + 377)
+        (r := 2) (by linarith only [hren]) (by decide)).1
+    · exact (mod_and_div_of_bezout (M := 9) (a := 455 * (V_2 / 131072)) (b := 972 * (V_1 / 131072) + 671)
+        (r := 1) (by linarith only [hren]) (by decide)).1
+  · rintro ⟨h1, h2, h3⟩
+    have hs2 := ((defectNormalizedQuotient_binary_crt_parametrization V_2 V_3).1 ⟨h2, h3⟩).1
+    have hV2_mod : V_2 % 128 = 35 :=
+      (mod_and_div_of_bezout (M := 128) (a := 0) (b := 128 * (V_2 / 16384) + 7) (r := 35)
+        (by linarith only [hs2]) (by decide)).1
+    have hs1 := ((defectNormalizedQuotient_binary_crt_parametrization V_1 V_2).2.2.1 ⟨h1, hV2_mod⟩).2
+    have hren : 59049 * (V_1 / 16384) + 17613 = 128 * (V_2 / 16384) := by linarith only [hs1, hs2]
+    refine ⟨hren, ?_, ?_⟩
+    · exact (mod_and_div_of_bezout (M := 2) (a := 29524 * (V_1 / 16384) + 8807) (b := 64 * (V_2 / 16384))
+        (r := 1) (by linarith only [hren]) (by decide)).1
+    · exact (mod_and_div_of_bezout (M := 9) (a := 71 * (V_2 / 16384)) (b := 32805 * (V_1 / 16384) + 9785)
+        (r := 0) (by linarith only [hren]) (by decide)).1
+  · rintro ⟨h1, h2, h3⟩
+    have hs2 := ((defectNormalizedQuotient_binary_crt_parametrization V_2 V_3).2.1 ⟨h2, h3⟩).1
+    have hV2_mod : V_2 % 128 = 35 :=
+      (mod_and_div_of_bezout (M := 128) (a := 0) (b := 1024 * (V_2 / 131072) + 918) (r := 35)
+        (by linarith only [hs2]) (by decide)).1
+    have hs1 := ((defectNormalizedQuotient_binary_crt_parametrization V_1 V_2).2.2.1 ⟨h1, hV2_mod⟩).2
+    have hren : 59049 * (V_1 / 16384) + 16702 = 1024 * (V_2 / 131072) := by linarith only [hs1, hs2]
+    refine ⟨hren, ?_, ?_⟩
+    · exact (mod_and_div_of_bezout (M := 4) (a := 14762 * (V_1 / 16384) + 4176) (b := 256 * (V_2 / 131072))
+        (r := 2) (by linarith only [hren]) (by decide)).1
+    · exact (mod_and_div_of_bezout (M := 9) (a := 455 * (V_2 / 131072)) (b := 26244 * (V_1 / 16384) + 7423)
+        (r := 1) (by linarith only [hren]) (by decide)).1
+  · rintro ⟨h1, h2, h3⟩
+    have hs2 := ((defectNormalizedQuotient_binary_crt_parametrization V_2 V_3).2.2.1 ⟨h2, h3⟩).1
+    have hV2_mod : V_2 % 128 = 25 :=
+      (mod_and_div_of_bezout (M := 128) (a := 0) (b := 128 * (V_2 / 16384) + 38) (r := 25)
+        (by linarith only [hs2]) (by decide)).1
+    have hs1 := ((defectNormalizedQuotient_binary_crt_parametrization V_1 V_2).2.2.2 ⟨h1, hV2_mod⟩).2
+    have hren : 59049 * (V_1 / 131072) + 25980 = 128 * (V_2 / 16384) := by linarith only [hs1, hs2]
+    refine ⟨hren, ?_, ?_⟩
+    · exact (mod_and_div_of_bezout (M := 4) (a := 14762 * (V_1 / 131072) + 6495) (b := 32 * (V_2 / 16384))
+        (r := 0) (by linarith only [hren]) (by decide)).1
+    · exact (mod_and_div_of_bezout (M := 9) (a := 71 * (V_2 / 16384)) (b := 32805 * (V_1 / 131072) + 14433)
+        (r := 3) (by linarith only [hren]) (by decide)).1
+  · rintro ⟨h1, h2, h3⟩
+    have hs2 := ((defectNormalizedQuotient_binary_crt_parametrization V_2 V_3).2.2.2 ⟨h2, h3⟩).1
+    have hV2_mod : V_2 % 128 = 25 :=
+      (mod_and_div_of_bezout (M := 128) (a := 0) (b := 1024 * (V_2 / 131072) + 451) (r := 25)
+        (by linarith only [hs2]) (by decide)).1
+    have hs1 := ((defectNormalizedQuotient_binary_crt_parametrization V_1 V_2).2.2.2 ⟨h1, hV2_mod⟩).2
+    have hren : 59049 * (V_1 / 131072) + 25567 = 1024 * (V_2 / 131072) := by linarith only [hs1, hs2]
+    refine ⟨hren, ?_, ?_⟩
+    · exact (mod_and_div_of_bezout (M := 2) (a := 29524 * (V_1 / 131072) + 12784) (b := 512 * (V_2 / 131072))
+        (r := 1) (by linarith only [hren]) (by decide)).1
+    · exact (mod_and_div_of_bezout (M := 9) (a := 455 * (V_2 / 131072)) (b := 26244 * (V_1 / 131072) + 11363)
+        (r := 1) (by linarith only [hren]) (by decide)).1
+
 end Mahler.DubickasExtension
+
 
 
 

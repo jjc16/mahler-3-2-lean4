@@ -245,6 +245,16 @@ example (m : ℕ) :
 #print axioms Mahler.DubickasExtension.cantor_dust_multi_step_telescoping_and_epoch_descent
 #print axioms Mahler.DubickasExtension.no_infinite_cumulative_sparse_epoch_cantor_dust_chain
 
+-- 18. Verify Section 24: Exact 2-adic valuation determinism, mod-16/mod-128 spacing bijections, zero-branching uniqueness, and dual (2,3)-adic CRT renormalization
+#print axioms Mahler.DubickasExtension.defectNormalizedQuotient_exact_two_adic_valuation_and_forward_uniqueness
+#print axioms Mahler.DubickasExtension.three_pow_step_mod_sixteen
+#print axioms Mahler.DubickasExtension.defectNormalizedQuotient_mod_sixteen_spacing_bijection
+#print axioms Mahler.DubickasExtension.defectNormalizedQuotient_orbit_unique_of_V0
+#print axioms Mahler.DubickasExtension.mod_and_div_of_bezout
+#print axioms Mahler.DubickasExtension.defectNormalizedQuotient_binary_crt_parametrization
+#print axioms Mahler.DubickasExtension.defectNormalizedQuotient_cooldown_mod_128_and_three_adic_lock
+#print axioms Mahler.DubickasExtension.defectNormalizedQuotient_renormalized_k_recurrence
+
 #print axioms Mahler.DubickasExtension.dubBaseCarry_eq_fract_linear
 #print axioms Mahler.DubickasExtension.dubBaseY_multi_step_carry_identity
 #print axioms Mahler.DubickasExtension.dubBaseCarry_mem_two_letters
