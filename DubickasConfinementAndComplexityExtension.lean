@@ -12104,6 +12104,428 @@ theorem dense_core_three_occurrence_ultrametric_pigeonhole
     have hqK : 7 * q * (K + 2) = q * (7 * (K + 1) + 7) := by ring
     exact ⟨by linarith only [hcut1, hqK], by linarith only [hcut2, hqK]⟩
 
+/-!
+## Section 32: The Infinite $(128^d, 2187^d)$ Sieve Family, Explicit "4 in 16,384" and
+## "8 in 2,097,152" Bijections, and the Exact Prefix-Collision Biconditional for All Horizons
+
+In Section 24, we established the $d = 1$ Mod-128 Cooldown Sieve ("$2\text{ in }128$": $V(r) \bmod 128 \in \{35, 25\}$).
+In this section, we extend that attack into an **infinite family of dual $(2^{7d}, 3^{7d})$ congruence
+constraints** across all depths $d = K + 1 \ge 1$ and prove that **word repetition is 100% equivalent
+to 2-adic residue collision at every horizon $K \in \mathbb{N}$**:
+
+1. **Normalized Inhomogeneous Accumulator & Infinite $(128^d, 2187^d)$ Sieve Tower
+   (`normalizedDefectAcc_master_identity_and_infinite_sieve_tower`)**:
+   Factoring $2^{3 j(0) + 4}$ out of `singleExpDefectAcc j d` defines `normalizedDefectAcc j d`
+   ($\tilde{\Delta}(j, d)$) and yields the factor-free master $d$-step identity:
+   $$2^{\text{defectStepSum}(\text{fun } t \Rightarrow j(1 + t),\, d)} \cdot V(d) + \text{normalizedDefectAcc}(j, d)
+     \;=\; 3^{\text{defectStepSum}(j, d)} \cdot V(0).$$
+   In the Dense Core $j(r) \in \{1, 2\}$, for every horizon $d = K + 1 \ge 1$, $\tilde{\Delta}(j, K + 1)$
+   and $S_{K+1}$ depend only on the $2^{K+1}$ words $(j(0), \dots, j(K)) \in \{1, 2\}^{K+1}$, while
+   $E_{K+1} \ge E_K + 7 \ge 7 (K + 1)$ and $S_{K+1} \ge 7 (K + 1)$, yielding both infinite sieve families:
+   - **Forward "$2^d\text{ in }128^d$" Power-of-2 Sieve**:
+     $$\big(3^{S_{K+1}} V(0)\big) \bmod 2^{E_K + 7} = \tilde{\Delta}(j, K + 1) \bmod 2^{E_K + 7},$$
+     $$\big(3^{S_{K+1}} V(0)\big) \bmod 2^{7 (K + 1)} = \tilde{\Delta}(j, K + 1) \bmod 2^{7 (K + 1)}.$$
+   - **Backward "$2^d\text{ in }2187^d$" Power-of-3 Sieve**:
+     $$\big(2^{E_{K+1}} V(K + 1) + \tilde{\Delta}(j, K + 1)\big) \bmod 3^{S_{K+1}} = 0,$$
+     $$\big(2^{E_{K+1}} V(K + 1) + \tilde{\Delta}(j, K + 1)\big) \bmod 3^{7 (K + 1)} = 0.$$
+
+2. **Explicit Depth-2 ("4 in 16,384") and Depth-3 ("8 in 2,097,152") Sieve Bijections
+   (`dense_core_depth2_four_in_16384_and_depth3_eight_in_2097152_sieves`)**:
+   - At Depth $2$ ($\bmod\, 2^{14} = 16{,}384$), only **4 out of 16,384** residue classes survive:
+     $V(r) \bmod 16{,}384 \in \{931, 2851, 4889, 8601\}$, bijectively determining $(j(r), j(r+1)) \in \{1, 2\}^2$.
+   - At Depth $3$ ($\bmod\, 2^{21} = 2{,}097{,}152$), only **8 out of 2,097,152** residue classes survive:
+     $V(r) \bmod 2{,}097{,}152 \in \{17315, 230307, 1035043, 1952547, 2020121, 1872665, 582041, 1237401\}$.
+
+3. **Exact Prefix-Collision Biconditional & Mod-$2^{10 K + 7}$ Collision Cutoff
+   (`dense_core_exact_prefix_collision_biconditional_and_mod_cutoff`)**:
+   For **every** horizon $K \in \mathbb{N}$ and every pair $r_1 < r_2$ in the Dense Core:
+   $$(\forall t \le K,\; j(r_1 + t) = j(r_2 + t))
+     \;\Longleftrightarrow\; 2^{E_K + 7} \mid \big(V(r_2) - V(r_1)\big)
+     \;\Longleftrightarrow\; V(r_1) \bmod 2^{E_K + 7} = V(r_2) \bmod 2^{E_K + 7}.$$
+   Consequently, since $E_K + 7 \le 10 K + 7$, any two steps $r_1 < r_2$ that collide modulo
+   $2^{10 K + 7}$ ($V(r_1) \bmod 2^{10 K + 7} = V(r_2) \bmod 2^{10 K + 7}$) must share their entire
+   $(K + 1)$-step prefix and satisfy $7 q (K + 1) < p S_{r_2} + q (W + 3) \le 10 p r_2 + q (W + 3)$.
+-/
+
+/-- Normalized $d$-step inhomogeneous accumulator $\tilde{\Delta}(j, d)$ obtained by factoring
+$2^{3 j(0) + 4}$ out of `singleExpDefectAcc j d`:
+$$\tilde{\Delta}(j, 0) = 0, \qquad
+  \tilde{\Delta}(j, d + 1) = 3^{3 j(d) + 4} \tilde{\Delta}(j, d) +
+    2^{\text{defectStepSum}(\text{fun } t \Rightarrow j(1 + t),\, d)}.$$ -/
+def normalizedDefectAcc (j : ℕ → ℕ) : ℕ → ℕ
+  | 0 => 0
+  | d + 1 =>
+      3 ^ (3 * j d + 4) * normalizedDefectAcc j d +
+        2 ^ (defectStepSum (fun t => j (1 + t)) d)
+
+/-- **Normalized Master $d$-Step Identity and Infinite $(128^d, 2187^d)$ Sieve Tower
+(`normalizedDefectAcc_master_identity_and_infinite_sieve_tower`)**:
+1. For every $j : \mathbb{N} \to \mathbb{N}$ and $d \in \mathbb{N}$,
+   `singleExpDefectAcc j d = 2 ^ (3 * j 0 + 4) * normalizedDefectAcc j d`.
+2. For any solution $V, j : \mathbb{N} \to \mathbb{N}$ of
+   $2^{3 j(r + 1) + 4} V(r + 1) + 1 = 3^{3 j(r) + 4} V(r)$ and every $d \in \mathbb{N}$:
+   $$2^{\text{defectStepSum}(\text{fun } t \Rightarrow j(1 + t),\, d)} \cdot V(d) +
+     \text{normalizedDefectAcc}(j, d) = 3^{\text{defectStepSum}(j, d)} \cdot V(0).$$
+3. In the Dense Core $j(r) \in \{1, 2\}$, for every $K \in \mathbb{N}$ ($d = K + 1 \ge 1$), let
+   $E_K = \text{defectStepSum}(\text{fun } t \Rightarrow j(1 + t),\, K)$,
+   $E_{K+1} = \text{defectStepSum}(\text{fun } t \Rightarrow j(1 + t),\, K + 1)$, and
+   $S_{K+1} = \text{defectStepSum}(j, K + 1)$:
+   - $(3^{S_{K+1}} V(0)) \bmod 2^{E_K + 7} = \text{normalizedDefectAcc}(j, K + 1) \bmod 2^{E_K + 7}$,
+   - $(3^{S_{K+1}} V(0)) \bmod 2^{7 (K + 1)} = \text{normalizedDefectAcc}(j, K + 1) \bmod 2^{7 (K + 1)}$,
+   - $(2^{E_{K+1}} V(K + 1) + \text{normalizedDefectAcc}(j, K + 1)) \bmod 3^{S_{K+1}} = 0$, and
+   - $(2^{E_{K+1}} V(K + 1) + \text{normalizedDefectAcc}(j, K + 1)) \bmod 3^{7 (K + 1)} = 0$. -/
+theorem normalizedDefectAcc_master_identity_and_infinite_sieve_tower
+    (j : ℕ → ℕ) :
+    (∀ d : ℕ, singleExpDefectAcc j d = 2 ^ (3 * j 0 + 4) * normalizedDefectAcc j d) ∧
+    (∀ V : ℕ → ℕ,
+      (∀ r : ℕ, 2 ^ (3 * j (r + 1) + 4) * V (r + 1) + 1 = 3 ^ (3 * j r + 4) * V r) →
+      ∀ d : ℕ,
+        2 ^ (defectStepSum (fun t => j (1 + t)) d) * V d + normalizedDefectAcc j d =
+          3 ^ (defectStepSum j d) * V 0) ∧
+    (∀ V : ℕ → ℕ,
+      (∀ r : ℕ, j r = 1 ∨ j r = 2) →
+      (∀ r : ℕ, 2 ^ (3 * j (r + 1) + 4) * V (r + 1) + 1 = 3 ^ (3 * j r + 4) * V r) →
+      ∀ K : ℕ,
+        let E_K := defectStepSum (fun t => j (1 + t)) K
+        let E_K1 := defectStepSum (fun t => j (1 + t)) (K + 1)
+        let S_K1 := defectStepSum j (K + 1)
+        (3 ^ S_K1 * V 0) % 2 ^ (E_K + 7) = normalizedDefectAcc j (K + 1) % 2 ^ (E_K + 7) ∧
+        (3 ^ S_K1 * V 0) % 2 ^ (7 * (K + 1)) = normalizedDefectAcc j (K + 1) % 2 ^ (7 * (K + 1)) ∧
+        (2 ^ E_K1 * V (K + 1) + normalizedDefectAcc j (K + 1)) % 3 ^ S_K1 = 0 ∧
+        (2 ^ E_K1 * V (K + 1) + normalizedDefectAcc j (K + 1)) % 3 ^ (7 * (K + 1)) = 0) := by
+  have hfact : ∀ d : ℕ, singleExpDefectAcc j d = 2 ^ (3 * j 0 + 4) * normalizedDefectAcc j d := by
+    intro d
+    induction d with
+    | zero =>
+        simp only [singleExpDefectAcc, normalizedDefectAcc, Nat.mul_zero]
+    | succ d ih =>
+        have hshift := ((defectStepSum_shift_cancellation_and_single_exponent_identity j).1 d).1
+        have hpow :
+            2 ^ (defectStepSum j (d + 1)) =
+              2 ^ (3 * j 0 + 4) * 2 ^ (defectStepSum (fun t => j (1 + t)) d) := by
+          rw [← hshift, Nat.pow_add]
+        change 3 ^ (3 * j d + 4) * singleExpDefectAcc j d + 2 ^ (defectStepSum j (d + 1)) =
+          2 ^ (3 * j 0 + 4) * (3 ^ (3 * j d + 4) * normalizedDefectAcc j d +
+            2 ^ (defectStepSum (fun t => j (1 + t)) d))
+        rw [ih, hpow]
+        ring
+  have hmaster :
+      ∀ V : ℕ → ℕ,
+        (∀ r : ℕ, 2 ^ (3 * j (r + 1) + 4) * V (r + 1) + 1 = 3 ^ (3 * j r + 4) * V r) →
+        ∀ d : ℕ,
+          2 ^ (defectStepSum (fun t => j (1 + t)) d) * V d + normalizedDefectAcc j d =
+            3 ^ (defectStepSum j d) * V 0 := by
+    intro V hrec d
+    have hid := (defectStepSum_shift_cancellation_and_single_exponent_identity j).2 V hrec d
+    have hshift := ((defectStepSum_shift_cancellation_and_single_exponent_identity j).1 d).1
+    have hpow :
+        2 ^ (defectStepSum j (d + 1)) =
+          2 ^ (3 * j 0 + 4) * 2 ^ (defectStepSum (fun t => j (1 + t)) d) := by
+      rw [← hshift, Nat.pow_add]
+    rw [hpow, hfact d] at hid
+    set P0 := 2 ^ (3 * j 0 + 4)
+    have hmul :
+        P0 * (2 ^ (defectStepSum (fun t => j (1 + t)) d) * V d + normalizedDefectAcc j d) =
+          P0 * (3 ^ (defectStepSum j d) * V 0) := by
+      calc P0 * (2 ^ (defectStepSum (fun t => j (1 + t)) d) * V d + normalizedDefectAcc j d)
+          = P0 * 2 ^ (defectStepSum (fun t => j (1 + t)) d) * V d +
+              P0 * normalizedDefectAcc j d := by ring
+        _ = P0 * 3 ^ (defectStepSum j d) * V 0 := hid
+        _ = P0 * (3 ^ (defectStepSum j d) * V 0) := by ring
+    exact Nat.eq_of_mul_eq_mul_left (Nat.pow_pos (by decide)) hmul
+  refine ⟨hfact, hmaster, ?_⟩
+  intro V hj hrec K E_K E_K1 S_K1
+  have hm := hmaster V hrec (K + 1)
+  change 2 ^ E_K1 * V (K + 1) + normalizedDefectAcc j (K + 1) = 3 ^ S_K1 * V 0 at hm
+  have hEK_ge : ∀ m : ℕ, 7 * m ≤ defectStepSum (fun t => j (1 + t)) m := by
+    intro m
+    induction m with
+    | zero => simp only [defectStepSum, Nat.mul_zero, le_refl]
+    | succ m ih =>
+        change 7 * (m + 1) ≤ defectStepSum (fun t => j (1 + t)) m + (3 * j (1 + m) + 4)
+        rcases hj (1 + m) with h1 | h2 <;> omega
+  have hS_ge : ∀ m : ℕ, 7 * m ≤ defectStepSum j m := by
+    intro m
+    induction m with
+    | zero => simp only [defectStepSum, Nat.mul_zero, le_refl]
+    | succ m ih =>
+        change 7 * (m + 1) ≤ defectStepSum j m + (3 * j m + 4)
+        rcases hj m with h1 | h2 <;> omega
+  have hEK7_le_EK1 : E_K + 7 ≤ E_K1 := by
+    change E_K + 7 ≤ E_K + (3 * j (1 + K) + 4)
+    rcases hj (1 + K) with h1 | h2 <;> omega
+  have h7K1_le_EK1 : 7 * (K + 1) ≤ E_K1 := hEK_ge (K + 1)
+  have h7K1_le_SK1 : 7 * (K + 1) ≤ S_K1 := hS_ge (K + 1)
+  have hmod_EK7 : (3 ^ S_K1 * V 0) % 2 ^ (E_K + 7) =
+      normalizedDefectAcc j (K + 1) % 2 ^ (E_K + 7) := by
+    rcases Nat.pow_dvd_pow 2 hEK7_le_EK1 with ⟨Q, hQ⟩
+    have hrew : 3 ^ S_K1 * V 0 = normalizedDefectAcc j (K + 1) + 2 ^ (E_K + 7) * (Q * V (K + 1)) := by
+      calc 3 ^ S_K1 * V 0 = 2 ^ E_K1 * V (K + 1) + normalizedDefectAcc j (K + 1) := hm.symm
+        _ = (2 ^ (E_K + 7) * Q) * V (K + 1) + normalizedDefectAcc j (K + 1) := by rw [hQ]
+        _ = normalizedDefectAcc j (K + 1) + 2 ^ (E_K + 7) * (Q * V (K + 1)) := by ring
+    rw [hrew, Nat.add_mul_mod_self_left]
+  have hmod_7K1 : (3 ^ S_K1 * V 0) % 2 ^ (7 * (K + 1)) =
+      normalizedDefectAcc j (K + 1) % 2 ^ (7 * (K + 1)) := by
+    rcases Nat.pow_dvd_pow 2 h7K1_le_EK1 with ⟨Q, hQ⟩
+    have hrew : 3 ^ S_K1 * V 0 =
+        normalizedDefectAcc j (K + 1) + 2 ^ (7 * (K + 1)) * (Q * V (K + 1)) := by
+      calc 3 ^ S_K1 * V 0 = 2 ^ E_K1 * V (K + 1) + normalizedDefectAcc j (K + 1) := hm.symm
+        _ = (2 ^ (7 * (K + 1)) * Q) * V (K + 1) + normalizedDefectAcc j (K + 1) := by rw [hQ]
+        _ = normalizedDefectAcc j (K + 1) + 2 ^ (7 * (K + 1)) * (Q * V (K + 1)) := by ring
+    rw [hrew, Nat.add_mul_mod_self_left]
+  have hmod_SK1 : (2 ^ E_K1 * V (K + 1) + normalizedDefectAcc j (K + 1)) % 3 ^ S_K1 = 0 := by
+    rw [hm, Nat.mul_comm (3 ^ S_K1) (V 0), Nat.mul_mod_left]
+  have hmod_3_7K1 : (2 ^ E_K1 * V (K + 1) + normalizedDefectAcc j (K + 1)) % 3 ^ (7 * (K + 1)) = 0 := by
+    rcases Nat.pow_dvd_pow 3 h7K1_le_SK1 with ⟨Q, hQ⟩
+    have hrew : 2 ^ E_K1 * V (K + 1) + normalizedDefectAcc j (K + 1) =
+        (Q * V 0) * 3 ^ (7 * (K + 1)) := by
+      calc 2 ^ E_K1 * V (K + 1) + normalizedDefectAcc j (K + 1)
+          = 3 ^ S_K1 * V 0 := hm
+        _ = (3 ^ (7 * (K + 1)) * Q) * V 0 := by rw [hQ]
+        _ = (Q * V 0) * 3 ^ (7 * (K + 1)) := by ring
+    rw [hrew, Nat.mul_mod_left]
+  exact ⟨hmod_EK7, hmod_7K1, hmod_SK1, hmod_3_7K1⟩
+
+/-- **Explicit Depth-2 ("4 in 16,384") and Depth-3 ("8 in 2,097,152") Power-of-2 Sieves
+in the Dense Core (`dense_core_depth2_four_in_16384_and_depth3_eight_in_2097152_sieves`)**:
+For any Dense-Core trajectory $V, j : \mathbb{N} \to \mathbb{N}$ satisfying $j(r) \in \{1, 2\}$ and
+$2^{3 j(r + 1) + 4} V(r + 1) + 1 = 3^{3 j(r) + 4} V(r)$:
+1. **Depth-2 ("4 in 16,384") Sieve & Bijection**: For every $r \in \mathbb{N}$,
+   $V(r) \bmod 16384 \in \{931, 2851, 4889, 8601\}$, and $V(r) \bmod 16384$ bijectively determines
+   $(j(r), j(r + 1)) \in \{1, 2\}^2$:
+   $$((j(r) = 1 \land j(r + 1) = 1) \leftrightarrow V(r) \bmod 16384 = 931) \;\land$$
+   $$((j(r) = 1 \land j(r + 1) = 2) \leftrightarrow V(r) \bmod 16384 = 2851) \;\land$$
+   $$((j(r) = 2 \land j(r + 1) = 1) \leftrightarrow V(r) \bmod 16384 = 4889) \;\land$$
+   $$((j(r) = 2 \land j(r + 1) = 2) \leftrightarrow V(r) \bmod 16384 = 8601).$$
+2. **Depth-3 ("8 in 2,097,152") Sieve**: For every $r \in \mathbb{N}$,
+   $$V(r) \bmod 2097152 \in \{17315, 230307, 1035043, 1952547, 2020121, 1872665, 582041, 1237401\}.$$ -/
+theorem dense_core_depth2_four_in_16384_and_depth3_eight_in_2097152_sieves
+    {V j : ℕ → ℕ}
+    (hj : ∀ r : ℕ, j r = 1 ∨ j r = 2)
+    (hrec : ∀ r : ℕ, 2 ^ (3 * j (r + 1) + 4) * V (r + 1) + 1 = 3 ^ (3 * j r + 4) * V r) :
+    (∀ r : ℕ,
+      (V r % 16384 = 931 ∨ V r % 16384 = 2851 ∨ V r % 16384 = 4889 ∨ V r % 16384 = 8601) ∧
+      ((j r = 1 ∧ j (r + 1) = 1) ↔ V r % 16384 = 931) ∧
+      ((j r = 1 ∧ j (r + 1) = 2) ↔ V r % 16384 = 2851) ∧
+      ((j r = 2 ∧ j (r + 1) = 1) ↔ V r % 16384 = 4889) ∧
+      ((j r = 2 ∧ j (r + 1) = 2) ↔ V r % 16384 = 8601)) ∧
+    (∀ r : ℕ,
+      V r % 2097152 = 17315 ∨ V r % 2097152 = 230307 ∨
+      V r % 2097152 = 1035043 ∨ V r % 2097152 = 1952547 ∨
+      V r % 2097152 = 2020121 ∨ V r % 2097152 = 1872665 ∨
+      V r % 2097152 = 582041 ∨ V r % 2097152 = 1237401) := by
+  have hmod128 : ∀ r : ℕ, (j r = 1 → V r % 128 = 35) ∧ (j r = 2 → V r % 128 = 25) := by
+    intro r
+    have hj1 : 1 ≤ j (r + 1) := by rcases hj (r + 1) with h1 | h2 <;> omega
+    exact defectNormalizedQuotient_cooldown_mod_128_and_three_adic_lock.1
+      (V r) (V (r + 1)) (j r) (j (r + 1)) hj1 (hrec r)
+  have hd2_fwd :
+      ∀ r : ℕ,
+        (j r = 1 ∧ j (r + 1) = 1 → V r % 16384 = 931) ∧
+        (j r = 1 ∧ j (r + 1) = 2 → V r % 16384 = 2851) ∧
+        (j r = 2 ∧ j (r + 1) = 1 → V r % 16384 = 4889) ∧
+        (j r = 2 ∧ j (r + 1) = 2 → V r % 16384 = 8601) := by
+    intro r
+    have hstep := hrec r
+    have hm1 := hmod128 (r + 1)
+    have hcrt := defectNormalizedQuotient_binary_crt_parametrization (V r) (V (r + 1))
+    refine ⟨?_, ?_, ?_, ?_⟩
+    · rintro ⟨h0, h1⟩
+      rw [h0, h1] at hstep
+      have hV := (hcrt.1 ⟨hstep, hm1.1 h1⟩).1
+      exact (mod_and_div_of_bezout (V := V r) (M := 16384) (a := 0)
+        (b := V r / 16384) (r := 931) (by linarith only [hV]) (by decide)).1
+    · rintro ⟨h0, h1⟩
+      rw [h0, h1] at hstep
+      have hV := (hcrt.2.1 ⟨hstep, hm1.2 h1⟩).1
+      exact (mod_and_div_of_bezout (V := V r) (M := 16384) (a := 0)
+        (b := 8 * (V r / 131072) + 7) (r := 2851) (by linarith only [hV]) (by decide)).1
+    · rintro ⟨h0, h1⟩
+      rw [h0, h1] at hstep
+      have hV := (hcrt.2.2.1 ⟨hstep, hm1.1 h1⟩).1
+      exact (mod_and_div_of_bezout (V := V r) (M := 16384) (a := 0)
+        (b := V r / 16384) (r := 4889) (by linarith only [hV]) (by decide)).1
+    · rintro ⟨h0, h1⟩
+      rw [h0, h1] at hstep
+      have hV := (hcrt.2.2.2 ⟨hstep, hm1.2 h1⟩).1
+      exact (mod_and_div_of_bezout (V := V r) (M := 16384) (a := 0)
+        (b := 8 * (V r / 131072) + 3) (r := 8601) (by linarith only [hV]) (by decide)).1
+  refine ⟨?_, ?_⟩
+  · intro r
+    have hf := hd2_fwd r
+    rcases hj r with h0_1 | h0_2 <;> rcases hj (r + 1) with h1_1 | h1_2
+    · have hm := hf.1 ⟨h0_1, h1_1⟩
+      refine ⟨Or.inl hm, ?_, ?_, ?_, ?_⟩ <;> omega
+    · have hm := hf.2.1 ⟨h0_1, h1_2⟩
+      refine ⟨Or.inr (Or.inl hm), ?_, ?_, ?_, ?_⟩ <;> omega
+    · have hm := hf.2.2.1 ⟨h0_2, h1_1⟩
+      refine ⟨Or.inr (Or.inr (Or.inl hm)), ?_, ?_, ?_, ?_⟩ <;> omega
+    · have hm := hf.2.2.2 ⟨h0_2, h1_2⟩
+      refine ⟨Or.inr (Or.inr (Or.inr hm)), ?_, ?_, ?_, ?_⟩ <;> omega
+  · intro r
+    have hstep0 := hrec r
+    have hstep1 := hrec (r + 1)
+    have hm2 := hmod128 (r + 1 + 1)
+    have hcrt2 := defectNormalizedQuotient_level2_crt_parametrization
+      (V r) (V (r + 1)) (V (r + 1 + 1))
+    rcases hj r with h0_1 | h0_2 <;>
+      rcases hj (r + 1) with h1_1 | h1_2 <;>
+      rcases hj (r + 1 + 1) with h2_1 | h2_2
+    · rw [h0_1, h1_1] at hstep0; rw [h1_1, h2_1] at hstep1
+      have hV := (hcrt2.1 ⟨hstep0, hstep1, hm2.1 h2_1⟩).2.2.1
+      exact Or.inl (mod_and_div_of_bezout (V := V r) (M := 2097152) (a := 0)
+        (b := (V r / 16384) / 128) (r := 17315) (by linarith only [hV]) (by decide)).1
+    · rw [h0_1, h1_1] at hstep0; rw [h1_1, h2_2] at hstep1
+      have hV := (hcrt2.2.1 ⟨hstep0, hstep1, hm2.2 h2_2⟩).2.2.1
+      exact Or.inr (Or.inl (mod_and_div_of_bezout (V := V r) (M := 2097152) (a := 0)
+        (b := 8 * ((V r / 16384) / 1024) + 5) (r := 230307) (by linarith only [hV]) (by decide)).1)
+    · rw [h0_1, h1_2] at hstep0; rw [h1_2, h2_1] at hstep1
+      have hV := (hcrt2.2.2.1 ⟨hstep0, hstep1, hm2.1 h2_1⟩).2.2.1
+      exact Or.inr (Or.inr (Or.inl (mod_and_div_of_bezout (V := V r) (M := 2097152) (a := 0)
+        (b := 8 * ((V r / 131072) / 128) + 1) (r := 1035043) (by linarith only [hV]) (by decide)).1))
+    · rw [h0_1, h1_2] at hstep0; rw [h1_2, h2_2] at hstep1
+      have hV := (hcrt2.2.2.2.1 ⟨hstep0, hstep1, hm2.2 h2_2⟩).2.2.1
+      exact Or.inr (Or.inr (Or.inr (Or.inl (mod_and_div_of_bezout (V := V r) (M := 2097152) (a := 0)
+        (b := 64 * ((V r / 131072) / 1024) + 56) (r := 1952547) (by linarith only [hV]) (by decide)).1)))
+    · rw [h0_2, h1_1] at hstep0; rw [h1_1, h2_1] at hstep1
+      have hV := (hcrt2.2.2.2.2.1 ⟨hstep0, hstep1, hm2.1 h2_1⟩).2.2.1
+      exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inl (mod_and_div_of_bezout (V := V r) (M := 2097152) (a := 0)
+        (b := (V r / 16384) / 128) (r := 2020121) (by linarith only [hV]) (by decide)).1))))
+    · rw [h0_2, h1_1] at hstep0; rw [h1_1, h2_2] at hstep1
+      have hV := (hcrt2.2.2.2.2.2.1 ⟨hstep0, hstep1, hm2.2 h2_2⟩).2.2.1
+      exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl (mod_and_div_of_bezout (V := V r) (M := 2097152) (a := 0)
+        (b := 8 * ((V r / 16384) / 1024) + 7) (r := 1872665) (by linarith only [hV]) (by decide)).1)))))
+    · rw [h0_2, h1_2] at hstep0; rw [h1_2, h2_1] at hstep1
+      have hV := (hcrt2.2.2.2.2.2.2.1 ⟨hstep0, hstep1, hm2.1 h2_1⟩).2.2.1
+      exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl (mod_and_div_of_bezout (V := V r) (M := 2097152) (a := 0)
+        (b := 8 * ((V r / 131072) / 128) + 6) (r := 582041) (by linarith only [hV]) (by decide)).1))))))
+    · rw [h0_2, h1_2] at hstep0; rw [h1_2, h2_2] at hstep1
+      have hV := (hcrt2.2.2.2.2.2.2.2 ⟨hstep0, hstep1, hm2.2 h2_2⟩).2.2.1
+      exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (mod_and_div_of_bezout (V := V r) (M := 2097152) (a := 0)
+        (b := 64 * ((V r / 131072) / 1024) + 11) (r := 1237401) (by linarith only [hV]) (by decide)).1))))))
+
+/-- **Exact Prefix-Collision Biconditional and Mod-$2^{10 K + 7}$ Collision Cutoff in the Dense Core
+(`dense_core_exact_prefix_collision_biconditional_and_mod_cutoff`)**:
+Suppose $1 \le V(0) < 2^W$, $j(r) \in \{1, 2\}$, and
+$2^{3 j(r + 1) + 4} V(r + 1) + 1 = 3^{3 j(r) + 4} V(r)$ for all $r \in \mathbb{N}$.
+1. **Exact Prefix-Collision Biconditional for All Horizons $K \in \mathbb{N}$**:
+   For every $r_1 < r_2$ and $K \in \mathbb{N}$, with
+   $E_K = \text{defectStepSum}(\text{fun } t \Rightarrow j(r_1 + 1 + t),\, K)$:
+   $$(\forall t \le K,\; j(r_1 + t) = j(r_2 + t))
+     \;\Longleftrightarrow\; 2^{E_K + 7} \mid \big(V(r_2) - V(r_1)\big)
+     \;\Longleftrightarrow\; V(r_1) \bmod 2^{E_K + 7} = V(r_2) \bmod 2^{E_K + 7}.$$
+2. **Universal Mod-$2^{10 K + 7}$ Collision Cutoff**:
+   For every $r_1 < r_2$ and $K \in \mathbb{N}$, if
+   $V(r_1) \bmod 2^{10 K + 7} = V(r_2) \bmod 2^{10 K + 7}$, then
+   $\forall t \le K,\; j(r_1 + t) = j(r_2 + t)$, and for every $p, q \in \mathbb{N}$ with
+   $1 \le q$ and $3^q \le 2^{p + q}$:
+   $$7 q (K + 1) \;<\; p \cdot \text{defectStepSum}(j, r_2) + q (W + 3) \;\le\; 10 p r_2 + q (W + 3).$$ -/
+theorem dense_core_exact_prefix_collision_biconditional_and_mod_cutoff
+    {V j : ℕ → ℕ} {W : ℕ}
+    (hV0_pos : 1 ≤ V 0) (hV0_lt : V 0 < 2 ^ W)
+    (hj : ∀ r : ℕ, j r = 1 ∨ j r = 2)
+    (hrec : ∀ r : ℕ, 2 ^ (3 * j (r + 1) + 4) * V (r + 1) + 1 = 3 ^ (3 * j r + 4) * V r) :
+    (∀ r_1 r_2 K : ℕ, r_1 < r_2 →
+      let E_K := defectStepSum (fun t => j (r_1 + 1 + t)) K
+      ((∀ t ≤ K, j (r_1 + t) = j (r_2 + t)) ↔ 2 ^ (E_K + 7) ∣ (V r_2 - V r_1)) ∧
+      (2 ^ (E_K + 7) ∣ (V r_2 - V r_1) ↔ V r_1 % 2 ^ (E_K + 7) = V r_2 % 2 ^ (E_K + 7))) ∧
+    (∀ r_1 r_2 K : ℕ, r_1 < r_2 →
+      V r_1 % 2 ^ (10 * K + 7) = V r_2 % 2 ^ (10 * K + 7) →
+      (∀ t ≤ K, j (r_1 + t) = j (r_2 + t)) ∧
+      ∀ p q : ℕ, 1 ≤ q → 3 ^ q ≤ 2 ^ (p + q) →
+        7 * q * (K + 1) < p * defectStepSum j r_2 + q * (W + 3) ∧
+        7 * q * (K + 1) < 10 * p * r_2 + q * (W + 3)) := by
+  have hmono := (dense_core_strict_doubling_and_monotonicity hV0_pos hj hrec).2
+  have hdvd_iff_mod :
+      ∀ (a b M : ℕ), 0 < M → a ≤ b → (M ∣ (b - a) ↔ a % M = b % M) := by
+    intro a b M hM hab
+    constructor
+    · rintro ⟨Q, hQ⟩
+      have hb_eq : b = a + M * Q := by omega
+      rw [hb_eq, Nat.add_mul_mod_self_left]
+    · intro hmod
+      have hdiv_a := (Nat.div_add_mod a M).symm
+      have hdiv_b := (Nat.div_add_mod b M).symm
+      have hq_le : a / M ≤ b / M := Nat.div_le_div_right hab
+      refine ⟨b / M - a / M, ?_⟩
+      have hmul : M * (b / M - a / M) + M * (a / M) = M * (b / M) := by
+        rw [← Nat.mul_add, Nat.sub_add_cancel hq_le]
+      omega
+  have hmatch_of_dvd :
+      ∀ r_1 r_2 K : ℕ, r_1 < r_2 →
+        2 ^ (defectStepSum (fun t => j (r_1 + 1 + t)) K + 7) ∣ (V r_2 - V r_1) →
+        ∀ t ≤ K, j (r_1 + t) = j (r_2 + t) := by
+    intro r_1 r_2 K hr12
+    induction K with
+    | zero =>
+        intro hdvd7 t ht
+        have ht0 : t = 0 := by omega
+        subst ht0
+        simp only [Nat.add_zero]
+        change 128 ∣ (V r_2 - V r_1) at hdvd7
+        have h4_dvd : 4 ∣ (V r_2 - V r_1) :=
+          Nat.dvd_trans (by decide : 4 ∣ 128) hdvd7
+        have hdiv4 := (dense_core_all_V_odd_and_mod_four_divergence hV0_pos hj hrec).2 r_1 r_2 hr12
+        exact Classical.byContradiction fun hjne => (hdiv4 hjne).2.2 h4_dvd
+    | succ K ih =>
+        intro hdvd_K1
+        set E_K := defectStepSum (fun t => j (r_1 + 1 + t)) K
+        set E_K1 := defectStepSum (fun t => j (r_1 + 1 + t)) (K + 1)
+        have hEK8_le : E_K + 8 ≤ E_K1 + 7 := by
+          change E_K + 8 ≤ (E_K + (3 * j (r_1 + 1 + K) + 4)) + 7
+          rcases hj (r_1 + 1 + K) with h1 | h2 <;> omega
+        have hdvd_EK8 : 2 ^ (E_K + 8) ∣ (V r_2 - V r_1) :=
+          Nat.dvd_trans (Nat.pow_dvd_pow 2 hEK8_le) hdvd_K1
+        have hdvd_EK7 : 2 ^ (E_K + 7) ∣ (V r_2 - V r_1) :=
+          Nat.dvd_trans (Nat.pow_dvd_pow 2 (by omega : E_K + 7 ≤ E_K + 8)) hdvd_EK8
+        have hmatch_K : ∀ t ≤ K, j (r_1 + t) = j (r_2 + t) := ih hdvd_EK7
+        have hright := dense_core_right_special_exact_two_adic_valuation_and_spectral_gap
+          hV0_pos hj hrec hr12 hmatch_K
+        have hj_K1 : j (r_1 + K + 1) = j (r_2 + K + 1) :=
+          hright.2.2.2.1.mpr hdvd_EK8
+        intro t ht
+        rcases Nat.eq_or_lt_of_le ht with rfl | hlt
+        · have hidx1 : r_1 + (K + 1) = r_1 + K + 1 := by omega
+          have hidx2 : r_2 + (K + 1) = r_2 + K + 1 := by omega
+          rw [hidx1, hidx2, hj_K1]
+        · exact hmatch_K t (by omega)
+  have hpart1 :
+      ∀ r_1 r_2 K : ℕ, r_1 < r_2 →
+        let E_K := defectStepSum (fun t => j (r_1 + 1 + t)) K
+        ((∀ t ≤ K, j (r_1 + t) = j (r_2 + t)) ↔ 2 ^ (E_K + 7) ∣ (V r_2 - V r_1)) ∧
+        (2 ^ (E_K + 7) ∣ (V r_2 - V r_1) ↔ V r_1 % 2 ^ (E_K + 7) = V r_2 % 2 ^ (E_K + 7)) := by
+    intro r_1 r_2 K hr12 E_K
+    have hV_le : V r_1 ≤ V r_2 := le_of_lt (hmono r_1 r_2 hr12)
+    have hiff_mod := hdvd_iff_mod (V r_1) (V r_2) (2 ^ (E_K + 7)) (Nat.pow_pos (by decide)) hV_le
+    refine ⟨⟨?_, hmatch_of_dvd r_1 r_2 K hr12⟩, hiff_mod⟩
+    intro hmatch
+    exact (dense_core_right_special_exact_two_adic_valuation_and_spectral_gap
+      hV0_pos hj hrec hr12 hmatch).2.1.1
+  refine ⟨hpart1, ?_⟩
+  intro r_1 r_2 K hr12 hmod_10K
+  set E_K := defectStepSum (fun t => j (r_1 + 1 + t)) K
+  have hEK_le_10K : E_K ≤ 10 * K := by
+    have h_all : ∀ m : ℕ, defectStepSum (fun t => j (r_1 + 1 + t)) m ≤ 10 * m := by
+      intro m
+      induction m with
+      | zero => simp only [defectStepSum, Nat.mul_zero, le_refl]
+      | succ m ih =>
+          change defectStepSum (fun t => j (r_1 + 1 + t)) m + (3 * j (r_1 + 1 + m) + 4) ≤ 10 * (m + 1)
+          rcases hj (r_1 + 1 + m) with h1 | h2 <;> omega
+    exact h_all K
+  have hV_le : V r_1 ≤ V r_2 := le_of_lt (hmono r_1 r_2 hr12)
+  have hdvd_10K : 2 ^ (10 * K + 7) ∣ (V r_2 - V r_1) :=
+    (hdvd_iff_mod (V r_1) (V r_2) (2 ^ (10 * K + 7)) (Nat.pow_pos (by decide)) hV_le).mpr hmod_10K
+  have hdvd_EK7 : 2 ^ (E_K + 7) ∣ (V r_2 - V r_1) :=
+    Nat.dvd_trans (Nat.pow_dvd_pow 2 (by omega : E_K + 7 ≤ 10 * K + 7)) hdvd_10K
+  have hmatch : ∀ t ≤ K, j (r_1 + t) = j (r_2 + t) :=
+    hmatch_of_dvd r_1 r_2 K hr12 hdvd_EK7
+  refine ⟨hmatch, ?_⟩
+  intro p q hq hpq
+  have hmatch_lt : ∀ t < K + 1, j (r_1 + t) = j (r_2 + t) := fun t ht => hmatch t (by omega)
+  exact (dense_core_parameterized_pq_cutoff_and_convergents
+    hV0_pos hV0_lt hj hrec).2.1 p q r_1 r_2 (K + 1) hq hpq hr12 hmatch_lt
+
 end Mahler.DubickasExtension
 
 

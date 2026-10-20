@@ -305,6 +305,11 @@ example (m : ℕ) :
 #print axioms Mahler.DubickasExtension.dense_core_repeated_window_top_part_isolation_and_squeeze
 #print axioms Mahler.DubickasExtension.dense_core_three_occurrence_ultrametric_pigeonhole
 
+-- 26. Verify Section 32: Infinite (128^d, 2187^d) sieve tower, explicit 4-in-16384 and 8-in-2097152 bijections, and exact prefix-collision biconditional for all horizons
+#print axioms Mahler.DubickasExtension.normalizedDefectAcc_master_identity_and_infinite_sieve_tower
+#print axioms Mahler.DubickasExtension.dense_core_depth2_four_in_16384_and_depth3_eight_in_2097152_sieves
+#print axioms Mahler.DubickasExtension.dense_core_exact_prefix_collision_biconditional_and_mod_cutoff
+
 #print axioms Mahler.DubickasExtension.dubBaseCarry_eq_fract_linear
 #print axioms Mahler.DubickasExtension.dubBaseY_multi_step_carry_identity
 #print axioms Mahler.DubickasExtension.dubBaseCarry_mem_two_letters
