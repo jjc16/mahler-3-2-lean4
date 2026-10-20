@@ -11488,6 +11488,622 @@ theorem no_density_weighted_subcritical_log_threshold_dense_core
   have h2 : RHS < (L : ℝ) * gap := (div_lt_iff₀ hgap_pos).mp h1
   linarith
 
+/-!
+## Section 31: Top-Part & Overflow Isolation, Bottom-Part Constant of Motion, Universal
+## Shifted-Horizon 98-Bit Corridor, Top-Part Quotient Squeeze & Three-Occurrence Ultrametric Pigeonhole
+
+In this section, we formalize the exact decomposition of each orbit integer $V(r_0)$ into its
+**Bottom Part** $R_0 = V(r_0) \bmod (M \cdot 2^{E_d})$ (which governs the first $d$ transitions
+and absorbs $100\%$ of the inhomogeneous $+1$ drift $\Delta(j, d)$) and its **Top Part**
+$\ell = V(r_0) / (M \cdot 2^{E_d}) = V(r_0 + d) / (M \cdot 3^{S_d})$ (which rides along
+drift-free until the Bottom Part overflows), and use the Top-Part / Overflow interaction to establish
+four new structural obstructions in the Dense Core $\{1, 2\}^\mathbb{N}$:
+
+1. **Bottom-Part Remainder Invariance & Bottom-Part Constant of Motion
+   (`bottom_part_remainder_invariance_and_floor_conservation`)**:
+   Substituting $V(r_0) = (M \cdot 2^{E_d}) \ell + R_0$ and $V(r_0 + d) = (M \cdot 3^{S_d}) \ell + R_d$
+   into the single-exponent homogeneous identity cancels the Top Part $\ell$ identically, proving that:
+   - The Top Part is completely drift-free:
+     $$2^{E_d} \big(V(r_0 + d) - R_d\big) \;=\; 3^{S_d} \big(V(r_0) - R_0\big) \;=\; M \cdot 2^{E_d} \cdot 3^{S_d} \cdot \ell.$$
+   - The Bottom-Part / Overflow pair $(R_0, R_d)$ satisfies the exact same $d$-step single-exponent
+     equation as $(V(r_0), V(r_0 + d))$:
+     $$2^{S_{d+1}} R_d + \text{singleExpDefectAcc}(\text{fun } t \Rightarrow j(r_0 + t),\, d) \;=\; 2^{3 j(r_0) + 4} \cdot 3^{S_d} R_0.$$
+   - Consequently, for every $d \ge 1$ and $M \ge 1$, $1 \le R_0$ and the Bottom Part obeys the
+     exact Archimedean Floor Invariant on its own:
+     $$\left\lfloor \frac{2^{E_d} R_d}{3^{S_d}} \right\rfloor \;=\; R_0 - 1.$$
+
+2. **Universal Shifted-Horizon 89-Bit / 92-Bit Floor & 98-Bit Top-Part Corridor Lock
+   (`dense_core_shifted_horizon_floor_and_ninety_eight_bit_corridor`)**:
+   Because every shifted trajectory $t \mapsto (V(r_0 + t), j(r_0 + t))$ in the Dense Core
+   $\{1, 2\}^\mathbb{N}$ is itself a Dense-Core trajectory:
+   - For **every** $r_0 \in \mathbb{N}$, $V(r_0) \ge 1{,}130{,}319{,}219{,}940{,}026{,}671{,}593{,}178{,}019 > 2^{89}$,
+     and when the Mahler Mod-19 invariant $(2^{3 j(0) + 3} V(0)) \bmod 19 = 1$ holds at $r = 0$,
+     it is conserved at **every** $r_0 \in \mathbb{N}$ and forces
+     $V(r_0) \ge 6{,}644{,}210{,}551{,}001{,}288{,}379{,}891{,}372{,}825 > 2^{92}$ for all $r_0 \in \mathbb{N}$.
+   - Combining $V(r_0) > 2^{89}$ (resp. $> 2^{92}$) with the $1/64$ archimedean corridor locks
+     the **Top 95 binary bits** (resp. **Top 98 binary bits**) of $V(r_0 + d)$ to
+     $\frac{3^{S_d}}{2^{E_d}} V(r_0)$ across every $r_0 \in \mathbb{N}$ and $d \ge 1$:
+     $$2^{95} \big(3^{S_d} V(r_0) - 2^{E_d} V(r_0 + d)\big) < 3^{S_d} V(r_0) \quad
+       \Big(\text{and } 2^{98} \big(3^{S_d} V(r_0) - 2^{E_d} V(r_0 + d)\big) < 3^{S_d} V(r_0)\Big).$$
+
+3. **Repeated-Window Top-Part Isolation & Extra Top-Part Bit Match Cutoff
+   (`dense_core_repeated_window_top_part_isolation_and_squeeze`)**:
+   Whenever $r_1 < r_2$ share a length-$(K + 1)$ prefix ($j(r_1 + t) = j(r_2 + t)$ for $t \le K$),
+   splitting $V(r_1)$ and $V(r_2)$ at bit $E_K + 7$ into Bottom Parts $R_{\text{bot}}(r_i) = V(r_i) \bmod 2^{E_K + 7}$
+   and Top Parts $\ell_i = V(r_i) / 2^{E_K + 7}$ proves:
+   - $R_{\text{bot}}(r_1) = R_{\text{bot}}(r_2)$, $\ell_1 < \ell_2$, and $V(r_2) - V(r_1) = 2^{E_K + 7} (\ell_2 - \ell_1)$.
+   - $j(r_1 + K + 1) \ne j(r_2 + K + 1) \implies (\ell_2 - \ell_1) \bmod 2 = 1$, while
+     $j(r_1 + K + 1) = j(r_2 + K + 1) \implies 128 \mid (\ell_2 - \ell_1)$.
+   - If the Top Parts $\ell_1, \ell_2$ match on $m$ additional binary bits ($2^m \mid (\ell_2 - \ell_1)$),
+     then $2^{7 (K + 1) + m} \le 2^{E_K + 7 + m} < V(r_2)$ and for every $1 \le q$ with $3^q \le 2^{p+q}$:
+     $$q \big(7 (K + 1) + m\big) \;<\; p \cdot \text{defectStepSum}(j, r_2) + q (W + 3) \;\le\; 10 p r_2 + q (W + 3).$$
+
+4. **Three-Occurrence Right-Special Ultrametric Pigeonhole Law
+   (`dense_core_three_occurrence_ultrametric_pigeonhole`)**:
+   Whenever a length-$(K + 1)$ subword occurs at **three** indices $r_1 < r_2 < r_3$, binary
+   Pigeonhole on $\{j(r_1 + K + 1), j(r_2 + K + 1), j(r_3 + K + 1)\} \subseteq \{1, 2\}$ forces at
+   least one of the three pairs $(r_a, r_b)$ to jump across the 7-bit spectral gap to
+   $128 \mid (\ell_b - \ell_a)$ ($2^{E_K + 14} \mid (V(r_b) - V(r_a))$), automatically gaining $+7$
+   extra bits ($2^{7 (K + 2)} \le 2^{E_K + 14} < V(r_3)$) and forcing
+   $$7 q (K + 2) \;<\; p \cdot \text{defectStepSum}(j, r_3) + q (W + 3) \;\le\; 10 p r_3 + q (W + 3).$$
+-/
+
+/-- **Bottom-Part Remainder Invariance and Bottom-Part Constant of Motion
+(`bottom_part_remainder_invariance_and_floor_conservation`)**:
+For any sequence $V, j : \mathbb{N} \to \mathbb{N}$ satisfying
+$2^{3 j(r + 1) + 4} V(r + 1) + 1 = 3^{3 j(r) + 4} V(r)$, and for every origin $r_0 \in \mathbb{N}$,
+horizon $d \ge 1$, and scale $M \ge 1$, let
+$E_d = \text{defectStepSum}(\text{fun } t \Rightarrow j(r_0 + 1 + t),\, d)$,
+$S_d = \text{defectStepSum}(\text{fun } t \Rightarrow j(r_0 + t),\, d)$,
+$S_{d+1} = \text{defectStepSum}(\text{fun } t \Rightarrow j(r_0 + t),\, d + 1)$,
+$\ell = V(r_0) / (M \cdot 2^{E_d})$,
+$R_0 = V(r_0) \bmod (M \cdot 2^{E_d})$, and $R_d = V(r_0 + d) \bmod (M \cdot 3^{S_d})$.
+Then:
+1. **Drift-Free Top-Part Decomposition**:
+   $V(r_0) = (M \cdot 2^{E_d}) \ell + R_0$, $V(r_0 + d) = (M \cdot 3^{S_d}) \ell + R_d$, and
+   $2^{E_d} (V(r_0 + d) - R_d) = 3^{S_d} (V(r_0) - R_0)$.
+2. **Exact Bottom-Part Single-Exponent Identity**:
+   $$2^{S_{d+1}} R_d + \text{singleExpDefectAcc}(\text{fun } t \Rightarrow j(r_0 + t),\, d)
+     = 2^{3 j(r_0) + 4} \cdot 3^{S_d} R_0.$$
+3. **Bottom-Part Strict Positivity & Constant of Motion**:
+   $$1 \le R_0, \qquad 64 \cdot (3^{S_d} R_0) < 64 \cdot (2^{E_d} R_d) + 3^{S_d},$$
+   $$3^{S_d} (R_0 - 1) < 2^{E_d} R_d < 3^{S_d} R_0, \qquad
+     \frac{2^{E_d} R_d}{3^{S_d}} = R_0 - 1.$$ -/
+theorem bottom_part_remainder_invariance_and_floor_conservation
+    {V j : ℕ → ℕ}
+    (hrec : ∀ r : ℕ, 2 ^ (3 * j (r + 1) + 4) * V (r + 1) + 1 = 3 ^ (3 * j r + 4) * V r)
+    (r_0 d M : ℕ) (hd1 : 1 ≤ d) (hM : 1 ≤ M) :
+    let j_shift := fun t => j (r_0 + t)
+    let E_d := defectStepSum (fun t => j (r_0 + 1 + t)) d
+    let S_d := defectStepSum j_shift d
+    let S_d1 := defectStepSum j_shift (d + 1)
+    let l_top := V r_0 / (M * 2 ^ E_d)
+    let R_0 := V r_0 % (M * 2 ^ E_d)
+    let R_d := V (r_0 + d) % (M * 3 ^ S_d)
+    (V r_0 = (M * 2 ^ E_d) * l_top + R_0 ∧
+     V (r_0 + d) = (M * 3 ^ S_d) * l_top + R_d ∧
+     2 ^ E_d * (V (r_0 + d) - R_d) = 3 ^ S_d * (V r_0 - R_0)) ∧
+    (2 ^ S_d1 * R_d + singleExpDefectAcc j_shift d = 2 ^ (3 * j r_0 + 4) * 3 ^ S_d * R_0) ∧
+    (1 ≤ R_0 ∧
+     64 * (3 ^ S_d * R_0) < 64 * (2 ^ E_d * R_d) + 3 ^ S_d ∧
+     3 ^ S_d * (R_0 - 1) < 2 ^ E_d * R_d ∧
+     2 ^ E_d * R_d < 3 ^ S_d * R_0 ∧
+     (2 ^ E_d * R_d) / 3 ^ S_d = R_0 - 1) := by
+  intro j_shift E_d S_d S_d1 l_top R_0 R_d
+  have hq_eq : V (r_0 + d) / (M * 3 ^ S_d) = l_top :=
+    (universal_two_three_adic_quotient_duality hrec).1 d r_0 M hM
+  have hVr0_div : V r_0 = (M * 2 ^ E_d) * l_top + R_0 :=
+    (Nat.div_add_mod (V r_0) (M * 2 ^ E_d)).symm
+  have hVrd_div : V (r_0 + d) = (M * 3 ^ S_d) * l_top + R_d := by
+    have hd := (Nat.div_add_mod (V (r_0 + d)) (M * 3 ^ S_d)).symm
+    rw [hq_eq] at hd
+    exact hd
+  have htop_drift_free : 2 ^ E_d * (V (r_0 + d) - R_d) = 3 ^ S_d * (V r_0 - R_0) := by
+    have h1 : V (r_0 + d) - R_d = (M * 3 ^ S_d) * l_top := by omega
+    have h2 : V r_0 - R_0 = (M * 2 ^ E_d) * l_top := by omega
+    rw [h1, h2]
+    ring
+  set V_shift : ℕ → ℕ := fun t => V (r_0 + t)
+  have hrec_shift :
+      ∀ t : ℕ, 2 ^ (3 * j_shift (t + 1) + 4) * V_shift (t + 1) + 1 =
+        3 ^ (3 * j_shift t + 4) * V_shift t := by
+    intro t
+    have h := hrec (r_0 + t)
+    have hidx : r_0 + t + 1 = r_0 + (t + 1) := by omega
+    simpa [j_shift, V_shift, hidx] using h
+  set P0 := 2 ^ (3 * j r_0 + 4)
+  set E2 := 2 ^ E_d
+  set S3 := 3 ^ S_d
+  have hid := (defectStepSum_shift_cancellation_and_single_exponent_identity j_shift).2
+    V_shift hrec_shift d
+  change 2 ^ S_d1 * V (r_0 + d) + singleExpDefectAcc j_shift d = P0 * S3 * V r_0 at hid
+  have hshift : (3 * j r_0 + 4) + E_d = S_d1 := by
+    have h := ((defectStepSum_shift_cancellation_and_single_exponent_identity j_shift).1 d).1
+    have hE_eq : defectStepSum (fun t => j_shift (1 + t)) d = E_d := by
+      congr 1; funext t; change j (r_0 + (1 + t)) = j (r_0 + 1 + t); congr 1; omega
+    simpa [j_shift, hE_eq, S_d1] using h
+  have hpow_split : 2 ^ S_d1 = P0 * E2 := by
+    change 2 ^ S_d1 = 2 ^ (3 * j r_0 + 4) * 2 ^ E_d
+    rw [← hshift, Nat.pow_add]
+  have hbot_id : 2 ^ S_d1 * R_d + singleExpDefectAcc j_shift d = P0 * S3 * R_0 := by
+    have hexp_lhs : 2 ^ S_d1 * V (r_0 + d) =
+        P0 * E2 * ((M * S3) * l_top) + 2 ^ S_d1 * R_d := by
+      calc 2 ^ S_d1 * V (r_0 + d)
+          = 2 ^ S_d1 * ((M * S3) * l_top + R_d) := by rw [hVrd_div]
+        _ = 2 ^ S_d1 * ((M * S3) * l_top) + 2 ^ S_d1 * R_d := by ring
+        _ = (P0 * E2) * ((M * S3) * l_top) + 2 ^ S_d1 * R_d := by rw [hpow_split]
+    have hexp_rhs : P0 * S3 * V r_0 =
+        P0 * E2 * ((M * S3) * l_top) + P0 * S3 * R_0 := by
+      calc P0 * S3 * V r_0
+          = P0 * S3 * ((M * E2) * l_top + R_0) := by rw [hVr0_div]
+        _ = P0 * E2 * ((M * S3) * l_top) + P0 * S3 * R_0 := by ring
+    linarith only [hid, hexp_lhs, hexp_rhs]
+  have hV_shift0_pos : 1 ≤ V_shift 0 := by
+    change 1 ≤ V (r_0 + 0)
+    rw [Nat.add_zero]
+    have h0 := hrec r_0
+    have hp : 1 ≤ 2 ^ (3 * j (r_0 + 1) + 4) * V (r_0 + 1) + 1 := by omega
+    have hpos3 : 0 < 3 ^ (3 * j r_0 + 4) * V r_0 := by omega
+    rcases Nat.eq_zero_or_pos (V r_0) with hzero | hpos
+    · rw [hzero, Nat.mul_zero] at hpos3; omega
+    · exact hpos
+  have hacc_bound := (defectNormalizedQuotient_archimedean_floor_invariant
+    hV_shift0_pos hrec_shift).1 d
+  change 4 * singleExpDefectAcc j_shift d + 2 ^ S_d ≤ S3 at hacc_bound
+  have hP2_pos : 1 ≤ 2 ^ S_d := Nat.pow_pos (by decide)
+  have hacc_lt : 4 * singleExpDefectAcc j_shift d < S3 := by omega
+  have hacc_pos : 1 ≤ singleExpDefectAcc j_shift d := by
+    obtain ⟨m, rfl⟩ : ∃ m : ℕ, d = m + 1 := ⟨d - 1, by omega⟩
+    change 1 ≤ 3 ^ (3 * j_shift m + 4) * singleExpDefectAcc j_shift m +
+      2 ^ (defectStepSum j_shift (m + 1))
+    have hp : 1 ≤ 2 ^ (defectStepSum j_shift (m + 1)) := Nat.pow_pos (by decide)
+    omega
+  have hR0_pos : 1 ≤ R_0 := by
+    rcases Nat.eq_zero_or_pos R_0 with hzero | hpos
+    · rw [hzero, Nat.mul_zero] at hbot_id; omega
+    · exact hpos
+  have hP0_ge : 16 ≤ P0 := by
+    change 16 ≤ 2 ^ (3 * j r_0 + 4)
+    have hexp : 3 * j r_0 + 4 = (3 * j r_0) + 4 := by omega
+    rw [hexp, Nat.pow_add]
+    have hp : 1 ≤ 2 ^ (3 * j r_0) := Nat.pow_pos (by decide)
+    omega
+  have hmul_eq : P0 * (S3 * R_0) = P0 * (E2 * R_d) + singleExpDefectAcc j_shift d := by
+    have hsplit_Rd : 2 ^ S_d1 * R_d = P0 * (E2 * R_d) := by
+      rw [hpow_split]; ring
+    linarith only [hbot_id, hsplit_Rd]
+  have hdiff_pos : E2 * R_d < S3 * R_0 := by
+    have hlt_P0 : P0 * (E2 * R_d) < P0 * (S3 * R_0) := by omega
+    exact Nat.lt_of_mul_lt_mul_left hlt_P0
+  have h64_lt : 64 * (S3 * R_0) < 64 * (E2 * R_d) + S3 := by
+    have h1 : 64 * (S3 * R_0 - E2 * R_d) ≤ 4 * (P0 * (S3 * R_0 - E2 * R_d)) := by
+      have hsub : 16 * (S3 * R_0 - E2 * R_d) ≤ P0 * (S3 * R_0 - E2 * R_d) :=
+        Nat.mul_le_mul_right (S3 * R_0 - E2 * R_d) hP0_ge
+      omega
+    have h2 : P0 * (S3 * R_0 - E2 * R_d) = singleExpDefectAcc j_shift d := by
+      have hdist : P0 * (S3 * R_0) = P0 * (E2 * R_d) + P0 * (S3 * R_0 - E2 * R_d) := by
+        rw [← Nat.mul_add, Nat.add_sub_of_le (by omega)]
+      omega
+    omega
+  have hlow_lt : S3 * (R_0 - 1) < E2 * R_d := by
+    have hdist : S3 * (R_0 - 1) + S3 = S3 * R_0 := by
+      have hv : (R_0 - 1) + 1 = R_0 := by omega
+      calc S3 * (R_0 - 1) + S3 = S3 * ((R_0 - 1) + 1) := by ring
+        _ = S3 * R_0 := by rw [hv]
+    omega
+  set rem := E2 * R_d - S3 * (R_0 - 1)
+  have hrem_lt : rem < S3 := by
+    have hdist : S3 * (R_0 - 1) + S3 = S3 * R_0 := by
+      have hv : (R_0 - 1) + 1 = R_0 := by omega
+      calc S3 * (R_0 - 1) + S3 = S3 * ((R_0 - 1) + 1) := by ring
+        _ = S3 * R_0 := by rw [hv]
+    omega
+  have hbez := mod_and_div_of_bezout (V := E2 * R_d) (M := S3) (a := 0) (b := R_0 - 1)
+    (r := rem) (by omega) hrem_lt
+  have hS3_pos : 0 < S3 := Nat.pow_pos (by decide)
+  have hmul_S3 : S3 * ((E2 * R_d) / S3) = S3 * (R_0 - 1) := by omega
+  have hfloor : (E2 * R_d) / S3 = R_0 - 1 :=
+    Nat.eq_of_mul_eq_mul_left hS3_pos hmul_S3
+  exact ⟨⟨hVr0_div, hVrd_div, htop_drift_free⟩, hbot_id,
+    ⟨hR0_pos, h64_lt, hlow_lt, hdiff_pos, hfloor⟩⟩
+
+/-- **Universal Shifted-Horizon 89-Bit / 92-Bit Floor and 98-Bit Top-Part Corridor Lock
+in the Dense Core (`dense_core_shifted_horizon_floor_and_ninety_eight_bit_corridor`)**:
+For any infinite Dense-Core trajectory $V, j : \mathbb{N} \to \mathbb{N}$ satisfying
+$j(r) \in \{1, 2\}$ and $2^{3 j(r + 1) + 4} V(r + 1) + 1 = 3^{3 j(r) + 4} V(r)$ for all $r \in \mathbb{N}$:
+1. **Universal Shifted-Horizon 89-Bit Floor**: For every step $r_0 \in \mathbb{N}$,
+   $$V(r_0) \;\ge\; 1{,}130{,}319{,}219{,}940{,}026{,}671{,}593{,}178{,}019 \;>\; 2^{89},$$
+   and for every $r_0 \in \mathbb{N}$ and $d \ge 1$, the Top-Part Corridor satisfies:
+   $$2^{95} \Big(3^{\text{defectStepSum}(\text{fun } t \Rightarrow j(r_0 + t),\, d)} V(r_0) -
+       2^{\text{defectStepSum}(\text{fun } t \Rightarrow j(r_0 + 1 + t),\, d)} V(r_0 + d)\Big)
+     \;<\; 3^{\text{defectStepSum}(\text{fun } t \Rightarrow j(r_0 + t),\, d)} V(r_0).$$
+2. **Mahler Mod-19 Global Conservation & Universal 98-Bit Top-Part Corridor Lock**:
+   If $(2^{3 j(0) + 3} V(0)) \bmod 19 = 1$, then for every $r_0 \in \mathbb{N}$:
+   $$(2^{3 j(r_0) + 3} V(r_0)) \bmod 19 = 1, \qquad
+     V(r_0) \;\ge\; 6{,}644{,}210{,}551{,}001{,}288{,}379{,}891{,}372{,}825 \;>\; 2^{92},$$
+   and for every $r_0 \in \mathbb{N}$ and $d \ge 1$:
+   $$2^{98} \Big(3^{\text{defectStepSum}(\text{fun } t \Rightarrow j(r_0 + t),\, d)} V(r_0) -
+       2^{\text{defectStepSum}(\text{fun } t \Rightarrow j(r_0 + 1 + t),\, d)} V(r_0 + d)\Big)
+     \;<\; 3^{\text{defectStepSum}(\text{fun } t \Rightarrow j(r_0 + t),\, d)} V(r_0).$$ -/
+theorem dense_core_shifted_horizon_floor_and_ninety_eight_bit_corridor
+    {V j : ℕ → ℕ}
+    (hj : ∀ r : ℕ, j r = 1 ∨ j r = 2)
+    (hrec : ∀ r : ℕ, 2 ^ (3 * j (r + 1) + 4) * V (r + 1) + 1 = 3 ^ (3 * j r + 4) * V r) :
+    (∀ r_0 : ℕ,
+      1130319219940026671593178019 ≤ V r_0 ∧
+      2 ^ 89 < V r_0 ∧
+      ∀ d : ℕ, 1 ≤ d →
+        2 ^ 95 * (3 ^ (defectStepSum (fun t => j (r_0 + t)) d) * V r_0 -
+          2 ^ (defectStepSum (fun t => j (r_0 + (1 + t))) d) * V (r_0 + d)) <
+          3 ^ (defectStepSum (fun t => j (r_0 + t)) d) * V r_0) ∧
+    ((2 ^ (3 * j 0 + 3) * V 0) % 19 = 1 →
+      ∀ r_0 : ℕ,
+        (2 ^ (3 * j r_0 + 3) * V r_0) % 19 = 1 ∧
+        6644210551001288379891372825 ≤ V r_0 ∧
+        2 ^ 92 < V r_0 ∧
+        ∀ d : ℕ, 1 ≤ d →
+          2 ^ 98 * (3 ^ (defectStepSum (fun t => j (r_0 + t)) d) * V r_0 -
+            2 ^ (defectStepSum (fun t => j (r_0 + (1 + t))) d) * V (r_0 + d)) <
+            3 ^ (defectStepSum (fun t => j (r_0 + t)) d) * V r_0) := by
+  have hcorridor_zero :
+      ∀ (V' j' : ℕ → ℕ) (d B : ℕ),
+        (∀ r : ℕ, 2 ^ (3 * j' (r + 1) + 4) * V' (r + 1) + 1 = 3 ^ (3 * j' r + 4) * V' r) →
+        1 ≤ d → 1 ≤ B → B ≤ V' 0 →
+        (64 * B) * (3 ^ (defectStepSum j' d) * V' 0 -
+          2 ^ (defectStepSum (fun t => j' (1 + t)) d) * V' d) <
+          3 ^ (defectStepSum j' d) * V' 0 := by
+    intro V' j' d B hrec' hd1 hB1 hB_le
+    have hV0_pos : 1 ≤ V' 0 := le_trans hB1 hB_le
+    have harch := ((defectNormalizedQuotient_archimedean_floor_invariant hV0_pos hrec').2 d hd1).1
+    have hlt_arch := ((defectNormalizedQuotient_archimedean_floor_invariant hV0_pos hrec').2 d hd1).2.2.1
+    set S3 := 3 ^ (defectStepSum j' d)
+    set E2 := 2 ^ (defectStepSum (fun t => j' (1 + t)) d)
+    set diff := S3 * V' 0 - E2 * V' d
+    have h64_diff : 64 * diff < S3 := by omega
+    have hmul_V0 : (64 * diff) * V' 0 < S3 * V' 0 :=
+      Nat.mul_lt_mul_of_pos_right h64_diff hV0_pos
+    have hmul_B : (64 * B) * diff ≤ (64 * diff) * V' 0 := by
+      calc (64 * B) * diff = (64 * diff) * B := by ring
+        _ ≤ (64 * diff) * V' 0 := Nat.mul_le_mul_left (64 * diff) hB_le
+    exact lt_of_le_of_lt hmul_B hmul_V0
+  have hshift_rec :
+      ∀ r_0 t : ℕ,
+        2 ^ (3 * j (r_0 + (t + 1)) + 4) * V (r_0 + (t + 1)) + 1 =
+          3 ^ (3 * j (r_0 + t) + 4) * V (r_0 + t) := by
+    intro r_0 t
+    have h := hrec (r_0 + t)
+    have hidx : r_0 + t + 1 = r_0 + (t + 1) := by omega
+    rw [← hidx]
+    exact h
+  have hpart1 :
+      ∀ r_0 : ℕ,
+        1130319219940026671593178019 ≤ V r_0 ∧
+        2 ^ 89 < V r_0 ∧
+        ∀ d : ℕ, 1 ≤ d →
+          2 ^ 95 * (3 ^ (defectStepSum (fun t => j (r_0 + t)) d) * V r_0 -
+            2 ^ (defectStepSum (fun t => j (r_0 + (1 + t))) d) * V (r_0 + d)) <
+            3 ^ (defectStepSum (fun t => j (r_0 + t)) d) * V r_0 := by
+    intro r_0
+    have hj13 : 1 ≤ j (r_0 + 13) := by
+      rcases hj (r_0 + 13) with h1 | h2 <;> omega
+    have hge := binary_cantor_dust_certified_depth_11_and_12.2.2
+      (fun t => V (r_0 + t)) (fun t => j (r_0 + t))
+      (fun t _ => hj (r_0 + t)) hj13 (fun t _ => hshift_rec r_0 t)
+    change 1130319219940026671593178019 ≤ V r_0 at hge
+    have hgt89 : 2 ^ 89 < V r_0 :=
+      lt_of_lt_of_le (by decide : 2 ^ 89 < 1130319219940026671593178019) hge
+    refine ⟨hge, hgt89, ?_⟩
+    intro d hd1
+    have hcorr := hcorridor_zero (fun t => V (r_0 + t)) (fun t => j (r_0 + t)) d (2 ^ 89)
+      (hshift_rec r_0) hd1 (Nat.pow_pos (by decide)) (le_of_lt hgt89)
+    have hp95 : 64 * (2 : ℕ) ^ 89 = 2 ^ 95 := by decide
+    rw [hp95] at hcorr
+    exact hcorr
+  refine ⟨hpart1, ?_⟩
+  intro hmod19_0
+  have hmod19_all : ∀ r_0 : ℕ, (2 ^ (3 * j r_0 + 3) * V r_0) % 19 = 1 := by
+    intro r_0
+    induction r_0 with
+    | zero => exact hmod19_0
+    | succ r_0 ih =>
+        exact (defectNormalizedQuotient_cyclotomic_mod_7_13_19_locks (hrec r_0)).2.2.1.mp ih
+  intro r_0
+  have hmod19_r0 := hmod19_all r_0
+  have hj13 : 1 ≤ j (r_0 + 13) := by
+    rcases hj (r_0 + 13) with h1 | h2 <;> omega
+  have hge92 := (mahler_binary_cantor_dust_certified_bounds_up_to_depth_12.2
+    (fun t => V (r_0 + t)) (fun t => j (r_0 + t))
+    hmod19_r0 (fun t _ => hj (r_0 + t)) hj13 (fun t _ => hshift_rec r_0 t)).1
+  change 6644210551001288379891372825 ≤ V r_0 at hge92
+  have hgt92 : 2 ^ 92 < V r_0 :=
+    lt_of_lt_of_le (by decide : 2 ^ 92 < 6644210551001288379891372825) hge92
+  refine ⟨hmod19_r0, hge92, hgt92, ?_⟩
+  intro d hd1
+  have hcorr := hcorridor_zero (fun t => V (r_0 + t)) (fun t => j (r_0 + t)) d (2 ^ 92)
+    (hshift_rec r_0) hd1 (Nat.pow_pos (by decide)) (le_of_lt hgt92)
+  have hp98 : 64 * (2 : ℕ) ^ 92 = 2 ^ 98 := by decide
+  rw [hp98] at hcorr
+  exact hcorr
+
+/-- **Repeated-Window Top-Part Isolation and Extra Top-Part Bit Match Cutoff
+(`dense_core_repeated_window_top_part_isolation_and_squeeze`)**:
+Suppose $1 \le V(0) < 2^W$, $j(r) \in \{1, 2\}$, $r_1 < r_2$, and $\forall t \le K,\; j(r_1 + t) = j(r_2 + t)$.
+Let $E_K = \text{defectStepSum}(\text{fun } t \Rightarrow j(r_1 + 1 + t),\, K)$,
+$\ell_1 = V(r_1) / 2^{E_K + 7}$, and $\ell_2 = V(r_2) / 2^{E_K + 7}$.
+1. **Bottom-Part Equality & Pure Top-Part Difference**:
+   $$V(r_1) \bmod 2^{E_K + 7} = V(r_2) \bmod 2^{E_K + 7}, \qquad \ell_1 < \ell_2, \qquad
+     V(r_2) - V(r_1) = 2^{E_K + 7} (\ell_2 - \ell_1).$$
+2. **Top-Part Branching Dichotomy**:
+   - If $j(r_1 + K + 1) \ne j(r_2 + K + 1)$, then $(\ell_2 - \ell_1) \bmod 2 = 1$.
+   - If $j(r_1 + K + 1) = j(r_2 + K + 1)$, then $128 \mid (\ell_2 - \ell_1)$ ($\ell_1 \bmod 128 = \ell_2 \bmod 128$).
+3. **Extra Top-Part Bit Match Cutoff**:
+   If $2^m \mid (\ell_2 - \ell_1)$ (so the Top Parts $\ell_1, \ell_2$ agree on their bottom $m$ bits), then
+   $2^{E_K + 7 + m} \mid (V(r_2) - V(r_1))$, $2^{7 (K + 1) + m} \le 2^{E_K + 7 + m} < V(r_2)$, and for
+   every $p, q \in \mathbb{N}$ with $1 \le q$ and $3^q \le 2^{p + q}$:
+   $$q \big(7 (K + 1) + m\big) \;<\; p \cdot \text{defectStepSum}(j, r_2) + q (W + 3) \;\le\; 10 p r_2 + q (W + 3).$$ -/
+theorem dense_core_repeated_window_top_part_isolation_and_squeeze
+    {V j : ℕ → ℕ} {W r_1 r_2 K : ℕ}
+    (hV0_pos : 1 ≤ V 0) (hV0_lt : V 0 < 2 ^ W)
+    (hj : ∀ r : ℕ, j r = 1 ∨ j r = 2)
+    (hrec : ∀ r : ℕ, 2 ^ (3 * j (r + 1) + 4) * V (r + 1) + 1 = 3 ^ (3 * j r + 4) * V r)
+    (hr12 : r_1 < r_2)
+    (hmatch : ∀ t ≤ K, j (r_1 + t) = j (r_2 + t)) :
+    let E_K := defectStepSum (fun t => j (r_1 + 1 + t)) K
+    let l_1 := V r_1 / 2 ^ (E_K + 7)
+    let l_2 := V r_2 / 2 ^ (E_K + 7)
+    (V r_1 % 2 ^ (E_K + 7) = V r_2 % 2 ^ (E_K + 7) ∧
+     l_1 < l_2 ∧
+     V r_2 - V r_1 = 2 ^ (E_K + 7) * (l_2 - l_1) ∧
+     (V r_2 - V r_1) / 2 ^ (E_K + 7) = l_2 - l_1) ∧
+    ((j (r_1 + K + 1) ≠ j (r_2 + K + 1) → (l_2 - l_1) % 2 = 1) ∧
+     (j (r_1 + K + 1) = j (r_2 + K + 1) → 128 ∣ (l_2 - l_1))) ∧
+    (∀ m : ℕ, (2 ^ m ∣ (l_2 - l_1)) →
+      (2 ^ (E_K + 7 + m) ∣ (V r_2 - V r_1)) ∧
+      2 ^ (7 * (K + 1) + m) ≤ 2 ^ (E_K + 7 + m) ∧
+      2 ^ (E_K + 7 + m) < V r_2 ∧
+      ∀ p q : ℕ, 1 ≤ q → 3 ^ q ≤ 2 ^ (p + q) →
+        q * (7 * (K + 1) + m) < p * defectStepSum j r_2 + q * (W + 3) ∧
+        q * (7 * (K + 1) + m) < 10 * p * r_2 + q * (W + 3)) := by
+  intro E_K l_1 l_2
+  have hmono := (dense_core_strict_doubling_and_monotonicity hV0_pos hj hrec).2
+  have hpos_V : ∀ r : ℕ, 1 ≤ V r := fun r =>
+    ((dense_core_strict_doubling_and_monotonicity hV0_pos hj hrec).1 r).1
+  have hright := dense_core_right_special_exact_two_adic_valuation_and_spectral_gap
+    hV0_pos hj hrec hr12 hmatch
+  have hdvd_E7 : 2 ^ (E_K + 7) ∣ (V r_2 - V r_1) := hright.2.1.1
+  have hEK7_ge : 7 * (K + 1) ≤ E_K + 7 := hright.2.1.2.1
+  have hV_lt : V r_1 < V r_2 := hmono r_1 r_2 hr12
+  set M2 := 2 ^ (E_K + 7)
+  have hM2_pos : 0 < M2 := Nat.pow_pos (by decide)
+  rcases hdvd_E7 with ⟨Q, hQ⟩
+  have hVr2_eq : V r_2 = M2 * Q + V r_1 := by omega
+  have hdiv1 : V r_1 = M2 * l_1 + V r_1 % M2 :=
+    (Nat.div_add_mod (V r_1) M2).symm
+  have hdiv2 : V r_2 = M2 * (l_1 + Q) + V r_1 % M2 := by
+    have hexp : M2 * (l_1 + Q) = M2 * Q + M2 * l_1 := by ring
+    linarith only [hVr2_eq, hdiv1, hexp]
+  have hrem_lt : V r_1 % M2 < M2 := Nat.mod_lt (V r_1) hM2_pos
+  have hbez := mod_and_div_of_bezout (V := V r_2) (M := M2) (a := 0) (b := l_1 + Q)
+    (r := V r_1 % M2) (by omega) hrem_lt
+  have hrem_eq : V r_1 % M2 = V r_2 % M2 := hbez.1.symm
+  have hbez2 : V r_2 = M2 * l_2 + V r_1 % M2 := hbez.2
+  have hl2_eq : l_2 = l_1 + Q := by
+    have hmul : M2 * l_2 = M2 * (l_1 + Q) := by linarith only [hbez2, hdiv2]
+    exact Nat.eq_of_mul_eq_mul_left hM2_pos hmul
+  have hQ_pos : 1 ≤ Q := by
+    rcases Nat.eq_zero_or_pos Q with rfl | hpos
+    · omega
+    · exact hpos
+  have hl_lt : l_1 < l_2 := by omega
+  have hQ_sub : Q = l_2 - l_1 := by omega
+  have hdiff_top : V r_2 - V r_1 = M2 * (l_2 - l_1) := by rw [hQ, hQ_sub]
+  have hdiv_top : (V r_2 - V r_1) / M2 = l_2 - l_1 := by
+    rw [hdiff_top, Nat.mul_div_right (l_2 - l_1) hM2_pos]
+  have hbranch_odd : j (r_1 + K + 1) ≠ j (r_2 + K + 1) → (l_2 - l_1) % 2 = 1 := by
+    intro hjne
+    have h := (hright.2.2.1 hjne).1
+    rw [hdiv_top] at h
+    exact h
+  have hbranch_128 : j (r_1 + K + 1) = j (r_2 + K + 1) → 128 ∣ (l_2 - l_1) := by
+    intro hjeq
+    have hdvd14 : 2 ^ (E_K + 14) ∣ (V r_2 - V r_1) :=
+      hright.2.2.2.2.mp (hright.2.2.2.1.mp hjeq)
+    rcases hdvd14 with ⟨U, hU⟩
+    have hpow14 : 2 ^ (E_K + 14) = M2 * 128 := by
+      change 2 ^ ((E_K + 7) + 7) = 2 ^ (E_K + 7) * 128
+      rw [Nat.pow_add]
+    refine ⟨U, ?_⟩
+    have hmul : M2 * (l_2 - l_1) = M2 * (128 * U) := by
+      rw [← hdiff_top, hU, hpow14]; ring
+    exact Nat.eq_of_mul_eq_mul_left hM2_pos hmul
+  refine ⟨⟨hrem_eq, hl_lt, hdiff_top, hdiv_top⟩, ⟨hbranch_odd, hbranch_128⟩, ?_⟩
+  intro m hdvd_m
+  rcases hdvd_m with ⟨T, hT⟩
+  have hT_pos : 1 ≤ T := by
+    rcases Nat.eq_zero_or_pos T with rfl | hpos
+    · omega
+    · exact hpos
+  have hpow_m : 2 ^ (E_K + 7 + m) = M2 * 2 ^ m := Nat.pow_add 2 (E_K + 7) m
+  have hdvd_Em : 2 ^ (E_K + 7 + m) ∣ (V r_2 - V r_1) := by
+    refine ⟨T, ?_⟩
+    rw [hdiff_top, hT, hpow_m]; ring
+  have hpow_le : 2 ^ (7 * (K + 1) + m) ≤ 2 ^ (E_K + 7 + m) :=
+    Nat.pow_le_pow_right (by decide) (by omega)
+  have hEm_lt_Vr2 : 2 ^ (E_K + 7 + m) < V r_2 := by
+    have hle : 2 ^ (E_K + 7 + m) ≤ V r_2 - V r_1 := by
+      calc 2 ^ (E_K + 7 + m) = 2 ^ (E_K + 7 + m) * 1 := (Nat.mul_one _).symm
+        _ ≤ 2 ^ (E_K + 7 + m) * T := Nat.mul_le_mul_left _ hT_pos
+        _ = M2 * (2 ^ m * T) := by rw [hpow_m]; ring
+        _ = V r_2 - V r_1 := by rw [← hT, ← hdiff_top]
+    have hVr1_pos := hpos_V r_1
+    omega
+  refine ⟨hdvd_Em, hpow_le, hEm_lt_Vr2, ?_⟩
+  intro p q hq hpq
+  have h2_lt_Vr2 : 2 ^ (7 * (K + 1) + m) < V r_2 := lt_of_le_of_lt hpow_le hEm_lt_Vr2
+  have hr2_pos : 1 ≤ r_2 := by omega
+  have harch := ((defectNormalizedQuotient_archimedean_floor_invariant hV0_pos hrec).2
+    r_2 hr2_pos).2.2.1
+  set E_r2 := defectStepSum (fun t => j (1 + t)) r_2
+  set S_r2 := defectStepSum j r_2
+  have hmul1 : 2 ^ ((7 * (K + 1) + m) + E_r2) < 2 ^ E_r2 * V r_2 := by
+    rw [Nat.add_comm (7 * (K + 1) + m) E_r2, Nat.pow_add]
+    exact Nat.mul_lt_mul_of_pos_left h2_lt_Vr2 (Nat.pow_pos (by decide))
+  have hlt_S : 2 ^ ((7 * (K + 1) + m) + E_r2) < 3 ^ S_r2 * 2 ^ W := by
+    have hlt_V0 : 3 ^ S_r2 * V 0 < 3 ^ S_r2 * 2 ^ W :=
+      Nat.mul_lt_mul_of_pos_left hV0_lt (Nat.pow_pos (by decide))
+    exact lt_trans (lt_trans hmul1 harch) hlt_V0
+  have hpow_q : (2 ^ ((7 * (K + 1) + m) + E_r2)) ^ q < (3 ^ S_r2 * 2 ^ W) ^ q :=
+    Nat.pow_lt_pow_left hlt_S (by omega)
+  have h3q : (3 ^ S_r2) ^ q ≤ (2 ^ (p + q)) ^ S_r2 := by
+    have hcomm : (3 ^ S_r2) ^ q = (3 ^ q) ^ S_r2 := by
+      rw [← Nat.pow_mul, ← Nat.pow_mul, Nat.mul_comm]
+    rw [hcomm]
+    exact Nat.pow_le_pow_left hpq S_r2
+  have hrhs : (3 ^ S_r2 * 2 ^ W) ^ q ≤ 2 ^ ((p + q) * S_r2 + W * q) := by
+    calc (3 ^ S_r2 * 2 ^ W) ^ q
+        = (3 ^ S_r2) ^ q * (2 ^ W) ^ q := Nat.mul_pow _ _ _
+      _ ≤ (2 ^ (p + q)) ^ S_r2 * (2 ^ W) ^ q := Nat.mul_le_mul_right _ h3q
+      _ = 2 ^ ((p + q) * S_r2 + W * q) := by
+        rw [← Nat.pow_mul, ← Nat.pow_mul, ← Nat.pow_add]
+  have hlt2 : 2 ^ (((7 * (K + 1) + m) + E_r2) * q) < 2 ^ ((p + q) * S_r2 + W * q) := by
+    rw [← Nat.pow_mul] at hpow_q
+    exact lt_of_lt_of_le hpow_q hrhs
+  have hexp_lt : ((7 * (K + 1) + m) + E_r2) * q < (p + q) * S_r2 + W * q :=
+    (Nat.pow_lt_pow_iff_right (by decide : 1 < 2)).mp hlt2
+  have hshift := ((defectStepSum_shift_cancellation_and_single_exponent_identity j).1 r_2).2
+  have hj0 : j 0 = 1 ∨ j 0 = 2 := hj 0
+  have hjr2 : j r_2 = 1 ∨ j r_2 = 2 := hj r_2
+  have hS_le_E3 : S_r2 ≤ E_r2 + 3 := by omega
+  have hqS_le : q * S_r2 ≤ q * E_r2 + 3 * q := by
+    calc q * S_r2 ≤ q * (E_r2 + 3) := Nat.mul_le_mul_left q hS_le_E3
+      _ = q * E_r2 + 3 * q := by ring
+  have hring1 : ((7 * (K + 1) + m) + E_r2) * q = q * (7 * (K + 1) + m) + q * E_r2 := by ring
+  have hring2 : (p + q) * S_r2 + W * q = p * S_r2 + q * S_r2 + q * W := by ring
+  have hring3 : q * (W + 3) = q * W + 3 * q := by ring
+  have hcut1 : q * (7 * (K + 1) + m) < p * S_r2 + q * (W + 3) := by
+    linarith only [hexp_lt, hqS_le, hring1, hring2, hring3]
+  have hS_r2_le : S_r2 ≤ 10 * r_2 :=
+    ((dense_core_parameterized_pq_cutoff_and_convergents hV0_pos hV0_lt hj hrec).1 r_2).2
+  have hp_le : p * S_r2 ≤ 10 * p * r_2 := by
+    calc p * S_r2 ≤ p * (10 * r_2) := Nat.mul_le_mul_left p hS_r2_le
+      _ = 10 * p * r_2 := by ring
+  exact ⟨hcut1, by linarith only [hcut1, hp_le]⟩
+
+/-- **Three-Occurrence Right-Special Ultrametric Pigeonhole Law in the Dense Core
+(`dense_core_three_occurrence_ultrametric_pigeonhole`)**:
+Suppose $1 \le V(0) < 2^W$, $j(r) \in \{1, 2\}$, and a length-$(K + 1)$ subword occurs at three
+indices $r_1 < r_2 < r_3$ ($\forall t \le K,\; j(r_1 + t) = j(r_2 + t) \land j(r_2 + t) = j(r_3 + t)$).
+Let $E_K = \text{defectStepSum}(\text{fun } t \Rightarrow j(r_1 + 1 + t),\, K)$.
+Then by binary Pigeonhole on $\{j(r_1 + K + 1), j(r_2 + K + 1), j(r_3 + K + 1)\} \subseteq \{1, 2\}$:
+1. At least one of the three pairs $(r_1, r_2), (r_1, r_3), (r_2, r_3)$ jumps across the 7-bit
+   spectral gap to $2^{E_K + 14} \mid (V(r_b) - V(r_a))$.
+2. $2^{7 (K + 2)} \le 2^{E_K + 14} < V(r_3)$.
+3. For every $p, q \in \mathbb{N}$ with $1 \le q$ and $3^q \le 2^{p + q}$:
+   $$7 q (K + 2) \;<\; p \cdot \text{defectStepSum}(j, r_3) + q (W + 3) \;\le\; 10 p r_3 + q (W + 3).$$ -/
+theorem dense_core_three_occurrence_ultrametric_pigeonhole
+    {V j : ℕ → ℕ} {W r_1 r_2 r_3 K : ℕ}
+    (hV0_pos : 1 ≤ V 0) (hV0_lt : V 0 < 2 ^ W)
+    (hj : ∀ r : ℕ, j r = 1 ∨ j r = 2)
+    (hrec : ∀ r : ℕ, 2 ^ (3 * j (r + 1) + 4) * V (r + 1) + 1 = 3 ^ (3 * j r + 4) * V r)
+    (hr12 : r_1 < r_2) (hr23 : r_2 < r_3)
+    (hmatch12 : ∀ t ≤ K, j (r_1 + t) = j (r_2 + t))
+    (hmatch23 : ∀ t ≤ K, j (r_2 + t) = j (r_3 + t)) :
+    let E_K := defectStepSum (fun t => j (r_1 + 1 + t)) K
+    ((2 ^ (E_K + 14) ∣ (V r_2 - V r_1)) ∨
+     (2 ^ (E_K + 14) ∣ (V r_3 - V r_1)) ∨
+     (2 ^ (E_K + 14) ∣ (V r_3 - V r_2))) ∧
+    2 ^ (7 * (K + 2)) ≤ 2 ^ (E_K + 14) ∧
+    2 ^ (E_K + 14) < V r_3 ∧
+    (∀ p q : ℕ, 1 ≤ q → 3 ^ q ≤ 2 ^ (p + q) →
+      7 * q * (K + 2) < p * defectStepSum j r_3 + q * (W + 3) ∧
+      7 * q * (K + 2) < 10 * p * r_3 + q * (W + 3)) := by
+  intro E_K
+  have hmono := (dense_core_strict_doubling_and_monotonicity hV0_pos hj hrec).2
+  have hr13 : r_1 < r_3 := lt_trans hr12 hr23
+  have hmatch13 : ∀ t ≤ K, j (r_1 + t) = j (r_3 + t) :=
+    fun t ht => (hmatch12 t ht).trans (hmatch23 t ht)
+  have hEK_eq2 : defectStepSum (fun t => j (r_2 + 1 + t)) K = E_K := by
+    have h_all : ∀ m ≤ K,
+        defectStepSum (fun t => j (r_2 + 1 + t)) m =
+          defectStepSum (fun t => j (r_1 + 1 + t)) m := by
+      intro m hm
+      induction m with
+      | zero => rfl
+      | succ m ih =>
+          have ihm := ih (by omega)
+          have hstep : j (r_2 + 1 + m) = j (r_1 + 1 + m) := by
+            have h := (hmatch12 (1 + m) (by omega)).symm
+            have hidx1 : r_1 + (1 + m) = r_1 + 1 + m := by omega
+            have hidx2 : r_2 + (1 + m) = r_2 + 1 + m := by omega
+            rw [← hidx1, ← hidx2, h]
+          change defectStepSum (fun t => j (r_2 + 1 + t)) m + (3 * j (r_2 + 1 + m) + 4) =
+            defectStepSum (fun t => j (r_1 + 1 + t)) m + (3 * j (r_1 + 1 + m) + 4)
+          rw [ihm, hstep]
+    exact h_all K le_rfl
+  have hpig :
+      j (r_1 + K + 1) = j (r_2 + K + 1) ∨
+      j (r_1 + K + 1) = j (r_3 + K + 1) ∨
+      j (r_2 + K + 1) = j (r_3 + K + 1) := by
+    rcases hj (r_1 + K + 1) with h1 | h1 <;>
+      rcases hj (r_2 + K + 1) with h2 | h2 <;>
+      rcases hj (r_3 + K + 1) with h3 | h3 <;> omega
+  have htop12 := dense_core_repeated_window_top_part_isolation_and_squeeze
+    hV0_pos hV0_lt hj hrec hr12 hmatch12
+  have htop13 := dense_core_repeated_window_top_part_isolation_and_squeeze
+    hV0_pos hV0_lt hj hrec hr13 hmatch13
+  have htop23 := dense_core_repeated_window_top_part_isolation_and_squeeze
+    hV0_pos hV0_lt hj hrec hr23 hmatch23
+  have hVr2_lt_Vr3 : V r_2 < V r_3 := hmono r_2 r_3 hr23
+  have hS_mono := (no_density_weighted_subcritical_log_threshold_dense_core
+    hV0_pos hj hrec).1
+  have hS_r2_le_r3 : defectStepSum j r_2 ≤ defectStepSum j r_3 :=
+    hS_mono r_2 r_3 (le_of_lt hr23)
+  rcases hpig with heq12 | heq13 | heq23
+  · have hdvd128 := htop12.2.1.2 heq12
+    have hm7 := htop12.2.2 7 hdvd128
+    have hdvd14 : 2 ^ (E_K + 14) ∣ (V r_2 - V r_1) := hm7.1
+    have hpow_le : 2 ^ (7 * (K + 2)) ≤ 2 ^ (E_K + 14) := hm7.2.1
+    have hlt_Vr2 : 2 ^ (E_K + 14) < V r_2 := hm7.2.2.1
+    refine ⟨Or.inl hdvd14, hpow_le, lt_trans hlt_Vr2 hVr2_lt_Vr3, ?_⟩
+    intro p q hq hpq
+    have hcut_r2 := (hm7.2.2.2 p q hq hpq).1
+    have hqK : 7 * q * (K + 2) = q * (7 * (K + 1) + 7) := by ring
+    have hp_S : p * defectStepSum j r_2 ≤ p * defectStepSum j r_3 :=
+      Nat.mul_le_mul_left p hS_r2_le_r3
+    have hS_r3_le : defectStepSum j r_3 ≤ 10 * r_3 :=
+      ((dense_core_parameterized_pq_cutoff_and_convergents hV0_pos hV0_lt hj hrec).1 r_3).2
+    have hp_10 : p * defectStepSum j r_3 ≤ 10 * p * r_3 := by
+      calc p * defectStepSum j r_3 ≤ p * (10 * r_3) := Nat.mul_le_mul_left p hS_r3_le
+        _ = 10 * p * r_3 := by ring
+    exact ⟨by linarith only [hcut_r2, hp_S, hqK], by linarith only [hcut_r2, hp_S, hp_10, hqK]⟩
+  · have hdvd128 := htop13.2.1.2 heq13
+    have hm7 := htop13.2.2 7 hdvd128
+    have hdvd14 : 2 ^ (E_K + 14) ∣ (V r_3 - V r_1) := hm7.1
+    have hpow_le : 2 ^ (7 * (K + 2)) ≤ 2 ^ (E_K + 14) := hm7.2.1
+    have hlt_Vr3 : 2 ^ (E_K + 14) < V r_3 := hm7.2.2.1
+    refine ⟨Or.inr (Or.inl hdvd14), hpow_le, hlt_Vr3, ?_⟩
+    intro p q hq hpq
+    have hcut1 := (hm7.2.2.2 p q hq hpq).1
+    have hcut2 := (hm7.2.2.2 p q hq hpq).2
+    have hqK : 7 * q * (K + 2) = q * (7 * (K + 1) + 7) := by ring
+    exact ⟨by linarith only [hcut1, hqK], by linarith only [hcut2, hqK]⟩
+  · have hdvd128 := htop23.2.1.2 heq23
+    have hm7 := htop23.2.2 7 hdvd128
+    have hexp_14 : defectStepSum (fun t => j (r_2 + 1 + t)) K + 7 + 7 = E_K + 14 := by
+      rw [hEK_eq2]
+    have hdvd14 : 2 ^ (E_K + 14) ∣ (V r_3 - V r_2) := by
+      have h := hm7.1; rw [hexp_14] at h; exact h
+    have hpow_le : 2 ^ (7 * (K + 2)) ≤ 2 ^ (E_K + 14) := by
+      have h := hm7.2.1; rw [hexp_14] at h; exact h
+    have hlt_Vr3 : 2 ^ (E_K + 14) < V r_3 := by
+      have h := hm7.2.2.1; rw [hexp_14] at h; exact h
+    refine ⟨Or.inr (Or.inr hdvd14), hpow_le, hlt_Vr3, ?_⟩
+    intro p q hq hpq
+    have hcut1 := (hm7.2.2.2 p q hq hpq).1
+    have hcut2 := (hm7.2.2.2 p q hq hpq).2
+    have hqK : 7 * q * (K + 2) = q * (7 * (K + 1) + 7) := by ring
+    exact ⟨by linarith only [hcut1, hqK], by linarith only [hcut2, hqK]⟩
+
 end Mahler.DubickasExtension
 
 

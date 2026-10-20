@@ -299,6 +299,12 @@ example (m : ℕ) :
 #print axioms Mahler.DubickasExtension.no_subcritical_log_threshold_dense_core
 #print axioms Mahler.DubickasExtension.no_density_weighted_subcritical_log_threshold_dense_core
 
+-- 25. Verify Section 31: Bottom-part remainder invariance and floor conservation, shifted-horizon 98-bit corridor, repeated-window top-part isolation and squeeze, and 3-occurrence ultrametric pigeonhole
+#print axioms Mahler.DubickasExtension.bottom_part_remainder_invariance_and_floor_conservation
+#print axioms Mahler.DubickasExtension.dense_core_shifted_horizon_floor_and_ninety_eight_bit_corridor
+#print axioms Mahler.DubickasExtension.dense_core_repeated_window_top_part_isolation_and_squeeze
+#print axioms Mahler.DubickasExtension.dense_core_three_occurrence_ultrametric_pigeonhole
+
 #print axioms Mahler.DubickasExtension.dubBaseCarry_eq_fract_linear
 #print axioms Mahler.DubickasExtension.dubBaseY_multi_step_carry_identity
 #print axioms Mahler.DubickasExtension.dubBaseCarry_mem_two_letters
