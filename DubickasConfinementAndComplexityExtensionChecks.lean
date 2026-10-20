@@ -233,6 +233,12 @@ example (m : ℕ) :
 
 #print axioms Mahler.DubickasExtension.universal_catapult_death_band_ladder
 
+-- 16. Verify Section 22: Defect-to-defect quotient recurrence, mod-8 lock, and sparse-defect descent
+#print axioms Mahler.DubickasExtension.punctured_eight_eighty_firsts_forbids_four_zeros_and_short_gaps
+#print axioms Mahler.DubickasExtension.cantor_dust_defect_to_defect_quotient_recurrence
+#print axioms Mahler.DubickasExtension.cantor_dust_mod_eight_lock_and_sparse_descent
+#print axioms Mahler.DubickasExtension.no_infinite_sparse_defect_cantor_dust_chain
+
 #print axioms Mahler.DubickasExtension.dubBaseCarry_eq_fract_linear
 #print axioms Mahler.DubickasExtension.dubBaseY_multi_step_carry_identity
 #print axioms Mahler.DubickasExtension.dubBaseCarry_mem_two_letters

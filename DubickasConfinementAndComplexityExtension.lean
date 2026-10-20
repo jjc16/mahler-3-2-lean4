@@ -7323,7 +7323,333 @@ theorem universal_catapult_death_band_ladder :
     exact ⟨by linarith [hd_disj.1], by linarith [hd_disj.2.1], by linarith [hd_disj.2.2]⟩
   exact ⟨hret_lo, hret_hi, hbij, htang, hlt_iff, hdisj⟩
 
+/-! ## 22. Hidden Arithmetic Structure Inside the Cantor Dust: $\{3, 4\}$ Block Confinement on $[8/81, 1/2)$, the Defect-to-Defect Recurrence $2^{3 j_1 + 4} U_1 + 9 = 3^{3 j_0 + 4} U_0$, the Mod-8 Parity Lock, and Well-Founded Sparse-Defect Descent
+
+Can we find a hidden arithmetic structure inside the Cantor dust that eliminates whole families of
+*chaotic, non-repeating* paths? Yes!
+1. **Complete $\{3, 4\}$ Block-Length Confinement on $[8/81, 1/2)$ ($80.25\%$ of $[0, 1/2)$)
+   (`punctured_eight_eighty_firsts_forbids_four_zeros_and_short_gaps`):**
+   On $[\frac{8}{81}, \frac{1}{2}) \approx [0.098765, 0.5)$ (which covers **$80.25\%$ of $[0, 1/2)$**,
+   including the entire homoclinic Cantor dust region $[\frac{8}{81}, \frac{8}{57})$), four
+   consecutive zeros (`0000`) are impossible ($16 y_{k+4} = 81 y_k \ge 8 \implies y_{k+4} \ge 1/2$),
+   and `11` and `101` are also impossible. Thus **every block between consecutive `1`s has length
+   $s(m) \in \{3, 4\}$ (`001` or `0001`)**—eliminating the "moving-target" choice of $c_n \ge 5$!
+2. **Exact Defect-to-Defect Odd-Quotient Recurrence (`cantor_dust_defect_to_defect_quotient_recurrence`):**
+   Along any chain with $j_0$ blocks of $3$, a defect $s(j_0) = 4$, $j_1$ blocks of $3$, and a
+   second defect $s(j_0 + 1 + j_1) \ge 4$, the odd defect quotients $U_0, U_1$ defined by
+   $19 a_0 + 9 = 2^{3 j_0 + 3} U_0$ and $19 b_{j_0 + 1} + 9 = 2^{3 j_1 + 3} U_1$ satisfy the exact
+   Syracuse-like transition law:
+   $$2^{3 j_1 + 4} \cdot U_1 + 9 = 3^{3 j_0 + 4} \cdot U_0.$$
+3. **Mod-8 / Mod-16 Parity Trap & Well-Founded Sparse-Defect Descent
+   (`cantor_dust_mod_eight_lock_and_sparse_descent`, `no_infinite_sparse_defect_cantor_dust_chain`):**
+   - Because $16 \mid 2^{3 j_1 + 4} U_1 = 3^{3 j_0 + 4} U_0 - 9$, we must have
+     $(3^{j_0} U_0) \bmod 8 = 1$, forcing **$U_0 \bmod 8 \in \{1, 3\}$** ($U_0 \equiv 5, 7 \pmod 8$ is
+     an immediate dead end that can never undergo another defect for *any* $j_0$!) and locking
+     $j_0 \bmod 2 = 0 \iff U_0 \bmod 8 = 1$ and $j_0 \bmod 2 = 1 \iff U_0 \bmod 8 = 3$.
+   - Whenever defects become sparse ($3^{3 j_r + 4} \le 2^{3 j_{r+1} + 4}$, and in particular
+     whenever $2 j_r + 2 \le j_{r+1}$), the recurrence forces **$U_{r+1} + 2 \le U_r$**—a strict
+     well-founded descent on positive odd integers that unconditionally eliminates all infinite
+     sparse-defect chaotic paths in the Cantor dust! -/
+
+/-- **Forbidden `11`, `101`, and `0000` on $[8/81, 1/2)$ ($80.25\%$ of $[0, 1/2)$)
+(`punctured_eight_eighty_firsts_forbids_four_zeros_and_short_gaps`)**:
+Whenever consecutive fractional parts $y_n = \text{dubY } \xi\ 0\ n$ lie in $[\frac{8}{81}, \frac{1}{2})$:
+1. $s_k \in \{0, 1\}$, $s_k = 1 \implies s_{k+1} = 0$ (no `11`), and $s_k = 1 \implies s_{k+2} = 0$ (no `101`),
+2. If $s_k = s_{k+1} = s_{k+2} = 0$ (`000`), then $s_{k+3} = 1$ (no `0000`), so every block between
+   consecutive `1`s has length $3$ (`001`) or $4$ (`0001`). -/
+theorem punctured_eight_eighty_firsts_forbids_four_zeros_and_short_gaps
+    {ξ : ℝ} {k : ℕ}
+    (hmem : ∀ r ≤ 4, (8 / 81 : ℝ) ≤ dubY ξ 0 (k + r) ∧ dubY ξ 0 (k + r) < (1 / 2 : ℝ)) :
+    (dubCarry ξ 0 k = 0 ∨ dubCarry ξ 0 k = 1) ∧
+    (dubCarry ξ 0 k = 1 → dubCarry ξ 0 (k + 1) = 0 ∧ dubCarry ξ 0 (k + 2) = 0) ∧
+    (dubCarry ξ 0 k = 0 → dubCarry ξ 0 (k + 1) = 0 → dubCarry ξ 0 (k + 2) = 0 →
+      dubCarry ξ 0 (k + 3) = 1) := by
+  have hε16 : (1 / 16 : ℝ) ≤ (8 / 81 : ℝ) := by norm_num
+  have hd := punctured_half_step_dichotomy_and_forbidden_short_gaps (ξ := ξ) hε16
+  have hm0 := hmem 0 (by omega); rw [Nat.add_zero] at hm0
+  have hm1 := hmem 1 (by omega)
+  have hm2 := hmem 2 (by omega)
+  have hm3 := hmem 3 (by omega)
+  have hm4 := hmem 4 (by omega)
+  have hb0 := (hd.1 k hm0.1 hm0.2 hm1.1 hm1.2).1
+  have h11_101 : dubCarry ξ 0 k = 1 → dubCarry ξ 0 (k + 1) = 0 ∧ dubCarry ξ 0 (k + 2) = 0 := by
+    intro hs1
+    exact ⟨(hd.2.1 k hm0.1 hm0.2 hm1.1 hm1.2 hm2.1 hm2.2 hs1).1,
+      hd.2.2 k hm0.1 hm0.2 hm1.1 hm1.2 hm2.1 hm2.2 hm3.1 hm3.2 hs1⟩
+  refine ⟨hb0, h11_101, ?_⟩
+  intro hc0 hc1 hc2
+  have hl0 := dubCarry_eq_fract_linear ξ 0 k
+  have hl1 := dubCarry_eq_fract_linear ξ 0 (k + 1)
+  have hl2 := dubCarry_eq_fract_linear ξ 0 (k + 2)
+  have hl3 := dubCarry_eq_fract_linear ξ 0 (k + 3)
+  have hc0_r : (dubCarry ξ 0 k : ℝ) = 0 := by exact_mod_cast hc0
+  have hc1_r : (dubCarry ξ 0 (k + 1) : ℝ) = 0 := by exact_mod_cast hc1
+  have hc2_r : (dubCarry ξ 0 (k + 2) : ℝ) = 0 := by exact_mod_cast hc2
+  have hb3 := (hd.1 (k + 3) hm3.1 hm3.2 hm4.1 hm4.2).1
+  rcases hb3 with h0 | h1
+  · exfalso
+    have h0_r : (dubCarry ξ 0 (k + 3) : ℝ) = 0 := by exact_mod_cast h0
+    linarith [hm0.1, hm4.2]
+  · exact h1
+
+/-- **Exact Defect-to-Defect Odd-Quotient Recurrence Inside the Cantor Dust
+(`cantor_dust_defect_to_defect_quotient_recurrence`)**:
+Suppose `ValidBlockChain a_0 s u (j_0 + 1 + j_1 + 1)` has $s(k) = 3$ for $k < j_0$, a length-$4$
+defect $s(j_0) = 4$, $s(j_0 + 1 + k) = 3$ for $k < j_1$, and a second defect $s(j_0 + 1 + j_1) \ge 4$.
+Then there exist odd positive integers $U_0, U_1 \ge 1$ (`U_0 % 2 = 1 ∧ U_1 % 2 = 1`) such that:
+1. $19 a_0 + 9 = 2^{3 j_0 + 3} U_0$,
+2. $19 b_{j_0 + 1} + 9 = 2^{3 j_1 + 3} U_1$ (where $b_{j_0 + 1} = \text{orbit}(a_0, \text{blockSteps}(s, j_0 + 1))$),
+3. $2^{3 j_1 + 4} \cdot U_1 + 9 = 3^{3 j_0 + 4} \cdot U_0$. -/
+theorem cantor_dust_defect_to_defect_quotient_recurrence
+    {a_0 j_0 j_1 : ℕ} {s u : ℕ → ℕ}
+    (hchain : ValidBlockChain a_0 s u (j_0 + 1 + j_1 + 1))
+    (hpure0 : ∀ k < j_0, s k = 3)
+    (hdef0 : s j_0 = 4)
+    (hpure1 : ∀ k < j_1, s (j_0 + 1 + k) = 3)
+    (hdef1 : 4 ≤ s (j_0 + 1 + j_1)) :
+    ∃ U_0 U_1 : ℕ,
+      U_0 % 2 = 1 ∧ U_1 % 2 = 1 ∧
+      rungAffInv 3 a_0 = 2 ^ (3 * (j_0 + 1)) * U_0 ∧
+      rungAffInv 3 (orbit a_0 (blockSteps s (j_0 + 1))) = 2 ^ (3 * (j_1 + 1)) * U_1 ∧
+      2 ^ (3 * j_1 + 4) * U_1 + 9 = 3 ^ (3 * j_0 + 4) * U_0 := by
+  have hg3 : 1 ≤ 3 := by decide
+  have hdef0_ge : 3 + 1 ≤ s j_0 := by omega
+  have hchain0 : ValidBlockChain a_0 s u (j_0 + 1) :=
+    fun k hk => hchain k (by omega)
+  have hlock0 := general_rung_first_defect_valuation_lock hg3 hchain0 hpure0 hdef0_ge
+  rcases hlock0.1 with ⟨U_0, hU0_eq⟩
+  have hU0_odd : U_0 % 2 = 1 := by
+    by_contra heven
+    have hmod0 : U_0 % 2 = 0 := by omega
+    obtain ⟨q0, hq0⟩ : 2 ∣ U_0 := Nat.dvd_of_mod_eq_zero hmod0
+    apply hlock0.2.1
+    refine ⟨q0, ?_⟩
+    rw [hU0_eq, hq0, Nat.pow_succ]
+    ring
+  set b1 := orbit a_0 (blockSteps s (j_0 + 1))
+  set s1 : ℕ → ℕ := fun k => s (j_0 + 1 + k)
+  set u1 : ℕ → ℕ := fun k => u (j_0 + 1 + k)
+  have hsteps_shift :
+      ∀ k : ℕ, blockSteps s (j_0 + 1 + k) = blockSteps s (j_0 + 1) + blockSteps s1 k := by
+    intro k
+    induction k with
+    | zero => simp [blockSteps]
+    | succ k ih =>
+        have hidx : j_0 + 1 + (k + 1) = (j_0 + 1 + k) + 1 := by omega
+        have hs_lhs : blockSteps s ((j_0 + 1 + k) + 1) = blockSteps s (j_0 + 1 + k) + s (j_0 + 1 + k) := rfl
+        have hs_rhs : blockSteps s1 (k + 1) = blockSteps s1 k + s1 k := rfl
+        rw [hidx, hs_lhs, hs_rhs, ih]
+        dsimp [s1]
+        omega
+  have hchain1 : ValidBlockChain b1 s1 u1 (j_1 + 1) := by
+    intro k hk
+    rcases hchain (j_0 + 1 + k) (by omega) with ⟨hs_pos, hu_odd, hdecomp⟩
+    refine ⟨hs_pos, hu_odd, ?_⟩
+    dsimp [b1, s1, u1]
+    rw [← orbit_add, ← hsteps_shift k]
+    exact hdecomp
+  have hlock1 := general_rung_first_defect_valuation_lock hg3 hchain1 hpure1 hdef1
+  rcases hlock1.1 with ⟨U_1, hU1_eq⟩
+  have hU1_odd : U_1 % 2 = 1 := by
+    by_contra heven
+    have hmod0 : U_1 % 2 = 0 := by omega
+    obtain ⟨q1, hq1⟩ : 2 ∣ U_1 := Nat.dvd_of_mod_eq_zero hmod0
+    apply hlock1.2.1
+    refine ⟨q1, ?_⟩
+    rw [hU1_eq, hq1, Nat.pow_succ]
+    ring
+  have hge_3 : ∀ k < j_0 + 1, 3 ≤ s k := by
+    intro k hk
+    by_cases hlt : k < j_0
+    · rw [hpure0 k hlt]
+    · have heq : k = j_0 := by omega
+      rw [heq, hdef0]; decide
+  have htower := rungDefectCocycle_tower_identity hg3 (le_refl (j_0 + 1)) hchain0 hge_3
+  have hcoc_pure : ∀ m ≤ j_0, rungDefectCocycle 3 s m = 0 := by
+    intro m hm
+    induction m with
+    | zero => rfl
+    | succ m ih =>
+        have ihm := ih (by omega)
+        have hsm : s m = 3 := hpure0 m (by omega)
+        unfold rungDefectCocycle
+        rw [ihm, hsm]
+        simp
+  have hsteps_j0 : blockSteps s j_0 = 3 * j_0 := by
+    have hp : ∀ m ≤ j_0, blockSteps s m = 3 * m := by
+      intro m hm
+      induction m with
+      | zero => rfl
+      | succ m ih =>
+          have ihm := ih (by omega)
+          have hsm : s m = 3 := hpure0 m (by omega)
+          have hs : blockSteps s (m + 1) = blockSteps s m + s m := rfl
+          rw [hs, ihm, hsm]
+          omega
+    exact hp j_0 (le_refl j_0)
+  have hsteps_j0_1 : blockSteps s (j_0 + 1) = 3 * j_0 + 4 := by
+    have hs : blockSteps s (j_0 + 1) = blockSteps s j_0 + s j_0 := rfl
+    rw [hs, hsteps_j0, hdef0]
+  have hcoc_j0_1 : rungDefectCocycle 3 s (j_0 + 1) = 2 ^ (3 * j_0 + 3) * 9 := by
+    unfold rungDefectCocycle
+    rw [hcoc_pure j_0 (le_refl j_0), hsteps_j0, hdef0]
+    ring
+  change 2 ^ blockSteps s (j_0 + 1) * rungAffInv 3 b1 + rungDefectCocycle 3 s (j_0 + 1) =
+    3 ^ blockSteps s (j_0 + 1) * rungAffInv 3 a_0 at htower
+  rw [hsteps_j0_1, hcoc_j0_1, hU0_eq, hU1_eq] at htower
+  have hpow_lhs :
+      2 ^ (3 * j_0 + 4) * (2 ^ (3 * (j_1 + 1)) * U_1) + 2 ^ (3 * j_0 + 3) * 9 =
+        2 ^ (3 * j_0 + 3) * (2 ^ (3 * j_1 + 4) * U_1 + 9) := by
+    have h1 : 3 * j_0 + 4 = (3 * j_0 + 3) + 1 := by omega
+    have h2 : 3 * j_1 + 4 = 1 + 3 * (j_1 + 1) := by omega
+    rw [h1, h2, Nat.pow_succ, Nat.pow_add 2 1 (3 * (j_1 + 1))]
+    ring
+  have hpow_rhs :
+      3 ^ (3 * j_0 + 4) * (2 ^ (3 * (j_0 + 1)) * U_0) =
+        2 ^ (3 * j_0 + 3) * (3 ^ (3 * j_0 + 4) * U_0) := by
+    have h1 : 3 * (j_0 + 1) = 3 * j_0 + 3 := by omega
+    rw [h1]
+    ring
+  rw [hpow_lhs, hpow_rhs] at htower
+  have hcancel := Nat.eq_of_mul_eq_mul_left (Nat.pow_pos (by decide)) htower
+  exact ⟨U_0, U_1, hU0_odd, hU1_odd, hU0_eq, hU1_eq, hcancel⟩
+
+/-- **Mod-8 / Mod-16 Quotient-Parity Lock and Sparse-Defect Descent Inside the Cantor Dust
+(`cantor_dust_mod_eight_lock_and_sparse_descent`)**:
+Whenever odd natural numbers $U_0, U_1$ (`U_0 % 2 = 1 ∧ U_1 % 2 = 1`) satisfy the defect-to-defect
+recurrence $2^{3 j_1 + 4} U_1 + 9 = 3^{3 j_0 + 4} U_0$:
+1. **Mod-16 Divisibility & Mod-8 Remainder Lock:**
+   $$16 \;\Big|\; \left(3^{3 j_0 + 4} U_0 - 9\right), \qquad \left(3^{j_0} U_0\right) \bmod 8 = 1,$$
+   $$U_0 \bmod 8 = 1 \lor U_0 \bmod 8 = 3 \quad (\text{excluding } U_0 \bmod 8 \in \{5, 7\}),$$
+   $$(j_0 \bmod 2 = 0 \leftrightarrow U_0 \bmod 8 = 1) \;\land\; (j_0 \bmod 2 = 1 \leftrightarrow U_0 \bmod 8 = 3).$$
+2. **Well-Founded Odd-Quotient Descent Under Sparse Defects:**
+   Whenever $3^{3 j_0 + 4} \le 2^{3 j_1 + 4}$ (and in particular whenever $2 j_0 + 2 \le j_1$),
+   $$U_1 + 2 \le U_0.$$ -/
+theorem cantor_dust_mod_eight_lock_and_sparse_descent
+    {j_0 j_1 U_0 U_1 : ℕ}
+    (hU0_odd : U_0 % 2 = 1) (hU1_odd : U_1 % 2 = 1)
+    (hrec : 2 ^ (3 * j_1 + 4) * U_1 + 9 = 3 ^ (3 * j_0 + 4) * U_0) :
+    16 ∣ (3 ^ (3 * j_0 + 4) * U_0 - 9) ∧
+    (3 ^ j_0 * U_0) % 8 = 1 ∧
+    (U_0 % 8 = 1 ∨ U_0 % 8 = 3) ∧
+    ((j_0 % 2 = 0 ↔ U_0 % 8 = 1) ∧ (j_0 % 2 = 1 ↔ U_0 % 8 = 3)) ∧
+    (3 ^ (3 * j_0 + 4) ≤ 2 ^ (3 * j_1 + 4) → U_1 + 2 ≤ U_0) ∧
+    (2 * j_0 + 2 ≤ j_1 → U_1 + 2 ≤ U_0) := by
+  have hdvd16 : 16 ∣ (3 ^ (3 * j_0 + 4) * U_0 - 9) := by
+    refine ⟨2 ^ (3 * j_1) * U_1, ?_⟩
+    have hsub : 3 ^ (3 * j_0 + 4) * U_0 - 9 = 2 ^ (3 * j_1 + 4) * U_1 := by omega
+    have hpow : 2 ^ (3 * j_1 + 4) = 16 * 2 ^ (3 * j_1) := by
+      rw [Nat.pow_add]; ring
+    rw [hsub, hpow]
+    ring
+  have h3_pow_mod8 : ∀ k : ℕ, (3 ^ (3 * k + 4)) % 8 = (3 ^ k) % 8 := by
+    intro k
+    induction k with
+    | zero => decide
+    | succ k ih =>
+        have h1 : 3 * (k + 1) + 4 = (3 * k + 4) + 3 := by omega
+        rw [h1, Nat.pow_add 3 (3 * k + 4) 3, Nat.pow_succ 3 k, Nat.mul_mod, ih]
+        have h27 : (3 ^ 3) % 8 = 3 := by decide
+        rw [h27]
+        omega
+  have hmod8_eq : (3 ^ (3 * j_0 + 4) * U_0) % 8 = 1 := by
+    have hsub : 3 ^ (3 * j_0 + 4) * U_0 = 2 ^ (3 * j_1 + 4) * U_1 + 9 := hrec.symm
+    have hpow8 : 8 ∣ 2 ^ (3 * j_1 + 4) * U_1 := by
+      refine ⟨2 ^ (3 * j_1 + 1) * U_1, ?_⟩
+      have h : 3 * j_1 + 4 = 3 + (3 * j_1 + 1) := by omega
+      rw [h, Nat.pow_add]; ring
+    rcases hpow8 with ⟨q8, hq8⟩
+    rw [hsub, hq8]
+    omega
+  have h3j0_U0_mod8 : (3 ^ j_0 * U_0) % 8 = 1 := by
+    rw [Nat.mul_mod, ← h3_pow_mod8 j_0, ← Nat.mul_mod, hmod8_eq]
+  have h3_parity_all :
+      ∀ n : ℕ, (n % 2 = 0 → (3 ^ n) % 8 = 1) ∧ (n % 2 = 1 → (3 ^ n) % 8 = 3) := by
+    intro n
+    induction n with
+    | zero => decide
+    | succ k ih =>
+        rw [Nat.pow_succ]
+        have hpar : k % 2 = 0 ∨ k % 2 = 1 := by omega
+        rcases hpar with hk0 | hk1
+        · have ih0 := ih.1 hk0
+          constructor
+          · intro h; omega
+          · intro _; rw [Nat.mul_mod, ih0]
+        · have ih1 := ih.2 hk1
+          constructor
+          · intro _; rw [Nat.mul_mod, ih1]
+          · intro h; omega
+  have h3_j0_parity := h3_parity_all j_0
+  have hU0_mod8_cases : U_0 % 8 = 1 ∨ U_0 % 8 = 3 ∨ U_0 % 8 = 5 ∨ U_0 % 8 = 7 := by omega
+  have hpar_j0 : j_0 % 2 = 0 ∨ j_0 % 2 = 1 := by omega
+  have hlock_mod8 :
+      (U_0 % 8 = 1 ∨ U_0 % 8 = 3) ∧
+      ((j_0 % 2 = 0 ↔ U_0 % 8 = 1) ∧ (j_0 % 2 = 1 ↔ U_0 % 8 = 3)) := by
+    rcases hpar_j0 with hj0 | hj1
+    · have h3_1 := h3_j0_parity.1 hj0
+      rw [Nat.mul_mod, h3_1] at h3j0_U0_mod8
+      rcases hU0_mod8_cases with hu1 | hu3 | hu5 | hu7 <;> omega
+    · have h3_3 := h3_j0_parity.2 hj1
+      rw [Nat.mul_mod, h3_3] at h3j0_U0_mod8
+      rcases hU0_mod8_cases with hu1 | hu3 | hu5 | hu7 <;> omega
+  have hdescent : 3 ^ (3 * j_0 + 4) ≤ 2 ^ (3 * j_1 + 4) → U_1 + 2 ≤ U_0 := by
+    intro hpow_le
+    have hmul_le : 3 ^ (3 * j_0 + 4) * U_1 ≤ 2 ^ (3 * j_1 + 4) * U_1 :=
+      Nat.mul_le_mul_right U_1 hpow_le
+    have hlt_mul : 3 ^ (3 * j_0 + 4) * U_1 < 3 ^ (3 * j_0 + 4) * U_0 := by omega
+    have hpos3 : 0 < 3 ^ (3 * j_0 + 4) := Nat.pow_pos (by decide)
+    have hlt_U : U_1 < U_0 := Nat.lt_of_mul_lt_mul_left hlt_mul
+    omega
+  have hpow_step_all : ∀ n : ℕ, 3 ^ (3 * n + 4) ≤ 2 ^ (3 * (2 * n + 2) + 4) := by
+    intro n
+    induction n with
+    | zero => decide
+    | succ k ih =>
+        have h1 : 3 * (k + 1) + 4 = (3 * k + 4) + 3 := by omega
+        have h2 : 3 * (2 * (k + 1) + 2) + 4 = (3 * (2 * k + 2) + 4) + 6 := by omega
+        rw [h1, h2, Nat.pow_add 3 (3 * k + 4) 3, Nat.pow_add 2 (3 * (2 * k + 2) + 4) 6]
+        have h27_64 : 3 ^ 3 ≤ 2 ^ 6 := by decide
+        exact Nat.mul_le_mul ih h27_64
+  have hdescent_j : 2 * j_0 + 2 ≤ j_1 → U_1 + 2 ≤ U_0 := by
+    intro hj_le
+    apply hdescent
+    have hpow_mono : 2 ^ (3 * (2 * j_0 + 2) + 4) ≤ 2 ^ (3 * j_1 + 4) :=
+      Nat.pow_le_pow_right (by decide) (by omega)
+    exact le_trans (hpow_step_all j_0) hpow_mono
+  exact ⟨hdvd16, h3j0_U0_mod8, hlock_mod8.1, hlock_mod8.2, hdescent, hdescent_j⟩
+
+/-- **Unconditional Exclusion of Infinite Sparse-Defect Chaotic Chains in the Cantor Dust
+(`no_infinite_sparse_defect_cantor_dust_chain`)**:
+There does not exist any infinite sequence of odd defect quotients $U : \mathbb{N} \to \mathbb{N}$
+and waiting times $j : \mathbb{N} \to \mathbb{N}$ satisfying
+$$2^{3 j(r + 1) + 4} U(r + 1) + 9 = 3^{3 j(r) + 4} U(r) \quad \text{and} \quad
+  3^{3 j(r) + 4} \le 2^{3 j(r + 1) + 4}$$
+for all $r \in \mathbb{N}$. -/
+theorem no_infinite_sparse_defect_cantor_dust_chain :
+    ¬ ∃ (U j : ℕ → ℕ),
+      ∀ r : ℕ,
+        U r % 2 = 1 ∧
+        2 ^ (3 * j (r + 1) + 4) * U (r + 1) + 9 = 3 ^ (3 * j r + 4) * U r ∧
+        3 ^ (3 * j r + 4) ≤ 2 ^ (3 * j (r + 1) + 4) := by
+  rintro ⟨U, j, hchain⟩
+  have hstep : ∀ r : ℕ, U (r + 1) + 2 ≤ U r := by
+    intro r
+    have hr := hchain r
+    have hr1 := (hchain (r + 1)).1
+    exact (cantor_dust_mod_eight_lock_and_sparse_descent hr.1 hr1 hr.2.1).2.2.2.2.1 hr.2.2
+  have hbound : ∀ k : ℕ, U k + 2 * k ≤ U 0 := by
+    intro k
+    induction k with
+    | zero => omega
+    | succ k ih =>
+        have hst := hstep k
+        omega
+  have hcontra := hbound (U 0 + 1)
+  omega
+
 end Mahler.DubickasExtension
+
 
 
 
