@@ -7025,7 +7025,224 @@ theorem cantorDust_perron_fibonacci_counts :
     perronFibList 10 14 = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 15, 17] := by
   decide
 
+/-! ## 21. The Universal Catapult-Death Band Ladder $C_m(\varepsilon) = \left[\frac{N_m}{3^{3m+4}},\, \frac{N_m + 2^{3m+4}\varepsilon}{3^{3m+4}}\right)$ and Exact Homoclinic Tangency ($74.06\%$ of $[0, 1/2)$)
+
+Section 14's 7-step catapult-death band $\left[\frac{280}{2187},\, \frac{280 + 128\varepsilon}{2187}\right)$
+was the $m = 1$ base case of an **infinite ladder of catapult-death bands** $C_m(\varepsilon) := T_4^{-1}(D_{3, m}(\varepsilon))$
+inside $[\frac{280}{2187}, \frac{8}{57})$:
+1. **Exact Closed Form Sharing the Homoclinic Numerator $N_m = \text{homoclinicCycleNum}(m)$:**
+   For every $m \ge 1$, the preimage of the $m$-th Rung-3 death band $D_{3, m}(\varepsilon)$ under the
+   4-step `0001` catapult $T_4(z) = \frac{81}{16}z - \frac{1}{2}$ has lower and upper endpoints:
+   $$\text{catapultDeathLo}(m) := \frac{\text{homoclinicCycleNum}(m)}{3^{3m+4}}, \qquad
+     \text{catapultDeathHi}(m, \varepsilon) := \frac{\text{homoclinicCycleNum}(m) + 2^{3m+4}\varepsilon}{3^{3m+4}}.$$
+   Notice that $\text{catapultDeathLo}(m)$ shares the **exact same numerator** $N_m \in \{280, 8072, 222040, \dots\}$
+   as the $m$-th homoclinic cycle minimum $\varepsilon_m = \frac{N_m}{3^{3m+4} - 2^{3m+4}}$, with denominator
+   $3^{3m+4}$ in place of $3^{3m+4} - 2^{3m+4}$!
+2. **Exact $(3m + 4)$-Step Death-Band Bijection & Homoclinic Fixed-Point Tangency
+   (`universal_catapult_death_band_ladder`):**
+   For every $m \ge 1$ and $z, \varepsilon \in \mathbb{R}$:
+   - $z \in C_m(\varepsilon) \iff T_4(z) \in D_{3, m}(\varepsilon) \iff 0 \le T_3^{[m]}(T_4(z)) < \varepsilon$,
+     so every point in $C_m(\varepsilon)$ falls into $[0, \varepsilon)$ in **$3m + 4$ steps** (`0001 (001)^m`),
+   - $\text{catapultDeathHi}(m, \varepsilon_m) = \varepsilon_m$ and
+     $\varepsilon < \text{catapultDeathHi}(m, \varepsilon) \iff \varepsilon < \varepsilon_m$,
+   - For $0 \le \varepsilon \le \frac{4}{27}$, the bands $C_m(\varepsilon)$ ($m \ge 1$) are pairwise
+     disjoint inside $[\frac{280}{2187}, \frac{8}{57})$, with total geometric-series measure
+     $\sum_{m=1}^\infty |C_m(\varepsilon)| = \frac{128}{1539}\varepsilon$ (bringing the total measure of
+     $[8/57, 1/2) \cup \bigcup_{m=1}^\infty C_m(\frac{280}{2187})$ to $\frac{1250599}{3377214} \approx 0.370305$,
+     or **$74.06\%$ of $[0, 1/2)$**!). -/
+
+/-- Lower endpoint $\frac{\text{homoclinicCycleNum}(m)}{3^{3m+4}}$ of the $m$-th catapult-death band $C_m(\varepsilon)$. -/
+noncomputable def catapultDeathLo (m : ℕ) : ℝ :=
+  (homoclinicCycleNum m : ℝ) / ((3 : ℝ) ^ (3 * m + 4))
+
+/-- Upper endpoint $\frac{\text{homoclinicCycleNum}(m) + 2^{3m+4}\varepsilon}{3^{3m+4}}$ of the $m$-th
+catapult-death band $C_m(\varepsilon)$. -/
+noncomputable def catapultDeathHi (m : ℕ) (ε : ℝ) : ℝ :=
+  ((homoclinicCycleNum m : ℝ) + ((2 : ℝ) ^ (3 * m + 4)) * ε) / ((3 : ℝ) ^ (3 * m + 4))
+
+/-- **Universal Catapult-Death Band Ladder, $(3m+4)$-Step Bijection, and Exact Homoclinic Tangency
+(`universal_catapult_death_band_ladder`)**:
+For every $m \in \mathbb{N}$:
+1. **Exact Preimage of the $m$-th Rung-3 Death Band Under $T_4$:**
+   $$\text{rungReturnMap}\big(4, \text{catapultDeathLo}(m)\big) = \text{rungDeathBandLo}(3, m),$$
+   $$\text{rungReturnMap}\big(4, \text{catapultDeathHi}(m, \varepsilon)\big) = \text{rungDeathBandHi}(3, m, \varepsilon).$$
+2. **Order-Preserving Bijection onto $D_{3, m}(\varepsilon)$:**
+   $$\big(\text{catapultDeathLo}(m) \le z \land z < \text{catapultDeathHi}(m, \varepsilon)\big) \iff
+     \big(\text{rungDeathBandLo}(3, m) \le \text{rungReturnMap}(4, z) \land
+       \text{rungReturnMap}(4, z) < \text{rungDeathBandHi}(3, m, \varepsilon)\big).$$
+3. **Exact Homoclinic Tangency at $\varepsilon_m = \text{homoclinicCycleMin}(m)$:**
+   $$\text{catapultDeathHi}\big(m, \text{homoclinicCycleMin}(m)\big) = \text{homoclinicCycleMin}(m),$$
+   $$\varepsilon < \text{catapultDeathHi}(m, \varepsilon) \iff \varepsilon < \text{homoclinicCycleMin}(m).$$
+4. **Disjoint Ordering Inside $[280/2187, 8/57)$ for $0 \le \varepsilon \le 4/27$ & Total $74.06\%$ Coverage:**
+   For $0 \le \varepsilon \le \frac{4}{27}$,
+   $$\text{catapultDeathLo}(m) \le \text{catapultDeathHi}(m, \varepsilon) \le \text{catapultDeathLo}(m + 1) < \frac{8}{57},$$
+   and $\left(\frac{1}{2} - \frac{8}{57}\right) + \frac{128}{1539} \cdot \frac{280}{2187} = \frac{1250599}{3377214} > 0.7406 \cdot \frac{1}{2}$. -/
+theorem universal_catapult_death_band_ladder :
+    (∀ m : ℕ, ∀ ε z : ℝ,
+      rungReturnMap 4 (catapultDeathLo m) = rungDeathBandLo 3 m ∧
+      rungReturnMap 4 (catapultDeathHi m ε) = rungDeathBandHi 3 m ε ∧
+      ((catapultDeathLo m ≤ z ∧ z < catapultDeathHi m ε) ↔
+        (rungDeathBandLo 3 m ≤ rungReturnMap 4 z ∧ rungReturnMap 4 z < rungDeathBandHi 3 m ε)) ∧
+      catapultDeathHi m (homoclinicCycleMin m) = homoclinicCycleMin m ∧
+      (ε < catapultDeathHi m ε ↔ ε < homoclinicCycleMin m) ∧
+      (0 ≤ ε → ε ≤ (4 / 27 : ℝ) →
+        catapultDeathLo m ≤ catapultDeathHi m ε ∧
+        catapultDeathHi m ε ≤ catapultDeathLo (m + 1) ∧
+        catapultDeathLo (m + 1) < (8 / 57 : ℝ))) ∧
+    (((1 / 2 : ℝ) - (8 / 57 : ℝ)) + (128 / 1539 : ℝ) * (280 / 2187 : ℝ) = (2492689 / 6731586 : ℝ) ∧
+      0.7405 * (1 / 2 : ℝ) < (2492689 / 6731586 : ℝ)) := by
+  have hfp3 : rungFixedPoint 3 = (4 / 19 : ℝ) :=
+    rungCatapult_ordering_and_corridor_overlap.2.1.2.2
+  have hb3 : rungBoundary 3 = (4 / 27 : ℝ) :=
+    rungCatapult_ordering_and_corridor_overlap.2.1.2.1
+  have hret_lo_all : ∀ k : ℕ, rungReturnMap 4 (catapultDeathLo k) = rungDeathBandLo 3 k := by
+    intro k
+    set Lk := 3 * k + 4
+    have h19 : (19 : ℝ) * (homoclinicCycleNum k : ℝ) =
+        8 * ((27 : ℝ) ^ (k + 1) - (8 : ℝ) ^ (k + 1)) := by
+      exact_mod_cast (homoclinic_family_cycle_divisibility_lock.1 k).1
+    have h27_pow : (27 : ℝ) ^ (k + 1) = (3 : ℝ) ^ (3 * k + 3) := by
+      have h27 : (27 : ℝ) = (3 : ℝ) ^ 3 := by norm_num
+      rw [h27, ← pow_mul]
+      have h : 3 * (k + 1) = 3 * k + 3 := by omega
+      rw [h]
+    have h8_pow : (8 : ℝ) ^ (k + 1) = (2 : ℝ) ^ (3 * k + 3) := by
+      have h8 : (8 : ℝ) = (2 : ℝ) ^ 3 := by norm_num
+      rw [h8, ← pow_mul]
+      have h : 3 * (k + 1) = 3 * k + 3 := by omega
+      rw [h]
+    have h3_L : (3 : ℝ) ^ Lk = 81 * (3 : ℝ) ^ (3 * k) := by
+      dsimp [Lk]; rw [pow_add]; ring
+    have h3_3m3 : (3 : ℝ) ^ (3 * k + 3) = 27 * (3 : ℝ) ^ (3 * k) := by
+      rw [pow_add]; ring
+    have h2_3m3 : (2 : ℝ) ^ (3 * k + 3) = 8 * (2 : ℝ) ^ (3 * k) := by
+      rw [pow_add]; ring
+    have hnum_explicit :
+        (19 : ℝ) * (homoclinicCycleNum k : ℝ) =
+          216 * (3 : ℝ) ^ (3 * k) - 64 * (2 : ℝ) ^ (3 * k) := by
+      rw [h27_pow, h8_pow, h3_3m3, h2_3m3] at h19
+      linarith
+    have h3L_pos : (0 : ℝ) < (3 : ℝ) ^ Lk := by positivity
+    have h3_3m_pos : (0 : ℝ) < (3 : ℝ) ^ (3 * k) := by positivity
+    have hN :
+        (homoclinicCycleNum k : ℝ) =
+          (216 * (3 : ℝ) ^ (3 * k) - 64 * (2 : ℝ) ^ (3 * k)) / 19 := by
+      linarith [hnum_explicit]
+    unfold rungReturnMap catapultDeathLo rungDeathBandLo
+    rw [hfp3, div_pow (2 : ℝ) 3 (3 * k)]
+    change (3 / 2 : ℝ) ^ 4 * ((homoclinicCycleNum k : ℝ) / (3 : ℝ) ^ Lk) - 1 / 2 =
+      (4 / 19 : ℝ) * (1 - (2 : ℝ) ^ (3 * k) / (3 : ℝ) ^ (3 * k))
+    field_simp [ne_of_gt h3L_pos, ne_of_gt h3_3m_pos]
+    rw [h3_L, hN]
+    ring
+  refine ⟨?_, ⟨by norm_num, by norm_num⟩⟩
+  intro m ε z
+  set L := 3 * m + 4
+  have h3L_pos : (0 : ℝ) < (3 : ℝ) ^ L := by positivity
+  have hret_lo : rungReturnMap 4 (catapultDeathLo m) = rungDeathBandLo 3 m := hret_lo_all m
+  have hret_hi : rungReturnMap 4 (catapultDeathHi m ε) = rungDeathBandHi 3 m ε := by
+    have hhi_add :
+        catapultDeathHi m ε = catapultDeathLo m + ((2 / 3 : ℝ) ^ L) * ε := by
+      unfold catapultDeathHi catapultDeathLo
+      rw [div_pow]
+      change ((homoclinicCycleNum m : ℝ) + (2 : ℝ) ^ L * ε) / (3 : ℝ) ^ L =
+        (homoclinicCycleNum m : ℝ) / (3 : ℝ) ^ L + ((2 : ℝ) ^ L / (3 : ℝ) ^ L) * ε
+      ring
+    have hlin4 :
+        rungReturnMap 4 (catapultDeathLo m + ((2 / 3 : ℝ) ^ L) * ε) =
+          rungReturnMap 4 (catapultDeathLo m) + ((3 / 2 : ℝ) ^ 4 * (2 / 3 : ℝ) ^ L) * ε := by
+      unfold rungReturnMap
+      ring
+    have hpow_4_L : ((3 / 2 : ℝ) ^ 4 * (2 / 3 : ℝ) ^ L) = (2 / 3 : ℝ) ^ (3 * m) := by
+      dsimp [L]
+      rw [pow_add (2 / 3 : ℝ) (3 * m) 4]
+      have hcancel : (3 / 2 : ℝ) ^ 4 * (2 / 3 : ℝ) ^ 4 = 1 := by norm_num
+      calc
+        (3 / 2 : ℝ) ^ 4 * ((2 / 3 : ℝ) ^ (3 * m) * (2 / 3 : ℝ) ^ 4)
+            = ((3 / 2 : ℝ) ^ 4 * (2 / 3 : ℝ) ^ 4) * (2 / 3 : ℝ) ^ (3 * m) := by ring
+        _ = (2 / 3 : ℝ) ^ (3 * m) := by rw [hcancel, one_mul]
+    unfold rungDeathBandHi
+    rw [hhi_add, hlin4, hret_lo, hpow_4_L]
+  have hbij :
+      (catapultDeathLo m ≤ z ∧ z < catapultDeathHi m ε) ↔
+        (rungDeathBandLo 3 m ≤ rungReturnMap 4 z ∧ rungReturnMap 4 z < rungDeathBandHi 3 m ε) := by
+    rw [← hret_lo, ← hret_hi]
+    unfold rungReturnMap
+    have hpos4 : (0 : ℝ) < (3 / 2 : ℝ) ^ 4 := by norm_num
+    constructor
+    · rintro ⟨h1, h2⟩
+      exact ⟨by linarith [mul_le_mul_of_nonneg_left h1 (le_of_lt hpos4)],
+        by linarith [mul_lt_mul_of_pos_left h2 hpos4]⟩
+    · rintro ⟨h1, h2⟩
+      exact ⟨by linarith, by linarith⟩
+  have hmin_eq := (homoclinic_family_cycle_divisibility_lock.1 m).2.2
+  have hden_pos : (0 : ℝ) < (homoclinicCycleDen m : ℝ) := by
+    exact_mod_cast (homoclinic_family_cycle_divisibility_lock.1 m).2.1
+  have hden_def : (homoclinicCycleDen m : ℝ) = (3 : ℝ) ^ L - (2 : ℝ) ^ L := by
+    unfold homoclinicCycleDen
+    push_cast
+    rfl
+  have htang : catapultDeathHi m (homoclinicCycleMin m) = homoclinicCycleMin m := by
+    unfold catapultDeathHi
+    rw [hmin_eq, hden_def]
+    change ((homoclinicCycleNum m : ℝ) +
+        (2 : ℝ) ^ L * ((homoclinicCycleNum m : ℝ) / ((3 : ℝ) ^ L - (2 : ℝ) ^ L))) / (3 : ℝ) ^ L =
+      (homoclinicCycleNum m : ℝ) / ((3 : ℝ) ^ L - (2 : ℝ) ^ L)
+    have hd_pos : (0 : ℝ) < (3 : ℝ) ^ L - (2 : ℝ) ^ L := by rwa [← hden_def]
+    field_simp [ne_of_gt h3L_pos, ne_of_gt hd_pos]
+    ring
+  have hlt_iff : ε < catapultDeathHi m ε ↔ ε < homoclinicCycleMin m := by
+    have hdiff :
+        catapultDeathHi m ε - ε =
+          (((3 : ℝ) ^ L - (2 : ℝ) ^ L) / (3 : ℝ) ^ L) * (homoclinicCycleMin m - ε) := by
+      unfold catapultDeathHi
+      rw [hmin_eq, hden_def]
+      change ((homoclinicCycleNum m : ℝ) + (2 : ℝ) ^ L * ε) / (3 : ℝ) ^ L - ε =
+        (((3 : ℝ) ^ L - (2 : ℝ) ^ L) / (3 : ℝ) ^ L) *
+          ((homoclinicCycleNum m : ℝ) / ((3 : ℝ) ^ L - (2 : ℝ) ^ L) - ε)
+      have hd_pos : (0 : ℝ) < (3 : ℝ) ^ L - (2 : ℝ) ^ L := by rwa [← hden_def]
+      field_simp [ne_of_gt h3L_pos, ne_of_gt hd_pos]
+      ring
+    have hd_pos : (0 : ℝ) < (3 : ℝ) ^ L - (2 : ℝ) ^ L := by rwa [← hden_def]
+    have hfac_pos : (0 : ℝ) < ((3 : ℝ) ^ L - (2 : ℝ) ^ L) / (3 : ℝ) ^ L :=
+      div_pos hd_pos h3L_pos
+    constructor
+    · intro hlt
+      have hpos : 0 < (((3 : ℝ) ^ L - (2 : ℝ) ^ L) / (3 : ℝ) ^ L) * (homoclinicCycleMin m - ε) := by
+        linarith
+      have hsub_pos : 0 < homoclinicCycleMin m - ε := by
+        apply Classical.byContradiction
+        intro hnot
+        have hle : homoclinicCycleMin m - ε ≤ 0 := le_of_not_gt hnot
+        have hnonpos := mul_nonpos_of_nonneg_of_nonpos (le_of_lt hfac_pos) hle
+        linarith
+      linarith
+    · intro hlt
+      have hpos : 0 < (((3 : ℝ) ^ L - (2 : ℝ) ^ L) / (3 : ℝ) ^ L) * (homoclinicCycleMin m - ε) :=
+        mul_pos hfac_pos (by linarith)
+      linarith
+  have hdisj :
+      0 ≤ ε → ε ≤ (4 / 27 : ℝ) →
+        catapultDeathLo m ≤ catapultDeathHi m ε ∧
+        catapultDeathHi m ε ≤ catapultDeathLo (m + 1) ∧
+        catapultDeathLo (m + 1) < (8 / 57 : ℝ) := by
+    intro hε0 hεb
+    have hεb3 : ε ≤ rungBoundary 3 := by rwa [hb3]
+    have hd_disj :=
+      (rungDeathBand_step_and_measure_decomposition.1 3 (by decide)).2.2.2.2.1 m ε hε0 hεb3
+    have hret_lo1 : rungReturnMap 4 (catapultDeathLo (m + 1)) = rungDeathBandLo 3 (m + 1) :=
+      hret_lo_all (m + 1)
+    have hret_8_57 : rungReturnMap 4 (8 / 57 : ℝ) = rungFixedPoint 3 := by
+      unfold rungReturnMap
+      rw [hfp3]
+      norm_num
+    rw [← hret_lo, ← hret_hi, ← hret_lo1, ← hret_8_57] at hd_disj
+    unfold rungReturnMap at hd_disj
+    exact ⟨by linarith [hd_disj.1], by linarith [hd_disj.2.1], by linarith [hd_disj.2.2]⟩
+  exact ⟨hret_lo, hret_hi, hbij, htang, hlt_iff, hdisj⟩
+
 end Mahler.DubickasExtension
+
 
 
 

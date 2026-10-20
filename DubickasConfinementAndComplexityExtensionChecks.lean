@@ -225,6 +225,13 @@ example {k : ℕ} {z : ℝ} (hk : 1 ≤ k) (hz : homoclinicCycleMin k ≤ z) :
 #print axioms Mahler.DubickasExtension.punctured_eps1_forced_seven_step_macro_block
 #print axioms Mahler.DubickasExtension.cantorDust_perron_fibonacci_counts
 
+-- 15. Verify Section 21: Universal catapult-death band ladder and homoclinic tangency
+example (m : ℕ) :
+    catapultDeathHi m (homoclinicCycleMin m) = homoclinicCycleMin m :=
+  (universal_catapult_death_band_ladder.1 m (homoclinicCycleMin m) 0).2.2.2.1
+
+#print axioms Mahler.DubickasExtension.universal_catapult_death_band_ladder
+
 #print axioms Mahler.DubickasExtension.dubBaseCarry_eq_fract_linear
 #print axioms Mahler.DubickasExtension.dubBaseY_multi_step_carry_identity
 #print axioms Mahler.DubickasExtension.dubBaseCarry_mem_two_letters
