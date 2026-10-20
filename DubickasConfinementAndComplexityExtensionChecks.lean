@@ -239,6 +239,12 @@ example (m : ℕ) :
 #print axioms Mahler.DubickasExtension.cantor_dust_mod_eight_lock_and_sparse_descent
 #print axioms Mahler.DubickasExtension.no_infinite_sparse_defect_cantor_dust_chain
 
+-- 17. Verify Section 23: 3-adic valuation v_3(U_r)=2, non-stationarity V_2 != V_1, and cumulative-epoch exclusion
+#print axioms Mahler.DubickasExtension.three_pow_ne_two_pow_add_one_of_four_le
+#print axioms Mahler.DubickasExtension.cantor_dust_three_adic_valuation_and_normalized_recurrence
+#print axioms Mahler.DubickasExtension.cantor_dust_multi_step_telescoping_and_epoch_descent
+#print axioms Mahler.DubickasExtension.no_infinite_cumulative_sparse_epoch_cantor_dust_chain
+
 #print axioms Mahler.DubickasExtension.dubBaseCarry_eq_fract_linear
 #print axioms Mahler.DubickasExtension.dubBaseY_multi_step_carry_identity
 #print axioms Mahler.DubickasExtension.dubBaseCarry_mem_two_letters

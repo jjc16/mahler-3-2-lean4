@@ -7648,7 +7648,343 @@ theorem no_infinite_sparse_defect_cantor_dust_chain :
   have hcontra := hbound (U 0 + 1)
   omega
 
+/-! ## 23. Categorization of Cantor-Dust Trajectory Families: Exact 3-Adic Valuation $v_3(U_r) = 2$ ($U_r = 9 V_r$), Strict Non-Stationarity $V_{r+1} \ne V_r$, and Unconditional Exclusion of Cumulative-Epoch Chaotic Chains
+
+We now classify the remaining families of chaotic paths $(j_r, U_r)_{r \ge 0}$ governed by
+Section 22's defect-to-defect recurrence $2^{3 j_{r+1} + 4} U_{r+1} + 9 = 3^{3 j_r + 4} U_r$:
+1. **Exact 3-Adic Valuation Lock $v_3(U_r) = 2$ and Normalized Recurrence $2^{3 j_2 + 4} V_2 + 1 = 3^{3 j_1 + 4} V_1$
+   (`cantor_dust_three_adic_valuation_and_normalized_recurrence`):**
+   Across any two consecutive defect transitions, $9 \mid U_1$ and $9 \mid U_2$ while $27 \nmid U_2$.
+   Writing $U_1 = 9 V_1$ and $U_2 = 9 V_2$, the normalized quotients $V_1, V_2$ satisfy:
+   $$2^{3 j_2 + 4} \cdot V_2 + 1 = 3^{3 j_1 + 4} \cdot V_1, \qquad \gcd(V_2, 6) = 1,$$
+   with $(j_2 \bmod 2 = 0 \leftrightarrow V_2 \bmod 3 = 2)$ and $(j_2 \bmod 2 = 1 \leftrightarrow V_2 \bmod 3 = 1)$.
+2. **Strict Non-Stationarity $V_2 \ne V_1$ ($U_2 \ne U_1$) via Modulo-16 / Modulo-5 Catalan Obstruction:**
+   If $V_2 = V_1$, then $(3^{3 j_1 + 4} - 2^{3 j_2 + 4}) V_1 = 1$, forcing $3^{3 j_1 + 4} = 2^{3 j_2 + 4} + 1$.
+   Reducing modulo $16$ forces $4 \mid (3 j_1 + 4)$, which by $3^4 \equiv 1 \pmod 5$ forces
+   $2^{3 j_2 + 4} \equiv 0 \pmod 5$—impossible! Hence **no two consecutive defect quotients can
+   ever be equal ($V_{r+1} \ne V_r$ and $U_{r+1} \ne U_r$ for all $r \ge 1$)**.
+3. **Multi-Step Telescoping Bound & Exclusion of Oscillating Cumulative-Epoch Chains
+   (`cantor_dust_multi_step_telescoping_and_epoch_descent`, `no_infinite_cumulative_sparse_epoch_cantor_dust_chain`):**
+   Even if a chaotic path oscillates between dense steps ($j_{r+1} < j_r$) and sparse steps
+   ($j_{r+1} > j_r$), telescoping across any $d \ge 1$ defects yields:
+   $$2^{\sum_{t=1}^d (3 j(r_0 + t) + 4)} \cdot U(r_0 + d) \;<\;
+     3^{\sum_{t=0}^{d-1} (3 j(r_0 + t) + 4)} \cdot U(r_0).$$
+   Whenever an epoch $[r_0, r_0 + d]$ satisfies $3^{\sum_{t=0}^{d-1} (3 j(r_0 + t) + 4)} \le 2^{\sum_{t=1}^d (3 j(r_0 + t) + 4)}$,
+   we get $U(r_0 + d) + 2 \le U(r_0)$, unconditionally eliminating all chaotic paths with infinitely
+   many cumulative sparse epochs! -/
+
+/-- **Catalan Modulo-16 / Modulo-5 Obstruction (`three_pow_ne_two_pow_add_one_of_four_le`)**:
+For every $A \in \mathbb{N}$ and $B \ge 4$, $3^A \ne 2^B + 1$. -/
+theorem three_pow_ne_two_pow_add_one_of_four_le
+    {A B : ℕ} (hB : 4 ≤ B) : 3 ^ A ≠ 2 ^ B + 1 := by
+  have h3_mod16_per :
+      ∀ q r : ℕ, r < 4 → (3 ^ (4 * q + r)) % 16 = (3 ^ r) % 16 := by
+    intro q r _
+    induction q with
+    | zero => simp
+    | succ q ih =>
+        have h : 4 * (q + 1) + r = (4 * q + r) + 4 := by omega
+        rw [h, Nat.pow_add, Nat.mul_mod, ih]
+        have h81 : (3 ^ 4) % 16 = 1 := by decide
+        rw [h81]
+        omega
+  have h3_4q_mod5 : ∀ q : ℕ, (3 ^ (4 * q)) % 5 = 1 := by
+    intro q
+    induction q with
+    | zero => decide
+    | succ q ih =>
+        rw [Nat.mul_succ, Nat.pow_add, Nat.mul_mod, ih]
+  have h2_mod5_ne0 : ∀ k : ℕ, (2 ^ k) % 5 ≠ 0 := by
+    intro k
+    induction k with
+    | zero => decide
+    | succ k ih =>
+        rw [Nat.pow_succ, Nat.mul_mod]
+        omega
+  intro heq
+  have h16_dvd : 16 ∣ 2 ^ B := by
+    obtain ⟨d, rfl⟩ : ∃ d : ℕ, B = 4 + d := ⟨B - 4, by omega⟩
+    refine ⟨2 ^ d, ?_⟩
+    rw [Nat.pow_add]
+  rcases h16_dvd with ⟨q16, hq16⟩
+  have h3A_mod16 : (3 ^ A) % 16 = 1 := by omega
+  have hA_div4 : A % 4 = 0 := by
+    have hdiv : 4 * (A / 4) + A % 4 = A := Nat.div_add_mod A 4
+    have hmod := h3_mod16_per (A / 4) (A % 4) (Nat.mod_lt A (by decide))
+    rw [hdiv] at hmod
+    have hrem : A % 4 = 0 ∨ A % 4 = 1 ∨ A % 4 = 2 ∨ A % 4 = 3 := by omega
+    rcases hrem with h0 | h1 | h2 | h3
+    · exact h0
+    · rw [h1] at hmod; omega
+    · rw [h2] at hmod; omega
+    · rw [h3] at hmod; omega
+  obtain ⟨q4, hq4⟩ : 4 ∣ A := Nat.dvd_of_mod_eq_zero hA_div4
+  have h3A_mod5 : (3 ^ A) % 5 = 1 := by
+    rw [hq4]
+    exact h3_4q_mod5 q4
+  have h2B_mod5 := h2_mod5_ne0 B
+  omega
+
+/-- **Exact 3-Adic Valuation Lock $v_3(U_r) = 2$, Normalized Coprime Recurrence, and Strict
+Non-Stationarity $V_2 \ne V_1$ (`cantor_dust_three_adic_valuation_and_normalized_recurrence`)**:
+Suppose odd natural numbers $U_0, U_1, U_2$ satisfy two consecutive defect transitions:
+$$2^{3 j_1 + 4} U_1 + 9 = 3^{3 j_0 + 4} U_0 \quad \text{and} \quad
+  2^{3 j_2 + 4} U_2 + 9 = 3^{3 j_1 + 4} U_1.$$
+Then there exist odd natural numbers $V_1, V_2$ (`V_1 % 2 = 1 ∧ V_2 % 2 = 1`) such that:
+1. $U_1 = 9 V_1$ and $U_2 = 9 V_2$,
+2. $2^{3 j_2 + 4} \cdot V_2 + 1 = 3^{3 j_1 + 4} \cdot V_1$,
+3. $V_2 \bmod 3 \ne 0$ (so $27 \nmid U_2$), $(j_2 \bmod 2 = 0 \leftrightarrow V_2 \bmod 3 = 2)$, and
+   $(j_2 \bmod 2 = 1 \leftrightarrow V_2 \bmod 3 = 1)$,
+4. $V_2 \ne V_1$ and $U_2 \ne U_1$ (no two consecutive defect quotients can ever be equal). -/
+theorem cantor_dust_three_adic_valuation_and_normalized_recurrence
+    {j_0 j_1 j_2 U_0 U_1 U_2 : ℕ}
+    (hU1_odd : U_1 % 2 = 1) (hU2_odd : U_2 % 2 = 1)
+    (hrec1 : 2 ^ (3 * j_1 + 4) * U_1 + 9 = 3 ^ (3 * j_0 + 4) * U_0)
+    (hrec2 : 2 ^ (3 * j_2 + 4) * U_2 + 9 = 3 ^ (3 * j_1 + 4) * U_1) :
+    ∃ V_1 V_2 : ℕ,
+      V_1 % 2 = 1 ∧ V_2 % 2 = 1 ∧
+      U_1 = 9 * V_1 ∧ U_2 = 9 * V_2 ∧
+      2 ^ (3 * j_2 + 4) * V_2 + 1 = 3 ^ (3 * j_1 + 4) * V_1 ∧
+      V_2 % 3 ≠ 0 ∧
+      ((j_2 % 2 = 0 ↔ V_2 % 3 = 2) ∧ (j_2 % 2 = 1 ↔ V_2 % 3 = 1)) ∧
+      V_2 ≠ V_1 ∧ U_2 ≠ U_1 := by
+  have hdvd9_1 : 9 ∣ 2 ^ (3 * j_1 + 4) * U_1 := by
+    have hpow : 3 ^ (3 * j_0 + 4) = 81 * 3 ^ (3 * j_0) := by rw [Nat.pow_add]; ring
+    have h9 : 2 ^ (3 * j_1 + 4) * U_1 + 9 = 9 * (9 * 3 ^ (3 * j_0) * U_0) := by
+      rw [hrec1, hpow]; ring
+    refine ⟨9 * 3 ^ (3 * j_0) * U_0 - 1, ?_⟩
+    omega
+  have hcop9_1 : Nat.Coprime 9 (2 ^ (3 * j_1 + 4)) :=
+    (by decide : Nat.Coprime 9 2).pow_right (3 * j_1 + 4)
+  obtain ⟨V_1, hV1_eq⟩ : 9 ∣ U_1 := hcop9_1.dvd_of_dvd_mul_left hdvd9_1
+  have hdvd9_2 : 9 ∣ 2 ^ (3 * j_2 + 4) * U_2 := by
+    have hpow : 3 ^ (3 * j_1 + 4) = 81 * 3 ^ (3 * j_1) := by rw [Nat.pow_add]; ring
+    have h9 : 2 ^ (3 * j_2 + 4) * U_2 + 9 = 9 * (9 * 3 ^ (3 * j_1) * U_1) := by
+      rw [hrec2, hpow]; ring
+    refine ⟨9 * 3 ^ (3 * j_1) * U_1 - 1, ?_⟩
+    omega
+  have hcop9_2 : Nat.Coprime 9 (2 ^ (3 * j_2 + 4)) :=
+    (by decide : Nat.Coprime 9 2).pow_right (3 * j_2 + 4)
+  obtain ⟨V_2, hV2_eq⟩ : 9 ∣ U_2 := hcop9_2.dvd_of_dvd_mul_left hdvd9_2
+  have hV1_odd : V_1 % 2 = 1 := by omega
+  have hV2_odd : V_2 % 2 = 1 := by omega
+  have hnorm_rec : 2 ^ (3 * j_2 + 4) * V_2 + 1 = 3 ^ (3 * j_1 + 4) * V_1 := by
+    have hrec2_V : 9 * (2 ^ (3 * j_2 + 4) * V_2 + 1) = 9 * (3 ^ (3 * j_1 + 4) * V_1) := by
+      calc
+        9 * (2 ^ (3 * j_2 + 4) * V_2 + 1) = 2 ^ (3 * j_2 + 4) * (9 * V_2) + 9 := by ring
+        _ = 2 ^ (3 * j_2 + 4) * U_2 + 9 := by rw [← hV2_eq]
+        _ = 3 ^ (3 * j_1 + 4) * U_1 := hrec2
+        _ = 3 ^ (3 * j_1 + 4) * (9 * V_1) := by rw [hV1_eq]
+        _ = 9 * (3 ^ (3 * j_1 + 4) * V_1) := by ring
+    omega
+  have hmod3_rhs : (3 ^ (3 * j_1 + 4) * V_1) % 3 = 0 := by
+    have h : 3 ^ (3 * j_1 + 4) * V_1 = 3 * (3 ^ (3 * j_1 + 3) * V_1) := by
+      have hp : 3 * j_1 + 4 = (3 * j_1 + 3) + 1 := by omega
+      rw [hp, Nat.pow_succ]; ring
+    omega
+  have h2_pow_mod3 :
+      ∀ n : ℕ, (n % 2 = 0 → (2 ^ (3 * n + 4)) % 3 = 1) ∧ (n % 2 = 1 → (2 ^ (3 * n + 4)) % 3 = 2) := by
+    intro n
+    induction n with
+    | zero => decide
+    | succ k ih =>
+        have h1 : 3 * (k + 1) + 4 = (3 * k + 4) + 3 := by omega
+        rw [h1, Nat.pow_add]
+        have hpar : k % 2 = 0 ∨ k % 2 = 1 := by omega
+        rcases hpar with hk0 | hk1
+        · have ih0 := ih.1 hk0
+          constructor
+          · intro h; omega
+          · intro _; rw [Nat.mul_mod, ih0]
+        · have ih1 := ih.2 hk1
+          constructor
+          · intro _; rw [Nat.mul_mod, ih1]
+          · intro h; omega
+  have hmod3_lhs : (2 ^ (3 * j_2 + 4) * V_2 + 1) % 3 = 0 := by
+    rw [hnorm_rec, hmod3_rhs]
+  have hpar_j2 : j_2 % 2 = 0 ∨ j_2 % 2 = 1 := by omega
+  have hV2_mod3 :
+      V_2 % 3 ≠ 0 ∧ ((j_2 % 2 = 0 ↔ V_2 % 3 = 2) ∧ (j_2 % 2 = 1 ↔ V_2 % 3 = 1)) := by
+    rcases hpar_j2 with hj0 | hj1
+    · have h2_1 := (h2_pow_mod3 j_2).1 hj0
+      have hmul : (2 ^ (3 * j_2 + 4) * V_2) % 3 = V_2 % 3 := by
+        rw [Nat.mul_mod, h2_1]; omega
+      omega
+    · have h2_2 := (h2_pow_mod3 j_2).2 hj1
+      have hmul : (2 ^ (3 * j_2 + 4) * V_2) % 3 = (2 * (V_2 % 3)) % 3 := by
+        rw [Nat.mul_mod, h2_2]
+      omega
+  have hne_V : V_2 ≠ V_1 := by
+    intro heq_V
+    rw [heq_V] at hnorm_rec
+    have hV1_eq1 : V_1 = 1 := by
+      have hdiv : V_1 ∣ (3 ^ (3 * j_1 + 4) * V_1 - 2 ^ (3 * j_2 + 4) * V_1) := by
+        refine ⟨3 ^ (3 * j_1 + 4) - 2 ^ (3 * j_2 + 4), ?_⟩
+        rw [← Nat.sub_mul, Nat.mul_comm]
+      have hsub1 : 3 ^ (3 * j_1 + 4) * V_1 - 2 ^ (3 * j_2 + 4) * V_1 = 1 := by omega
+      rw [hsub1] at hdiv
+      exact Nat.eq_one_of_dvd_one hdiv
+    rw [hV1_eq1, Nat.mul_one, Nat.mul_one] at hnorm_rec
+    exact three_pow_ne_two_pow_add_one_of_four_le (by omega : 4 ≤ 3 * j_2 + 4) hnorm_rec.symm
+  have hne_U : U_2 ≠ U_1 := by omega
+  exact ⟨V_1, V_2, hV1_odd, hV2_odd, hV1_eq, hV2_eq, hnorm_rec,
+    hV2_mod3.1, hV2_mod3.2, hne_V, hne_U⟩
+
+/-- Cumulative step sum $\sum_{t=0}^{d-1} (3 j(t) + 4)$ across $d$ defect blocks. -/
+def defectStepSum (j : ℕ → ℕ) : ℕ → ℕ
+  | 0 => 0
+  | d + 1 => defectStepSum j d + (3 * j d + 4)
+
+/-- **Multi-Step Telescoping Bound and Epoch Descent Inside the Cantor Dust
+(`cantor_dust_multi_step_telescoping_and_epoch_descent`)**:
+Suppose $U, j : \mathbb{N} \to \mathbb{N}$ satisfy $U(r) \bmod 2 = 1$ and
+$2^{3 j(r + 1) + 4} U(r + 1) + 9 = 3^{3 j(r) + 4} U(r)$ for all $r \in \mathbb{N}$.
+1. **Multi-Step Strict Telescoping Inequality:**
+   For every $r_0 \in \mathbb{N}$ and every $d \ge 1$,
+   $$2^{\text{defectStepSum}(\text{fun } t \Rightarrow j(r_0 + 1 + t),\, d)} \cdot U(r_0 + d) \;<\;
+     3^{\text{defectStepSum}(\text{fun } t \Rightarrow j(r_0 + t),\, d)} \cdot U(r_0).$$
+2. **Cumulative Sparse-Epoch Odd-Quotient Descent ($U(r_0 + d) + 2 \le U(r_0)$):**
+   Whenever $d \ge 1$ and
+   $$3^{\text{defectStepSum}(\text{fun } t \Rightarrow j(r_0 + t),\, d)} \;\le\;
+     2^{\text{defectStepSum}(\text{fun } t \Rightarrow j(r_0 + 1 + t),\, d)},$$
+   we have $U(r_0 + d) + 2 \le U(r_0)$. -/
+theorem cantor_dust_multi_step_telescoping_and_epoch_descent
+    {U j : ℕ → ℕ}
+    (hodd : ∀ r : ℕ, U r % 2 = 1)
+    (hrec : ∀ r : ℕ, 2 ^ (3 * j (r + 1) + 4) * U (r + 1) + 9 = 3 ^ (3 * j r + 4) * U r) :
+    (∀ r_0 d : ℕ, 1 ≤ d →
+      2 ^ (defectStepSum (fun t => j (r_0 + 1 + t)) d) * U (r_0 + d) <
+        3 ^ (defectStepSum (fun t => j (r_0 + t)) d) * U r_0) ∧
+    (∀ r_0 d : ℕ, 1 ≤ d →
+      3 ^ (defectStepSum (fun t => j (r_0 + t)) d) ≤
+        2 ^ (defectStepSum (fun t => j (r_0 + 1 + t)) d) →
+      U (r_0 + d) + 2 ≤ U r_0) := by
+  have htel :
+      ∀ r_0 d : ℕ, 1 ≤ d →
+        2 ^ (defectStepSum (fun t => j (r_0 + 1 + t)) d) * U (r_0 + d) <
+          3 ^ (defectStepSum (fun t => j (r_0 + t)) d) * U r_0 := by
+    intro r_0 d hd1
+    obtain ⟨m, rfl⟩ : ∃ m : ℕ, d = m + 1 := ⟨d - 1, by omega⟩
+    induction m with
+    | zero =>
+        simp only [defectStepSum, Nat.zero_add, Nat.add_zero]
+        have hr0 := hrec r_0
+        omega
+    | succ m ih =>
+        have ihm := ih (by omega)
+        have hstep := hrec (r_0 + m + 1)
+        have hstep_lt :
+            2 ^ (3 * j (r_0 + m + 2) + 4) * U (r_0 + m + 2) <
+              3 ^ (3 * j (r_0 + m + 1) + 4) * U (r_0 + m + 1) := by
+          have hidx : r_0 + m + 1 + 1 = r_0 + m + 2 := by omega
+          rw [hidx] at hstep
+          omega
+        have hpos_U : 0 < U (r_0 + m + 2) := by
+          have h := hodd (r_0 + m + 2); omega
+        have hpow2_pos : 0 < 2 ^ (defectStepSum (fun t => j (r_0 + 1 + t)) (m + 1)) :=
+          Nat.pow_pos (by decide)
+        have hpow3_pos : 0 < 3 ^ (3 * j (r_0 + m + 1) + 4) :=
+          Nat.pow_pos (by decide)
+        have hmul1 :
+            2 ^ (defectStepSum (fun t => j (r_0 + 1 + t)) (m + 1)) *
+                (2 ^ (3 * j (r_0 + m + 2) + 4) * U (r_0 + m + 2)) <
+              2 ^ (defectStepSum (fun t => j (r_0 + 1 + t)) (m + 1)) *
+                (3 ^ (3 * j (r_0 + m + 1) + 4) * U (r_0 + m + 1)) :=
+          Nat.mul_lt_mul_of_pos_left hstep_lt hpow2_pos
+        have hmul2 :
+            3 ^ (3 * j (r_0 + m + 1) + 4) *
+                (2 ^ (defectStepSum (fun t => j (r_0 + 1 + t)) (m + 1)) * U (r_0 + (m + 1))) <
+              3 ^ (3 * j (r_0 + m + 1) + 4) *
+                (3 ^ (defectStepSum (fun t => j (r_0 + t)) (m + 1)) * U r_0) :=
+          Nat.mul_lt_mul_of_pos_left ihm hpow3_pos
+        have hlhs_eq :
+            2 ^ (defectStepSum (fun t => j (r_0 + 1 + t)) (m + 1 + 1)) * U (r_0 + (m + 1 + 1)) =
+              2 ^ (defectStepSum (fun t => j (r_0 + 1 + t)) (m + 1)) *
+                (2 ^ (3 * j (r_0 + m + 2) + 4) * U (r_0 + m + 2)) := by
+          change 2 ^ (defectStepSum (fun t => j (r_0 + 1 + t)) (m + 1) + (3 * j (r_0 + 1 + (m + 1)) + 4)) *
+              U (r_0 + (m + 1 + 1)) = _
+          have hidx1 : r_0 + 1 + (m + 1) = r_0 + m + 2 := by omega
+          have hidx2 : r_0 + (m + 1 + 1) = r_0 + m + 2 := by omega
+          rw [hidx1, hidx2, Nat.pow_add]
+          ring
+        have hmid_eq :
+            2 ^ (defectStepSum (fun t => j (r_0 + 1 + t)) (m + 1)) *
+                (3 ^ (3 * j (r_0 + m + 1) + 4) * U (r_0 + m + 1)) =
+              3 ^ (3 * j (r_0 + m + 1) + 4) *
+                (2 ^ (defectStepSum (fun t => j (r_0 + 1 + t)) (m + 1)) * U (r_0 + (m + 1))) := by
+          have hidx : r_0 + (m + 1) = r_0 + m + 1 := by omega
+          rw [hidx]
+          ring
+        have hrhs_eq :
+            3 ^ (defectStepSum (fun t => j (r_0 + t)) (m + 1 + 1)) * U r_0 =
+              3 ^ (3 * j (r_0 + m + 1) + 4) *
+                (3 ^ (defectStepSum (fun t => j (r_0 + t)) (m + 1)) * U r_0) := by
+          change 3 ^ (defectStepSum (fun t => j (r_0 + t)) (m + 1) + (3 * j (r_0 + (m + 1)) + 4)) * U r_0 = _
+          have hidx : r_0 + (m + 1) = r_0 + m + 1 := by omega
+          rw [hidx, Nat.pow_add]
+          ring
+        rw [hlhs_eq, hrhs_eq]
+        rw [hmid_eq] at hmul1
+        exact lt_trans hmul1 hmul2
+  refine ⟨htel, ?_⟩
+  intro r_0 d hd1 hpow_le
+  have hlt := htel r_0 d hd1
+  have hmul_le :
+      3 ^ (defectStepSum (fun t => j (r_0 + t)) d) * U (r_0 + d) ≤
+        2 ^ (defectStepSum (fun t => j (r_0 + 1 + t)) d) * U (r_0 + d) :=
+    Nat.mul_le_mul_right (U (r_0 + d)) hpow_le
+  have hlt_mul :
+      3 ^ (defectStepSum (fun t => j (r_0 + t)) d) * U (r_0 + d) <
+        3 ^ (defectStepSum (fun t => j (r_0 + t)) d) * U r_0 :=
+    lt_of_le_of_lt hmul_le hlt
+  have hlt_U : U (r_0 + d) < U r_0 := Nat.lt_of_mul_lt_mul_left hlt_mul
+  have ho0 := hodd r_0
+  have hod := hodd (r_0 + d)
+  omega
+
+/-- **Unconditional Exclusion of Infinite Cumulative-Epoch Chaotic Chains in the Cantor Dust
+(`no_infinite_cumulative_sparse_epoch_cantor_dust_chain`)**:
+There does not exist any sequence of odd defect quotients $U : \mathbb{N} \to \mathbb{N}$,
+waiting times $j : \mathbb{N} \to \mathbb{N}$, and strictly increasing epoch boundaries
+$R : \mathbb{N} \to \mathbb{N}$ ($R(k) < R(k + 1)$) satisfying
+$$2^{3 j(r + 1) + 4} U(r + 1) + 9 = 3^{3 j(r) + 4} U(r)$$
+for all $r \in \mathbb{N}$ and the cumulative sparse condition
+$$3^{\text{defectStepSum}(\text{fun } t \Rightarrow j(R(k) + t),\, R(k + 1) - R(k))} \;\le\;
+  2^{\text{defectStepSum}(\text{fun } t \Rightarrow j(R(k) + 1 + t),\, R(k + 1) - R(k))}$$
+on every epoch $k \in \mathbb{N}$. -/
+theorem no_infinite_cumulative_sparse_epoch_cantor_dust_chain :
+    ¬ ∃ (U j R : ℕ → ℕ),
+      (∀ r : ℕ,
+        U r % 2 = 1 ∧
+        2 ^ (3 * j (r + 1) + 4) * U (r + 1) + 9 = 3 ^ (3 * j r + 4) * U r) ∧
+      (∀ k : ℕ,
+        R k < R (k + 1) ∧
+        3 ^ (defectStepSum (fun t => j (R k + t)) (R (k + 1) - R k)) ≤
+          2 ^ (defectStepSum (fun t => j (R k + 1 + t)) (R (k + 1) - R k))) := by
+  rintro ⟨U, j, R, hchain, hepoch⟩
+  have hodd : ∀ r : ℕ, U r % 2 = 1 := fun r => (hchain r).1
+  have hrec : ∀ r : ℕ, 2 ^ (3 * j (r + 1) + 4) * U (r + 1) + 9 = 3 ^ (3 * j r + 4) * U r :=
+    fun r => (hchain r).2
+  have hdesc := (cantor_dust_multi_step_telescoping_and_epoch_descent hodd hrec).2
+  have hstep : ∀ k : ℕ, U (R (k + 1)) + 2 ≤ U (R k) := by
+    intro k
+    have hk := hepoch k
+    have hd1 : 1 ≤ R (k + 1) - R k := by omega
+    have h := hdesc (R k) (R (k + 1) - R k) hd1 hk.2
+    have hadd : R k + (R (k + 1) - R k) = R (k + 1) := by omega
+    rwa [hadd] at h
+  have hbound : ∀ k : ℕ, U (R k) + 2 * k ≤ U (R 0) := by
+    intro k
+    induction k with
+    | zero => omega
+    | succ k ih =>
+        have hst := hstep k
+        omega
+  have hcontra := hbound (U (R 0) + 1)
+  omega
+
 end Mahler.DubickasExtension
+
 
 
 
