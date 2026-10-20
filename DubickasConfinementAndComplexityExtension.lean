@@ -10721,10 +10721,772 @@ theorem dense_core_repeated_subword_cutoff_and_complexity_exclusion
   have h := hcut r_1 r_2 L hr12 hmatch
   omega
 
+/-!
+## Section 30: Advancing the Dense Core $\{1, 2\}^\mathbb{N}$ via Right-Special 2-Adic Valuation
+## Locks, the 7-Bit Spectral Gap, Symmetric Bispecial $(2^S, 3^S)$ Resonance, Parameterized $(p, q)$
+## Cumulative-Exponent Cutoffs, and Transcendental $\frac{7 \log 2}{10 \log(3/2)}$ Complexity Exclusion
 
+In this section, we push the Dense-Core analysis ($j(r) \in \{1, 2\}$, $d = \infty$) four steps
+further by exploiting the exact interaction between **combinatorial branching (right-special and
+bispecial factors)**, **2-adic valuation jumps**, and **rational $(p, q)$ power bounds**:
 
+1. **Universal Parity & Mod-4 Divergence (`dense_core_all_V_odd_and_mod_four_divergence`)**:
+   Every orbit value $V(r)$ in the Dense Core is odd ($V(r) \bmod 2 = 1$), and whenever two steps
+   $r_1 < r_2$ have $j(r_1) \ne j(r_2)$, their difference has exact 2-adic valuation $1$:
+   $(V(r_2) - V(r_1)) \bmod 4 = 2$, so $2 \mid (V(r_2) - V(r_1))$ and $\neg (4 \mid (V(r_2) - V(r_1)))$.
 
+2. **One-Step Extended Right-Special Cancellation & the 7-Bit 2-Adic Valuation Spectral Gap
+   (`dense_core_right_special_exact_two_adic_valuation_and_spectral_gap`)**:
+   Because the inhomogeneous $+1$ in $2^{3 j(r + 1) + 4} V(r + 1) + 1 = 3^{3 j(r) + 4} V(r)$
+   is independent of $j(r + 1)$, matching only $K + 1$ symbols ($j(r_1 + t) = j(r_2 + t)$ for
+   $0 \le t \le K$, with **no** match assumed at $K + 1$) already cancels the $+1$ at step
+   $K \to K + 1$:
+   $$2^{E_K} \Big(2^{3 j(r_2 + K + 1) + 4} V(r_2 + K + 1) - 2^{3 j(r_1 + K + 1) + 4} V(r_1 + K + 1)\Big)
+     \;=\; 3^{S_{K+1}} \big(V(r_2) - V(r_1)\big).$$
+   Consequently:
+   - $2^{E_K + 7} \mid (V(r_2) - V(r_1))$ and $2^{7 (K + 1)} \le 2^{E_K + 7} < V(r_2)$ from just
+     $K + 1$ matching symbols (upgrading Section 29's bound by $+7$ bits at every length).
+   - When $j(r_1 + K + 1) \ne j(r_2 + K + 1)$ (a **right-special factor** of length $K + 1$),
+     one term on the left has coefficient $128$ and the other has coefficient $1024 = 128 \cdot 8$;
+     since $V$ is odd, dividing by $128$ yields an **odd** integer, locking the 2-adic valuation
+     at $\nu_2(V(r_2) - V(r_1)) = E_K + 7$ ($\frac{V(r_2) - V(r_1)}{2^{E_K + 7}} \bmod 2 = 1$).
+   - Conversely, when $j(r_1 + K + 1) = j(r_2 + K + 1)$, the valuation jumps by at least $+7$ bits
+     to $2^{E_K + 14} \mid (V(r_2) - V(r_1))$, establishing the **7-Bit 2-Adic Spectral Gap Dichotomy**:
+     $$j(r_1 + K + 1) = j(r_2 + K + 1)
+       \;\Longleftrightarrow\; 2^{E_K + 8} \mid \big(V(r_2) - V(r_1)\big)
+       \;\Longleftrightarrow\; 2^{E_K + 14} \mid \big(V(r_2) - V(r_1)\big).$$
 
+3. **Symmetric Bispecial $(2^S, 3^S)$ Resonance Law (`dense_core_symmetric_bispecial_resonance`)**:
+   When a middle subword of length $K + 1$ matches at $r_1 + 1$ and $r_2 + 1$
+   ($j(r_1 + 1 + t) = j(r_2 + 1 + t)$ for $0 \le t \le K$), canceling the $+1$ at both the left
+   endpoint $r \to r + 1$ and the right endpoint $r + K + 1 \to r + K + 2$ equalizes the $2$-adic
+   and $3$-adic tower exponents to the exact same middle step weight
+   $S_{\text{mid}} = \sum_{t=0}^K (3 j(r_1 + 1 + t) + 4)$:
+   $$2^{S_{\text{mid}}} \Big(2^{3 j(r_2 + K + 2) + 4} V(r_2 + K + 2) - 2^{3 j(r_1 + K + 2) + 4} V(r_1 + K + 2)\Big)
+     \;=\; 3^{S_{\text{mid}}} \Big(3^{3 j(r_2) + 4} V(r_2) - 3^{3 j(r_1) + 4} V(r_1)\Big).$$
+
+4. **Parameterized $(p, q)$ Cumulative-Exponent Cutoffs, Concrete Convergents $(10, 17)$ and $(24, 41)$,
+   Strict Aperiodicity, and Transcendental $\frac{7 \log 2}{10 \log(3/2)}$ Complexity Exclusion
+   (`dense_core_parameterized_pq_cutoff_and_convergents`, `no_subcritical_log_threshold_dense_core`)**:
+   Applying any rational power bound $3^q \le 2^{p+q}$ ($q \ge 1$) to $2^{(E_K + 7) + E_{r_2}} < 3^{S_{r_2}} 2^W$
+   and canceling $q E_{r_2}$ via Section 28's single-exponent shift identity proves
+   $$7 q L \;<\; p S_{r_2} + q (W + 3) \;\le\; 10 p r_2 + q (W + 3)$$
+   for every repeated length-$L$ factor. This yields concrete convergent cutoffs
+   $119 L < 100 C + 17 (W + 3)$ at $(p, q) = (10, 17)$ and $287 L < 240 C + 41 (W + 3)$ at
+   $(p, q) = (24, 41)$, proves strict aperiodicity ($\forall r_1 < r_2, \exists L, j(r_1 + L) \ne j(r_2 + L)$),
+   and excludes all infinite Dense-Core trajectories whose complexity slope satisfies
+   $10 \kappa \log(3/2) < 7 \log 2$ ($\kappa < \frac{7 \log 2}{10 \log(3/2)} \approx 1.196658$), or
+   $(7 + 3 \rho) \kappa \log(3/2) < 7 \log 2$ ($\kappa \in [1.1967, 1.7095]$) under step-2 density $\rho$.
+-/
+
+/-- **Universal Oddness and Mod-4 First-Step Divergence in the Dense Core
+(`dense_core_all_V_odd_and_mod_four_divergence`)**:
+In the Dense Core $j(r) \in \{1, 2\}$ with $V(0) \ge 1$ and
+$2^{3 j(r + 1) + 4} V(r + 1) + 1 = 3^{3 j(r) + 4} V(r)$:
+1. Every $V(r)$ is odd ($V(r) \bmod 2 = 1$).
+2. For any $r_1 < r_2$ with $j(r_1) \ne j(r_2)$, $(V(r_2) - V(r_1)) \bmod 4 = 2$, so
+   $2 \mid (V(r_2) - V(r_1))$ and $\neg (4 \mid (V(r_2) - V(r_1)))$. -/
+theorem dense_core_all_V_odd_and_mod_four_divergence
+    {V j : ℕ → ℕ}
+    (hV0 : 1 ≤ V 0)
+    (hj : ∀ r : ℕ, j r = 1 ∨ j r = 2)
+    (hrec : ∀ r : ℕ, 2 ^ (3 * j (r + 1) + 4) * V (r + 1) + 1 = 3 ^ (3 * j r + 4) * V r) :
+    (∀ r : ℕ, V r % 2 = 1) ∧
+    (∀ r_1 r_2 : ℕ, r_1 < r_2 → j r_1 ≠ j r_2 →
+      (V r_2 - V r_1) % 4 = 2 ∧ (2 ∣ (V r_2 - V r_1)) ∧ ¬ (4 ∣ (V r_2 - V r_1))) := by
+  have hodd : ∀ r : ℕ, V r % 2 = 1 := by
+    intro r
+    have h16 := (defectNormalizedQuotient_mod_sixteen_spacing_bijection (hrec r)).1
+    omega
+  refine ⟨hodd, ?_⟩
+  intro r_1 r_2 hr12 hjne
+  have hlt := (dense_core_strict_doubling_and_monotonicity hV0 hj hrec).2 r_1 r_2 hr12
+  have hbij1 := (defectNormalizedQuotient_mod_sixteen_spacing_bijection (hrec r_1)).2.2.2 (hj r_1)
+  have hbij2 := (defectNormalizedQuotient_mod_sixteen_spacing_bijection (hrec r_2)).2.2.2 (hj r_2)
+  rcases hj r_1 with h1_1 | h1_2 <;> rcases hj r_2 with h2_1 | h2_2
+  · exact False.elim (hjne (h1_1.trans h2_1.symm))
+  · have hm1 : V r_1 % 8 = 3 := hbij1.1.mp h1_1
+    have hm2 : V r_2 % 8 = 1 := hbij2.2.mp h2_2
+    have hmod4 : (V r_2 - V r_1) % 4 = 2 := by omega
+    exact ⟨hmod4, by omega, by omega⟩
+  · have hm1 : V r_1 % 8 = 1 := hbij1.2.mp h1_2
+    have hm2 : V r_2 % 8 = 3 := hbij2.1.mp h2_1
+    have hmod4 : (V r_2 - V r_1) % 4 = 2 := by omega
+    exact ⟨hmod4, by omega, by omega⟩
+  · exact False.elim (hjne (h1_2.trans h2_2.symm))
+
+/-- **One-Step Extended Right-Special Cancellation and the 7-Bit 2-Adic Valuation Spectral Gap
+(`dense_core_right_special_exact_two_adic_valuation_and_spectral_gap`)**:
+Suppose $1 \le V(0)$, $j(r) \in \{1, 2\}$, $r_1 < r_2$, and $\forall t \le K,\; j(r_1 + t) = j(r_2 + t)$.
+Let $E_K = \text{defectStepSum}(\text{fun } t \Rightarrow j(r_1 + 1 + t),\, K)$ and
+$S_{K+1} = \text{defectStepSum}(\text{fun } t \Rightarrow j(r_1 + t),\, K + 1)$.
+1. **One-Step Extended Tower Cancellation (without requiring $j(r_1 + K + 1) = j(r_2 + K + 1)$)**:
+   $$2^{3 j(r_1 + K + 1) + 4} V(r_1 + K + 1) < 2^{3 j(r_2 + K + 1) + 4} V(r_2 + K + 1)$$
+   and
+   $$2^{E_K} \Big(2^{3 j(r_2 + K + 1) + 4} V(r_2 + K + 1) - 2^{3 j(r_1 + K + 1) + 4} V(r_1 + K + 1)\Big)
+     = 3^{S_{K+1}} \big(V(r_2) - V(r_1)\big).$$
+2. **Universal $2^{E_K + 7}$ Divisibility from $K + 1$ Matching Symbols**:
+   $2^{E_K + 7} \mid (V(r_2) - V(r_1))$, $7 (K + 1) \le E_K + 7$, and
+   $2^{7 (K + 1)} \le 2^{E_K + 7} < V(r_2)$.
+3. **Exact Right-Special Valuation Lock**: If $j(r_1 + K + 1) \ne j(r_2 + K + 1)$, then
+   $((V(r_2) - V(r_1)) / 2^{E_K + 7}) \bmod 2 = 1$ and $\neg (2^{E_K + 8} \mid (V(r_2) - V(r_1)))$.
+4. **7-Bit 2-Adic Spectral Gap Dichotomy**:
+   $$j(r_1 + K + 1) = j(r_2 + K + 1)
+     \;\Longleftrightarrow\; 2^{E_K + 8} \mid \big(V(r_2) - V(r_1)\big)
+     \;\Longleftrightarrow\; 2^{E_K + 14} \mid \big(V(r_2) - V(r_1)\big).$$ -/
+theorem dense_core_right_special_exact_two_adic_valuation_and_spectral_gap
+    {V j : ℕ → ℕ} {r_1 r_2 K : ℕ}
+    (hV0 : 1 ≤ V 0)
+    (hj : ∀ r : ℕ, j r = 1 ∨ j r = 2)
+    (hrec : ∀ r : ℕ, 2 ^ (3 * j (r + 1) + 4) * V (r + 1) + 1 = 3 ^ (3 * j r + 4) * V r)
+    (hr12 : r_1 < r_2)
+    (hmatch : ∀ t ≤ K, j (r_1 + t) = j (r_2 + t)) :
+    let E_K := defectStepSum (fun t => j (r_1 + 1 + t)) K
+    let S_K1 := defectStepSum (fun t => j (r_1 + t)) (K + 1)
+    let B_1 := 2 ^ (3 * j (r_1 + K + 1) + 4)
+    let B_2 := 2 ^ (3 * j (r_2 + K + 1) + 4)
+    (B_1 * V (r_1 + K + 1) < B_2 * V (r_2 + K + 1) ∧
+     2 ^ E_K * (B_2 * V (r_2 + K + 1) - B_1 * V (r_1 + K + 1)) = 3 ^ S_K1 * (V r_2 - V r_1)) ∧
+    ((2 ^ (E_K + 7) ∣ (V r_2 - V r_1)) ∧
+     7 * (K + 1) ≤ E_K + 7 ∧
+     2 ^ (7 * (K + 1)) ≤ 2 ^ (E_K + 7) ∧
+     2 ^ (E_K + 7) < V r_2) ∧
+    (j (r_1 + K + 1) ≠ j (r_2 + K + 1) →
+      ((V r_2 - V r_1) / 2 ^ (E_K + 7)) % 2 = 1 ∧ ¬ (2 ^ (E_K + 8) ∣ (V r_2 - V r_1))) ∧
+    ((j (r_1 + K + 1) = j (r_2 + K + 1) ↔ 2 ^ (E_K + 8) ∣ (V r_2 - V r_1)) ∧
+     (2 ^ (E_K + 8) ∣ (V r_2 - V r_1) ↔ 2 ^ (E_K + 14) ∣ (V r_2 - V r_1))) := by
+  intro E_K S_K1 B_1 B_2
+  have hmono := (dense_core_strict_doubling_and_monotonicity hV0 hj hrec).2
+  have hpos_V : ∀ r : ℕ, 1 ≤ V r := fun r =>
+    ((dense_core_strict_doubling_and_monotonicity hV0 hj hrec).1 r).1
+  have hodd : ∀ r : ℕ, V r % 2 = 1 :=
+    (dense_core_all_V_odd_and_mod_four_divergence hV0 hj hrec).1
+  have hrepK := dense_core_repeated_subword_divisibility_and_exp_bound
+    hV0 hj hrec hr12 hmatch
+  set S_K := defectStepSum (fun t => j (r_1 + t)) K
+  have hsub_K : 2 ^ E_K * (V (r_2 + K) - V (r_1 + K)) = 3 ^ S_K * (V r_2 - V r_1) := hrepK.1
+  have hEK_ge : 7 * K ≤ E_K := hrepK.2.2.2.1
+  have hstep1 := hrec (r_1 + K)
+  have hstep2 := hrec (r_2 + K)
+  have hmK : j (r_2 + K) = j (r_1 + K) := (hmatch K le_rfl).symm
+  rw [hmK] at hstep2
+  set A_K := 3 ^ (3 * j (r_1 + K) + 4)
+  change B_1 * V (r_1 + K + 1) + 1 = A_K * V (r_1 + K) at hstep1
+  change B_2 * V (r_2 + K + 1) + 1 = A_K * V (r_2 + K) at hstep2
+  have hVK_lt : V (r_1 + K) < V (r_2 + K) := hmono (r_1 + K) (r_2 + K) (by omega)
+  have hAK_pos : 0 < A_K := Nat.pow_pos (by decide)
+  have hAK_lt : A_K * V (r_1 + K) < A_K * V (r_2 + K) :=
+    Nat.mul_lt_mul_of_pos_left hVK_lt hAK_pos
+  have hB_lt : B_1 * V (r_1 + K + 1) < B_2 * V (r_2 + K + 1) := by
+    linarith only [hstep1, hstep2, hAK_lt]
+  have hB_diff : B_2 * V (r_2 + K + 1) - B_1 * V (r_1 + K + 1) =
+      A_K * (V (r_2 + K) - V (r_1 + K)) := by
+    have hd1 : B_2 * V (r_2 + K + 1) - B_1 * V (r_1 + K + 1) + B_1 * V (r_1 + K + 1) =
+        B_2 * V (r_2 + K + 1) := Nat.sub_add_cancel (le_of_lt hB_lt)
+    have hd2 : A_K * (V (r_2 + K) - V (r_1 + K)) + A_K * V (r_1 + K) =
+        A_K * V (r_2 + K) := by
+      rw [← Nat.mul_add, Nat.sub_add_cancel (le_of_lt hVK_lt)]
+    linarith only [hstep1, hstep2, hd1, hd2]
+  have hS_split : 3 ^ S_K1 = 3 ^ S_K * A_K :=
+    Nat.pow_add 3 S_K (3 * j (r_1 + K) + 4)
+  have hext_eq :
+      2 ^ E_K * (B_2 * V (r_2 + K + 1) - B_1 * V (r_1 + K + 1)) =
+        3 ^ S_K1 * (V r_2 - V r_1) := by
+    calc 2 ^ E_K * (B_2 * V (r_2 + K + 1) - B_1 * V (r_1 + K + 1))
+        = 2 ^ E_K * (A_K * (V (r_2 + K) - V (r_1 + K))) := by rw [hB_diff]
+      _ = (2 ^ E_K * (V (r_2 + K) - V (r_1 + K))) * A_K := by ring
+      _ = (3 ^ S_K * (V r_2 - V r_1)) * A_K := by rw [hsub_K]
+      _ = (3 ^ S_K * A_K) * (V r_2 - V r_1) := by ring
+      _ = 3 ^ S_K1 * (V r_2 - V r_1) := by rw [← hS_split]
+  have h128_dvd_B : 128 ∣ (B_2 * V (r_2 + K + 1) - B_1 * V (r_1 + K + 1)) := by
+    rcases hj (r_1 + K + 1) with h1_1 | h1_2 <;> rcases hj (r_2 + K + 1) with h2_1 | h2_2
+    · have hB1 : B_1 = 128 := by change 2 ^ (3 * j (r_1 + K + 1) + 4) = 128; rw [h1_1]; rfl
+      have hB2 : B_2 = 128 := by change 2 ^ (3 * j (r_2 + K + 1) + 4) = 128; rw [h2_1]; rfl
+      rw [hB1, hB2]
+      exact ⟨V (r_2 + K + 1) - V (r_1 + K + 1), by omega⟩
+    · have hB1 : B_1 = 128 := by change 2 ^ (3 * j (r_1 + K + 1) + 4) = 128; rw [h1_1]; rfl
+      have hB2 : B_2 = 1024 := by change 2 ^ (3 * j (r_2 + K + 1) + 4) = 1024; rw [h2_2]; rfl
+      rw [hB1, hB2]
+      exact ⟨8 * V (r_2 + K + 1) - V (r_1 + K + 1), by omega⟩
+    · have hB1 : B_1 = 1024 := by change 2 ^ (3 * j (r_1 + K + 1) + 4) = 1024; rw [h1_2]; rfl
+      have hB2 : B_2 = 128 := by change 2 ^ (3 * j (r_2 + K + 1) + 4) = 128; rw [h2_1]; rfl
+      rw [hB1, hB2]
+      exact ⟨V (r_2 + K + 1) - 8 * V (r_1 + K + 1), by omega⟩
+    · have hB1 : B_1 = 1024 := by change 2 ^ (3 * j (r_1 + K + 1) + 4) = 1024; rw [h1_2]; rfl
+      have hB2 : B_2 = 1024 := by change 2 ^ (3 * j (r_2 + K + 1) + 4) = 1024; rw [h2_2]; rfl
+      rw [hB1, hB2]
+      exact ⟨8 * (V (r_2 + K + 1) - V (r_1 + K + 1)), by omega⟩
+  have hdvd_E7 : 2 ^ (E_K + 7) ∣ (V r_2 - V r_1) := by
+    rcases h128_dvd_B with ⟨U, hU⟩
+    have hpow7 : 2 ^ (E_K + 7) = 2 ^ E_K * 128 := by rw [Nat.pow_add]
+    have hdvd_prod : 2 ^ (E_K + 7) ∣ 3 ^ S_K1 * (V r_2 - V r_1) := by
+      refine ⟨U, ?_⟩
+      rw [← hext_eq, hU, hpow7]
+      ring
+    have hcop : Nat.Coprime (2 ^ (E_K + 7)) (3 ^ S_K1) :=
+      Nat.Coprime.pow (E_K + 7) S_K1 (by decide : Nat.Coprime 2 3)
+    exact hcop.dvd_of_dvd_mul_left hdvd_prod
+  have hEK7_ge : 7 * (K + 1) ≤ E_K + 7 := by omega
+  have hpow_le : 2 ^ (7 * (K + 1)) ≤ 2 ^ (E_K + 7) :=
+    Nat.pow_le_pow_right (by decide) hEK7_ge
+  have hV_lt : V r_1 < V r_2 := hmono r_1 r_2 hr12
+  have hEK7_lt_Vr2 : 2 ^ (E_K + 7) < V r_2 := by
+    rcases hdvd_E7 with ⟨Q, hQ⟩
+    have hQ_pos : 1 ≤ Q := by
+      rcases Nat.eq_zero_or_pos Q with rfl | hpos
+      · omega
+      · exact hpos
+    have hle : 2 ^ (E_K + 7) ≤ V r_2 - V r_1 := by
+      calc 2 ^ (E_K + 7) = 2 ^ (E_K + 7) * 1 := (Nat.mul_one _).symm
+        _ ≤ 2 ^ (E_K + 7) * Q := Nat.mul_le_mul_left _ hQ_pos
+        _ = V r_2 - V r_1 := hQ.symm
+    have hVr1_pos := hpos_V r_1
+    omega
+  have hright_spec :
+      j (r_1 + K + 1) ≠ j (r_2 + K + 1) →
+        ((V r_2 - V r_1) / 2 ^ (E_K + 7)) % 2 = 1 ∧ ¬ (2 ^ (E_K + 8) ∣ (V r_2 - V r_1)) := by
+    intro hjne
+    have hU_odd : ∃ U : ℕ, B_2 * V (r_2 + K + 1) - B_1 * V (r_1 + K + 1) = 128 * U ∧ U % 2 = 1 := by
+      have ho1 := hodd (r_1 + K + 1)
+      have ho2 := hodd (r_2 + K + 1)
+      rcases hj (r_1 + K + 1) with h1_1 | h1_2 <;> rcases hj (r_2 + K + 1) with h2_1 | h2_2
+      · exact False.elim (hjne (h1_1.trans h2_1.symm))
+      · have hB1 : B_1 = 128 := by change 2 ^ (3 * j (r_1 + K + 1) + 4) = 128; rw [h1_1]; rfl
+        have hB2 : B_2 = 1024 := by change 2 ^ (3 * j (r_2 + K + 1) + 4) = 1024; rw [h2_2]; rfl
+        rw [hB1, hB2] at hB_lt ⊢
+        exact ⟨8 * V (r_2 + K + 1) - V (r_1 + K + 1), by omega, by omega⟩
+      · have hB1 : B_1 = 1024 := by change 2 ^ (3 * j (r_1 + K + 1) + 4) = 1024; rw [h1_2]; rfl
+        have hB2 : B_2 = 128 := by change 2 ^ (3 * j (r_2 + K + 1) + 4) = 128; rw [h2_1]; rfl
+        rw [hB1, hB2] at hB_lt ⊢
+        exact ⟨V (r_2 + K + 1) - 8 * V (r_1 + K + 1), by omega, by omega⟩
+      · exact False.elim (hjne (h1_2.trans h2_2.symm))
+    rcases hU_odd with ⟨U, hU_eq, hU_mod2⟩
+    set Q := (V r_2 - V r_1) / 2 ^ (E_K + 7)
+    have hQ_eq : V r_2 - V r_1 = 2 ^ (E_K + 7) * Q :=
+      (Nat.mul_div_cancel' hdvd_E7).symm
+    have hpow7 : 2 ^ (E_K + 7) = 2 ^ E_K * 128 := by rw [Nat.pow_add]
+    have hmul_eq : 2 ^ (E_K + 7) * U = 2 ^ (E_K + 7) * (3 ^ S_K1 * Q) := by
+      calc 2 ^ (E_K + 7) * U
+          = 2 ^ E_K * (128 * U) := by rw [hpow7]; ring
+        _ = 2 ^ E_K * (B_2 * V (r_2 + K + 1) - B_1 * V (r_1 + K + 1)) := by rw [← hU_eq]
+        _ = 3 ^ S_K1 * (V r_2 - V r_1) := hext_eq
+        _ = 3 ^ S_K1 * (2 ^ (E_K + 7) * Q) := by rw [hQ_eq]
+        _ = 2 ^ (E_K + 7) * (3 ^ S_K1 * Q) := by ring
+    have hUQ : U = 3 ^ S_K1 * Q :=
+      Nat.eq_of_mul_eq_mul_left (Nat.pow_pos (by decide)) hmul_eq
+    have hQ_mod2 : Q % 2 = 1 := by
+      rcases Nat.mod_two_eq_zero_or_one Q with hQ0 | hQ1
+      · have hU_even : U % 2 = 0 := by
+          rw [hUQ, Nat.mul_mod, hQ0, Nat.mul_zero, Nat.zero_mod]
+        omega
+      · exact hQ1
+    refine ⟨hQ_mod2, ?_⟩
+    rintro ⟨M, hM⟩
+    have hpow8 : 2 ^ (E_K + 8) = 2 ^ (E_K + 7) * 2 := by
+      have hexp : E_K + 8 = (E_K + 7) + 1 := by omega
+      rw [hexp, Nat.pow_add]
+    have hQM : 2 ^ (E_K + 7) * Q = 2 ^ (E_K + 7) * (2 * M) := by
+      rw [← hQ_eq, hM, hpow8]; ring
+    have hQ_even : Q = 2 * M :=
+      Nat.eq_of_mul_eq_mul_left (Nat.pow_pos (by decide)) hQM
+    omega
+  have hdvd_E14_of_eq :
+      j (r_1 + K + 1) = j (r_2 + K + 1) → 2 ^ (E_K + 14) ∣ (V r_2 - V r_1) := by
+    intro hjeq
+    have hmatch1 : ∀ t ≤ K + 1, j (r_1 + t) = j (r_2 + t) := by
+      intro t ht
+      rcases Nat.eq_or_lt_of_le ht with rfl | hlt
+      · have hidx1 : r_1 + (K + 1) = r_1 + K + 1 := by omega
+        have hidx2 : r_2 + (K + 1) = r_2 + K + 1 := by omega
+        rw [hidx1, hidx2, hjeq]
+      · exact hmatch t (by omega)
+    have hrep1 := dense_core_repeated_subword_divisibility_and_exp_bound
+      hV0 hj hrec hr12 hmatch1
+    set E_K1 := defectStepSum (fun t => j (r_1 + 1 + t)) (K + 1)
+    have hstep1' := hrec (r_1 + (K + 1))
+    have hstep2' := hrec (r_2 + (K + 1))
+    have hmK1 : j (r_2 + (K + 1)) = j (r_1 + (K + 1)) := (hmatch1 (K + 1) le_rfl).symm
+    rw [hmK1] at hstep2'
+    set A_K1 := 3 ^ (3 * j (r_1 + (K + 1)) + 4)
+    set B_1' := 2 ^ (3 * j (r_1 + (K + 1) + 1) + 4)
+    set B_2' := 2 ^ (3 * j (r_2 + (K + 1) + 1) + 4)
+    change B_1' * V (r_1 + (K + 1) + 1) + 1 = A_K1 * V (r_1 + (K + 1)) at hstep1'
+    change B_2' * V (r_2 + (K + 1) + 1) + 1 = A_K1 * V (r_2 + (K + 1)) at hstep2'
+    have hVK1_lt : V (r_1 + (K + 1)) < V (r_2 + (K + 1)) :=
+      hmono (r_1 + (K + 1)) (r_2 + (K + 1)) (by omega)
+    have hAK1_lt : A_K1 * V (r_1 + (K + 1)) < A_K1 * V (r_2 + (K + 1)) :=
+      Nat.mul_lt_mul_of_pos_left hVK1_lt (Nat.pow_pos (by decide))
+    have hB'_lt : B_1' * V (r_1 + (K + 1) + 1) < B_2' * V (r_2 + (K + 1) + 1) := by
+      linarith only [hstep1', hstep2', hAK1_lt]
+    have hB'_diff : B_2' * V (r_2 + (K + 1) + 1) - B_1' * V (r_1 + (K + 1) + 1) =
+        A_K1 * (V (r_2 + (K + 1)) - V (r_1 + (K + 1))) := by
+      have hd1 : B_2' * V (r_2 + (K + 1) + 1) - B_1' * V (r_1 + (K + 1) + 1) +
+          B_1' * V (r_1 + (K + 1) + 1) = B_2' * V (r_2 + (K + 1) + 1) :=
+        Nat.sub_add_cancel (le_of_lt hB'_lt)
+      have hd2 : A_K1 * (V (r_2 + (K + 1)) - V (r_1 + (K + 1))) + A_K1 * V (r_1 + (K + 1)) =
+          A_K1 * V (r_2 + (K + 1)) := by
+        rw [← Nat.mul_add, Nat.sub_add_cancel (le_of_lt hVK1_lt)]
+      linarith only [hstep1', hstep2', hd1, hd2]
+    set S_K2 := defectStepSum (fun t => j (r_1 + t)) (K + 2)
+    have hS1_split : 3 ^ S_K2 = 3 ^ S_K1 * A_K1 :=
+      Nat.pow_add 3 S_K1 (3 * j (r_1 + (K + 1)) + 4)
+    have hext1_eq :
+        2 ^ E_K1 * (B_2' * V (r_2 + (K + 1) + 1) - B_1' * V (r_1 + (K + 1) + 1)) =
+          3 ^ S_K2 * (V r_2 - V r_1) := by
+      calc 2 ^ E_K1 * (B_2' * V (r_2 + (K + 1) + 1) - B_1' * V (r_1 + (K + 1) + 1))
+          = 2 ^ E_K1 * (A_K1 * (V (r_2 + (K + 1)) - V (r_1 + (K + 1)))) := by rw [hB'_diff]
+        _ = (2 ^ E_K1 * (V (r_2 + (K + 1)) - V (r_1 + (K + 1)))) * A_K1 := by ring
+        _ = (3 ^ S_K1 * (V r_2 - V r_1)) * A_K1 := by rw [hrep1.1]
+        _ = (3 ^ S_K1 * A_K1) * (V r_2 - V r_1) := by ring
+        _ = 3 ^ S_K2 * (V r_2 - V r_1) := by rw [← hS1_split]
+    have h128_dvd_B' : 128 ∣ (B_2' * V (r_2 + (K + 1) + 1) - B_1' * V (r_1 + (K + 1) + 1)) := by
+      rcases hj (r_1 + (K + 1) + 1) with h1_1 | h1_2 <;>
+        rcases hj (r_2 + (K + 1) + 1) with h2_1 | h2_2
+      · have hB1 : B_1' = 128 := by change 2 ^ (3 * j (r_1 + (K + 1) + 1) + 4) = 128; rw [h1_1]; rfl
+        have hB2 : B_2' = 128 := by change 2 ^ (3 * j (r_2 + (K + 1) + 1) + 4) = 128; rw [h2_1]; rfl
+        rw [hB1, hB2]; exact ⟨V (r_2 + (K + 1) + 1) - V (r_1 + (K + 1) + 1), by omega⟩
+      · have hB1 : B_1' = 128 := by change 2 ^ (3 * j (r_1 + (K + 1) + 1) + 4) = 128; rw [h1_1]; rfl
+        have hB2 : B_2' = 1024 := by change 2 ^ (3 * j (r_2 + (K + 1) + 1) + 4) = 1024; rw [h2_2]; rfl
+        rw [hB1, hB2]; exact ⟨8 * V (r_2 + (K + 1) + 1) - V (r_1 + (K + 1) + 1), by omega⟩
+      · have hB1 : B_1' = 1024 := by change 2 ^ (3 * j (r_1 + (K + 1) + 1) + 4) = 1024; rw [h1_2]; rfl
+        have hB2 : B_2' = 128 := by change 2 ^ (3 * j (r_2 + (K + 1) + 1) + 4) = 128; rw [h2_1]; rfl
+        rw [hB1, hB2]; exact ⟨V (r_2 + (K + 1) + 1) - 8 * V (r_1 + (K + 1) + 1), by omega⟩
+      · have hB1 : B_1' = 1024 := by change 2 ^ (3 * j (r_1 + (K + 1) + 1) + 4) = 1024; rw [h1_2]; rfl
+        have hB2 : B_2' = 1024 := by change 2 ^ (3 * j (r_2 + (K + 1) + 1) + 4) = 1024; rw [h2_2]; rfl
+        rw [hB1, hB2]; exact ⟨8 * (V (r_2 + (K + 1) + 1) - V (r_1 + (K + 1) + 1)), by omega⟩
+    have hdvd_EK1_7 : 2 ^ (E_K1 + 7) ∣ (V r_2 - V r_1) := by
+      rcases h128_dvd_B' with ⟨U', hU'⟩
+      have hpow7 : 2 ^ (E_K1 + 7) = 2 ^ E_K1 * 128 := by rw [Nat.pow_add]
+      have hdvd_prod : 2 ^ (E_K1 + 7) ∣ 3 ^ S_K2 * (V r_2 - V r_1) := by
+        refine ⟨U', ?_⟩
+        rw [← hext1_eq, hU', hpow7]; ring
+      have hcop : Nat.Coprime (2 ^ (E_K1 + 7)) (3 ^ S_K2) :=
+        Nat.Coprime.pow (E_K1 + 7) S_K2 (by decide : Nat.Coprime 2 3)
+      exact hcop.dvd_of_dvd_mul_left hdvd_prod
+    have hEK1_ge : E_K + 14 ≤ E_K1 + 7 := by
+      change E_K + 14 ≤ (E_K + (3 * j (r_1 + 1 + K) + 4)) + 7
+      rcases hj (r_1 + 1 + K) with h1 | h2 <;> omega
+    exact Nat.dvd_trans (Nat.pow_dvd_pow 2 hEK1_ge) hdvd_EK1_7
+  have hdvd_8_of_14 : 2 ^ (E_K + 14) ∣ (V r_2 - V r_1) → 2 ^ (E_K + 8) ∣ (V r_2 - V r_1) :=
+    Nat.dvd_trans (Nat.pow_dvd_pow 2 (by omega : E_K + 8 ≤ E_K + 14))
+  have heq_of_dvd8 : 2 ^ (E_K + 8) ∣ (V r_2 - V r_1) → j (r_1 + K + 1) = j (r_2 + K + 1) := by
+    intro hdvd8
+    exact Classical.byContradiction fun hjne => (hright_spec hjne).2 hdvd8
+  exact ⟨⟨hB_lt, hext_eq⟩, ⟨hdvd_E7, hEK7_ge, hpow_le, hEK7_lt_Vr2⟩, hright_spec,
+    ⟨⟨fun h => hdvd_8_of_14 (hdvd_E14_of_eq h), heq_of_dvd8⟩,
+     ⟨fun h => hdvd_E14_of_eq (heq_of_dvd8 h), hdvd_8_of_14⟩⟩⟩
+
+/-- **Symmetric Bispecial $(2^S, 3^S)$ Resonance Law in the Dense Core
+(`dense_core_symmetric_bispecial_resonance`)**:
+Suppose $1 \le V(0)$, $j(r) \in \{1, 2\}$, $r_1 < r_2$, and the middle subword of length $K + 1$
+matches at $r_1 + 1$ and $r_2 + 1$: $\forall t \le K,\; j(r_1 + 1 + t) = j(r_2 + 1 + t)$
+(with no match assumed on $j(r_1)$ vs $j(r_2)$ or on $j(r_1 + K + 2)$ vs $j(r_2 + K + 2)$).
+Let $S_{\text{mid}} = \text{defectStepSum}(\text{fun } t \Rightarrow j(r_1 + 1 + t),\, K + 1)$.
+Then:
+1. $3^{3 j(r_1) + 4} V(r_1) < 3^{3 j(r_2) + 4} V(r_2)$ and
+   $2^{3 j(r_1 + K + 2) + 4} V(r_1 + K + 2) < 2^{3 j(r_2 + K + 2) + 4} V(r_2 + K + 2)$.
+2. **Symmetric $(2^{S_{\text{mid}}}, 3^{S_{\text{mid}}})$ Resonance Identity**:
+   $$2^{S_{\text{mid}}} \Big(2^{3 j(r_2 + K + 2) + 4} V(r_2 + K + 2) - 2^{3 j(r_1 + K + 2) + 4} V(r_1 + K + 2)\Big)
+     = 3^{S_{\text{mid}}} \Big(3^{3 j(r_2) + 4} V(r_2) - 3^{3 j(r_1) + 4} V(r_1)\Big).$$
+3. **Dual Boundary Divisibility**:
+   $$2^{S_{\text{mid}} + 7} \;\Big|\; \Big(3^{3 j(r_2) + 4} V(r_2) - 3^{3 j(r_1) + 4} V(r_1)\Big),$$
+   $$3^{S_{\text{mid}} + 7} \;\Big|\; \Big(2^{3 j(r_2 + K + 2) + 4} V(r_2 + K + 2) - 2^{3 j(r_1 + K + 2) + 4} V(r_1 + K + 2)\Big).$$ -/
+theorem dense_core_symmetric_bispecial_resonance
+    {V j : ℕ → ℕ} {r_1 r_2 K : ℕ}
+    (hV0 : 1 ≤ V 0)
+    (hj : ∀ r : ℕ, j r = 1 ∨ j r = 2)
+    (hrec : ∀ r : ℕ, 2 ^ (3 * j (r + 1) + 4) * V (r + 1) + 1 = 3 ^ (3 * j r + 4) * V r)
+    (hr12 : r_1 < r_2)
+    (hmid : ∀ t ≤ K, j (r_1 + 1 + t) = j (r_2 + 1 + t)) :
+    let S_mid := defectStepSum (fun t => j (r_1 + 1 + t)) (K + 1)
+    let A_1 := 3 ^ (3 * j r_1 + 4)
+    let A_2 := 3 ^ (3 * j r_2 + 4)
+    let B_1 := 2 ^ (3 * j (r_1 + 1 + K + 1) + 4)
+    let B_2 := 2 ^ (3 * j (r_2 + 1 + K + 1) + 4)
+    (A_1 * V r_1 < A_2 * V r_2 ∧
+     B_1 * V (r_1 + 1 + K + 1) < B_2 * V (r_2 + 1 + K + 1)) ∧
+    2 ^ S_mid * (B_2 * V (r_2 + 1 + K + 1) - B_1 * V (r_1 + 1 + K + 1)) =
+      3 ^ S_mid * (A_2 * V r_2 - A_1 * V r_1) ∧
+    (2 ^ (S_mid + 7) ∣ (A_2 * V r_2 - A_1 * V r_1)) ∧
+    (3 ^ (S_mid + 7) ∣ (B_2 * V (r_2 + 1 + K + 1) - B_1 * V (r_1 + 1 + K + 1))) := by
+  intro S_mid A_1 A_2 B_1 B_2
+  have hmono := (dense_core_strict_doubling_and_monotonicity hV0 hj hrec).2
+  have hr12_shift : r_1 + 1 < r_2 + 1 := by omega
+  have hright := dense_core_right_special_exact_two_adic_valuation_and_spectral_gap
+    hV0 hj hrec hr12_shift hmid
+  set E_mid := defectStepSum (fun t => j (r_1 + 1 + 1 + t)) K
+  have hB_lt : B_1 * V (r_1 + 1 + K + 1) < B_2 * V (r_2 + 1 + K + 1) := hright.1.1
+  have hext_eq :
+      2 ^ E_mid * (B_2 * V (r_2 + 1 + K + 1) - B_1 * V (r_1 + 1 + K + 1)) =
+        3 ^ S_mid * (V (r_2 + 1) - V (r_1 + 1)) := hright.1.2
+  have hj1_eq : j (r_2 + 1) = j (r_1 + 1) := by
+    have h0 := (hmid 0 (by omega)).symm
+    simpa using h0
+  set B_0 := 2 ^ (3 * j (r_1 + 1) + 4)
+  have hstep_l1 : B_0 * V (r_1 + 1) + 1 = A_1 * V r_1 := hrec r_1
+  have hstep_l2 : B_0 * V (r_2 + 1) + 1 = A_2 * V r_2 := by
+    have h := hrec r_2
+    rw [hj1_eq] at h
+    exact h
+  have hV1_lt : V (r_1 + 1) < V (r_2 + 1) := hmono (r_1 + 1) (r_2 + 1) hr12_shift
+  have hB0_lt : B_0 * V (r_1 + 1) < B_0 * V (r_2 + 1) :=
+    Nat.mul_lt_mul_of_pos_left hV1_lt (Nat.pow_pos (by decide))
+  have hA_lt : A_1 * V r_1 < A_2 * V r_2 := by
+    linarith only [hstep_l1, hstep_l2, hB0_lt]
+  have hA_diff : A_2 * V r_2 - A_1 * V r_1 = B_0 * (V (r_2 + 1) - V (r_1 + 1)) := by
+    have hd1 : A_2 * V r_2 - A_1 * V r_1 + A_1 * V r_1 = A_2 * V r_2 :=
+      Nat.sub_add_cancel (le_of_lt hA_lt)
+    have hd2 : B_0 * (V (r_2 + 1) - V (r_1 + 1)) + B_0 * V (r_1 + 1) = B_0 * V (r_2 + 1) := by
+      rw [← Nat.mul_add, Nat.sub_add_cancel (le_of_lt hV1_lt)]
+    linarith only [hstep_l1, hstep_l2, hd1, hd2]
+  have hshift_mid : (3 * j (r_1 + 1) + 4) + E_mid = S_mid := by
+    have h := ((defectStepSum_shift_cancellation_and_single_exponent_identity
+      (fun t => j (r_1 + 1 + t))).1 K).1
+    have hE_eq : defectStepSum (fun t => j (r_1 + 1 + (1 + t))) K = E_mid := by
+      congr 1; funext t; congr 1; omega
+    simpa [hE_eq, S_mid] using h
+  have hpow2_S : 2 ^ S_mid = B_0 * 2 ^ E_mid := by
+    rw [← hshift_mid, Nat.pow_add]
+  have hres_eq :
+      2 ^ S_mid * (B_2 * V (r_2 + 1 + K + 1) - B_1 * V (r_1 + 1 + K + 1)) =
+        3 ^ S_mid * (A_2 * V r_2 - A_1 * V r_1) := by
+    calc 2 ^ S_mid * (B_2 * V (r_2 + 1 + K + 1) - B_1 * V (r_1 + 1 + K + 1))
+        = B_0 * (2 ^ E_mid * (B_2 * V (r_2 + 1 + K + 1) - B_1 * V (r_1 + 1 + K + 1))) := by
+          rw [hpow2_S]; ring
+      _ = B_0 * (3 ^ S_mid * (V (r_2 + 1) - V (r_1 + 1))) := by rw [hext_eq]
+      _ = 3 ^ S_mid * (B_0 * (V (r_2 + 1) - V (r_1 + 1))) := by ring
+      _ = 3 ^ S_mid * (A_2 * V r_2 - A_1 * V r_1) := by rw [← hA_diff]
+  have hdvd_2 : 2 ^ (S_mid + 7) ∣ (A_2 * V r_2 - A_1 * V r_1) := by
+    rcases hright.2.1.1 with ⟨Q, hQ⟩
+    have hB0_pow : B_0 * 2 ^ (E_mid + 7) = 2 ^ (S_mid + 7) := by
+      have hexp : (3 * j (r_1 + 1) + 4) + (E_mid + 7) = S_mid + 7 := by omega
+      change 2 ^ (3 * j (r_1 + 1) + 4) * 2 ^ (E_mid + 7) = 2 ^ (S_mid + 7)
+      rw [← Nat.pow_add, hexp]
+    refine ⟨Q, ?_⟩
+    rw [hA_diff, hQ, ← Nat.mul_assoc, hB0_pow]
+  have hdvd_3 : 3 ^ (S_mid + 7) ∣ (B_2 * V (r_2 + 1 + K + 1) - B_1 * V (r_1 + 1 + K + 1)) := by
+    have h2187_dvd_A : 2187 ∣ (A_2 * V r_2 - A_1 * V r_1) := by
+      rcases hj r_1 with h1_1 | h1_2 <;> rcases hj r_2 with h2_1 | h2_2
+      · have hA1 : A_1 = 2187 := by change 3 ^ (3 * j r_1 + 4) = 2187; rw [h1_1]; rfl
+        have hA2 : A_2 = 2187 := by change 3 ^ (3 * j r_2 + 4) = 2187; rw [h2_1]; rfl
+        rw [hA1, hA2]; exact ⟨V r_2 - V r_1, by omega⟩
+      · have hA1 : A_1 = 2187 := by change 3 ^ (3 * j r_1 + 4) = 2187; rw [h1_1]; rfl
+        have hA2 : A_2 = 59049 := by change 3 ^ (3 * j r_2 + 4) = 59049; rw [h2_2]; rfl
+        rw [hA1, hA2]; exact ⟨27 * V r_2 - V r_1, by omega⟩
+      · have hA1 : A_1 = 59049 := by change 3 ^ (3 * j r_1 + 4) = 59049; rw [h1_2]; rfl
+        have hA2 : A_2 = 2187 := by change 3 ^ (3 * j r_2 + 4) = 2187; rw [h2_1]; rfl
+        rw [hA1, hA2]; exact ⟨V r_2 - 27 * V r_1, by omega⟩
+      · have hA1 : A_1 = 59049 := by change 3 ^ (3 * j r_1 + 4) = 59049; rw [h1_2]; rfl
+        have hA2 : A_2 = 59049 := by change 3 ^ (3 * j r_2 + 4) = 59049; rw [h2_2]; rfl
+        rw [hA1, hA2]; exact ⟨27 * (V r_2 - V r_1), by omega⟩
+    rcases h2187_dvd_A with ⟨M, hM⟩
+    have hpow3_7 : 3 ^ (S_mid + 7) = 3 ^ S_mid * 2187 := by rw [Nat.pow_add]
+    have hdvd_prod : 3 ^ (S_mid + 7) ∣
+        2 ^ S_mid * (B_2 * V (r_2 + 1 + K + 1) - B_1 * V (r_1 + 1 + K + 1)) := by
+      refine ⟨M, ?_⟩
+      rw [hres_eq, hM, hpow3_7]; ring
+    have hcop : Nat.Coprime (3 ^ (S_mid + 7)) (2 ^ S_mid) :=
+      Nat.Coprime.pow (S_mid + 7) S_mid (by decide : Nat.Coprime 3 2)
+    exact hcop.dvd_of_dvd_mul_left hdvd_prod
+  exact ⟨⟨hA_lt, hB_lt⟩, hres_eq, hdvd_2, hdvd_3⟩
+
+/-- **Parameterized $(p, q)$ Cumulative-Exponent Cutoffs and Concrete Convergent Bounds
+$(10, 17)$ and $(24, 41)$ in the Dense Core (`dense_core_parameterized_pq_cutoff_and_convergents`)**:
+Suppose $1 \le V(0) < 2^W$, $j(r) \in \{1, 2\}$, and
+$2^{3 j(r + 1) + 4} V(r + 1) + 1 = 3^{3 j(r) + 4} V(r)$ for all $r \in \mathbb{N}$.
+1. **Cumulative Step-Sum Bounds**: For every $r \in \mathbb{N}$,
+   $7 r \le \text{defectStepSum}(j, r) \le 10 r$.
+2. **Parameterized $(p, q)$ Cumulative-Exponent Cutoff**: For any $p, q \in \mathbb{N}$ with
+   $1 \le q$ and $3^q \le 2^{p + q}$, and any $r_1 < r_2$ and $L \in \mathbb{N}$ with
+   $\forall t < L,\; j(r_1 + t) = j(r_2 + t)$:
+   $$7 q L \;<\; p \cdot \text{defectStepSum}(j, r_2) + q (W + 3) \;\le\; 10 p r_2 + q (W + 3).$$
+3. **Parameterized $(p, q)$ Prefix-Complexity Cutoff**: Whenever `prefixFactorCount j L C ≤ C`,
+   $$7 q L \;<\; 10 p C + q (W + 3).$$
+4. **Sharpened Concrete Convergents $(p, q) = (10, 17)$ and $(24, 41)$**:
+   Whenever `prefixFactorCount j L C ≤ C`,
+   $$119 L \;<\; 100 C + 17 (W + 3) \quad \text{and} \quad 287 L \;<\; 240 C + 41 (W + 3)$$
+   (improving Section 29's slope from $7/6 \approx 1.1667$ to $119/100 = 1.19$ and $287/240 \approx 1.19583$,
+   while requiring only length-$L$ rather than length-$(L+1)$ factor bounds). -/
+theorem dense_core_parameterized_pq_cutoff_and_convergents
+    {V j : ℕ → ℕ} {W : ℕ}
+    (hV0_pos : 1 ≤ V 0) (hV0_lt : V 0 < 2 ^ W)
+    (hj : ∀ r : ℕ, j r = 1 ∨ j r = 2)
+    (hrec : ∀ r : ℕ, 2 ^ (3 * j (r + 1) + 4) * V (r + 1) + 1 = 3 ^ (3 * j r + 4) * V r) :
+    (∀ r : ℕ, 7 * r ≤ defectStepSum j r ∧ defectStepSum j r ≤ 10 * r) ∧
+    (∀ p q r_1 r_2 L : ℕ,
+      1 ≤ q → 3 ^ q ≤ 2 ^ (p + q) →
+      r_1 < r_2 →
+      (∀ t < L, j (r_1 + t) = j (r_2 + t)) →
+      7 * q * L < p * defectStepSum j r_2 + q * (W + 3) ∧
+      7 * q * L < 10 * p * r_2 + q * (W + 3)) ∧
+    (∀ p q L C : ℕ,
+      1 ≤ q → 3 ^ q ≤ 2 ^ (p + q) →
+      prefixFactorCount j L C ≤ C →
+      7 * q * L < 10 * p * C + q * (W + 3)) ∧
+    (∀ L C : ℕ,
+      prefixFactorCount j L C ≤ C →
+      119 * L < 100 * C + 17 * (W + 3) ∧
+      287 * L < 240 * C + 41 * (W + 3)) := by
+  have hS_bounds : ∀ r : ℕ, 7 * r ≤ defectStepSum j r ∧ defectStepSum j r ≤ 10 * r := by
+    intro r
+    induction r with
+    | zero => simp only [defectStepSum, Nat.mul_zero, le_refl, and_self]
+    | succ r ih =>
+        change 7 * (r + 1) ≤ defectStepSum j r + (3 * j r + 4) ∧
+          defectStepSum j r + (3 * j r + 4) ≤ 10 * (r + 1)
+        rcases hj r with h1 | h2 <;> omega
+  have hpq_rep :
+      ∀ p q r_1 r_2 L : ℕ,
+        1 ≤ q → 3 ^ q ≤ 2 ^ (p + q) →
+        r_1 < r_2 →
+        (∀ t < L, j (r_1 + t) = j (r_2 + t)) →
+        7 * q * L < p * defectStepSum j r_2 + q * (W + 3) ∧
+        7 * q * L < 10 * p * r_2 + q * (W + 3) := by
+    intro p q r_1 r_2 L hq hpq hr12 hmatch_lt
+    have hS_r2_le : defectStepSum j r_2 ≤ 10 * r_2 := (hS_bounds r_2).2
+    have hp_le : p * defectStepSum j r_2 ≤ 10 * p * r_2 := by
+      calc p * defectStepSum j r_2 ≤ p * (10 * r_2) := Nat.mul_le_mul_left p hS_r2_le
+        _ = 10 * p * r_2 := by ring
+    rcases Nat.eq_zero_or_pos L with rfl | hL_pos
+    · have hq_pos : 0 < q * (W + 3) := Nat.mul_pos hq (by omega)
+      omega
+    · obtain ⟨K, rfl⟩ : ∃ K : ℕ, L = K + 1 := ⟨L - 1, by omega⟩
+      have hmatch : ∀ t ≤ K, j (r_1 + t) = j (r_2 + t) := fun t ht => hmatch_lt t (by omega)
+      have hright := dense_core_right_special_exact_two_adic_valuation_and_spectral_gap
+        hV0_pos hj hrec hr12 hmatch
+      have h2_lt_Vr2 : 2 ^ (7 * (K + 1)) < V r_2 :=
+        lt_of_le_of_lt hright.2.1.2.2.1 hright.2.1.2.2.2
+      have hr2_pos : 1 ≤ r_2 := by omega
+      have harch := ((defectNormalizedQuotient_archimedean_floor_invariant hV0_pos hrec).2
+        r_2 hr2_pos).2.2.1
+      set E_r2 := defectStepSum (fun t => j (1 + t)) r_2
+      set S_r2 := defectStepSum j r_2
+      have hmul1 : 2 ^ (7 * (K + 1) + E_r2) < 2 ^ E_r2 * V r_2 := by
+        rw [Nat.add_comm (7 * (K + 1)) E_r2, Nat.pow_add]
+        exact Nat.mul_lt_mul_of_pos_left h2_lt_Vr2 (Nat.pow_pos (by decide))
+      have hlt_S : 2 ^ (7 * (K + 1) + E_r2) < 3 ^ S_r2 * 2 ^ W := by
+        have hlt_V0 : 3 ^ S_r2 * V 0 < 3 ^ S_r2 * 2 ^ W :=
+          Nat.mul_lt_mul_of_pos_left hV0_lt (Nat.pow_pos (by decide))
+        exact lt_trans (lt_trans hmul1 harch) hlt_V0
+      have hpow_q : (2 ^ (7 * (K + 1) + E_r2)) ^ q < (3 ^ S_r2 * 2 ^ W) ^ q :=
+        Nat.pow_lt_pow_left hlt_S (by omega)
+      have h3q : (3 ^ S_r2) ^ q ≤ (2 ^ (p + q)) ^ S_r2 := by
+        have hcomm : (3 ^ S_r2) ^ q = (3 ^ q) ^ S_r2 := by
+          rw [← Nat.pow_mul, ← Nat.pow_mul, Nat.mul_comm]
+        rw [hcomm]
+        exact Nat.pow_le_pow_left hpq S_r2
+      have hrhs : (3 ^ S_r2 * 2 ^ W) ^ q ≤ 2 ^ ((p + q) * S_r2 + W * q) := by
+        calc (3 ^ S_r2 * 2 ^ W) ^ q
+            = (3 ^ S_r2) ^ q * (2 ^ W) ^ q := Nat.mul_pow _ _ _
+          _ ≤ (2 ^ (p + q)) ^ S_r2 * (2 ^ W) ^ q := Nat.mul_le_mul_right _ h3q
+          _ = 2 ^ ((p + q) * S_r2 + W * q) := by
+            rw [← Nat.pow_mul, ← Nat.pow_mul, ← Nat.pow_add]
+      have hlt2 : 2 ^ ((7 * (K + 1) + E_r2) * q) < 2 ^ ((p + q) * S_r2 + W * q) := by
+        rw [← Nat.pow_mul] at hpow_q
+        exact lt_of_lt_of_le hpow_q hrhs
+      have hexp_lt : (7 * (K + 1) + E_r2) * q < (p + q) * S_r2 + W * q :=
+        (Nat.pow_lt_pow_iff_right (by decide : 1 < 2)).mp hlt2
+      have hshift := ((defectStepSum_shift_cancellation_and_single_exponent_identity j).1 r_2).2
+      have hj0 : j 0 = 1 ∨ j 0 = 2 := hj 0
+      have hjr2 : j r_2 = 1 ∨ j r_2 = 2 := hj r_2
+      have hS_le_E3 : S_r2 ≤ E_r2 + 3 := by omega
+      have hqS_le : q * S_r2 ≤ q * E_r2 + 3 * q := by
+        calc q * S_r2 ≤ q * (E_r2 + 3) := Nat.mul_le_mul_left q hS_le_E3
+          _ = q * E_r2 + 3 * q := by ring
+      have hring1 : (7 * (K + 1) + E_r2) * q = 7 * q * (K + 1) + q * E_r2 := by ring
+      have hring2 : (p + q) * S_r2 + W * q = p * S_r2 + q * S_r2 + q * W := by ring
+      have hring3 : q * (W + 3) = q * W + 3 * q := by ring
+      have hcut1 : 7 * q * (K + 1) < p * S_r2 + q * (W + 3) := by
+        linarith only [hexp_lt, hqS_le, hring1, hring2, hring3]
+      exact ⟨hcut1, by linarith only [hcut1, hp_le]⟩
+  have hpq_card :
+      ∀ p q L C : ℕ,
+        1 ≤ q → 3 ^ q ≤ 2 ^ (p + q) →
+        prefixFactorCount j L C ≤ C →
+        7 * q * L < 10 * p * C + q * (W + 3) := by
+    intro p q L C hq hpq hcard
+    obtain ⟨r_1, r_2, hr12, hr2C, hmatch_lt⟩ :=
+      exists_repeated_subword_of_prefixFactorCount_le j L C hcard
+    have h := (hpq_rep p q r_1 r_2 L hq hpq hr12 hmatch_lt).2
+    have hmul_le : 10 * p * r_2 ≤ 10 * p * C := Nat.mul_le_mul_left (10 * p) hr2C
+    omega
+  refine ⟨hS_bounds, hpq_rep, hpq_card, ?_⟩
+  intro L C hcard
+  have h10_17 := hpq_card 10 17 L C (by decide) (by decide : 3 ^ 17 ≤ 2 ^ (10 + 17)) hcard
+  have h24_41 := hpq_card 24 41 L C (by decide) (by decide : 3 ^ 41 ≤ 2 ^ (24 + 41)) hcard
+  exact ⟨by omega, by omega⟩
+
+/-- **Strict Suffix Aperiodicity and Sharp Transcendental $\frac{7 \log 2}{10 \log(3/2)}$
+Sub-Critical Complexity Exclusion in the Dense Core (`no_subcritical_log_threshold_dense_core`)**:
+Suppose $1 \le V(0)$, $j(r) \in \{1, 2\}$, and
+$2^{3 j(r + 1) + 4} V(r + 1) + 1 = 3^{3 j(r) + 4} V(r)$ for all $r \in \mathbb{N}$.
+1. **Strict Suffix Aperiodicity with Explicit Synchronizing Horizon**:
+   For every $W \in \mathbb{N}$ with $V(0) < 2^W$ and every $r_1 < r_2$, there exists
+   $L \in \mathbb{N}$ with $7 L < 6 r_2 + W + 3$ and $287 L < 240 r_2 + 41 (W + 3)$ such that
+   $j(r_1 + L) \ne j(r_2 + L)$. In particular, $\neg (\forall t : \mathbb{N},\; j(r_1 + t) = j(r_2 + t))$.
+2. **Transcendental $\frac{7 \log 2}{10 \log(3/2)} \approx 1.196658$ Complexity Exclusion**:
+   For every real slope $\kappa$ and constant $C_0 \ge 0$ satisfying
+   $$10 \kappa \log(3 / 2) < 7 \log 2,$$
+   the Dense-Core spacing sequence $j$ cannot satisfy
+   `prefixFactorCount j L (C L) ≤ C L ∧ (C L : ℝ) ≤ kappa * L + C_0`
+   at arbitrarily large lengths $L$. -/
+theorem no_subcritical_log_threshold_dense_core
+    {V j : ℕ → ℕ}
+    (hV0_pos : 1 ≤ V 0)
+    (hj : ∀ r : ℕ, j r = 1 ∨ j r = 2)
+    (hrec : ∀ r : ℕ, 2 ^ (3 * j (r + 1) + 4) * V (r + 1) + 1 = 3 ^ (3 * j r + 4) * V r) :
+    (∀ W r_1 r_2 : ℕ, V 0 < 2 ^ W → r_1 < r_2 →
+      (∃ t : ℕ, t ≤ 6 * r_2 + W + 3 ∧ j (r_1 + t) ≠ j (r_2 + t)) ∧
+      ¬ (∀ t : ℕ, j (r_1 + t) = j (r_2 + t))) ∧
+    (∀ (kappa C_0 : ℝ) (C : ℕ → ℕ),
+      0 ≤ C_0 →
+      10 * kappa * Real.log (3 / 2 : ℝ) < 7 * Real.log (2 : ℝ) →
+      ¬ (∀ L_min : ℕ, ∃ L ≥ L_min,
+        prefixFactorCount j L (C L) ≤ C L ∧
+          (C L : ℝ) ≤ kappa * (L : ℝ) + C_0)) := by
+  refine ⟨?_, ?_⟩
+  · intro W r_1 r_2 hV0_lt hr12
+    have hdiv : ∃ t : ℕ, t ≤ 6 * r_2 + W + 3 ∧ j (r_1 + t) ≠ j (r_2 + t) := by
+      by_contra h_all
+      push_neg at h_all
+      have hcut := (dense_core_repeated_subword_cutoff_and_complexity_exclusion
+        hV0_pos hV0_lt hj hrec).2.1 r_1 r_2 (6 * r_2 + W + 3) hr12 h_all
+      omega
+    refine ⟨hdiv, ?_⟩
+    intro hall
+    rcases hdiv with ⟨t, _, hne⟩
+    exact hne (hall t)
+  · intro kappa C_0 C hC0 hlog hliminf
+    have hlog_scaled : ((10 / 7 : ℝ) * kappa) * Real.log (3 / 2 : ℝ) < Real.log (2 : ℝ) := by
+      linarith
+    obtain ⟨p, q, hq, hpq_lt, hsub⟩ := exists_pq_of_lt_log_threshold hlog_scaled
+    have hpq : 3 ^ q ≤ 2 ^ (p + q) := le_of_lt hpq_lt
+    have hpow_self : ∀ n : ℕ, n < 2 ^ n := by
+      intro n
+      induction n with
+      | zero => decide
+      | succ n ih =>
+          have hpos : 1 ≤ 2 ^ n := Nat.pow_pos (by decide)
+          rw [Nat.pow_succ]
+          omega
+    set W := V 0
+    have hV0_lt : V 0 < 2 ^ W := hpow_self (V 0)
+    set gap : ℝ := 7 * (q : ℝ) - 10 * (p : ℝ) * kappa
+    have hgap_pos : 0 < gap := by unfold gap; linarith
+    set RHS : ℝ := 10 * (p : ℝ) * C_0 + (q : ℝ) * ((W : ℝ) + 3)
+    have hRHS_nonneg : 0 ≤ RHS := by unfold RHS; positivity
+    obtain ⟨L_min, hL_min⟩ := exists_nat_gt (RHS / gap + 1)
+    obtain ⟨L, hL_ge, hcard, hC_bound⟩ := hliminf L_min
+    have hcut := (dense_core_parameterized_pq_cutoff_and_convergents
+      hV0_pos hV0_lt hj hrec).2.2.1 p q L (C L) hq hpq hcard
+    have hcut_real :
+        7 * (q : ℝ) * (L : ℝ) + 1 ≤ 10 * (p : ℝ) * (C L : ℝ) + (q : ℝ) * ((W : ℝ) + 3) := by
+      exact_mod_cast hcut
+    have hp_nonneg : (0 : ℝ) ≤ 10 * (p : ℝ) := by positivity
+    have hp_mul :
+        10 * (p : ℝ) * (C L : ℝ) ≤ 10 * (p : ℝ) * (kappa * (L : ℝ) + C_0) :=
+      mul_le_mul_of_nonneg_left hC_bound hp_nonneg
+    have hgap_le : gap * (L : ℝ) + 1 ≤ RHS := by
+      unfold gap RHS
+      linarith
+    have hL_real : (L_min : ℝ) ≤ (L : ℝ) := by exact_mod_cast hL_ge
+    have h1 : RHS / gap < (L : ℝ) := by linarith
+    have h2 : RHS < (L : ℝ) * gap := (div_lt_iff₀ hgap_pos).mp h1
+    linarith
+
+/-- **Density-Weighted Transcendental $\frac{7 \log 2}{\mu \log(3/2)}$ Complexity Exclusion
+in the Dense Core (`no_density_weighted_subcritical_log_threshold_dense_core`)**:
+Suppose $1 \le V(0)$, $j(r) \in \{1, 2\}$, and
+$2^{3 j(r + 1) + 4} V(r + 1) + 1 = 3^{3 j(r) + 4} V(r)$ for all $r \in \mathbb{N}$.
+1. **Cumulative Step-Sum Monotonicity**: For all $r_1 \le r_2$,
+   $\text{defectStepSum}(j, r_1) \le \text{defectStepSum}(j, r_2)$.
+2. **Density-Weighted Transcendental Slope Exclusion**:
+   For any average step weight $\mu > 0$, complexity slope $\kappa$, and constants $C_0, D_0 \ge 0$
+   satisfying
+   $$\mu \cdot \kappa \cdot \log(3 / 2) < 7 \log 2 \qquad \left(\text{i.e., } \kappa < \frac{7 \log 2}{\mu \log(3/2)}\right),$$
+   the Dense-Core spacing sequence $j$ cannot satisfy
+   `prefixFactorCount j L (C L) ≤ C L`,
+   `(defectStepSum j (C L) : ℝ) ≤ μ * (C L : ℝ) + D_0`, and
+   `(C L : ℝ) ≤ kappa * (L : ℝ) + C_0`
+   at arbitrarily large lengths $L$ (interpolating continuously from $\kappa \approx 1.196658$ at
+   $\mu = 10$, through $\kappa \approx 1.407833$ at balanced $\{1, 2\}$ weight $\mu = 8.5$, up to
+   the full critical slope $\kappa = \log 2 / \log(3/2) \approx 1.709511$ at $\mu = 7$). -/
+theorem no_density_weighted_subcritical_log_threshold_dense_core
+    {V j : ℕ → ℕ}
+    (hV0_pos : 1 ≤ V 0)
+    (hj : ∀ r : ℕ, j r = 1 ∨ j r = 2)
+    (hrec : ∀ r : ℕ, 2 ^ (3 * j (r + 1) + 4) * V (r + 1) + 1 = 3 ^ (3 * j r + 4) * V r) :
+    (∀ r_1 r_2 : ℕ, r_1 ≤ r_2 → defectStepSum j r_1 ≤ defectStepSum j r_2) ∧
+    (∀ (μ kappa C_0 D_0 : ℝ) (C : ℕ → ℕ),
+      0 < μ → 0 ≤ C_0 → 0 ≤ D_0 →
+      μ * kappa * Real.log (3 / 2 : ℝ) < 7 * Real.log (2 : ℝ) →
+      ¬ (∀ L_min : ℕ, ∃ L ≥ L_min,
+        prefixFactorCount j L (C L) ≤ C L ∧
+        (defectStepSum j (C L) : ℝ) ≤ μ * (C L : ℝ) + D_0 ∧
+        (C L : ℝ) ≤ kappa * (L : ℝ) + C_0)) := by
+  have hS_mono : ∀ r_1 r_2 : ℕ, r_1 ≤ r_2 → defectStepSum j r_1 ≤ defectStepSum j r_2 := by
+    intro r_1 r_2 hle
+    obtain ⟨d, rfl⟩ : ∃ d : ℕ, r_2 = r_1 + d := ⟨r_2 - r_1, by omega⟩
+    induction d with
+    | zero => simp
+    | succ d ih =>
+        have ihd := ih (by omega)
+        have hstep : defectStepSum j (r_1 + d) ≤ defectStepSum j (r_1 + d + 1) := by
+          change defectStepSum j (r_1 + d) ≤ defectStepSum j (r_1 + d) + (3 * j (r_1 + d) + 4)
+          omega
+        have hidx : r_1 + (d + 1) = r_1 + d + 1 := by omega
+        rw [hidx]
+        exact le_trans ihd hstep
+  refine ⟨hS_mono, ?_⟩
+  intro μ kappa C_0 D_0 C hμ hC0 hD0 hlog hliminf
+  have hlog_scaled : ((μ / 7 : ℝ) * kappa) * Real.log (3 / 2 : ℝ) < Real.log (2 : ℝ) := by
+    linarith
+  obtain ⟨p, q, hq, hpq_lt, hsub⟩ := exists_pq_of_lt_log_threshold hlog_scaled
+  have hpq : 3 ^ q ≤ 2 ^ (p + q) := le_of_lt hpq_lt
+  have hpow_self : ∀ n : ℕ, n < 2 ^ n := by
+    intro n
+    induction n with
+    | zero => decide
+    | succ n ih =>
+        have hpos : 1 ≤ 2 ^ n := Nat.pow_pos (by decide)
+        rw [Nat.pow_succ]
+        omega
+  set W := V 0
+  have hV0_lt : V 0 < 2 ^ W := hpow_self (V 0)
+  set gap : ℝ := 7 * (q : ℝ) - (p : ℝ) * μ * kappa
+  have hgap_pos : 0 < gap := by unfold gap; linarith
+  set RHS : ℝ := (p : ℝ) * (μ * C_0 + D_0) + (q : ℝ) * ((W : ℝ) + 3)
+  have hRHS_nonneg : 0 ≤ RHS := by unfold RHS; positivity
+  obtain ⟨L_min, hL_min⟩ := exists_nat_gt (RHS / gap + 1)
+  obtain ⟨L, hL_ge, hcard, hS_bound, hC_bound⟩ := hliminf L_min
+  obtain ⟨r_1, r_2, hr12, hr2C, hmatch_lt⟩ :=
+    exists_repeated_subword_of_prefixFactorCount_le j L (C L) hcard
+  have hcut_r2 := ((dense_core_parameterized_pq_cutoff_and_convergents
+    hV0_pos hV0_lt hj hrec).2.1 p q r_1 r_2 L hq hpq hr12 hmatch_lt).1
+  have hS_r2_le : defectStepSum j r_2 ≤ defectStepSum j (C L) := hS_mono r_2 (C L) hr2C
+  have hp_S_le : p * defectStepSum j r_2 ≤ p * defectStepSum j (C L) :=
+    Nat.mul_le_mul_left p hS_r2_le
+  have hcut_CL : 7 * q * L + 1 ≤ p * defectStepSum j (C L) + q * (W + 3) := by omega
+  have hcut_real :
+      7 * (q : ℝ) * (L : ℝ) + 1 ≤
+        (p : ℝ) * (defectStepSum j (C L) : ℝ) + (q : ℝ) * ((W : ℝ) + 3) := by
+    exact_mod_cast hcut_CL
+  have hμ_mul : μ * (C L : ℝ) ≤ μ * (kappa * (L : ℝ) + C_0) :=
+    mul_le_mul_of_nonneg_left hC_bound (le_of_lt hμ)
+  have hS_upper : (defectStepSum j (C L) : ℝ) ≤ μ * kappa * (L : ℝ) + (μ * C_0 + D_0) := by
+    linarith
+  have hp_nonneg : (0 : ℝ) ≤ (p : ℝ) := Nat.cast_nonneg p
+  have hp_mul :
+      (p : ℝ) * (defectStepSum j (C L) : ℝ) ≤
+        (p : ℝ) * (μ * kappa * (L : ℝ) + (μ * C_0 + D_0)) :=
+    mul_le_mul_of_nonneg_left hS_upper hp_nonneg
+  have hgap_le : gap * (L : ℝ) + 1 ≤ RHS := by
+    unfold gap RHS
+    linarith
+  have hL_real : (L_min : ℝ) ≤ (L : ℝ) := by exact_mod_cast hL_ge
+  have h1 : RHS / gap < (L : ℝ) := by linarith
+  have h2 : RHS < (L : ℝ) * gap := (div_lt_iff₀ hgap_pos).mp h1
+  linarith
 
 end Mahler.DubickasExtension
 

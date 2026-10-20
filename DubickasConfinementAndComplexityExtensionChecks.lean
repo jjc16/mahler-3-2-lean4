@@ -291,6 +291,14 @@ example (m : ℕ) :
 #print axioms Mahler.DubickasExtension.dense_core_repeated_subword_divisibility_and_exp_bound
 #print axioms Mahler.DubickasExtension.dense_core_repeated_subword_cutoff_and_complexity_exclusion
 
+-- 24. Verify Section 30: Right-special 2-adic valuation locks, 7-bit spectral gap, symmetric bispecial (2^S, 3^S) resonance, parameterized (p, q) cutoffs, and transcendental 7 log 2 / (10 log(3/2)) complexity exclusion
+#print axioms Mahler.DubickasExtension.dense_core_all_V_odd_and_mod_four_divergence
+#print axioms Mahler.DubickasExtension.dense_core_right_special_exact_two_adic_valuation_and_spectral_gap
+#print axioms Mahler.DubickasExtension.dense_core_symmetric_bispecial_resonance
+#print axioms Mahler.DubickasExtension.dense_core_parameterized_pq_cutoff_and_convergents
+#print axioms Mahler.DubickasExtension.no_subcritical_log_threshold_dense_core
+#print axioms Mahler.DubickasExtension.no_density_weighted_subcritical_log_threshold_dense_core
+
 #print axioms Mahler.DubickasExtension.dubBaseCarry_eq_fract_linear
 #print axioms Mahler.DubickasExtension.dubBaseY_multi_step_carry_identity
 #print axioms Mahler.DubickasExtension.dubBaseCarry_mem_two_letters
