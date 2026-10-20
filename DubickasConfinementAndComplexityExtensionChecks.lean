@@ -262,6 +262,13 @@ example (m : ℕ) :
 #print axioms Mahler.DubickasExtension.defectNormalizedQuotient_level3_renormalized_l_recurrence_j1_eq_two
 #print axioms Mahler.DubickasExtension.defectNormalizedQuotient_multi_step_homogeneous_tower
 
+-- 20. Verify Section 26: Base-3^(3j_1+4) carry-digit identity, backward 2-adic renormalization tree engine, and certified horizon bounds through depth 10 (V_0 >= 7.729e21 > 2^72)
+#print axioms Mahler.DubickasExtension.renormalized_three_adic_carry_digit_identity
+#print axioms Mahler.DubickasExtension.backward_two_adic_residue_lift_of_stepOk
+#print axioms Mahler.DubickasExtension.min_seed_of_certifyBinaryDustTree
+#print axioms Mahler.DubickasExtension.binary_cantor_dust_min_seed_of_certifyBinaryDustDepth
+#print axioms Mahler.DubickasExtension.binary_cantor_dust_certified_horizon_bounds_up_to_depth_ten
+
 #print axioms Mahler.DubickasExtension.dubBaseCarry_eq_fract_linear
 #print axioms Mahler.DubickasExtension.dubBaseY_multi_step_carry_identity
 #print axioms Mahler.DubickasExtension.dubBaseCarry_mem_two_letters

@@ -8992,6 +8992,375 @@ theorem defectNormalizedQuotient_multi_step_homogeneous_tower
           E2 * (B2 * V' (r_0 + (d + 1)) + 1) = E2 * B2 * V' (r_0 + (d + 1)) + E2 := by ring
       linarith only [hmul1, hmul2, hmul3, hexp1, hexp2, hexp3, hexp4]
 
+/-!
+## Section 26: The Base-$3^{3j_1+4}$ Carry-Digit Identity, the Verified Backward 2-Adic
+## Renormalization Tree Engine, and Kernel-Certified Horizon Bounds Through Depth 10
+## ($V_0 \ge 7{,}729{,}594{,}727{,}432{,}150{,}074{,}275 > 2^{72}$ Across All $2{,}048$ Words in $\{1, 2\}^{11}$)
+
+In Sections 24 and 25, we manually constructed the Level-1, Level-2, and Level-3 Chinese Remainder
+Theorem renormalizations across $4$, $8$, and $16$ branches. Pushing the argument deeper reveals two
+fundamental principles that allow us to automate and scale the renormalization to **arbitrary depth**:
+
+1. **The Exact Base-$3^{3 j_1 + 4}$ Carry-Digit Identity & Dual-Zero Criterion
+   (`renormalized_three_adic_carry_digit_identity`)**:
+   Whenever $2^{3 j_2 + 4} V_2 + 1 = 3^{3 j_1 + 4} V_1$ and $V_1, V_2$ have 2-adic decompositions
+   $V_1 = 2^{e_2 + (3 j_2 + 4)} \ell_1 + R_1$ ($R_1 < 2^{e_2 + (3 j_2 + 4)}$) and
+   $V_2 = 2^{e_2} \ell_2 + R_2$ ($R_2 < 2^{e_2}$), the renormalized parameters $\ell_1, \ell_2$
+   and remainders $R_1, R_2$ are linked by the exact base-$3^{3 j_1 + 4}$ carry digit
+   $$K_2 := \frac{3^{3 j_1 + 4} R_1 - (2^{3 j_2 + 4} R_2 + 1)}{2^{e_2 + (3 j_2 + 4)}} =
+     \left\lfloor \frac{3^{3 j_1 + 4} R_1}{2^{e_2 + (3 j_2 + 4)}} \right\rfloor < 3^{3 j_1 + 4},$$
+   satisfying
+   $$3^{3 j_1 + 4} R_1 = 2^{e_2 + (3 j_2 + 4)} K_2 + 2^{3 j_2 + 4} R_2 + 1, \qquad
+     \ell_2 = 3^{3 j_1 + 4} \ell_1 + K_2.$$
+   Consequently, once $2^{e_2 + (3 j_2 + 4)} > V_1$ (so $\ell_1 = 0$), the next-step parameter
+   $\ell_2$ equals $K_2$, and $\ell_1 = 0 \land \ell_2 = 0 \iff 3^{3 j_1 + 4} V_1 < 2^{e_2 + (3 j_2 + 4)}$.
+
+2. **The Polymorphic Coprime Backward 2-Adic Lift & Verified Tree Engine
+   (`backward_two_adic_residue_lift_of_stepOk`, `binary_cantor_dust_min_seed_of_certifyBinaryDustDepth`)**:
+   Instead of constructing Bézout multipliers by hand for $2^{d+1}$ branches, we use the coprimality
+   $\gcd(2^{e'}, 3^{3 j_1 + 4}) = 1$ (`Nat.ModEq.cancel_left_of_coprime`) together with a 6-step
+   Hensel/Newton quadratic-doubling inverse `oddInvModTwoPow` (which computes $3^{-(3j+4)} \bmod 2^{e'}$
+   up to $e' \le 192$ in $6$ multiplications) and a boolean step validator `backwardLiftStepOk`.
+   This allows the Lean 4 kernel (`by decide`) to traverse all $2^{d+1}$ words in $\{1, 2\}^{d+1}$
+   and certify unconditional minimum-seed bounds through **Depth $d = 10$ ($2{,}048$ words)**:
+   - $d = 1$ ($4$ words): $V_0 \ge 931 > 2^9$,
+   - $d = 2$ ($8$ words): $V_0 \ge 17{,}315 > 2^{14}$,
+   - $d = 3$ ($16$ words): $V_0 \ge 94{,}389{,}155 > 2^{26}$,
+   - $d = 4$ ($32$ words): $V_0 \ge 1{,}168{,}130{,}979 > 2^{30}$,
+   - $d = 5$ ($64$ words): $V_0 \ge 3{,}780{,}739{,}351{,}459 > 2^{41}$,
+   - $d = 6$ ($128$ words): $V_0 \ge 12{,}576{,}832{,}373{,}667 > 2^{43}$,
+   - $d = 7$ ($256$ words): $V_0 \ge 17{,}139{,}164{,}390{,}544{,}153 > 2^{53}$,
+   - $d = 8$ ($512$ words): $V_0 \ge 590{,}121{,}613{,}202{,}017{,}059 > 2^{59}$,
+   - $d = 9$ ($1{,}024$ words): $V_0 \ge 248{,}340{,}445{,}522{,}412{,}192{,}675 > 2^{67}$,
+   - $d = 10$ ($2{,}048$ words): $V_0 \ge 7{,}729{,}594{,}727{,}432{,}150{,}074{,}275 > 2^{72}$.
+-/
+
+/-- **Exact Base-$3^{3 j_1 + 4}$ Carry-Digit Identity and Dual-Zero Criterion
+(`renormalized_three_adic_carry_digit_identity`)**:
+Suppose $2^{3 j_2 + 4} V_2 + 1 = 3^{3 j_1 + 4} V_1$ and $V_1 % 2^{e_2 + (3 j_2 + 4)} = R_1$,
+$V_2 % 2^{e_2} = R_2$, with $\ell_1 = V_1 / 2^{e_2 + (3 j_2 + 4)}$ and $\ell_2 = V_2 / 2^{e_2}$.
+If $K_2 \in \mathbb{N}$ satisfies the carry-division identity
+$$3^{3 j_1 + 4} R_1 = 2^{e_2 + (3 j_2 + 4)} K_2 + 2^{3 j_2 + 4} R_2 + 1,$$
+then:
+1. $\ell_2 = 3^{3 j_1 + 4} \ell_1 + K_2$ (exact parameter transition).
+2. $K_2 = (3^{3 j_1 + 4} R_1) / 2^{e_2 + (3 j_2 + 4)}$ and $K_2 < 3^{3 j_1 + 4}$ (so $K_2$ is a base-$3^{3 j_1 + 4}$ digit).
+3. $\ell_1 = 0 \land \ell_2 = 0 \iff \ell_1 = 0 \land K_2 = 0 \iff 3^{3 j_1 + 4} V_1 < 2^{e_2 + (3 j_2 + 4)}$. -/
+theorem renormalized_three_adic_carry_digit_identity
+    {V_1 V_2 j_1 j_2 e_2 R_1 R_2 K_2 : ℕ}
+    (hrec : 2 ^ (3 * j_2 + 4) * V_2 + 1 = 3 ^ (3 * j_1 + 4) * V_1)
+    (hR1 : V_1 % 2 ^ (e_2 + (3 * j_2 + 4)) = R_1)
+    (hR2 : V_2 % 2 ^ e_2 = R_2)
+    (hcarry : 3 ^ (3 * j_1 + 4) * R_1 =
+      2 ^ (e_2 + (3 * j_2 + 4)) * K_2 + 2 ^ (3 * j_2 + 4) * R_2 + 1) :
+    (V_2 / 2 ^ e_2 = 3 ^ (3 * j_1 + 4) * (V_1 / 2 ^ (e_2 + (3 * j_2 + 4))) + K_2) ∧
+    (K_2 = (3 ^ (3 * j_1 + 4) * R_1) / 2 ^ (e_2 + (3 * j_2 + 4)) ∧
+     K_2 < 3 ^ (3 * j_1 + 4)) ∧
+    ((V_1 / 2 ^ (e_2 + (3 * j_2 + 4)) = 0 ∧ V_2 / 2 ^ e_2 = 0) ↔
+      3 ^ (3 * j_1 + 4) * V_1 < 2 ^ (e_2 + (3 * j_2 + 4))) := by
+  set M_2 := 2 ^ e_2
+  set B_2 := 2 ^ (3 * j_2 + 4)
+  set M_1 := 2 ^ (e_2 + (3 * j_2 + 4))
+  set A_1 := 3 ^ (3 * j_1 + 4)
+  set l_1 := V_1 / M_1
+  set l_2 := V_2 / M_2
+  have hM1_eq : M_1 = M_2 * B_2 := Nat.pow_add 2 e_2 (3 * j_2 + 4)
+  have hM2_pos : 0 < M_2 := Nat.pow_pos (by decide)
+  have hB2_pos : 0 < B_2 := Nat.pow_pos (by decide)
+  have hM1_pos : 0 < M_1 := Nat.pow_pos (by decide)
+  have hR1_lt : R_1 < M_1 := by
+    rw [← hR1]
+    exact Nat.mod_lt V_1 hM1_pos
+  have hR2_lt : R_2 < M_2 := by
+    rw [← hR2]
+    exact Nat.mod_lt V_2 hM2_pos
+  have hV1_div : V_1 = M_1 * l_1 + R_1 := by
+    rw [← hR1]
+    exact (Nat.div_add_mod V_1 M_1).symm
+  have hV2_div : V_2 = M_2 * l_2 + R_2 := by
+    rw [← hR2]
+    exact (Nat.div_add_mod V_2 M_2).symm
+  have hrem_lt : B_2 * R_2 + 1 < M_1 := by
+    have hle : R_2 + 1 ≤ M_2 := by omega
+    have hmul : B_2 * (R_2 + 1) ≤ B_2 * M_2 := Nat.mul_le_mul_left B_2 hle
+    have hcomm : B_2 * M_2 = M_1 := by rw [hM1_eq, Nat.mul_comm]
+    have h1 : 1 ≤ B_2 := hB2_pos
+    have hexp : B_2 * (R_2 + 1) = B_2 * R_2 + B_2 := by ring
+    -- Since B_2 = 2^(3*j_2+4) >= 16 > 1:
+    have hB2_ge2 : 2 ≤ B_2 := by
+      have hexp2 : 3 * j_2 + 4 = (3 * j_2 + 3) + 1 := by omega
+      change 2 ≤ 2 ^ (3 * j_2 + 4)
+      rw [hexp2, Nat.pow_add]
+      have hp : 1 ≤ 2 ^ (3 * j_2 + 3) := Nat.pow_pos (by decide)
+      omega
+    omega
+  have hl2_eq : l_2 = A_1 * l_1 + K_2 := by
+    have heq : M_1 * l_2 + (B_2 * R_2 + 1) = M_1 * (A_1 * l_1 + K_2) + (B_2 * R_2 + 1) := by
+      calc M_1 * l_2 + (B_2 * R_2 + 1)
+        _ = (M_2 * B_2) * l_2 + (B_2 * R_2 + 1) := by rw [hM1_eq]
+        _ = B_2 * (M_2 * l_2 + R_2) + 1 := by ring
+        _ = B_2 * V_2 + 1 := by rw [← hV2_div]
+        _ = A_1 * V_1 := hrec
+        _ = A_1 * (M_1 * l_1 + R_1) := by rw [hV1_div]
+        _ = M_1 * (A_1 * l_1) + A_1 * R_1 := by ring
+        _ = M_1 * (A_1 * l_1) + (M_1 * K_2 + B_2 * R_2 + 1) := by rw [hcarry]
+        _ = M_1 * (A_1 * l_1 + K_2) + (B_2 * R_2 + 1) := by ring
+    have heq2 : M_1 * l_2 = M_1 * (A_1 * l_1 + K_2) := by omega
+    exact Nat.eq_of_mul_eq_mul_left hM1_pos heq2
+  have hK2_div : K_2 = (A_1 * R_1) / M_1 := by
+    have hdiv := (mod_and_div_of_bezout (V := A_1 * R_1) (M := M_1) (a := 0) (b := K_2)
+      (r := B_2 * R_2 + 1) (by omega) hrem_lt).2
+    have heq : M_1 * K_2 = M_1 * ((A_1 * R_1) / M_1) := by omega
+    exact Nat.eq_of_mul_eq_mul_left hM1_pos heq
+  have hK2_lt : K_2 < A_1 := by
+    have hmul_lt : A_1 * R_1 < M_1 * A_1 := by
+      rw [Nat.mul_comm M_1 A_1]
+      exact Nat.mul_lt_mul_of_pos_left hR1_lt (Nat.pow_pos (by decide))
+    have hle_carry : M_1 * K_2 < A_1 * R_1 := by omega
+    exact Nat.lt_of_mul_lt_mul_left (lt_trans hle_carry hmul_lt)
+  refine ⟨hl2_eq, ⟨hK2_div, hK2_lt⟩, ?_⟩
+  have hA1_V1 : A_1 * V_1 = M_1 * l_2 + (B_2 * R_2 + 1) := by
+    calc A_1 * V_1 = B_2 * V_2 + 1 := hrec.symm
+    _ = B_2 * (M_2 * l_2 + R_2) + 1 := by rw [hV2_div]
+    _ = (M_2 * B_2) * l_2 + (B_2 * R_2 + 1) := by ring
+    _ = M_1 * l_2 + (B_2 * R_2 + 1) := by rw [← hM1_eq]
+  have hA1_pos : 1 ≤ A_1 := Nat.pow_pos (by decide)
+  constructor
+  · rintro ⟨hl1_0, hl2_0⟩
+    rw [hl2_0] at hA1_V1
+    omega
+  · intro hlt
+    have hl2_0 : l_2 = 0 := by
+      rcases Nat.eq_zero_or_pos l_2 with h0 | hpos
+      · exact h0
+      · exfalso
+        have hge : M_1 * 1 ≤ M_1 * l_2 := Nat.mul_le_mul_left M_1 hpos
+        omega
+    have hl1_0 : l_1 = 0 := by
+      rw [hl2_0] at hl2_eq
+      rcases Nat.eq_zero_or_pos l_1 with h0 | hpos
+      · exact h0
+      · exfalso
+        have hge : 1 * 1 ≤ A_1 * l_1 := Nat.mul_le_mul hA1_pos hpos
+        omega
+    exact ⟨hl1_0, hl2_0⟩
+
+/-- Six-step Hensel/Newton quadratic-doubling inverse of an odd natural number $A$ modulo $2^e$
+(exact for all $e \le 192$, since $3 \cdot 2^6 = 192$). -/
+def oddInvModTwoPow (A e : ℕ) : ℕ :=
+  let M := 2 ^ e
+  let x0 := A % 8
+  let x1 := (x0 * (2 + M - (A * x0) % M)) % M
+  let x2 := (x1 * (2 + M - (A * x1) % M)) % M
+  let x3 := (x2 * (2 + M - (A * x2) % M)) % M
+  let x4 := (x3 * (2 + M - (A * x3) % M)) % M
+  let x5 := (x4 * (2 + M - (A * x4) % M)) % M
+  (x5 * (2 + M - (A * x5) % M)) % M
+
+/-- Computes the next backward 2-adic exponent $e' = e + (3 j_{\text{next}} + 4)$ and unique lifted
+residue $R' < 2^{e'}$ across $2^{3 j_{\text{next}} + 4} V_{\text{next}} + 1 = 3^{3 j_{\text{curr}} + 4} V_{\text{curr}}$. -/
+def backwardLiftResidue (j_curr j_next e R : ℕ) : ℕ × ℕ :=
+  let e' := e + (3 * j_next + 4)
+  let M' := 2 ^ e'
+  let A := 3 ^ (3 * j_curr + 4)
+  let rhs := (2 ^ (3 * j_next + 4) * R + 1) % M'
+  let R' := (rhs * oddInvModTwoPow A e') % M'
+  (e', R')
+
+/-- Decidable certificate verifying that $(e', R')$ is the valid 2-adic lift of $(e, R)$ across
+$(j_{\text{curr}}, j_{\text{next}})$. -/
+def backwardLiftStepOk (j_curr j_next e R e' R' : ℕ) : Bool :=
+  (e' == e + (3 * j_next + 4)) &&
+  decide (R' < 2 ^ e') &&
+  ((3 ^ (3 * j_curr + 4) * R') % (2 ^ e') == (2 ^ (3 * j_next + 4) * R + 1) % (2 ^ e'))
+
+/-- **Polymorphic One-Step Backward 2-Adic Residue Lift (`backward_two_adic_residue_lift_of_stepOk`)**:
+If $2^{3 j_{\text{next}} + 4} V_{\text{next}} + 1 = 3^{3 j_{\text{curr}} + 4} V_{\text{curr}}$,
+$V_{\text{next}} \bmod 2^e = R$, and `backwardLiftStepOk j_curr j_next e R e' R' = true`, then
+$V_{\text{curr}} \bmod 2^{e'} = R'$ and $R' \le V_{\text{curr}}$. -/
+theorem backward_two_adic_residue_lift_of_stepOk
+    {V_curr V_next j_curr j_next e R e' R' : ℕ}
+    (hrec : 2 ^ (3 * j_next + 4) * V_next + 1 = 3 ^ (3 * j_curr + 4) * V_curr)
+    (hmod : V_next % 2 ^ e = R)
+    (hok : backwardLiftStepOk j_curr j_next e R e' R' = true) :
+    V_curr % 2 ^ e' = R' ∧ R' ≤ V_curr := by
+  unfold backwardLiftStepOk at hok
+  simp only [Bool.and_eq_true, beq_iff_eq, decide_eq_true_eq] at hok
+  rcases hok with ⟨⟨he', hR'_lt⟩, hcong⟩
+  have hV_next : V_next = 2 ^ e * (V_next / 2 ^ e) + R := by
+    have hd := (Nat.div_add_mod V_next (2 ^ e)).symm
+    omega
+  have hpow : 2 ^ e' = 2 ^ (3 * j_next + 4) * 2 ^ e := by
+    rw [he', Nat.add_comm, Nat.pow_add]
+  have hmul :
+      3 ^ (3 * j_curr + 4) * V_curr =
+        2 ^ e' * (V_next / 2 ^ e) + (2 ^ (3 * j_next + 4) * R + 1) := by
+    calc 3 ^ (3 * j_curr + 4) * V_curr
+      _ = 2 ^ (3 * j_next + 4) * V_next + 1 := hrec.symm
+      _ = 2 ^ (3 * j_next + 4) * (2 ^ e * (V_next / 2 ^ e) + R) + 1 :=
+        congrArg (fun x => 2 ^ (3 * j_next + 4) * x + 1) hV_next
+      _ = (2 ^ (3 * j_next + 4) * 2 ^ e) * (V_next / 2 ^ e) + (2 ^ (3 * j_next + 4) * R + 1) := by ring
+      _ = 2 ^ e' * (V_next / 2 ^ e) + (2 ^ (3 * j_next + 4) * R + 1) := by rw [← hpow]
+  have hmod_lhs :
+      (3 ^ (3 * j_curr + 4) * V_curr) % 2 ^ e' = (2 ^ (3 * j_next + 4) * R + 1) % 2 ^ e' := by
+    rw [hmul, Nat.add_comm, Nat.mul_comm (2 ^ e'), Nat.add_mul_mod_self_right]
+  have hmodeq_mul :
+      Nat.ModEq (2 ^ e') (3 ^ (3 * j_curr + 4) * V_curr) (3 ^ (3 * j_curr + 4) * R') := by
+    change (3 ^ (3 * j_curr + 4) * V_curr) % 2 ^ e' = (3 ^ (3 * j_curr + 4) * R') % 2 ^ e'
+    rw [hmod_lhs, hcong]
+  have hcop : Nat.Coprime (2 ^ e') (3 ^ (3 * j_curr + 4)) :=
+    Nat.Coprime.pow e' (3 * j_curr + 4) (by decide : Nat.Coprime 2 3)
+  have hmodeq : Nat.ModEq (2 ^ e') V_curr R' :=
+    Nat.ModEq.cancel_left_of_coprime hcop hmodeq_mul
+  have hV_curr_mod : V_curr % 2 ^ e' = R' := by
+    change V_curr % 2 ^ e' = R' % 2 ^ e' at hmodeq
+    rw [hmodeq, Nat.mod_eq_of_lt hR'_lt]
+  exact ⟨hV_curr_mod, hV_curr_mod ▸ Nat.mod_le V_curr (2 ^ e')⟩
+
+/-- Recursive backward 2-adic tree verifier over all words in $\{1, 2\}^d$ ending at $(j_{\text{next}}, e, R)$. -/
+def certifyBinaryDustTree : ℕ → ℕ → ℕ → ℕ → ℕ → Bool
+  | 0, _, _, R, minBound => decide (minBound ≤ R)
+  | d + 1, j_next, e, R, minBound =>
+      let p1 := backwardLiftResidue 1 j_next e R
+      let p2 := backwardLiftResidue 2 j_next e R
+      backwardLiftStepOk 1 j_next e R p1.1 p1.2 &&
+      backwardLiftStepOk 2 j_next e R p2.1 p2.2 &&
+      certifyBinaryDustTree d 1 p1.1 p1.2 minBound &&
+      certifyBinaryDustTree d 2 p2.1 p2.2 minBound
+
+/-- Top-level decidable certificate verifying that **every** $d$-transition trajectory in
+$\{1, 2\}^{d+1}$ (followed by any $j(d + 1) \ge 1$) satisfies $V(0) \ge \text{minBound}$. -/
+def certifyBinaryDustDepth (d minBound : ℕ) : Bool :=
+  certifyBinaryDustTree d 1 7 35 minBound &&
+  certifyBinaryDustTree d 2 7 25 minBound
+
+/-- Helper lemma: soundness of `certifyBinaryDustTree` along any suffix of length $d$. -/
+theorem min_seed_of_certifyBinaryDustTree :
+    ∀ (d : ℕ) (V j : ℕ → ℕ) (e R minBound : ℕ),
+      (∀ r < d, j r = 1 ∨ j r = 2) →
+      (∀ r < d, 2 ^ (3 * j (r + 1) + 4) * V (r + 1) + 1 = 3 ^ (3 * j r + 4) * V r) →
+      V d % 2 ^ e = R →
+      R ≤ V d →
+      certifyBinaryDustTree d (j d) e R minBound = true →
+      minBound ≤ V 0
+  | 0, V, _, _, R, minBound, _, _, _, hR_le, hcert => by
+      unfold certifyBinaryDustTree at hcert
+      simp only [decide_eq_true_eq] at hcert
+      omega
+  | d + 1, V, j, e, R, minBound, hj, hrec, hmod, _, hcert => by
+      unfold certifyBinaryDustTree at hcert
+      simp only [Bool.and_eq_true] at hcert
+      rcases hcert with ⟨⟨⟨hok1, hok2⟩, htree1⟩, htree2⟩
+      have hjd : j d = 1 ∨ j d = 2 := hj d (by omega)
+      have hstep_d : 2 ^ (3 * j (d + 1) + 4) * V (d + 1) + 1 = 3 ^ (3 * j d + 4) * V d :=
+        hrec d (by omega)
+      have hj_pre : ∀ r < d, j r = 1 ∨ j r = 2 := fun r hr => hj r (by omega)
+      have hrec_pre : ∀ r < d, 2 ^ (3 * j (r + 1) + 4) * V (r + 1) + 1 = 3 ^ (3 * j r + 4) * V r :=
+        fun r hr => hrec r (by omega)
+      rcases hjd with hjd1 | hjd2
+      · rw [hjd1] at hstep_d
+        have hlift := backward_two_adic_residue_lift_of_stepOk hstep_d hmod hok1
+        have htree1' :
+            certifyBinaryDustTree d (j d)
+              (backwardLiftResidue 1 (j (d + 1)) e R).1
+              (backwardLiftResidue 1 (j (d + 1)) e R).2 minBound = true := by
+          rw [hjd1]; exact htree1
+        exact min_seed_of_certifyBinaryDustTree d V j
+          (backwardLiftResidue 1 (j (d + 1)) e R).1
+          (backwardLiftResidue 1 (j (d + 1)) e R).2
+          minBound hj_pre hrec_pre hlift.1 hlift.2 htree1'
+      · rw [hjd2] at hstep_d
+        have hlift := backward_two_adic_residue_lift_of_stepOk hstep_d hmod hok2
+        have htree2' :
+            certifyBinaryDustTree d (j d)
+              (backwardLiftResidue 2 (j (d + 1)) e R).1
+              (backwardLiftResidue 2 (j (d + 1)) e R).2 minBound = true := by
+          rw [hjd2]; exact htree2
+        exact min_seed_of_certifyBinaryDustTree d V j
+          (backwardLiftResidue 2 (j (d + 1)) e R).1
+          (backwardLiftResidue 2 (j (d + 1)) e R).2
+          minBound hj_pre hrec_pre hlift.1 hlift.2 htree2'
+
+/-- **Universal Binary-Dust Depth-$d$ Minimum Seed Theorem
+(`binary_cantor_dust_min_seed_of_certifyBinaryDustDepth`)**:
+For any depth $d \in \mathbb{N}$ and lower bound $\text{minBound} \in \mathbb{N}$, if
+`certifyBinaryDustDepth d minBound = true`, then **every** sequence $V, j : \mathbb{N} \to \mathbb{N}$
+with $j(r) \in \{1, 2\}$ for all $r \le d$, $j(d + 1) \ge 1$, and
+$2^{3 j(r + 1) + 4} V(r + 1) + 1 = 3^{3 j(r) + 4} V(r)$ for all $r \le d + 1$ satisfies
+$$\text{minBound} \le V(0).$$ -/
+theorem binary_cantor_dust_min_seed_of_certifyBinaryDustDepth
+    {d minBound : ℕ}
+    (hcert : certifyBinaryDustDepth d minBound = true)
+    {V j : ℕ → ℕ}
+    (hj : ∀ r ≤ d, j r = 1 ∨ j r = 2)
+    (hjd1 : 1 ≤ j (d + 1))
+    (hrec : ∀ r ≤ d + 1, 2 ^ (3 * j (r + 1) + 4) * V (r + 1) + 1 = 3 ^ (3 * j r + 4) * V r) :
+    minBound ≤ V 0 := by
+  unfold certifyBinaryDustDepth at hcert
+  simp only [Bool.and_eq_true] at hcert
+  rcases hcert with ⟨hcert1, hcert2⟩
+  have hcool := defectNormalizedQuotient_cooldown_mod_128_and_three_adic_lock.1
+    (V d) (V (d + 1)) (j d) (j (d + 1)) hjd1 (hrec d (by omega))
+  have hj_lt : ∀ r < d, j r = 1 ∨ j r = 2 := fun r hr => hj r (by omega)
+  have hrec_lt : ∀ r < d, 2 ^ (3 * j (r + 1) + 4) * V (r + 1) + 1 = 3 ^ (3 * j r + 4) * V r :=
+    fun r hr => hrec r (by omega)
+  rcases hj d (by omega) with hjd_one | hjd_two
+  · have hmod : V d % 2 ^ 7 = 35 := hcool.1 hjd_one
+    have hle : 35 ≤ V d := hmod ▸ Nat.mod_le (V d) (2 ^ 7)
+    rw [← hjd_one] at hcert1
+    exact min_seed_of_certifyBinaryDustTree d V j 7 35 minBound hj_lt hrec_lt hmod hle hcert1
+  · have hmod : V d % 2 ^ 7 = 25 := hcool.2 hjd_two
+    have hle : 25 ≤ V d := hmod ▸ Nat.mod_le (V d) (2 ^ 7)
+    rw [← hjd_two] at hcert2
+    exact min_seed_of_certifyBinaryDustTree d V j 7 25 minBound hj_lt hrec_lt hmod hle hcert2
+
+/-- **Kernel-Certified Horizon Lower Bounds Through Depth 10 Across All $2{,}048$ Words in $\{1, 2\}^{11}$
+(`binary_cantor_dust_certified_horizon_bounds_up_to_depth_ten`)**:
+1. The decidable tree certificates hold from $d = 1$ through $d = 10$ (covering all $4{,}092$
+   non-trivial binary words up to length $11$).
+2. Every 8-transition trajectory in $\{1, 2\}^9$ ($d = 8$, all $512$ words, with $j(9) \ge 1$)
+   satisfies $V(0) \ge 590{,}121{,}613{,}202{,}017{,}059 > 2^{59}$.
+3. Every 10-transition trajectory in $\{1, 2\}^{11}$ ($d = 10$, all $2{,}048$ words, with $j(11) \ge 1$)
+   satisfies $V(0) \ge 7{,}729{,}594{,}727{,}432{,}150{,}074{,}275 > 2^{72}$ (exceeding the 55-bit
+   repository record-holder `recordHolderA0 = 29,871,555,608,238,677` by a factor of over $258{,}000\times$). -/
+theorem binary_cantor_dust_certified_horizon_bounds_up_to_depth_ten :
+    (certifyBinaryDustDepth 1 931 = true ∧
+     certifyBinaryDustDepth 2 17315 = true ∧
+     certifyBinaryDustDepth 3 94389155 = true ∧
+     certifyBinaryDustDepth 4 1168130979 = true ∧
+     certifyBinaryDustDepth 5 3780739351459 = true ∧
+     certifyBinaryDustDepth 6 12576832373667 = true ∧
+     certifyBinaryDustDepth 7 17139164390544153 = true ∧
+     certifyBinaryDustDepth 8 590121613202017059 = true ∧
+     certifyBinaryDustDepth 9 248340445522412192675 = true ∧
+     certifyBinaryDustDepth 10 7729594727432150074275 = true) ∧
+    (∀ V j : ℕ → ℕ,
+      (∀ r ≤ 8, j r = 1 ∨ j r = 2) →
+      1 ≤ j 9 →
+      (∀ r ≤ 9, 2 ^ (3 * j (r + 1) + 4) * V (r + 1) + 1 = 3 ^ (3 * j r + 4) * V r) →
+      590121613202017059 ≤ V 0) ∧
+    (∀ V j : ℕ → ℕ,
+      (∀ r ≤ 10, j r = 1 ∨ j r = 2) →
+      1 ≤ j 11 →
+      (∀ r ≤ 11, 2 ^ (3 * j (r + 1) + 4) * V (r + 1) + 1 = 3 ^ (3 * j r + 4) * V r) →
+      7729594727432150074275 ≤ V 0) := by
+  have hcerts :
+      certifyBinaryDustDepth 1 931 = true ∧
+      certifyBinaryDustDepth 2 17315 = true ∧
+      certifyBinaryDustDepth 3 94389155 = true ∧
+      certifyBinaryDustDepth 4 1168130979 = true ∧
+      certifyBinaryDustDepth 5 3780739351459 = true ∧
+      certifyBinaryDustDepth 6 12576832373667 = true ∧
+      certifyBinaryDustDepth 7 17139164390544153 = true ∧
+      certifyBinaryDustDepth 8 590121613202017059 = true ∧
+      certifyBinaryDustDepth 9 248340445522412192675 = true ∧
+      certifyBinaryDustDepth 10 7729594727432150074275 = true := by decide
+  refine ⟨hcerts, ?_, ?_⟩
+  · intro V j hj hj9 hrec
+    exact binary_cantor_dust_min_seed_of_certifyBinaryDustDepth hcerts.2.2.2.2.2.2.2.1 hj hj9 hrec
+  · intro V j hj hj11 hrec
+    exact binary_cantor_dust_min_seed_of_certifyBinaryDustDepth hcerts.2.2.2.2.2.2.2.2.2 hj hj11 hrec
+
+
 
 end Mahler.DubickasExtension
 
