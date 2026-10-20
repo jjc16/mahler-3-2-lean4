@@ -8474,6 +8474,525 @@ theorem defectNormalizedQuotient_renormalized_k_recurrence (V_1 V_2 V_3 : ℕ) :
     · exact (mod_and_div_of_bezout (M := 9) (a := 455 * (V_2 / 131072)) (b := 26244 * (V_1 / 131072) + 11363)
         (r := 1) (by linarith only [hren]) (by decide)).1
 
+/-!
+## Section 25: Level-2 and Level-3 CRT Renormalizations, Unconditional Extinction of
+## Level-2 Base Survivors ($\ell_1 \ge 7$, $V_1 \ge 94{,}389{,}155$), and the General Multi-Step
+## Homogeneous $(2, 3)$-Adic Tower Law
+
+In Section 24, we proved that across any two consecutive transitions $(j_1, j_2, j_3) \in \{1, 2\}^3$
+(followed by $j_4 \ge 1$), the Level-1 CRT parameters $k_1 = V_1 / 2^{3 j_2 + 11}$ and
+$k_2 = V_2 / 2^{3 j_3 + 11}$ satisfy the 8 renormalized Diophantine equations
+$$3^{3 j_1 + 4} k_1 - 2^{3 j_3 + 4} k_2 = C(j_1, j_2, j_3).$$
+In this section, we push this renormalization across **Level 2**, **Level 3**, and **arbitrary
+multi-step depth $d \in \mathbb{N}$**:
+
+1. **Level-2 Joint CRT Parametrization of $(k_1, k_2)$ and $(V_1, V_2, V_3)$
+   (`defectNormalizedQuotient_level2_crt_parametrization`)**:
+   Because $\gcd(3^{3 j_1 + 4}, 2^{3 j_3 + 4}) = 1$, solving the 8 Level-1 renormalized equations
+   locks $(k_1, k_2, V_1, V_2, V_3)$ into a single-parameter affine family in the Level-2 parameter
+   $\ell_1 = k_1 / 2^{3 j_3 + 4} = V_1 / 2^{3 j_2 + 3 j_3 + 15} \in \mathbb{N}$, with pure 2-adic
+   modulus $2^{3 j_2 + 3 j_3 + 15}$ on $V_1$, mixed $(2, 3)$-adic modulus $2^{3 j_3 + 11} \cdot 3^{3 j_1 + 4}$
+   on $V_2$, and 3-adic modulus $128 \cdot 3^{3 j_1 + 3 j_2 + 8}$ on $V_3$.
+2. **Level-3 Renormalized Recurrence on $(\ell_1, \ell_2)$ and Extinction of All $\ell_1 = 0$ Base
+   Witnesses (`defectNormalizedQuotient_level3_renormalized_l_recurrence`)**:
+   Chaining three consecutive transitions $(j_1, j_2, j_3, j_4) \in \{1, 2\}^4$ (with $j_5 \ge 1$)
+   and equating the two formulas for $k_2$ yields the 16 exact Level-3 Diophantine equations
+   $$3^{3 j_1 + 4} \ell_1 - 2^{3 j_4 + 4} \ell_2 = D(j_1, j_2, j_3, j_4).$$
+   In **all 16 cases**, the unique residue of $\ell_1 \pmod{2^{3 j_4 + 4}}$ lies in
+   $\{45, 756, 73, 910, 9, 78, 65, 864, 105, 558, 125, 412, 28, 571, 7, 980\}$, so **$\ell_1 \ge 7 > 0$
+   in every case**. Consequently, none of the 8 Level-2 base witnesses ($\ell_1 = 0$, such as
+   $V_1 = 17{,}315$ for $(1, 1, 1)$) can survive a 3rd transition in $\{1, 2\}$, and every
+   3-transition survivor in $\{1, 2\}^4$ satisfies **$V_1 \ge 94{,}389{,}155$**
+   (`defectNormalizedQuotient_four_tuple_V1_ge_94389155`).
+3. **General Multi-Step Homogeneous $(2, 3)$-Adic Tower Law
+   (`defectNormalizedQuotient_multi_step_homogeneous_tower`)**:
+   For any spacing sequence $j : \mathbb{N} \to \mathbb{N}$ and any two solutions $V, V' : \mathbb{N} \to \mathbb{N}$
+   of $2^{3 j(r + 1) + 4} V(r + 1) + 1 = 3^{3 j(r) + 4} V(r)$, every origin $r_0 \in \mathbb{N}$ and
+   depth $d \in \mathbb{N}$ satisfy the exact homogeneous $(2, 3)$-adic tower identity
+   $$2^{\text{defectStepSum}(\text{fun } t \Rightarrow j(r_0 + 1 + t),\, d)} \cdot V(r_0 + d) +
+     3^{\text{defectStepSum}(\text{fun } t \Rightarrow j(r_0 + t),\, d)} \cdot V'(r_0) =
+     2^{\text{defectStepSum}(\text{fun } t \Rightarrow j(r_0 + 1 + t),\, d)} \cdot V'(r_0 + d) +
+     3^{\text{defectStepSum}(\text{fun } t \Rightarrow j(r_0 + t),\, d)} \cdot V(r_0).$$
+-/
+
+/-- **Level-2 Joint CRT Parametrization of $(k_1, k_2)$ and $(V_1, V_2, V_3)$
+(`defectNormalizedQuotient_level2_crt_parametrization`)**:
+Across any two consecutive transitions $(j_1, j_2, j_3) \in \{1, 2\}^3$ with $k_1 = V_1 / 2^{3 j_2 + 11}$,
+$k_2 = V_2 / 2^{3 j_3 + 11}$, and $\ell_1 = k_1 / 2^{3 j_3 + 4}$, solving the Level-1 renormalized
+recurrence yields the exact joint affine parametrization of $(k_1, k_2, V_1, V_2, V_3)$ in terms of $\ell_1$:
+- $(1, 1, 1)$: $k_1 = 128 \ell_1 + 1,\; k_2 = 2187 \ell_1 + 18,\; V_1 = 2097152 \ell_1 + 17315,\; V_2 = 35831808 \ell_1 + 295843,\; V_3 = 612220032 \ell_1 + 5054755$,
+- $(1, 1, 2)$: $k_1 = 1024 \ell_1 + 654,\; k_2 = 2187 \ell_1 + 1396,\; V_1 = 16777216 \ell_1 + 10716067,\; V_2 = 286654464 \ell_1 + 183094051,\; V_3 = 612220032 \ell_1 + 391041689$,
+- $(1, 2, 1)$: $k_1 = 128 \ell_1 + 23,\; k_2 = 2187 \ell_1 + 408,\; V_1 = 16777216 \ell_1 + 3132195,\; V_2 = 35831808 \ell_1 + 6689561,\; V_3 = 16529940864 \ell_1 + 3086030371$,
+- $(1, 2, 2)$: $k_1 = 1024 \ell_1 + 910,\; k_2 = 2187 \ell_1 + 1945,\; V_1 = 134217728 \ell_1 + 119393059,\; V_2 = 286654464 \ell_1 + 254992793,\; V_3 = 16529940864 \ell_1 + 14704169369$,
+- $(2, 1, 1)$: $k_1 = 128 \ell_1 + 123,\; k_2 = 59049 \ell_1 + 56880,\; V_1 = 2097152 \ell_1 + 2020121,\; V_2 = 967458816 \ell_1 + 931922851,\; V_3 = 16529940864 \ell_1 + 15922775587$,
+- $(2, 1, 2)$: $k_1 = 1024 \ell_1 + 1010,\; k_2 = 59049 \ell_1 + 58258,\; V_1 = 16777216 \ell_1 + 16552729,\; V_2 = 7739670528 \ell_1 + 7636110115,\; V_3 = 16529940864 \ell_1 + 16308762521$,
+- $(2, 2, 1)$: $k_1 = 128 \ell_1 + 100,\; k_2 = 59049 \ell_1 + 46335,\; V_1 = 16777216 \ell_1 + 13164953,\; V_2 = 967458816 \ell_1 + 759157529,\; V_3 = 446308403328 \ell_1 + 350214788515$,
+- $(2, 2, 2)$: $k_1 = 1024 \ell_1 + 185,\; k_2 = 59049 \ell_1 + 10693,\; V_1 = 134217728 \ell_1 + 24306073,\; V_2 = 7739670528 \ell_1 + 1401610649,\; V_3 = 446308403328 \ell_1 + 80823932825$. -/
+theorem defectNormalizedQuotient_level2_crt_parametrization (V_1 V_2 V_3 : ℕ) :
+    (2 ^ 7 * V_2 + 1 = 3 ^ 7 * V_1 ∧ 2 ^ 7 * V_3 + 1 = 3 ^ 7 * V_2 ∧ V_3 % 128 = 35 →
+      (V_1 / 16384) = 128 * ((V_1 / 16384) / 128) + 1 ∧
+      (V_2 / 16384) = 2187 * ((V_1 / 16384) / 128) + 18 ∧
+      V_1 = 2097152 * ((V_1 / 16384) / 128) + 17315 ∧
+      V_2 = 35831808 * ((V_1 / 16384) / 128) + 295843 ∧
+      V_3 = 612220032 * ((V_1 / 16384) / 128) + 5054755) ∧
+    (2 ^ 7 * V_2 + 1 = 3 ^ 7 * V_1 ∧ 2 ^ 10 * V_3 + 1 = 3 ^ 7 * V_2 ∧ V_3 % 128 = 25 →
+      (V_1 / 16384) = 1024 * ((V_1 / 16384) / 1024) + 654 ∧
+      (V_2 / 131072) = 2187 * ((V_1 / 16384) / 1024) + 1396 ∧
+      V_1 = 16777216 * ((V_1 / 16384) / 1024) + 10716067 ∧
+      V_2 = 286654464 * ((V_1 / 16384) / 1024) + 183094051 ∧
+      V_3 = 612220032 * ((V_1 / 16384) / 1024) + 391041689) ∧
+    (2 ^ 10 * V_2 + 1 = 3 ^ 7 * V_1 ∧ 2 ^ 7 * V_3 + 1 = 3 ^ 10 * V_2 ∧ V_3 % 128 = 35 →
+      (V_1 / 131072) = 128 * ((V_1 / 131072) / 128) + 23 ∧
+      (V_2 / 16384) = 2187 * ((V_1 / 131072) / 128) + 408 ∧
+      V_1 = 16777216 * ((V_1 / 131072) / 128) + 3132195 ∧
+      V_2 = 35831808 * ((V_1 / 131072) / 128) + 6689561 ∧
+      V_3 = 16529940864 * ((V_1 / 131072) / 128) + 3086030371) ∧
+    (2 ^ 10 * V_2 + 1 = 3 ^ 7 * V_1 ∧ 2 ^ 10 * V_3 + 1 = 3 ^ 10 * V_2 ∧ V_3 % 128 = 25 →
+      (V_1 / 131072) = 1024 * ((V_1 / 131072) / 1024) + 910 ∧
+      (V_2 / 131072) = 2187 * ((V_1 / 131072) / 1024) + 1945 ∧
+      V_1 = 134217728 * ((V_1 / 131072) / 1024) + 119393059 ∧
+      V_2 = 286654464 * ((V_1 / 131072) / 1024) + 254992793 ∧
+      V_3 = 16529940864 * ((V_1 / 131072) / 1024) + 14704169369) ∧
+    (2 ^ 7 * V_2 + 1 = 3 ^ 10 * V_1 ∧ 2 ^ 7 * V_3 + 1 = 3 ^ 7 * V_2 ∧ V_3 % 128 = 35 →
+      (V_1 / 16384) = 128 * ((V_1 / 16384) / 128) + 123 ∧
+      (V_2 / 16384) = 59049 * ((V_1 / 16384) / 128) + 56880 ∧
+      V_1 = 2097152 * ((V_1 / 16384) / 128) + 2020121 ∧
+      V_2 = 967458816 * ((V_1 / 16384) / 128) + 931922851 ∧
+      V_3 = 16529940864 * ((V_1 / 16384) / 128) + 15922775587) ∧
+    (2 ^ 7 * V_2 + 1 = 3 ^ 10 * V_1 ∧ 2 ^ 10 * V_3 + 1 = 3 ^ 7 * V_2 ∧ V_3 % 128 = 25 →
+      (V_1 / 16384) = 1024 * ((V_1 / 16384) / 1024) + 1010 ∧
+      (V_2 / 131072) = 59049 * ((V_1 / 16384) / 1024) + 58258 ∧
+      V_1 = 16777216 * ((V_1 / 16384) / 1024) + 16552729 ∧
+      V_2 = 7739670528 * ((V_1 / 16384) / 1024) + 7636110115 ∧
+      V_3 = 16529940864 * ((V_1 / 16384) / 1024) + 16308762521) ∧
+    (2 ^ 10 * V_2 + 1 = 3 ^ 10 * V_1 ∧ 2 ^ 7 * V_3 + 1 = 3 ^ 10 * V_2 ∧ V_3 % 128 = 35 →
+      (V_1 / 131072) = 128 * ((V_1 / 131072) / 128) + 100 ∧
+      (V_2 / 16384) = 59049 * ((V_1 / 131072) / 128) + 46335 ∧
+      V_1 = 16777216 * ((V_1 / 131072) / 128) + 13164953 ∧
+      V_2 = 967458816 * ((V_1 / 131072) / 128) + 759157529 ∧
+      V_3 = 446308403328 * ((V_1 / 131072) / 128) + 350214788515) ∧
+    (2 ^ 10 * V_2 + 1 = 3 ^ 10 * V_1 ∧ 2 ^ 10 * V_3 + 1 = 3 ^ 10 * V_2 ∧ V_3 % 128 = 25 →
+      (V_1 / 131072) = 1024 * ((V_1 / 131072) / 1024) + 185 ∧
+      (V_2 / 131072) = 59049 * ((V_1 / 131072) / 1024) + 10693 ∧
+      V_1 = 134217728 * ((V_1 / 131072) / 1024) + 24306073 ∧
+      V_2 = 7739670528 * ((V_1 / 131072) / 1024) + 1401610649 ∧
+      V_3 = 446308403328 * ((V_1 / 131072) / 1024) + 80823932825) := by
+  refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
+  · intro h
+    have hs2 := (defectNormalizedQuotient_binary_crt_parametrization V_2 V_3).1 ⟨h.2.1, h.2.2⟩
+    have hV2_mod : V_2 % 128 = 35 :=
+      (mod_and_div_of_bezout (V := V_2) (M := 128) (a := 0) (b := 128 * (V_2 / 16384) + 7) (r := 35)
+        (by linarith only [hs2.1]) (by decide)).1
+    have hs1 := (defectNormalizedQuotient_binary_crt_parametrization V_1 V_2).1 ⟨h.1, hV2_mod⟩
+    have hren := ((defectNormalizedQuotient_renormalized_k_recurrence V_1 V_2 V_3).1 h).1
+    have hk1 := (mod_and_div_of_bezout (V := V_1 / 16384) (M := 128) (a := 598 * (V_1 / 16384) + 32)
+      (b := 35 * (V_2 / 16384)) (r := 1) (by linarith only [hren]) (by decide)).2
+    have hk2 : V_2 / 16384 = 2187 * ((V_1 / 16384) / 128) + 18 := by linarith only [hren, hk1]
+    exact ⟨hk1, hk2, by linarith only [hs1.1, hk1], by linarith only [hs1.2, hk1],
+      by linarith only [hs2.2, hk2]⟩
+  · intro h
+    have hs2 := (defectNormalizedQuotient_binary_crt_parametrization V_2 V_3).2.1 ⟨h.2.1, h.2.2⟩
+    have hV2_mod : V_2 % 128 = 35 :=
+      (mod_and_div_of_bezout (V := V_2) (M := 128) (a := 0) (b := 1024 * (V_2 / 131072) + 918) (r := 35)
+        (by linarith only [hs2.1]) (by decide)).1
+    have hs1 := (defectNormalizedQuotient_binary_crt_parametrization V_1 V_2).1 ⟨h.1, hV2_mod⟩
+    have hren := ((defectNormalizedQuotient_renormalized_k_recurrence V_1 V_2 V_3).2.1 h).1
+    have hk1 := (mod_and_div_of_bezout (V := V_1 / 16384) (M := 1024) (a := 1715 * (V_1 / 16384))
+      (b := 803 * (V_2 / 131072) + 622) (r := 654) (by linarith only [hren]) (by decide)).2
+    have hk2 : V_2 / 131072 = 2187 * ((V_1 / 16384) / 1024) + 1396 := by linarith only [hren, hk1]
+    exact ⟨hk1, hk2, by linarith only [hs1.1, hk1], by linarith only [hs1.2, hk1],
+      by linarith only [hs2.2, hk2]⟩
+  · intro h
+    have hs2 := (defectNormalizedQuotient_binary_crt_parametrization V_2 V_3).2.2.1 ⟨h.2.1, h.2.2⟩
+    have hV2_mod : V_2 % 128 = 25 :=
+      (mod_and_div_of_bezout (V := V_2) (M := 128) (a := 0) (b := 128 * (V_2 / 16384) + 38) (r := 25)
+        (by linarith only [hs2.1]) (by decide)).1
+    have hs1 := (defectNormalizedQuotient_binary_crt_parametrization V_1 V_2).2.1 ⟨h.1, hV2_mod⟩
+    have hren := ((defectNormalizedQuotient_renormalized_k_recurrence V_1 V_2 V_3).2.2.1 h).1
+    have hk1 := (mod_and_div_of_bezout (V := V_1 / 131072) (M := 128) (a := 598 * (V_1 / 131072) + 526)
+      (b := 35 * (V_2 / 16384)) (r := 23) (by linarith only [hren]) (by decide)).2
+    have hk2 : V_2 / 16384 = 2187 * ((V_1 / 131072) / 128) + 408 := by linarith only [hren, hk1]
+    exact ⟨hk1, hk2, by linarith only [hs1.1, hk1], by linarith only [hs1.2, hk1],
+      by linarith only [hs2.2, hk2]⟩
+  · intro h
+    have hs2 := (defectNormalizedQuotient_binary_crt_parametrization V_2 V_3).2.2.2 ⟨h.2.1, h.2.2⟩
+    have hV2_mod : V_2 % 128 = 25 :=
+      (mod_and_div_of_bezout (V := V_2) (M := 128) (a := 0) (b := 1024 * (V_2 / 131072) + 451) (r := 25)
+        (by linarith only [hs2.1]) (by decide)).1
+    have hs1 := (defectNormalizedQuotient_binary_crt_parametrization V_1 V_2).2.1 ⟨h.1, hV2_mod⟩
+    have hren := ((defectNormalizedQuotient_renormalized_k_recurrence V_1 V_2 V_3).2.2.2.1 h).1
+    have hk1 := (mod_and_div_of_bezout (V := V_1 / 131072) (M := 1024) (a := 1715 * (V_1 / 131072) + 1185)
+      (b := 803 * (V_2 / 131072)) (r := 910) (by linarith only [hren]) (by decide)).2
+    have hk2 : V_2 / 131072 = 2187 * ((V_1 / 131072) / 1024) + 1945 := by linarith only [hren, hk1]
+    exact ⟨hk1, hk2, by linarith only [hs1.1, hk1], by linarith only [hs1.2, hk1],
+      by linarith only [hs2.2, hk2]⟩
+  · intro h
+    have hs2 := (defectNormalizedQuotient_binary_crt_parametrization V_2 V_3).1 ⟨h.2.1, h.2.2⟩
+    have hV2_mod : V_2 % 128 = 35 :=
+      (mod_and_div_of_bezout (V := V_2) (M := 128) (a := 0) (b := 128 * (V_2 / 16384) + 7) (r := 35)
+        (by linarith only [hs2.1]) (by decide)).1
+    have hs1 := (defectNormalizedQuotient_binary_crt_parametrization V_1 V_2).2.2.1 ⟨h.1, hV2_mod⟩
+    have hren := ((defectNormalizedQuotient_renormalized_k_recurrence V_1 V_2 V_3).2.2.2.2.1 h).1
+    have hk1 := (mod_and_div_of_bezout (V := V_1 / 16384) (M := 128) (a := 11533 * (V_1 / 16384) + 3441)
+      (b := 25 * (V_2 / 16384)) (r := 123) (by linarith only [hren]) (by decide)).2
+    have hk2 : V_2 / 16384 = 59049 * ((V_1 / 16384) / 128) + 56880 := by linarith only [hren, hk1]
+    exact ⟨hk1, hk2, by linarith only [hs1.1, hk1], by linarith only [hs1.2, hk1],
+      by linarith only [hs2.2, hk2]⟩
+  · intro h
+    have hs2 := (defectNormalizedQuotient_binary_crt_parametrization V_2 V_3).2.1 ⟨h.2.1, h.2.2⟩
+    have hV2_mod : V_2 % 128 = 35 :=
+      (mod_and_div_of_bezout (V := V_2) (M := 128) (a := 0) (b := 1024 * (V_2 / 131072) + 918) (r := 35)
+        (by linarith only [hs2.1]) (by decide)).1
+    have hs1 := (defectNormalizedQuotient_binary_crt_parametrization V_1 V_2).2.2.1 ⟨h.1, hV2_mod⟩
+    have hren := ((defectNormalizedQuotient_renormalized_k_recurrence V_1 V_2 V_3).2.2.2.2.2.1 h).1
+    have hk1 := (mod_and_div_of_bezout (V := V_1 / 16384) (M := 1024) (a := 23585 * (V_1 / 16384) + 6672)
+      (b := 409 * (V_2 / 131072)) (r := 1010) (by linarith only [hren]) (by decide)).2
+    have hk2 : V_2 / 131072 = 59049 * ((V_1 / 16384) / 1024) + 58258 := by linarith only [hren, hk1]
+    exact ⟨hk1, hk2, by linarith only [hs1.1, hk1], by linarith only [hs1.2, hk1],
+      by linarith only [hs2.2, hk2]⟩
+  · intro h
+    have hs2 := (defectNormalizedQuotient_binary_crt_parametrization V_2 V_3).2.2.1 ⟨h.2.1, h.2.2⟩
+    have hV2_mod : V_2 % 128 = 25 :=
+      (mod_and_div_of_bezout (V := V_2) (M := 128) (a := 0) (b := 128 * (V_2 / 16384) + 38) (r := 25)
+        (by linarith only [hs2.1]) (by decide)).1
+    have hs1 := (defectNormalizedQuotient_binary_crt_parametrization V_1 V_2).2.2.2 ⟨h.1, hV2_mod⟩
+    have hren := ((defectNormalizedQuotient_renormalized_k_recurrence V_1 V_2 V_3).2.2.2.2.2.2.1 h).1
+    have hk1 := (mod_and_div_of_bezout (V := V_1 / 131072) (M := 128) (a := 11533 * (V_1 / 131072) + 5075)
+      (b := 25 * (V_2 / 16384)) (r := 100) (by linarith only [hren]) (by decide)).2
+    have hk2 : V_2 / 16384 = 59049 * ((V_1 / 131072) / 128) + 46335 := by linarith only [hren, hk1]
+    exact ⟨hk1, hk2, by linarith only [hs1.1, hk1], by linarith only [hs1.2, hk1],
+      by linarith only [hs2.2, hk2]⟩
+  · intro h
+    have hs2 := (defectNormalizedQuotient_binary_crt_parametrization V_2 V_3).2.2.2 ⟨h.2.1, h.2.2⟩
+    have hV2_mod : V_2 % 128 = 25 :=
+      (mod_and_div_of_bezout (V := V_2) (M := 128) (a := 0) (b := 1024 * (V_2 / 131072) + 451) (r := 25)
+        (by linarith only [hs2.1]) (by decide)).1
+    have hs1 := (defectNormalizedQuotient_binary_crt_parametrization V_1 V_2).2.2.2 ⟨h.1, hV2_mod⟩
+    have hren := ((defectNormalizedQuotient_renormalized_k_recurrence V_1 V_2 V_3).2.2.2.2.2.2.2 h).1
+    have hk1 := (mod_and_div_of_bezout (V := V_1 / 131072) (M := 1024) (a := 23585 * (V_1 / 131072) + 10212)
+      (b := 409 * (V_2 / 131072)) (r := 185) (by linarith only [hren]) (by decide)).2
+    have hk2 : V_2 / 131072 = 59049 * ((V_1 / 131072) / 1024) + 10693 := by linarith only [hren, hk1]
+    exact ⟨hk1, hk2, by linarith only [hs1.1, hk1], by linarith only [hs1.2, hk1],
+      by linarith only [hs2.2, hk2]⟩
+
+/-- Universal helper lemma: if $V = A Q + B$ and $Q = M (Q / M) + r$, then $A r + B \le V$. -/
+theorem le_of_linear_and_div {V A B M Q r C : ℕ}
+    (hV : V = A * Q + B) (hQ : Q = M * (Q / M) + r) (hbound : C ≤ A * r + B) : C ≤ V := by
+  have hle : r ≤ Q := by omega
+  have hmul : A * r ≤ A * Q := Nat.mul_le_mul_left A hle
+  omega
+
+/-- **Level-3 Renormalized Recurrence and Extinction of All $\ell_1 = 0$ Base Survivors ($j_1 = 1$)
+(`defectNormalizedQuotient_level3_renormalized_l_recurrence_j1_eq_one`)**:
+Across all $8$ 4-tuples $(1, j_2, j_3, j_4) \in \{1\} \times \{1, 2\}^3$ with
+$\ell_1 = (V_1 / 2^{3 j_2 + 11}) / 2^{3 j_3 + 4}$ and $\ell_2 = (V_2 / 2^{3 j_3 + 11}) / 2^{3 j_4 + 4}$,
+equating the two Level-2 formulas for $k_2 = V_2 / 2^{3 j_3 + 11}$ yields the exact Level-3
+Diophantine recurrences, forces $\ell_1 \pmod{2^{3 j_4 + 4}} \in \{45, 756, 73, 910, 9, 78, 65, 864\}$
+($\ell_1 \ge 9 > 0$), and enforces $V_1 \ge 94{,}389{,}155$ in every case. -/
+theorem defectNormalizedQuotient_level3_renormalized_l_recurrence_j1_eq_one (V_1 V_2 V_3 V_4 : ℕ) :
+    (2 ^ 7 * V_2 + 1 = 3 ^ 7 * V_1 ∧ 2 ^ 7 * V_3 + 1 = 3 ^ 7 * V_2 ∧ 2 ^ 7 * V_4 + 1 = 3 ^ 7 * V_3 ∧ V_4 % 128 = 35 →
+      2187 * ((V_1 / 16384) / 128) + 17 = 128 * ((V_2 / 16384) / 128) ∧
+      ((V_1 / 16384) / 128) % 128 = 45 ∧ 94389155 ≤ V_1) ∧
+    (2 ^ 7 * V_2 + 1 = 3 ^ 7 * V_1 ∧ 2 ^ 7 * V_3 + 1 = 3 ^ 7 * V_2 ∧ 2 ^ 10 * V_4 + 1 = 3 ^ 7 * V_3 ∧ V_4 % 128 = 25 →
+      2187 * ((V_1 / 16384) / 128) = 1024 * ((V_2 / 16384) / 1024) + 636 ∧
+      ((V_1 / 16384) / 128) % 1024 = 756 ∧ 1585464227 ≤ V_1) ∧
+    (2 ^ 7 * V_2 + 1 = 3 ^ 7 * V_1 ∧ 2 ^ 10 * V_3 + 1 = 3 ^ 7 * V_2 ∧ 2 ^ 7 * V_4 + 1 = 3 ^ 10 * V_3 ∧ V_4 % 128 = 35 →
+      2187 * ((V_1 / 16384) / 1024) + 1373 = 128 * ((V_2 / 131072) / 128) ∧
+      ((V_1 / 16384) / 1024) % 128 = 73 ∧ 1235452835 ≤ V_1) ∧
+    (2 ^ 7 * V_2 + 1 = 3 ^ 7 * V_1 ∧ 2 ^ 10 * V_3 + 1 = 3 ^ 7 * V_2 ∧ 2 ^ 10 * V_4 + 1 = 3 ^ 10 * V_3 ∧ V_4 % 128 = 25 →
+      2187 * ((V_1 / 16384) / 1024) + 486 = 1024 * ((V_2 / 131072) / 1024) ∧
+      ((V_1 / 16384) / 1024) % 1024 = 910 ∧ 15277982627 ≤ V_1) ∧
+    (2 ^ 10 * V_2 + 1 = 3 ^ 7 * V_1 ∧ 2 ^ 7 * V_3 + 1 = 3 ^ 10 * V_2 ∧ 2 ^ 7 * V_4 + 1 = 3 ^ 7 * V_3 ∧ V_4 % 128 = 35 →
+      2187 * ((V_1 / 131072) / 128) + 285 = 128 * ((V_2 / 16384) / 128) ∧
+      ((V_1 / 131072) / 128) % 128 = 9 ∧ 154127139 ≤ V_1) ∧
+    (2 ^ 10 * V_2 + 1 = 3 ^ 7 * V_1 ∧ 2 ^ 7 * V_3 + 1 = 3 ^ 10 * V_2 ∧ 2 ^ 10 * V_4 + 1 = 3 ^ 7 * V_3 ∧ V_4 % 128 = 25 →
+      2187 * ((V_1 / 131072) / 128) = 1024 * ((V_2 / 16384) / 1024) + 602 ∧
+      ((V_1 / 131072) / 128) % 1024 = 78 ∧ 1311755043 ≤ V_1) ∧
+    (2 ^ 10 * V_2 + 1 = 3 ^ 7 * V_1 ∧ 2 ^ 10 * V_3 + 1 = 3 ^ 10 * V_2 ∧ 2 ^ 7 * V_4 + 1 = 3 ^ 10 * V_3 ∧ V_4 % 128 = 35 →
+      2187 * ((V_1 / 131072) / 1024) + 1845 = 128 * ((V_2 / 131072) / 128) ∧
+      ((V_1 / 131072) / 1024) % 128 = 65 ∧ 8843545379 ≤ V_1) ∧
+    (2 ^ 10 * V_2 + 1 = 3 ^ 7 * V_1 ∧ 2 ^ 10 * V_3 + 1 = 3 ^ 10 * V_2 ∧ 2 ^ 10 * V_4 + 1 = 3 ^ 10 * V_3 ∧ V_4 % 128 = 25 →
+      2187 * ((V_1 / 131072) / 1024) + 1760 = 1024 * ((V_2 / 131072) / 1024) ∧
+      ((V_1 / 131072) / 1024) % 1024 = 864 ∧ 116083510051 ≤ V_1) := by
+  refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
+  · rintro ⟨h1, h2, h3, h4⟩
+    have s2 := (defectNormalizedQuotient_level2_crt_parametrization V_2 V_3 V_4).1 ⟨h2, h3, h4⟩
+    have hV3_mod : V_3 % 128 = 35 :=
+      (mod_and_div_of_bezout (V := V_3) (M := 128) (a := 0) (b := 279936 * ((V_2 / 16384) / 128) + 2311) (r := 35)
+        (by linarith only [s2.2.2.2.1]) (by decide)).1
+    have s1 := (defectNormalizedQuotient_level2_crt_parametrization V_1 V_2 V_3).1 ⟨h1, h2, hV3_mod⟩
+    have hren : 2187 * ((V_1 / 16384) / 128) + 17 = 128 * ((V_2 / 16384) / 128) := by
+      linarith only [s1.2.1, s2.1]
+    have hl1 := mod_and_div_of_bezout (V := (V_1 / 16384) / 128) (M := 128) (a := 598 * ((V_1 / 16384) / 128) + 5)
+      (b := 35 * ((V_2 / 16384) / 128)) (r := 45) (by linarith only [hren]) (by decide)
+    exact ⟨hren, hl1.1, le_of_linear_and_div s1.2.2.1 hl1.2 (by decide)⟩
+  · rintro ⟨h1, h2, h3, h4⟩
+    have s2 := (defectNormalizedQuotient_level2_crt_parametrization V_2 V_3 V_4).2.1 ⟨h2, h3, h4⟩
+    have hV3_mod : V_3 % 128 = 35 :=
+      (mod_and_div_of_bezout (V := V_3) (M := 128) (a := 0) (b := 2239488 * ((V_2 / 16384) / 1024) + 1430422) (r := 35)
+        (by linarith only [s2.2.2.2.1]) (by decide)).1
+    have s1 := (defectNormalizedQuotient_level2_crt_parametrization V_1 V_2 V_3).1 ⟨h1, h2, hV3_mod⟩
+    have hren : 2187 * ((V_1 / 16384) / 128) = 1024 * ((V_2 / 16384) / 1024) + 636 := by
+      linarith only [s1.2.1, s2.1]
+    have hl1 := mod_and_div_of_bezout (V := (V_1 / 16384) / 128) (M := 1024) (a := 1715 * ((V_1 / 16384) / 128))
+      (b := 803 * ((V_2 / 16384) / 1024) + 498) (r := 756) (by linarith only [hren]) (by decide)
+    exact ⟨hren, hl1.1, le_of_linear_and_div s1.2.2.1 hl1.2 (by decide)⟩
+  · rintro ⟨h1, h2, h3, h4⟩
+    have s2 := (defectNormalizedQuotient_level2_crt_parametrization V_2 V_3 V_4).2.2.1 ⟨h2, h3, h4⟩
+    have hV3_mod : V_3 % 128 = 25 :=
+      (mod_and_div_of_bezout (V := V_3) (M := 128) (a := 0) (b := 279936 * ((V_2 / 131072) / 128) + 52262) (r := 25)
+        (by linarith only [s2.2.2.2.1]) (by decide)).1
+    have s1 := (defectNormalizedQuotient_level2_crt_parametrization V_1 V_2 V_3).2.1 ⟨h1, h2, hV3_mod⟩
+    have hren : 2187 * ((V_1 / 16384) / 1024) + 1373 = 128 * ((V_2 / 131072) / 128) := by
+      linarith only [s1.2.1, s2.1]
+    have hl1 := mod_and_div_of_bezout (V := (V_1 / 16384) / 1024) (M := 128) (a := 598 * ((V_1 / 16384) / 1024) + 376)
+      (b := 35 * ((V_2 / 131072) / 128)) (r := 73) (by linarith only [hren]) (by decide)
+    exact ⟨hren, hl1.1, le_of_linear_and_div s1.2.2.1 hl1.2 (by decide)⟩
+  · rintro ⟨h1, h2, h3, h4⟩
+    have s2 := (defectNormalizedQuotient_level2_crt_parametrization V_2 V_3 V_4).2.2.2.1 ⟨h2, h3, h4⟩
+    have hV3_mod : V_3 % 128 = 25 :=
+      (mod_and_div_of_bezout (V := V_3) (M := 128) (a := 0) (b := 2239488 * ((V_2 / 131072) / 1024) + 1992131) (r := 25)
+        (by linarith only [s2.2.2.2.1]) (by decide)).1
+    have s1 := (defectNormalizedQuotient_level2_crt_parametrization V_1 V_2 V_3).2.1 ⟨h1, h2, hV3_mod⟩
+    have hren : 2187 * ((V_1 / 16384) / 1024) + 486 = 1024 * ((V_2 / 131072) / 1024) := by
+      linarith only [s1.2.1, s2.1]
+    have hl1 := mod_and_div_of_bezout (V := (V_1 / 16384) / 1024) (M := 1024) (a := 1715 * ((V_1 / 16384) / 1024) + 382)
+      (b := 803 * ((V_2 / 131072) / 1024)) (r := 910) (by linarith only [hren]) (by decide)
+    exact ⟨hren, hl1.1, le_of_linear_and_div s1.2.2.1 hl1.2 (by decide)⟩
+  · rintro ⟨h1, h2, h3, h4⟩
+    have s2 := (defectNormalizedQuotient_level2_crt_parametrization V_2 V_3 V_4).2.2.2.2.1 ⟨h2, h3, h4⟩
+    have hV3_mod : V_3 % 128 = 35 :=
+      (mod_and_div_of_bezout (V := V_3) (M := 128) (a := 0) (b := 7558272 * ((V_2 / 16384) / 128) + 7280647) (r := 35)
+        (by linarith only [s2.2.2.2.1]) (by decide)).1
+    have s1 := (defectNormalizedQuotient_level2_crt_parametrization V_1 V_2 V_3).2.2.1 ⟨h1, h2, hV3_mod⟩
+    have hren : 2187 * ((V_1 / 131072) / 128) + 285 = 128 * ((V_2 / 16384) / 128) := by
+      linarith only [s1.2.1, s2.1]
+    have hl1 := mod_and_div_of_bezout (V := (V_1 / 131072) / 128) (M := 128) (a := 598 * ((V_1 / 131072) / 128) + 78)
+      (b := 35 * ((V_2 / 16384) / 128)) (r := 9) (by linarith only [hren]) (by decide)
+    exact ⟨hren, hl1.1, le_of_linear_and_div s1.2.2.1 hl1.2 (by decide)⟩
+  · rintro ⟨h1, h2, h3, h4⟩
+    have s2 := (defectNormalizedQuotient_level2_crt_parametrization V_2 V_3 V_4).2.2.2.2.2.1 ⟨h2, h3, h4⟩
+    have hV3_mod : V_3 % 128 = 35 :=
+      (mod_and_div_of_bezout (V := V_3) (M := 128) (a := 0) (b := 60466176 * ((V_2 / 16384) / 1024) + 59657110) (r := 35)
+        (by linarith only [s2.2.2.2.1]) (by decide)).1
+    have s1 := (defectNormalizedQuotient_level2_crt_parametrization V_1 V_2 V_3).2.2.1 ⟨h1, h2, hV3_mod⟩
+    have hren : 2187 * ((V_1 / 131072) / 128) = 1024 * ((V_2 / 16384) / 1024) + 602 := by
+      linarith only [s1.2.1, s2.1]
+    have hl1 := mod_and_div_of_bezout (V := (V_1 / 131072) / 128) (M := 1024) (a := 1715 * ((V_1 / 131072) / 128))
+      (b := 803 * ((V_2 / 16384) / 1024) + 472) (r := 78) (by linarith only [hren]) (by decide)
+    exact ⟨hren, hl1.1, le_of_linear_and_div s1.2.2.1 hl1.2 (by decide)⟩
+  · rintro ⟨h1, h2, h3, h4⟩
+    have s2 := (defectNormalizedQuotient_level2_crt_parametrization V_2 V_3 V_4).2.2.2.2.2.2.1 ⟨h2, h3, h4⟩
+    have hV3_mod : V_3 % 128 = 25 :=
+      (mod_and_div_of_bezout (V := V_3) (M := 128) (a := 0) (b := 7558272 * ((V_2 / 131072) / 128) + 5930918) (r := 25)
+        (by linarith only [s2.2.2.2.1]) (by decide)).1
+    have s1 := (defectNormalizedQuotient_level2_crt_parametrization V_1 V_2 V_3).2.2.2.1 ⟨h1, h2, hV3_mod⟩
+    have hren : 2187 * ((V_1 / 131072) / 1024) + 1845 = 128 * ((V_2 / 131072) / 128) := by
+      linarith only [s1.2.1, s2.1]
+    have hl1 := mod_and_div_of_bezout (V := (V_1 / 131072) / 1024) (M := 128) (a := 598 * ((V_1 / 131072) / 1024) + 505)
+      (b := 35 * ((V_2 / 131072) / 128)) (r := 65) (by linarith only [hren]) (by decide)
+    exact ⟨hren, hl1.1, le_of_linear_and_div s1.2.2.1 hl1.2 (by decide)⟩
+  · rintro ⟨h1, h2, h3, h4⟩
+    have s2 := (defectNormalizedQuotient_level2_crt_parametrization V_2 V_3 V_4).2.2.2.2.2.2.2 ⟨h2, h3, h4⟩
+    have hV3_mod : V_3 % 128 = 25 :=
+      (mod_and_div_of_bezout (V := V_3) (M := 128) (a := 0) (b := 60466176 * ((V_2 / 131072) / 1024) + 10950083) (r := 25)
+        (by linarith only [s2.2.2.2.1]) (by decide)).1
+    have s1 := (defectNormalizedQuotient_level2_crt_parametrization V_1 V_2 V_3).2.2.2.1 ⟨h1, h2, hV3_mod⟩
+    have hren : 2187 * ((V_1 / 131072) / 1024) + 1760 = 1024 * ((V_2 / 131072) / 1024) := by
+      linarith only [s1.2.1, s2.1]
+    have hl1 := mod_and_div_of_bezout (V := (V_1 / 131072) / 1024) (M := 1024) (a := 1715 * ((V_1 / 131072) / 1024) + 1381)
+      (b := 803 * ((V_2 / 131072) / 1024)) (r := 864) (by linarith only [hren]) (by decide)
+    exact ⟨hren, hl1.1, le_of_linear_and_div s1.2.2.1 hl1.2 (by decide)⟩
+
+/-- **Level-3 Renormalized Recurrence and Extinction of All $\ell_1 = 0$ Base Survivors ($j_1 = 2$)
+(`defectNormalizedQuotient_level3_renormalized_l_recurrence_j1_eq_two`)**:
+Across all $8$ 4-tuples $(2, j_2, j_3, j_4) \in \{2\} \times \{1, 2\}^3$ with
+$\ell_1 = (V_1 / 2^{3 j_2 + 11}) / 2^{3 j_3 + 4}$ and $\ell_2 = (V_2 / 2^{3 j_3 + 11}) / 2^{3 j_4 + 4}$,
+equating the two Level-2 formulas for $k_2 = V_2 / 2^{3 j_3 + 11}$ yields the exact Level-3
+Diophantine recurrences, forces $\ell_1 \pmod{2^{3 j_4 + 4}} \in \{105, 558, 125, 412, 28, 571, 7, 980\}$
+($\ell_1 \ge 7 > 0$), and enforces $V_1 \ge 222{,}221{,}081$ in every case. -/
+theorem defectNormalizedQuotient_level3_renormalized_l_recurrence_j1_eq_two (V_1 V_2 V_3 V_4 : ℕ) :
+    (2 ^ 7 * V_2 + 1 = 3 ^ 10 * V_1 ∧ 2 ^ 7 * V_3 + 1 = 3 ^ 7 * V_2 ∧ 2 ^ 7 * V_4 + 1 = 3 ^ 7 * V_3 ∧ V_4 % 128 = 35 →
+      59049 * ((V_1 / 16384) / 128) + 56879 = 128 * ((V_2 / 16384) / 128) ∧
+      ((V_1 / 16384) / 128) % 128 = 105 ∧ 222221081 ≤ V_1) ∧
+    (2 ^ 7 * V_2 + 1 = 3 ^ 10 * V_1 ∧ 2 ^ 7 * V_3 + 1 = 3 ^ 7 * V_2 ∧ 2 ^ 10 * V_4 + 1 = 3 ^ 7 * V_3 ∧ V_4 % 128 = 25 →
+      59049 * ((V_1 / 16384) / 128) + 56226 = 1024 * ((V_2 / 16384) / 1024) ∧
+      ((V_1 / 16384) / 128) % 1024 = 558 ∧ 1172230937 ≤ V_1) ∧
+    (2 ^ 7 * V_2 + 1 = 3 ^ 10 * V_1 ∧ 2 ^ 10 * V_3 + 1 = 3 ^ 7 * V_2 ∧ 2 ^ 7 * V_4 + 1 = 3 ^ 10 * V_3 ∧ V_4 % 128 = 35 →
+      59049 * ((V_1 / 16384) / 1024) + 58235 = 128 * ((V_2 / 131072) / 128) ∧
+      ((V_1 / 16384) / 1024) % 128 = 125 ∧ 2113704729 ≤ V_1) ∧
+    (2 ^ 7 * V_2 + 1 = 3 ^ 10 * V_1 ∧ 2 ^ 10 * V_3 + 1 = 3 ^ 7 * V_2 ∧ 2 ^ 10 * V_4 + 1 = 3 ^ 10 * V_3 ∧ V_4 % 128 = 25 →
+      59049 * ((V_1 / 16384) / 1024) + 57348 = 1024 * ((V_2 / 131072) / 1024) ∧
+      ((V_1 / 16384) / 1024) % 1024 = 412 ∧ 6928765721 ≤ V_1) ∧
+    (2 ^ 10 * V_2 + 1 = 3 ^ 10 * V_1 ∧ 2 ^ 7 * V_3 + 1 = 3 ^ 10 * V_2 ∧ 2 ^ 7 * V_4 + 1 = 3 ^ 7 * V_3 ∧ V_4 % 128 = 35 →
+      59049 * ((V_1 / 131072) / 128) + 46212 = 128 * ((V_2 / 16384) / 128) ∧
+      ((V_1 / 131072) / 128) % 128 = 28 ∧ 482927001 ≤ V_1) ∧
+    (2 ^ 10 * V_2 + 1 = 3 ^ 10 * V_1 ∧ 2 ^ 7 * V_3 + 1 = 3 ^ 10 * V_2 ∧ 2 ^ 10 * V_4 + 1 = 3 ^ 7 * V_3 ∧ V_4 % 128 = 25 →
+      59049 * ((V_1 / 131072) / 128) + 45325 = 1024 * ((V_2 / 16384) / 1024) ∧
+      ((V_1 / 131072) / 128) % 1024 = 571 ∧ 9592955289 ≤ V_1) ∧
+    (2 ^ 10 * V_2 + 1 = 3 ^ 10 * V_1 ∧ 2 ^ 10 * V_3 + 1 = 3 ^ 10 * V_2 ∧ 2 ^ 7 * V_4 + 1 = 3 ^ 10 * V_3 ∧ V_4 % 128 = 35 →
+      59049 * ((V_1 / 131072) / 1024) + 10593 = 128 * ((V_2 / 131072) / 128) ∧
+      ((V_1 / 131072) / 1024) % 128 = 7 ∧ 963830169 ≤ V_1) ∧
+    (2 ^ 10 * V_2 + 1 = 3 ^ 10 * V_1 ∧ 2 ^ 10 * V_3 + 1 = 3 ^ 10 * V_2 ∧ 2 ^ 10 * V_4 + 1 = 3 ^ 10 * V_3 ∧ V_4 % 128 = 25 →
+      59049 * ((V_1 / 131072) / 1024) + 10508 = 1024 * ((V_2 / 131072) / 1024) ∧
+      ((V_1 / 131072) / 1024) % 1024 = 980 ∧ 131557679513 ≤ V_1) := by
+  refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
+  · rintro ⟨h1, h2, h3, h4⟩
+    have s2 := (defectNormalizedQuotient_level2_crt_parametrization V_2 V_3 V_4).1 ⟨h2, h3, h4⟩
+    have hV3_mod : V_3 % 128 = 35 :=
+      (mod_and_div_of_bezout (V := V_3) (M := 128) (a := 0) (b := 279936 * ((V_2 / 16384) / 128) + 2311) (r := 35)
+        (by linarith only [s2.2.2.2.1]) (by decide)).1
+    have s1 := (defectNormalizedQuotient_level2_crt_parametrization V_1 V_2 V_3).2.2.2.2.1 ⟨h1, h2, hV3_mod⟩
+    have hren : 59049 * ((V_1 / 16384) / 128) + 56879 = 128 * ((V_2 / 16384) / 128) := by
+      linarith only [s1.2.1, s2.1]
+    have hl1 := mod_and_div_of_bezout (V := (V_1 / 16384) / 128) (M := 128) (a := 11533 * ((V_1 / 16384) / 128) + 11110)
+      (b := 25 * ((V_2 / 16384) / 128)) (r := 105) (by linarith only [hren]) (by decide)
+    exact ⟨hren, hl1.1, le_of_linear_and_div s1.2.2.1 hl1.2 (by decide)⟩
+  · rintro ⟨h1, h2, h3, h4⟩
+    have s2 := (defectNormalizedQuotient_level2_crt_parametrization V_2 V_3 V_4).2.1 ⟨h2, h3, h4⟩
+    have hV3_mod : V_3 % 128 = 35 :=
+      (mod_and_div_of_bezout (V := V_3) (M := 128) (a := 0) (b := 2239488 * ((V_2 / 16384) / 1024) + 1430422) (r := 35)
+        (by linarith only [s2.2.2.2.1]) (by decide)).1
+    have s1 := (defectNormalizedQuotient_level2_crt_parametrization V_1 V_2 V_3).2.2.2.2.1 ⟨h1, h2, hV3_mod⟩
+    have hren : 59049 * ((V_1 / 16384) / 128) + 56226 = 1024 * ((V_2 / 16384) / 1024) := by
+      linarith only [s1.2.1, s2.1]
+    have hl1 := mod_and_div_of_bezout (V := (V_1 / 16384) / 128) (M := 1024) (a := 23585 * ((V_1 / 16384) / 128) + 22458)
+      (b := 409 * ((V_2 / 16384) / 1024)) (r := 558) (by linarith only [hren]) (by decide)
+    exact ⟨hren, hl1.1, le_of_linear_and_div s1.2.2.1 hl1.2 (by decide)⟩
+  · rintro ⟨h1, h2, h3, h4⟩
+    have s2 := (defectNormalizedQuotient_level2_crt_parametrization V_2 V_3 V_4).2.2.1 ⟨h2, h3, h4⟩
+    have hV3_mod : V_3 % 128 = 25 :=
+      (mod_and_div_of_bezout (V := V_3) (M := 128) (a := 0) (b := 279936 * ((V_2 / 131072) / 128) + 52262) (r := 25)
+        (by linarith only [s2.2.2.2.1]) (by decide)).1
+    have s1 := (defectNormalizedQuotient_level2_crt_parametrization V_1 V_2 V_3).2.2.2.2.2.1 ⟨h1, h2, hV3_mod⟩
+    have hren : 59049 * ((V_1 / 16384) / 1024) + 58235 = 128 * ((V_2 / 131072) / 128) := by
+      linarith only [s1.2.1, s2.1]
+    have hl1 := mod_and_div_of_bezout (V := (V_1 / 16384) / 1024) (M := 128) (a := 11533 * ((V_1 / 16384) / 1024) + 11375)
+      (b := 25 * ((V_2 / 131072) / 128)) (r := 125) (by linarith only [hren]) (by decide)
+    exact ⟨hren, hl1.1, le_of_linear_and_div s1.2.2.1 hl1.2 (by decide)⟩
+  · rintro ⟨h1, h2, h3, h4⟩
+    have s2 := (defectNormalizedQuotient_level2_crt_parametrization V_2 V_3 V_4).2.2.2.1 ⟨h2, h3, h4⟩
+    have hV3_mod : V_3 % 128 = 25 :=
+      (mod_and_div_of_bezout (V := V_3) (M := 128) (a := 0) (b := 2239488 * ((V_2 / 131072) / 1024) + 1992131) (r := 25)
+        (by linarith only [s2.2.2.2.1]) (by decide)).1
+    have s1 := (defectNormalizedQuotient_level2_crt_parametrization V_1 V_2 V_3).2.2.2.2.2.1 ⟨h1, h2, hV3_mod⟩
+    have hren : 59049 * ((V_1 / 16384) / 1024) + 57348 = 1024 * ((V_2 / 131072) / 1024) := by
+      linarith only [s1.2.1, s2.1]
+    have hl1 := mod_and_div_of_bezout (V := (V_1 / 16384) / 1024) (M := 1024) (a := 23585 * ((V_1 / 16384) / 1024) + 22906)
+      (b := 409 * ((V_2 / 131072) / 1024)) (r := 412) (by linarith only [hren]) (by decide)
+    exact ⟨hren, hl1.1, le_of_linear_and_div s1.2.2.1 hl1.2 (by decide)⟩
+  · rintro ⟨h1, h2, h3, h4⟩
+    have s2 := (defectNormalizedQuotient_level2_crt_parametrization V_2 V_3 V_4).2.2.2.2.1 ⟨h2, h3, h4⟩
+    have hV3_mod : V_3 % 128 = 35 :=
+      (mod_and_div_of_bezout (V := V_3) (M := 128) (a := 0) (b := 7558272 * ((V_2 / 16384) / 128) + 7280647) (r := 35)
+        (by linarith only [s2.2.2.2.1]) (by decide)).1
+    have s1 := (defectNormalizedQuotient_level2_crt_parametrization V_1 V_2 V_3).2.2.2.2.2.2.1 ⟨h1, h2, hV3_mod⟩
+    have hren : 59049 * ((V_1 / 131072) / 128) + 46212 = 128 * ((V_2 / 16384) / 128) := by
+      linarith only [s1.2.1, s2.1]
+    have hl1 := mod_and_div_of_bezout (V := (V_1 / 131072) / 128) (M := 128) (a := 11533 * ((V_1 / 131072) / 128) + 9026)
+      (b := 25 * ((V_2 / 16384) / 128)) (r := 28) (by linarith only [hren]) (by decide)
+    exact ⟨hren, hl1.1, le_of_linear_and_div s1.2.2.1 hl1.2 (by decide)⟩
+  · rintro ⟨h1, h2, h3, h4⟩
+    have s2 := (defectNormalizedQuotient_level2_crt_parametrization V_2 V_3 V_4).2.2.2.2.2.1 ⟨h2, h3, h4⟩
+    have hV3_mod : V_3 % 128 = 35 :=
+      (mod_and_div_of_bezout (V := V_3) (M := 128) (a := 0) (b := 60466176 * ((V_2 / 16384) / 1024) + 59657110) (r := 35)
+        (by linarith only [s2.2.2.2.1]) (by decide)).1
+    have s1 := (defectNormalizedQuotient_level2_crt_parametrization V_1 V_2 V_3).2.2.2.2.2.2.1 ⟨h1, h2, hV3_mod⟩
+    have hren : 59049 * ((V_1 / 131072) / 128) + 45325 = 1024 * ((V_2 / 16384) / 1024) := by
+      linarith only [s1.2.1, s2.1]
+    have hl1 := mod_and_div_of_bezout (V := (V_1 / 131072) / 128) (M := 1024) (a := 23585 * ((V_1 / 131072) / 128) + 18104)
+      (b := 409 * ((V_2 / 16384) / 1024)) (r := 571) (by linarith only [hren]) (by decide)
+    exact ⟨hren, hl1.1, le_of_linear_and_div s1.2.2.1 hl1.2 (by decide)⟩
+  · rintro ⟨h1, h2, h3, h4⟩
+    have s2 := (defectNormalizedQuotient_level2_crt_parametrization V_2 V_3 V_4).2.2.2.2.2.2.1 ⟨h2, h3, h4⟩
+    have hV3_mod : V_3 % 128 = 25 :=
+      (mod_and_div_of_bezout (V := V_3) (M := 128) (a := 0) (b := 7558272 * ((V_2 / 131072) / 128) + 5930918) (r := 25)
+        (by linarith only [s2.2.2.2.1]) (by decide)).1
+    have s1 := (defectNormalizedQuotient_level2_crt_parametrization V_1 V_2 V_3).2.2.2.2.2.2.2 ⟨h1, h2, hV3_mod⟩
+    have hren : 59049 * ((V_1 / 131072) / 1024) + 10593 = 128 * ((V_2 / 131072) / 128) := by
+      linarith only [s1.2.1, s2.1]
+    have hl1 := mod_and_div_of_bezout (V := (V_1 / 131072) / 1024) (M := 128) (a := 11533 * ((V_1 / 131072) / 1024) + 2069)
+      (b := 25 * ((V_2 / 131072) / 128)) (r := 7) (by linarith only [hren]) (by decide)
+    exact ⟨hren, hl1.1, le_of_linear_and_div s1.2.2.1 hl1.2 (by decide)⟩
+  · rintro ⟨h1, h2, h3, h4⟩
+    have s2 := (defectNormalizedQuotient_level2_crt_parametrization V_2 V_3 V_4).2.2.2.2.2.2.2 ⟨h2, h3, h4⟩
+    have hV3_mod : V_3 % 128 = 25 :=
+      (mod_and_div_of_bezout (V := V_3) (M := 128) (a := 0) (b := 60466176 * ((V_2 / 131072) / 1024) + 10950083) (r := 25)
+        (by linarith only [s2.2.2.2.1]) (by decide)).1
+    have s1 := (defectNormalizedQuotient_level2_crt_parametrization V_1 V_2 V_3).2.2.2.2.2.2.2 ⟨h1, h2, hV3_mod⟩
+    have hren : 59049 * ((V_1 / 131072) / 1024) + 10508 = 1024 * ((V_2 / 131072) / 1024) := by
+      linarith only [s1.2.1, s2.1]
+    have hl1 := mod_and_div_of_bezout (V := (V_1 / 131072) / 1024) (M := 1024) (a := 23585 * ((V_1 / 131072) / 1024) + 4198)
+      (b := 409 * ((V_2 / 131072) / 1024)) (r := 980) (by linarith only [hren]) (by decide)
+    exact ⟨hren, hl1.1, le_of_linear_and_div s1.2.2.1 hl1.2 (by decide)⟩
+
+/-- **General Multi-Step Homogeneous $(2, 3)$-Adic Tower Law
+(`defectNormalizedQuotient_multi_step_homogeneous_tower`)**:
+For any spacing sequence $j : \mathbb{N} \to \mathbb{N}$ and any two solutions $V, V' : \mathbb{N} \to \mathbb{N}$
+of the normalized defect recurrence $2^{3 j(r + 1) + 4} V(r + 1) + 1 = 3^{3 j(r) + 4} V(r)$,
+every starting index $r_0 \in \mathbb{N}$ and every multi-step depth $d \in \mathbb{N}$ satisfy the
+exact homogeneous $(2, 3)$-adic tower identity
+$$2^{\text{defectStepSum}(\text{fun } t \Rightarrow j(r_0 + 1 + t),\, d)} \cdot V(r_0 + d) +
+  3^{\text{defectStepSum}(\text{fun } t \Rightarrow j(r_0 + t),\, d)} \cdot V'(r_0) =
+  2^{\text{defectStepSum}(\text{fun } t \Rightarrow j(r_0 + 1 + t),\, d)} \cdot V'(r_0 + d) +
+  3^{\text{defectStepSum}(\text{fun } t \Rightarrow j(r_0 + t),\, d)} \cdot V(r_0).$$ -/
+theorem defectNormalizedQuotient_multi_step_homogeneous_tower
+    {V V' j : ℕ → ℕ}
+    (hrec : ∀ r : ℕ, 2 ^ (3 * j (r + 1) + 4) * V (r + 1) + 1 = 3 ^ (3 * j r + 4) * V r)
+    (hrec' : ∀ r : ℕ, 2 ^ (3 * j (r + 1) + 4) * V' (r + 1) + 1 = 3 ^ (3 * j r + 4) * V' r)
+    (r_0 d : ℕ) :
+    2 ^ (defectStepSum (fun t => j (r_0 + 1 + t)) d) * V (r_0 + d) +
+      3 ^ (defectStepSum (fun t => j (r_0 + t)) d) * V' r_0 =
+      2 ^ (defectStepSum (fun t => j (r_0 + 1 + t)) d) * V' (r_0 + d) +
+        3 ^ (defectStepSum (fun t => j (r_0 + t)) d) * V r_0 := by
+  induction d with
+  | zero =>
+      simp only [defectStepSum, Nat.pow_zero, Nat.one_mul, Nat.add_zero]
+      omega
+  | succ d ih =>
+      have hstep := hrec (r_0 + d)
+      have hstep' := hrec' (r_0 + d)
+      have hidx1 : r_0 + d + 1 = r_0 + (d + 1) := by omega
+      have hidx2 : r_0 + 1 + d = r_0 + (d + 1) := by omega
+      have hpow2 :
+          2 ^ (defectStepSum (fun t => j (r_0 + 1 + t)) (d + 1)) =
+            2 ^ (defectStepSum (fun t => j (r_0 + 1 + t)) d) * 2 ^ (3 * j (r_0 + (d + 1)) + 4) := by
+        change 2 ^ (defectStepSum (fun t => j (r_0 + 1 + t)) d + (3 * j (r_0 + 1 + d) + 4)) = _
+        rw [hidx2, Nat.pow_add]
+      have hpow3 :
+          3 ^ (defectStepSum (fun t => j (r_0 + t)) (d + 1)) =
+            3 ^ (defectStepSum (fun t => j (r_0 + t)) d) * 3 ^ (3 * j (r_0 + d) + 4) := by
+        change 3 ^ (defectStepSum (fun t => j (r_0 + t)) d + (3 * j (r_0 + d) + 4)) = _
+        rw [Nat.pow_add]
+      rw [hidx1] at hstep hstep'
+      rw [hpow2, hpow3]
+      set E2 := 2 ^ (defectStepSum (fun t => j (r_0 + 1 + t)) d)
+      set S3 := 3 ^ (defectStepSum (fun t => j (r_0 + t)) d)
+      set B2 := 2 ^ (3 * j (r_0 + (d + 1)) + 4)
+      set A3 := 3 ^ (3 * j (r_0 + d) + 4)
+      have hmul1 :
+          (E2 * V (r_0 + d) + S3 * V' r_0) * A3 =
+            (E2 * V' (r_0 + d) + S3 * V r_0) * A3 :=
+        congrArg (fun x => x * A3) ih
+      have hmul2 :
+          E2 * (B2 * V (r_0 + (d + 1)) + 1) = E2 * (A3 * V (r_0 + d)) :=
+        congrArg (fun x => E2 * x) hstep
+      have hmul3 :
+          E2 * (B2 * V' (r_0 + (d + 1)) + 1) = E2 * (A3 * V' (r_0 + d)) :=
+        congrArg (fun x => E2 * x) hstep'
+      have hexp1 :
+          (E2 * V (r_0 + d) + S3 * V' r_0) * A3 =
+            E2 * (A3 * V (r_0 + d)) + S3 * A3 * V' r_0 := by ring
+      have hexp2 :
+          (E2 * V' (r_0 + d) + S3 * V r_0) * A3 =
+            E2 * (A3 * V' (r_0 + d)) + S3 * A3 * V r_0 := by ring
+      have hexp3 :
+          E2 * (B2 * V (r_0 + (d + 1)) + 1) = E2 * B2 * V (r_0 + (d + 1)) + E2 := by ring
+      have hexp4 :
+          E2 * (B2 * V' (r_0 + (d + 1)) + 1) = E2 * B2 * V' (r_0 + (d + 1)) + E2 := by ring
+      linarith only [hmul1, hmul2, hmul3, hexp1, hexp2, hexp3, hexp4]
+
+
 end Mahler.DubickasExtension
 
 

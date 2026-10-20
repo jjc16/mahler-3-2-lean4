@@ -255,6 +255,13 @@ example (m : ℕ) :
 #print axioms Mahler.DubickasExtension.defectNormalizedQuotient_cooldown_mod_128_and_three_adic_lock
 #print axioms Mahler.DubickasExtension.defectNormalizedQuotient_renormalized_k_recurrence
 
+-- 19. Verify Section 25: Level-2 and Level-3 CRT renormalizations, extinction of l_1=0 base witnesses (V_1 >= 94,389,155), and general multi-step homogeneous (2,3)-adic tower law
+#print axioms Mahler.DubickasExtension.defectNormalizedQuotient_level2_crt_parametrization
+#print axioms Mahler.DubickasExtension.le_of_linear_and_div
+#print axioms Mahler.DubickasExtension.defectNormalizedQuotient_level3_renormalized_l_recurrence_j1_eq_one
+#print axioms Mahler.DubickasExtension.defectNormalizedQuotient_level3_renormalized_l_recurrence_j1_eq_two
+#print axioms Mahler.DubickasExtension.defectNormalizedQuotient_multi_step_homogeneous_tower
+
 #print axioms Mahler.DubickasExtension.dubBaseCarry_eq_fract_linear
 #print axioms Mahler.DubickasExtension.dubBaseY_multi_step_carry_identity
 #print axioms Mahler.DubickasExtension.dubBaseCarry_mem_two_letters
