@@ -286,6 +286,11 @@ example (m : ℕ) :
 #print axioms Mahler.DubickasExtension.mahler_binary_cantor_dust_min_seed_of_certifyMahlerBinaryDustDepth
 #print axioms Mahler.DubickasExtension.mahler_binary_cantor_dust_certified_bounds_up_to_depth_12
 
+-- 23. Verify Section 29: Dense-core strict doubling growth, repeated defect-subword cancellation 2^E | (V(r_2)-V(r_1)), and unconditional exclusion of low-complexity dense-core trajectories
+#print axioms Mahler.DubickasExtension.dense_core_strict_doubling_and_monotonicity
+#print axioms Mahler.DubickasExtension.dense_core_repeated_subword_divisibility_and_exp_bound
+#print axioms Mahler.DubickasExtension.dense_core_repeated_subword_cutoff_and_complexity_exclusion
+
 #print axioms Mahler.DubickasExtension.dubBaseCarry_eq_fract_linear
 #print axioms Mahler.DubickasExtension.dubBaseY_multi_step_carry_identity
 #print axioms Mahler.DubickasExtension.dubBaseCarry_mem_two_letters

@@ -10410,6 +10410,318 @@ theorem mahler_binary_cantor_dust_certified_bounds_up_to_depth_12 :
     have hgt : 2 ^ 101 < 4608 * 6644210551001288379891372825 := by decide
     exact lt_of_lt_of_le hgt hmul
 
+/-!
+## Section 29: Advancing on the Dense Core $\{1, 2\}^\mathbb{N}$ via Strict Doubling Growth,
+## Repeated Defect-Subword Cancellation $2^E \mid (V(r_2) - V(r_1))$, and Unconditional
+## Exclusion of Low-Complexity Dense-Core Trajectories ($d = \infty$)
+
+In Sections 22–23, we eliminated all sparse and cumulative-sparse chaotic trajectories in the Cantor
+dust via odd-quotient descent, leaving the **Dense Core** $j(r) \in \{1, 2\}$ (`0001001` and `0001001001`)
+as the remaining $d \to \infty$ frontier. In this section, we combine **Section 25's Homogeneous
+Tower Law** (`defectNormalizedQuotient_multi_step_homogeneous_tower`) with **Section 28's Single-Exponent
+Shift Cancellation and Archimedean Corridor** (`defectStepSum_shift_cancellation_and_single_exponent_identity`,
+`defectNormalizedQuotient_archimedean_floor_invariant`) to eliminate an entire infinite-horizon
+family of aperiodic trajectories **directly inside the Dense Core $\{1, 2\}^\mathbb{N}$**:
+
+1. **Strict Doubling Growth in the Dense Core (`dense_core_strict_doubling_and_monotonicity`)**:
+   Whenever $j(r) \ge 1$, $j(r + 1) \le 2$, and $V(0) \ge 1$, the multiplier inequality
+   $3^{3 j(r) + 4} \ge 2187 > 2048 \ge 2 \cdot 2^{3 j(r + 1) + 4}$ forces
+   $$V(r + 1) \;\ge\; 2 V(r) + 1 \;>\; V(r) \qquad (\forall r \in \mathbb{N}),$$
+   so $V$ is strictly increasing ($r_1 < r_2 \implies V(r_1) < V(r_2)$ and $2^{r_2 - r_1} \le V(r_2) - V(r_1)$).
+
+2. **Repeated Defect-Subword Cancellation & Dual $(2^E, 3^S)$ Divisibility
+   (`dense_core_repeated_subword_divisibility_and_exp_bound`)**:
+   If a defect-spacing subword of length $L + 1$ repeats at two indices $r_1 < r_2$
+   ($j(r_1 + t) = j(r_2 + t)$ for all $0 \le t \le L$), then subtracting the homogeneous tower
+   identities at $r_1$ and $r_2$ cancels the inhomogeneous accumulator completely:
+   $$2^E \big(V(r_2 + L) - V(r_1 + L)\big) \;=\; 3^S \big(V(r_2) - V(r_1)\big),$$
+   where $E = \sum_{t=1}^L (3 j(r_1 + t) + 4) \ge 7 L$ and $S = \sum_{t=0}^{L-1} (3 j(r_1 + t) + 4) \ge 7 L$.
+   By coprimality $\gcd(2^E, 3^S) = 1$ and strict monotonicity $V(r_1) < V(r_2)$, this forces
+   $$2^E \;\Big|\; \big(V(r_2) - V(r_1)\big), \qquad 3^S \;\Big|\; \big(V(r_2 + L) - V(r_1 + L)\big),$$
+   $$2^{7 L} \;\le\; 2^E \;\le\; V(r_2) - V(r_1) \;<\; V(r_2).$$
+
+3. **Dense-Core Repeated-Subword Cutoff $7 L < 6 r_2 + W + 3$ and Unconditional Infinite-Horizon
+   Exclusion (`dense_core_repeated_subword_cutoff`, `no_infinite_dense_core_low_complexity_cantor_dust_chain`)**:
+   Combining $2^{7 L} < V(r_2)$ with Section 28's archimedean upper bound $2^{E_{r_2}} V(r_2) < 3^{S_{r_2}} V(0)$,
+   the term-by-term bound $3^{3 j(t) + 4} \le 2^{(3 j(t) + 4) + 6}$ for $j(t) \le 2$ ($3^{S_{r_2}} \le 2^{S_{r_2} + 6 r_2}$),
+   and Section 28's endpoint cancellation $S_{r_2} \le E_{r_2} + 3$ proves that for $V(0) < 2^W$:
+   $$7 L \;<\; 6 r_2 + W + 3.$$
+   Consequently, by the Finite Pigeonhole Principle (`exists_repeated_subword_of_prefixFactorCount_le`),
+   **no infinite trajectory in the Dense Core $\{1, 2\}^\mathbb{N}$ can satisfy
+   `prefixFactorCount j (L + 1) C ≤ C` at any horizon $(L, C)$ where $6 C + W + 3 \le 7 L$**—eliminating
+   all periodic, Sturmian, mechanical, Toeplitz, and sub-$\frac{7}{6}$-complexity sequences inside
+   the Dense Core for $d = \infty$!
+-/
+
+/-- **Strict Doubling Growth and Monotonicity in the Dense Core
+(`dense_core_strict_doubling_and_monotonicity`)**:
+In the Dense Core $j(r) \in \{1, 2\}$ with $V(0) \ge 1$ and
+$2^{3 j(r + 1) + 4} V(r + 1) + 1 = 3^{3 j(r) + 4} V(r)$:
+1. For every $r \in \mathbb{N}$, $2 V(r) + 1 \le V(r + 1)$ and $1 \le V(r)$.
+2. For every $r_1 < r_2$, $V(r_1) < V(r_2)$. -/
+theorem dense_core_strict_doubling_and_monotonicity
+    {V j : ℕ → ℕ}
+    (hV0 : 1 ≤ V 0)
+    (hj : ∀ r : ℕ, j r = 1 ∨ j r = 2)
+    (hrec : ∀ r : ℕ, 2 ^ (3 * j (r + 1) + 4) * V (r + 1) + 1 = 3 ^ (3 * j r + 4) * V r) :
+    (∀ r : ℕ, 1 ≤ V r ∧ 2 * V r + 1 ≤ V (r + 1)) ∧
+    (∀ r_1 r_2 : ℕ, r_1 < r_2 → V r_1 < V r_2) := by
+  have hone : ∀ r : ℕ, 1 ≤ V r → 2 * V r + 1 ≤ V (r + 1) := by
+    intro r hVr
+    have hrr := hrec r
+    rcases hj r with h0_1 | h0_2 <;> rcases hj (r + 1) with h1_1 | h1_2
+    · rw [h0_1, h1_1] at hrr; change 128 * V (r + 1) + 1 = 2187 * V r at hrr; linarith
+    · rw [h0_1, h1_2] at hrr; change 1024 * V (r + 1) + 1 = 2187 * V r at hrr; linarith
+    · rw [h0_2, h1_1] at hrr; change 128 * V (r + 1) + 1 = 59049 * V r at hrr; linarith
+    · rw [h0_2, h1_2] at hrr; change 1024 * V (r + 1) + 1 = 59049 * V r at hrr; linarith
+  have hstep : ∀ r : ℕ, 1 ≤ V r ∧ 2 * V r + 1 ≤ V (r + 1) := by
+    intro r
+    induction r with
+    | zero => exact ⟨hV0, hone 0 hV0⟩
+    | succ r ih =>
+        have hVr1 : 1 ≤ V (r + 1) := by omega
+        exact ⟨hVr1, hone (r + 1) hVr1⟩
+  refine ⟨hstep, ?_⟩
+  intro r_1 r_2 hlt
+  obtain ⟨d, rfl⟩ : ∃ d : ℕ, r_2 = r_1 + (d + 1) := ⟨r_2 - r_1 - 1, by omega⟩
+  induction d with
+  | zero =>
+      have h := (hstep r_1).2
+      have hidx : r_1 + (0 + 1) = r_1 + 1 := by omega
+      rw [hidx]
+      omega
+  | succ d ih =>
+      have ihm := ih (by omega)
+      have h := (hstep (r_1 + (d + 1))).2
+      have hidx : r_1 + (d + 1 + 1) = (r_1 + (d + 1)) + 1 := by omega
+      rw [hidx]
+      omega
+
+/-- **Repeated Defect-Subword Cancellation and Dual $(2^E, 3^S)$ Divisibility in the Dense Core
+(`dense_core_repeated_subword_divisibility_and_exp_bound`)**:
+Suppose $V, j : \mathbb{N} \to \mathbb{N}$ satisfy $V(0) \ge 1$, $j(r) \in \{1, 2\}$, and
+$2^{3 j(r + 1) + 4} V(r + 1) + 1 = 3^{3 j(r) + 4} V(r)$ for all $r \in \mathbb{N}$.
+If a subword of length $L + 1$ repeats at $r_1 < r_2$ ($j(r_1 + t) = j(r_2 + t)$ for all $t \le L$),
+then with $E = \text{defectStepSum}(\text{fun } t \Rightarrow j(r_1 + 1 + t),\, L)$ and
+$S = \text{defectStepSum}(\text{fun } t \Rightarrow j(r_1 + t),\, L)$:
+1. $2^E \big(V(r_2 + L) - V(r_1 + L)\big) = 3^S \big(V(r_2) - V(r_1)\big)$.
+2. $2^E \mid \big(V(r_2) - V(r_1)\big)$ and $3^S \mid \big(V(r_2 + L) - V(r_1 + L)\big)$.
+3. $7 L \le E$ and $2^{7 L} \le 2^E < V(r_2)$. -/
+theorem dense_core_repeated_subword_divisibility_and_exp_bound
+    {V j : ℕ → ℕ} {r_1 r_2 L : ℕ}
+    (hV0 : 1 ≤ V 0)
+    (hj : ∀ r : ℕ, j r = 1 ∨ j r = 2)
+    (hrec : ∀ r : ℕ, 2 ^ (3 * j (r + 1) + 4) * V (r + 1) + 1 = 3 ^ (3 * j r + 4) * V r)
+    (hr12 : r_1 < r_2)
+    (hmatch : ∀ t ≤ L, j (r_1 + t) = j (r_2 + t)) :
+    let E := defectStepSum (fun t => j (r_1 + 1 + t)) L
+    let S := defectStepSum (fun t => j (r_1 + t)) L
+    2 ^ E * (V (r_2 + L) - V (r_1 + L)) = 3 ^ S * (V r_2 - V r_1) ∧
+    (2 ^ E ∣ (V r_2 - V r_1)) ∧
+    (3 ^ S ∣ (V (r_2 + L) - V (r_1 + L))) ∧
+    7 * L ≤ E ∧
+    2 ^ (7 * L) ≤ 2 ^ E ∧
+    2 ^ E < V r_2 := by
+  intro E S
+  have hmono := (dense_core_strict_doubling_and_monotonicity hV0 hj hrec).2
+  have hpos_V : ∀ r : ℕ, 1 ≤ V r := fun r =>
+    ((dense_core_strict_doubling_and_monotonicity hV0 hj hrec).1 r).1
+  have hhom :
+      ∀ m ≤ L,
+        2 ^ (defectStepSum (fun t => j (r_1 + 1 + t)) m) * V (r_2 + m) +
+          3 ^ (defectStepSum (fun t => j (r_1 + t)) m) * V r_1 =
+        2 ^ (defectStepSum (fun t => j (r_1 + 1 + t)) m) * V (r_1 + m) +
+          3 ^ (defectStepSum (fun t => j (r_1 + t)) m) * V r_2 := by
+    intro m hm
+    induction m with
+    | zero =>
+        simp only [defectStepSum, Nat.pow_zero, Nat.one_mul, Nat.add_zero]
+        omega
+    | succ m ih =>
+        have ihm := ih (by omega)
+        have hstep1 := hrec (r_1 + m)
+        have hstep2 := hrec (r_2 + m)
+        have hm0 : j (r_2 + m) = j (r_1 + m) := (hmatch m (by omega)).symm
+        have hm1 : j (r_2 + m + 1) = j (r_1 + m + 1) := by
+          have h := (hmatch (m + 1) (by omega)).symm
+          have hidx1 : r_1 + (m + 1) = r_1 + m + 1 := by omega
+          have hidx2 : r_2 + (m + 1) = r_2 + m + 1 := by omega
+          rw [← hidx1, ← hidx2, h]
+        rw [hm0, hm1] at hstep2
+        have hpow2 :
+            2 ^ (defectStepSum (fun t => j (r_1 + 1 + t)) (m + 1)) =
+              2 ^ (defectStepSum (fun t => j (r_1 + 1 + t)) m) * 2 ^ (3 * j (r_1 + m + 1) + 4) := by
+          change 2 ^ (defectStepSum (fun t => j (r_1 + 1 + t)) m + (3 * j (r_1 + 1 + m) + 4)) = _
+          have hidx : r_1 + 1 + m = r_1 + m + 1 := by omega
+          rw [hidx, Nat.pow_add]
+        have hpow3 :
+            3 ^ (defectStepSum (fun t => j (r_1 + t)) (m + 1)) =
+              3 ^ (defectStepSum (fun t => j (r_1 + t)) m) * 3 ^ (3 * j (r_1 + m) + 4) :=
+          Nat.pow_add 3 (defectStepSum (fun t => j (r_1 + t)) m) (3 * j (r_1 + m) + 4)
+        have hidx1 : r_1 + m + 1 = r_1 + (m + 1) := by omega
+        have hidx2 : r_2 + m + 1 = r_2 + (m + 1) := by omega
+        rw [hidx1] at hstep1 hpow2
+        rw [hidx2] at hstep2
+        rw [hpow2, hpow3]
+        set E_m := 2 ^ (defectStepSum (fun t => j (r_1 + 1 + t)) m)
+        set S_m := 3 ^ (defectStepSum (fun t => j (r_1 + t)) m)
+        set B_m := 2 ^ (3 * j (r_1 + (m + 1)) + 4)
+        set A_m := 3 ^ (3 * j (r_1 + m) + 4)
+        have hmul1 :
+            (E_m * V (r_2 + m) + S_m * V r_1) * A_m =
+              (E_m * V (r_1 + m) + S_m * V r_2) * A_m :=
+          congrArg (fun x => x * A_m) ihm
+        have hmul2 : E_m * (B_m * V (r_1 + (m + 1)) + 1) = E_m * (A_m * V (r_1 + m)) :=
+          congrArg (fun x => E_m * x) hstep1
+        have hmul3 : E_m * (B_m * V (r_2 + (m + 1)) + 1) = E_m * (A_m * V (r_2 + m)) :=
+          congrArg (fun x => E_m * x) hstep2
+        have hexp1 : (E_m * V (r_2 + m) + S_m * V r_1) * A_m =
+            E_m * (A_m * V (r_2 + m)) + S_m * A_m * V r_1 := by ring
+        have hexp2 : (E_m * V (r_1 + m) + S_m * V r_2) * A_m =
+            E_m * (A_m * V (r_1 + m)) + S_m * A_m * V r_2 := by ring
+        have hexp3 : E_m * (B_m * V (r_1 + (m + 1)) + 1) =
+            E_m * B_m * V (r_1 + (m + 1)) + E_m := by ring
+        have hexp4 : E_m * (B_m * V (r_2 + (m + 1)) + 1) =
+            E_m * B_m * V (r_2 + (m + 1)) + E_m := by ring
+        linarith only [hmul1, hmul2, hmul3, hexp1, hexp2, hexp3, hexp4]
+  have hhomL := hhom L le_rfl
+  have hlt_0 : V r_1 < V r_2 := hmono r_1 r_2 hr12
+  have hlt_L : V (r_1 + L) < V (r_2 + L) := hmono (r_1 + L) (r_2 + L) (by omega)
+  have hsub_eq : 2 ^ E * (V (r_2 + L) - V (r_1 + L)) = 3 ^ S * (V r_2 - V r_1) := by
+    have hd1 : 2 ^ E * (V (r_2 + L) - V (r_1 + L)) + 2 ^ E * V (r_1 + L) = 2 ^ E * V (r_2 + L) := by
+      rw [← Nat.mul_add, Nat.sub_add_cancel (by omega)]
+    have hd2 : 3 ^ S * (V r_2 - V r_1) + 3 ^ S * V r_1 = 3 ^ S * V r_2 := by
+      rw [← Nat.mul_add, Nat.sub_add_cancel (by omega)]
+    linarith only [hhomL, hd1, hd2]
+  have hcop23 : Nat.Coprime (2 ^ E) (3 ^ S) :=
+    Nat.Coprime.pow E S (by decide : Nat.Coprime 2 3)
+  have hdvd2 : 2 ^ E ∣ (V r_2 - V r_1) := by
+    have hdvd_prod : 2 ^ E ∣ 3 ^ S * (V r_2 - V r_1) := ⟨V (r_2 + L) - V (r_1 + L), hsub_eq.symm⟩
+    exact hcop23.dvd_of_dvd_mul_left hdvd_prod
+  have hdvd3 : 3 ^ S ∣ (V (r_2 + L) - V (r_1 + L)) := by
+    have hdvd_prod : 3 ^ S ∣ 2 ^ E * (V (r_2 + L) - V (r_1 + L)) := ⟨V r_2 - V r_1, hsub_eq⟩
+    exact hcop23.symm.dvd_of_dvd_mul_left hdvd_prod
+  have hE_ge : 7 * L ≤ E := by
+    change 7 * L ≤ defectStepSum (fun t => j (r_1 + 1 + t)) L
+    have h_all : ∀ m : ℕ, 7 * m ≤ defectStepSum (fun t => j (r_1 + 1 + t)) m := by
+      intro m
+      induction m with
+      | zero => simp only [defectStepSum, Nat.mul_zero, le_refl]
+      | succ m ih =>
+          change 7 * (m + 1) ≤ defectStepSum (fun t => j (r_1 + 1 + t)) m + (3 * j (r_1 + 1 + m) + 4)
+          rcases hj (r_1 + 1 + m) with h1 | h2 <;> omega
+    exact h_all L
+  have hpow_le : 2 ^ (7 * L) ≤ 2 ^ E := Nat.pow_le_pow_right (by decide) hE_ge
+  rcases hdvd2 with ⟨k, hk⟩
+  have hk_pos : 1 ≤ k := by
+    rcases Nat.eq_zero_or_pos k with rfl | hpos
+    · omega
+    · exact hpos
+  have hdiff_ge : 2 ^ E ≤ V r_2 - V r_1 := by
+    calc 2 ^ E = 2 ^ E * 1 := (Nat.mul_one _).symm
+    _ ≤ 2 ^ E * k := Nat.mul_le_mul_left (2 ^ E) hk_pos
+    _ = V r_2 - V r_1 := hk.symm
+  have hVr1_pos : 1 ≤ V r_1 := hpos_V r_1
+  exact ⟨hsub_eq, ⟨k, hk⟩, hdvd3, hE_ge, hpow_le, by omega⟩
+
+/-- **Dense-Core Repeated-Subword Cutoff $7 L < 6 r_2 + W + 3$ and Unconditional Infinite-Horizon
+Exclusion of Low-Complexity Dense-Core Trajectories
+(`dense_core_repeated_subword_cutoff_and_complexity_exclusion`)**:
+Suppose $V, j : \mathbb{N} \to \mathbb{N}$ satisfy $1 \le V(0) < 2^W$, $j(r) \in \{1, 2\}$, and
+$2^{3 j(r + 1) + 4} V(r + 1) + 1 = 3^{3 j(r) + 4} V(r)$ for all $r \in \mathbb{N}$.
+1. **Term-by-Term Power Bound**: For every $r \in \mathbb{N}$,
+   $3^{\text{defectStepSum}(j, r)} \le 2^{\text{defectStepSum}(j, r) + 6 r}$ and
+   $3^{\text{defectStepSum}(j, r)} \le 2^{\text{defectStepSum}(\text{fun } t \Rightarrow j(1 + t),\, r) + 6 r + 3}$.
+2. **Repeated-Subword Cutoff**: Whenever a subword of length $L + 1$ repeats at $r_1 < r_2$
+   ($j(r_1 + t) = j(r_2 + t)$ for all $t \le L$), we have
+   $$7 L \;<\; 6 r_2 + W + 3.$$
+3. **Unconditional Finite-Horizon Complexity Cutoff**: If `prefixFactorCount j (L + 1) C ≤ C`,
+   then $7 L < 6 C + W + 3$. Consequently, no infinite trajectory in the Dense Core $\{1, 2\}^\mathbb{N}$
+   can satisfy `prefixFactorCount j (L + 1) C ≤ C` with $6 C + W + 3 \le 7 L$. -/
+theorem dense_core_repeated_subword_cutoff_and_complexity_exclusion
+    {V j : ℕ → ℕ} {W : ℕ}
+    (hV0_pos : 1 ≤ V 0) (hV0_lt : V 0 < 2 ^ W)
+    (hj : ∀ r : ℕ, j r = 1 ∨ j r = 2)
+    (hrec : ∀ r : ℕ, 2 ^ (3 * j (r + 1) + 4) * V (r + 1) + 1 = 3 ^ (3 * j r + 4) * V r) :
+    (∀ r : ℕ,
+      3 ^ (defectStepSum j r) ≤ 2 ^ (defectStepSum j r + 6 * r) ∧
+      3 ^ (defectStepSum j r) ≤ 2 ^ (defectStepSum (fun t => j (1 + t)) r + 6 * r + 3)) ∧
+    (∀ r_1 r_2 L : ℕ,
+      r_1 < r_2 →
+      (∀ t ≤ L, j (r_1 + t) = j (r_2 + t)) →
+      7 * L < 6 * r_2 + W + 3) ∧
+    (∀ L C : ℕ,
+      prefixFactorCount j (L + 1) C ≤ C →
+      7 * L < 6 * C + W + 3) := by
+  have hpow_bound :
+      ∀ r : ℕ,
+        3 ^ (defectStepSum j r) ≤ 2 ^ (defectStepSum j r + 6 * r) ∧
+        3 ^ (defectStepSum j r) ≤ 2 ^ (defectStepSum (fun t => j (1 + t)) r + 6 * r + 3) := by
+    have h1 : ∀ r : ℕ, 3 ^ (defectStepSum j r) ≤ 2 ^ (defectStepSum j r + 6 * r) := by
+      intro r
+      induction r with
+      | zero => simp only [defectStepSum, Nat.mul_zero, Nat.add_zero, Nat.pow_zero, le_refl]
+      | succ r ih =>
+          have hS : defectStepSum j (r + 1) = defectStepSum j r + (3 * j r + 4) := rfl
+          have hexp : defectStepSum j (r + 1) + 6 * (r + 1) =
+              (defectStepSum j r + 6 * r) + ((3 * j r + 4) + 6) := by
+            rw [hS]; omega
+          rw [hexp, Nat.pow_add 2 (defectStepSum j r + 6 * r) ((3 * j r + 4) + 6),
+            hS, Nat.pow_add 3 (defectStepSum j r) (3 * j r + 4)]
+          have hstep : 3 ^ (3 * j r + 4) ≤ 2 ^ ((3 * j r + 4) + 6) := by
+            rcases hj r with hjr1 | hjr2
+            · rw [hjr1]; decide
+            · rw [hjr2]; decide
+          exact Nat.mul_le_mul ih hstep
+    intro r
+    refine ⟨h1 r, ?_⟩
+    have hshift := ((defectStepSum_shift_cancellation_and_single_exponent_identity j).1 r).2
+    have hj0 : j 0 = 1 ∨ j 0 = 2 := hj 0
+    have hjr : j r = 1 ∨ j r = 2 := hj r
+    have hexp_le : defectStepSum j r + 6 * r ≤
+        defectStepSum (fun t => j (1 + t)) r + 6 * r + 3 := by omega
+    exact le_trans (h1 r) (Nat.pow_le_pow_right (by decide) hexp_le)
+  have hcut :
+      ∀ r_1 r_2 L : ℕ,
+        r_1 < r_2 →
+        (∀ t ≤ L, j (r_1 + t) = j (r_2 + t)) →
+        7 * L < 6 * r_2 + W + 3 := by
+    intro r_1 r_2 L hr12 hmatch
+    have hrep := dense_core_repeated_subword_divisibility_and_exp_bound
+      hV0_pos hj hrec hr12 hmatch
+    have h2_7L_lt : 2 ^ (7 * L) < V r_2 := lt_of_le_of_lt hrep.2.2.2.2.1 hrep.2.2.2.2.2
+    have hr2_pos : 1 ≤ r_2 := by omega
+    have harch := ((defectNormalizedQuotient_archimedean_floor_invariant hV0_pos hrec).2 r_2 hr2_pos).2.2.1
+    set E_r2 := defectStepSum (fun t => j (1 + t)) r_2
+    set S_r2 := defectStepSum j r_2
+    have hmul1 :
+        2 ^ (7 * L + E_r2) < 2 ^ E_r2 * V r_2 := by
+      rw [Nat.add_comm (7 * L) E_r2, Nat.pow_add]
+      exact Nat.mul_lt_mul_of_pos_left h2_7L_lt (Nat.pow_pos (by decide))
+    have hlt_S : 2 ^ (7 * L + E_r2) < 3 ^ S_r2 * V 0 := lt_trans hmul1 harch
+    have hS_bound := (hpow_bound r_2).2
+    have hmul2 :
+        3 ^ S_r2 * V 0 < 2 ^ (E_r2 + 6 * r_2 + 3) * 2 ^ W := by
+      have hle : 3 ^ S_r2 * V 0 ≤ 2 ^ (E_r2 + 6 * r_2 + 3) * V 0 :=
+        Nat.mul_le_mul_right (V 0) hS_bound
+      have hlt : 2 ^ (E_r2 + 6 * r_2 + 3) * V 0 < 2 ^ (E_r2 + 6 * r_2 + 3) * 2 ^ W :=
+        Nat.mul_lt_mul_of_pos_left hV0_lt (Nat.pow_pos (by decide))
+      exact lt_of_le_of_lt hle hlt
+    rw [← Nat.pow_add] at hmul2
+    have hpow_lt : 2 ^ (7 * L + E_r2) < 2 ^ (E_r2 + 6 * r_2 + 3 + W) :=
+      lt_trans hlt_S hmul2
+    have hexp_lt : 7 * L + E_r2 < E_r2 + 6 * r_2 + 3 + W :=
+      (Nat.pow_lt_pow_iff_right (by decide : 1 < 2)).mp hpow_lt
+    omega
+  refine ⟨hpow_bound, hcut, ?_⟩
+  intro L C hcard
+  obtain ⟨r_1, r_2, hr12, hr2C, hmatch_lt⟩ :=
+    exists_repeated_subword_of_prefixFactorCount_le j (L + 1) C hcard
+  have hmatch : ∀ t ≤ L, j (r_1 + t) = j (r_2 + t) := fun t ht => hmatch_lt t (by omega)
+  have h := hcut r_1 r_2 L hr12 hmatch
+  omega
+
+
 
 
 
