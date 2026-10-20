@@ -203,6 +203,19 @@ example :
 #print axioms Mahler.DubickasExtension.exactTwoPowLock_incompatible_of_ne
 #print axioms Mahler.DubickasExtension.general_rung_two_defect_simultaneous_lock
 
+-- 13. Verify Sections 17-19: Two-island punctured [0, 1/2), 17/24 > 70% union, and K-defect tower
+example {ξ : ℝ} {W : ℕ} (hξ1 : (1 : ℝ) ≤ ξ) (hξW : ξ < (2 : ℝ) ^ W) :
+    (∃ n ≤ 3 * W + 27, ¬ InTwoIslandPuncturedHalf (Int.fract (ξ * (3 / 2 : ℝ) ^ n))) ∧
+    (∃ n ≤ W + 17, ¬ InUnionSeventeenTwentyFourths (Int.fract (ξ * (3 / 2 : ℝ) ^ n))) :=
+  ⟨two_island_punctured_half_explicit_and_infinite_escape.2.1 hξ1 hξW,
+    union_seventeen_twenty_fourths_explicit_and_infinite_escape.1 hξ1 hξW⟩
+
+#print axioms Mahler.DubickasExtension.two_island_punctured_half_explicit_and_infinite_escape
+#print axioms Mahler.DubickasExtension.inRatIntervalList_terminal_of_selfFunnelChainOk
+#print axioms Mahler.DubickasExtension.union_seventeen_twenty_fourths_explicit_and_infinite_escape
+#print axioms Mahler.DubickasExtension.rungDefectCocycle_tower_identity
+#print axioms Mahler.DubickasExtension.general_rung_multi_defect_valuation_tower
+
 #print axioms Mahler.DubickasExtension.dubBaseCarry_eq_fract_linear
 #print axioms Mahler.DubickasExtension.dubBaseY_multi_step_carry_identity
 #print axioms Mahler.DubickasExtension.dubBaseCarry_mem_two_letters

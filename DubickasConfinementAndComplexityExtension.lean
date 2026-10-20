@@ -6329,7 +6329,445 @@ theorem general_rung_two_defect_simultaneous_lock
       omega
     exact exactTwoPowLock_incompatible_of_ne he_ne ⟨hlock', hex1⟩
 
+/-! ## 17. The Two-Island Punctured $[0, 1/2)$ Escape Theorem Reaching Down to $\frac{280}{2187} \approx 0.12803$ ($73.43\%$ of $[0, 1/2)$)
+
+By combining Section 12's homoclinic catapult trap on $[8/57, 1/2)$ with Section 14's 7-step
+catapult-into-death-band trap (`catapult_into_death_band_seven_step_escape`) at
+$\varepsilon = \frac{280}{2187} \approx 0.12803$, where
+$$\frac{280 + 128 \cdot (280 / 2187)}{2187} = \frac{648200}{4782969} \approx 0.1355225,$$
+we push the punctured-$[0, 1/2)$ left boundary below $\frac{8}{57} \approx 0.140351$ all the way down to
+**$\frac{280}{2187} \approx 0.12803$**, removing only the microscopic sliver
+$\left[\frac{648200}{4782969},\, \frac{8}{57}\right)$ of width $\frac{131736}{272629233} = \frac{4879.11...}{...} = \frac{43912}{90876411} \approx 0.004832$:
+- On the two-island subset of $[0, 1/2)$:
+  $$\mathcal{W}_{280/2187} := \left[\frac{280}{2187},\; \frac{648200}{4782969}\right) \;\cup\; \left[\frac{8}{57},\; \frac{1}{2}\right)$$
+  (which has total measure $\frac{100024967}{272629233} \approx 0.367147$, covering **$73.43\%$ of $[0, 1/2)$**),
+  any point in the lower island $\left[\frac{280}{2187},\, \frac{648200}{4782969}\right)$ is forced by `0001001`
+  to fall strictly below $\frac{280}{2187}$ within $7$ steps, so any trajectory surviving in
+  $\mathcal{W}_{280/2187}$ for $3W + 27$ steps is confined to the upper island $[8/57, 1/2)$ for its
+  first $3W + 20$ steps—where Section 12's theorem forces escape! -/
+
+/-- Membership in the two-island punctured-$[0, 1/2)$ set
+$\mathcal{W}_{280/2187} = \left[\frac{280}{2187}, \frac{648200}{4782969}\right) \cup \left[\frac{8}{57}, \frac{1}{2}\right)$. -/
+def InTwoIslandPuncturedHalf (y : ℝ) : Prop :=
+  ((280 / 2187 : ℝ) ≤ y ∧ y < (648200 / 4782969 : ℝ)) ∨
+    ((8 / 57 : ℝ) ≤ y ∧ y < (1 / 2 : ℝ))
+
+/-- **Explicit $n \le 3W + 27$ Escape Bound & Infinite-Horizon Emptiness on the Two-Island Punctured-$[0, 1/2)$
+Set $\mathcal{W}_{280/2187}$ Reaching Down to $280/2187 \approx 0.12803$
+(`two_island_punctured_half_explicit_and_infinite_escape`)**:
+1. **Exact Width & $73.43\%$ Coverage of $[0, 1/2)$:**
+   The lower island has width $\frac{35840}{4782969}$, the separating gap below $8/57$ has width
+   $\frac{8}{57} - \frac{648200}{4782969} = \frac{43912}{90876411} < \frac{1}{200}$, and the combined
+   measure of $\mathcal{W}_{280/2187}$ is $\frac{100024967}{272629233} > 0.7342 \cdot \frac{1}{2}$.
+2. **Explicit $n \le 3W + 27$ Escape Bound:** For every $\xi \in [1, 2^W)$, there exists $n \le 3W + 27$
+   such that $\{\xi(3/2)^n\} \notin \mathcal{W}_{280/2187}$.
+3. **Unconditional Infinite-Horizon Escape:** For every $\xi > 0$ and $N_0 \in \mathbb{N}$, there exists
+   $n \ge N_0$ such that $\{\xi(3/2)^n\} \notin \mathcal{W}_{280/2187}$. -/
+theorem two_island_punctured_half_explicit_and_infinite_escape :
+    (((648200 / 4782969 : ℝ) - (280 / 2187 : ℝ)) + ((1 / 2 : ℝ) - (8 / 57 : ℝ)) =
+      (66729163 / 181752822 : ℝ) ∧
+      (8 / 57 : ℝ) - (648200 / 4782969 : ℝ) = (438784 / 90876411 : ℝ) ∧
+      (438784 / 90876411 : ℝ) < (1 / 200 : ℝ)) ∧
+    (∀ {ξ : ℝ} {W : ℕ},
+      (1 : ℝ) ≤ ξ → ξ < (2 : ℝ) ^ W →
+      ∃ n ≤ 3 * W + 27, ¬ InTwoIslandPuncturedHalf (Int.fract (ξ * (3 / 2 : ℝ) ^ n))) ∧
+    (∀ {ξ : ℝ}, 0 < ξ → ∀ N_0 : ℕ,
+      ∃ n ≥ N_0, ¬ InTwoIslandPuncturedHalf (Int.fract (ξ * (3 / 2 : ℝ) ^ n))) := by
+  have hmeas :
+      (((648200 / 4782969 : ℝ) - (280 / 2187 : ℝ)) + ((1 / 2 : ℝ) - (8 / 57 : ℝ)) =
+        (66729163 / 181752822 : ℝ) ∧
+      (8 / 57 : ℝ) - (648200 / 4782969 : ℝ) = (438784 / 90876411 : ℝ) ∧
+      (438784 / 90876411 : ℝ) < (1 / 200 : ℝ)) := by
+    refine ⟨by norm_num, by norm_num, by norm_num⟩
+  have hexplicit :
+      ∀ {ξ : ℝ} {W : ℕ},
+        (1 : ℝ) ≤ ξ → ξ < (2 : ℝ) ^ W →
+        ∃ n ≤ 3 * W + 27, ¬ InTwoIslandPuncturedHalf (Int.fract (ξ * (3 / 2 : ℝ) ^ n)) := by
+    intro ξ W hξ1 hξW
+    apply Classical.byContradiction
+    intro hno
+    have hin :
+        ∀ n ≤ 3 * W + 27,
+          InTwoIslandPuncturedHalf (Int.fract (ξ * (3 / 2 : ℝ) ^ n)) := by
+      intro n hn
+      exact Classical.byContradiction fun hout => hno ⟨n, hn, hout⟩
+    have hmem_all :
+        ∀ n ≤ 3 * W + 27,
+          (280 / 2187 : ℝ) ≤ dubY ξ 0 n ∧ dubY ξ 0 n < (1 / 2 : ℝ) := by
+      intro n hn
+      unfold dubY; rw [add_zero]
+      rcases hin n hn with ⟨hlo, hhi⟩ | ⟨hlo, hhi⟩
+      · exact ⟨hlo, by linarith⟩
+      · exact ⟨by linarith, hhi⟩
+    have hupper_20 :
+        ∀ k ≤ 3 * W + 20,
+          Int.fract (ξ * (3 / 2 : ℝ) ^ k) ∈ Set.Ico (8 / 57 : ℝ) (1 / 2 : ℝ) := by
+      intro k hk
+      rcases hin k (by omega) with hlow | hhigh
+      · exfalso
+        have hcat7 :=
+          catapult_into_death_band_seven_step_escape.2 (ε := (280 / 2187 : ℝ)) (ξ := ξ) (k := k)
+            (by norm_num) (fun r hr => hmem_all (k + r) (by omega))
+        have hhi_eq :
+            (280 + 128 * (280 / 2187 : ℝ)) / 2187 = (648200 / 4782969 : ℝ) := by
+          norm_num
+        rw [hhi_eq] at hcat7
+        unfold dubY at hcat7
+        rw [add_zero] at hcat7
+        exact hcat7 hlow
+      · exact hhigh
+    obtain ⟨n, hn_le, hout⟩ :=
+      punctured_eight_fifty_sevenths_explicit_and_infinite_escape.1 hξ1 hξW
+    have hn_in := hupper_20 n hn_le
+    rcases hout with hlt | hge
+    · linarith [hn_in.1]
+    · linarith [hn_in.2]
+  refine ⟨hmeas, hexplicit, ?_⟩
+  intro ξ hξ N_0
+  obtain ⟨k, W, hk_ge, _, hge1, hltW⟩ := exists_pow_shift_ge_one_and_lt_two_pow hξ N_0
+  obtain ⟨m, _, hm_out⟩ := hexplicit hge1 hltW
+  refine ⟨k + m, by omega, ?_⟩
+  have hmul : ξ * (3 / 2 : ℝ) ^ k * (3 / 2 : ℝ) ^ m = ξ * (3 / 2 : ℝ) ^ (k + m) := by
+    rw [pow_add, mul_assoc]
+  rwa [← hmul]
+
+/-! ## 18. Self-Refining Funnel Engine (`selfFunnelChainOk`) and Breaking the $70\%$ Union Barrier ($U_{17/24}$, Total Length $17/24 = 51/72 \approx 0.70833 > 70\%$)
+
+In Section 6, `funnelChainOk` checked `funnelStepOk D U Tk Tk1` against the fixed base union `U`.
+Because at step $k$ of the backward induction we already know $y_n \in T_k$ for all $0 \le n \le N - k$,
+both $y_n$ and $y_{n+1}$ lie in $T_k$! Defining `selfFunnelChainOk` to check `funnelStepOk D Tk Tk Tk1`
+prunes both endpoints simultaneously at every step, certifying our 7-interval union
+$$U_{17/24} = \left[0, \frac{1}{12}\right) \cup \left[\frac{1}{9}, \frac{11}{36}\right) \cup
+  \left[\frac{4}{9}, \frac{2}{3}\right) \cup \left[\frac{25}{36}, \frac{3}{4}\right) \cup
+  \left[\frac{7}{9}, \frac{19}{24}\right) \cup \left[\frac{5}{6}, \frac{8}{9}\right) \cup
+  \left[\frac{11}{12}, 1\right)$$
+of total length **$17/24 = 51/72 \approx 0.708333 > 70\% > 25/36$** with an explicit $n \le W + 17$
+escape bound! -/
+
+/-- Check a self-refining funnel chain `levels` starting at `Tk` and ending at `H` over denominator `D`,
+where each step checks `funnelStepOk D Tk Tk Tk1`. -/
+def selfFunnelChainOk (D : ℤ) (H : List (ℤ × ℤ)) :
+    List (ℤ × ℤ) → List (List (ℤ × ℤ)) → Bool
+  | Tk, [] => decide (Tk = H)
+  | Tk, Tk1 :: rest => funnelStepOk D Tk Tk Tk1 && selfFunnelChainOk D H Tk1 rest
+
+/-- **Soundness of Self-Refining Funnel Chains (`inRatIntervalList_terminal_of_selfFunnelChainOk`)**:
+If `selfFunnelChainOk D H Tk levels = true` and `y_n ∈ Tk` for all `n + K ≤ N`, then
+`y_n ∈ H` for all `n + K + levels.length ≤ N`. -/
+theorem inRatIntervalList_terminal_of_selfFunnelChainOk
+    {D : ℤ} {H : List (ℤ × ℤ)} {ξ : ℝ} {N : ℕ}
+    (hD : 0 < D) :
+    ∀ (levels : List (List (ℤ × ℤ))) (Tk : List (ℤ × ℤ)) (K : ℕ),
+      selfFunnelChainOk D H Tk levels = true →
+      (∀ n, n + K ≤ N → InRatIntervalList D Tk (dubY ξ 0 n)) →
+      ∀ n, n + K + levels.length ≤ N →
+        InRatIntervalList D H (dubY ξ 0 n)
+  | [], Tk, K, hchain, hTk, n, hn => by
+      unfold selfFunnelChainOk at hchain
+      rw [decide_eq_true_eq] at hchain
+      subst hchain
+      exact hTk n (by omega)
+  | Tk1 :: rest, Tk, K, hchain, hTk, n, hn => by
+      unfold selfFunnelChainOk at hchain
+      rw [Bool.and_eq_true] at hchain
+      have hTk1 : ∀ m, m + (K + 1) ≤ N → InRatIntervalList D Tk1 (dubY ξ 0 m) := by
+        intro m hm
+        exact inRatIntervalList_next_of_funnelStepOk hD hchain.1
+          (hTk m (by omega)) (hTk (m + 1) (by omega))
+      have ih :=
+        inRatIntervalList_terminal_of_selfFunnelChainOk hD rest Tk1 (K + 1) hchain.2 hTk1 n
+          (by simp [List.length] at hn ⊢; omega)
+      exact ih
+
+/-- Base 7-interval union $U_{17/24}$ of total length $17/24 = 51/72 \approx 0.70833 > 70\%$
+scaled by $D = 472392$. -/
+def unionSeventeenTwentyFourthsBase : List (ℤ × ℤ) :=
+  [(0, 39366), (52488, 144342), (209952, 314928), (328050, 354294),
+    (367416, 373977), (393660, 419904), (433026, 472392)]
+
+/-- 12-step self-refining backward funnel for $U_{17/24}$ over $D = 472392$ (at most 8 intervals per level). -/
+def funnelSeventeenTwentyFourthsLevels : List (List (ℤ × ℤ)) :=
+  [ [(0, 39366), (52488, 144342), (209952, 314928), (328050, 354294), (367416, 373977), (393660, 411156), (433026, 472392)],
+    [(0, 39366), (52488, 116640), (131220, 144342), (209952, 314928), (328050, 354294), (367416, 373977), (393660, 411156), (446148, 472392)],
+    [(0, 39366), (52488, 78732), (87480, 144342), (209952, 314928), (328050, 354294), (367416, 373977), (402408, 411156), (454896, 472392)],
+    [(0, 39366), (58320, 116640), (139968, 144342), (215784, 314928), (328050, 354294), (373248, 373977), (402408, 411156), (454896, 472392)],
+    [(0, 39366), (58320, 78732), (91368, 144342), (215784, 314928), (328050, 354294), (373248, 373977), (406296, 411156), (458784, 472392)],
+    [(0, 39366), (60912, 144342), (218376, 314928), (328050, 354294), (406296, 411156), (458784, 472392)],
+    [(0, 39366), (60912, 116640), (218376, 274104), (303048, 314928), (328050, 354294), (406296, 472392)],
+    [(0, 26244), (60912, 116640), (218376, 274104), (303048, 314928), (328050, 341172), (428328, 472392)],
+    [(0, 25272), (60912, 77760), (218376, 235224), (303048, 314928), (328050, 340200), (443016, 472392)],
+    [(0, 16848), (61236, 69336), (218700, 226800), (303048, 331776), (452808, 472392)],
+    [(0, 11232), (61236, 63720), (218700, 221184), (303048, 326160), (459336, 472392)],
+    [(0, 7488), (303264, 304920), (306224, 322416), (460728, 472392)] ]
+
+def funnelSeventeenTwentyFourthsT12 : List (ℤ × ℤ) :=
+  [(0, 7488), (303264, 304920), (306224, 322416), (460728, 472392)]
+
+def funnelSeventeenTwentyFourthsF1 : List (ℤ × ℤ) :=
+  [(0, 7488), (460728, 472392)]
+
+set_option maxHeartbeats 400000 in
+private theorem funnelSeventeenTwentyFourths_valid :
+    selfFunnelChainOk 472392 funnelSeventeenTwentyFourthsT12 unionSeventeenTwentyFourthsBase
+      funnelSeventeenTwentyFourthsLevels = true ∧
+    forwardStepOk 472392 funnelSeventeenTwentyFourthsT12 funnelSeventeenTwentyFourthsT12
+      funnelSeventeenTwentyFourthsF1 = true := by
+  decide
+
+/-- Predicate for membership in the 7-interval union
+$U_{17/24} = [0, 1/12) \cup [1/9, 11/36) \cup [4/9, 2/3) \cup [25/36, 3/4) \cup [7/9, 19/24) \cup [5/6, 8/9) \cup [11/12, 1)$
+of total length $17/24 = 51/72 \approx 0.70833 > 70\% > 25/36$. -/
+def InUnionSeventeenTwentyFourths (y : ℝ) : Prop :=
+  (0 ≤ y ∧ y < (1 / 12 : ℝ)) ∨
+    ((1 / 9 : ℝ) ≤ y ∧ y < (11 / 36 : ℝ)) ∨
+    ((4 / 9 : ℝ) ≤ y ∧ y < (2 / 3 : ℝ)) ∨
+    ((25 / 36 : ℝ) ≤ y ∧ y < (3 / 4 : ℝ)) ∨
+    ((7 / 9 : ℝ) ≤ y ∧ y < (19 / 24 : ℝ)) ∨
+    ((5 / 6 : ℝ) ≤ y ∧ y < (8 / 9 : ℝ)) ∨
+    ((11 / 12 : ℝ) ≤ y ∧ y < (1 : ℝ))
+
+/-- **Explicit $n \le W + 17$ Escape Bound & Infinite-Horizon Emptiness for the $17/24 > 70\%$
+7-Interval Union $U_{17/24}$ (`union_seventeen_twenty_fourths_explicit_and_infinite_escape`)**:
+1. **Explicit $n \le W + 17$ Escape Bound:** For every $\xi \in [1, 2^W)$, there exists an index
+   $n \le W + 17$ such that $\{\xi(3/2)^n\} \notin U_{17/24}$.
+2. **Infinite-Horizon Emptiness:** For every $\xi > 0$ and $N_0 \in \mathbb{N}$, there exists
+   $n \ge N_0$ such that $\{\xi(3/2)^n\} \notin U_{17/24}$. -/
+theorem union_seventeen_twenty_fourths_explicit_and_infinite_escape :
+    (∀ {ξ : ℝ} {W : ℕ}, (1 : ℝ) ≤ ξ → ξ < (2 : ℝ) ^ W →
+      ∃ n ≤ W + 17, ¬ InUnionSeventeenTwentyFourths (Int.fract (ξ * (3 / 2 : ℝ) ^ n))) ∧
+    (∀ {ξ : ℝ}, 0 < ξ → ∀ N_0 : ℕ,
+      ∃ n ≥ N_0, ¬ InUnionSeventeenTwentyFourths (Int.fract (ξ * (3 / 2 : ℝ) ^ n))) := by
+  have hexplicit :
+      ∀ {ξ : ℝ} {W : ℕ}, (1 : ℝ) ≤ ξ → ξ < (2 : ℝ) ^ W →
+        ∃ n ≤ W + 17, ¬ InUnionSeventeenTwentyFourths (Int.fract (ξ * (3 / 2 : ℝ) ^ n)) := by
+    intro ξ W hξ1 hξW
+    by_contra hno
+    push_neg at hno
+    set N := W + 17
+    have hmemU : ∀ n ≤ N, InRatIntervalList 472392 unionSeventeenTwentyFourthsBase (dubY ξ 0 n) := by
+      intro n hn
+      have hu := hno n hn
+      unfold InUnionSeventeenTwentyFourths at hu
+      unfold InRatIntervalList unionSeventeenTwentyFourthsBase dubY
+      rw [add_zero]
+      rcases hu with ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩ | ⟨h1, h2⟩
+      · exact ⟨(0, 39366), by simp, by linarith, by linarith⟩
+      · exact ⟨(52488, 144342), by simp, by linarith, by linarith⟩
+      · exact ⟨(209952, 314928), by simp, by linarith, by linarith⟩
+      · exact ⟨(328050, 354294), by simp, by linarith, by linarith⟩
+      · exact ⟨(367416, 373977), by simp, by linarith, by linarith⟩
+      · exact ⟨(393660, 419904), by simp, by linarith, by linarith⟩
+      · exact ⟨(433026, 472392), by simp, by linarith, by linarith⟩
+    have hT12 :=
+      inRatIntervalList_terminal_of_selfFunnelChainOk (N := N) (by decide : (0 : ℤ) < 472392)
+        funnelSeventeenTwentyFourthsLevels unionSeventeenTwentyFourthsBase 0
+        funnelSeventeenTwentyFourths_valid.1 (fun n hn => hmemU n (by omega))
+    have hF1 :
+        ∀ n, 1 ≤ n → n ≤ W + 5 →
+          dubY ξ 0 n < (1 / 5 : ℝ) ∨ (4 / 5 : ℝ) ≤ dubY ξ 0 n := by
+      intro n hn1 hn5
+      obtain ⟨m, rfl⟩ : ∃ m, n = m + 1 := ⟨n - 1, by omega⟩
+      have hmem_f1 :=
+        inRatIntervalList_next_of_forwardStepOk (by decide) funnelSeventeenTwentyFourths_valid.2
+          (hT12 m (by simp [funnelSeventeenTwentyFourthsLevels, N]; omega))
+          (hT12 (m + 1) (by simp [funnelSeventeenTwentyFourthsLevels, N]; omega))
+      unfold InRatIntervalList funnelSeventeenTwentyFourthsF1 at hmem_f1
+      rcases hmem_f1 with ⟨ab, hab_mem, hlo, hhi⟩
+      simp only [List.mem_cons, List.not_mem_nil, or_false] at hab_mem
+      rcases hab_mem with rfl | rfl
+      · dsimp at hlo hhi; push_cast at hlo hhi; exact Or.inl (by linarith)
+      · dsimp at hlo hhi; push_cast at hlo hhi; exact Or.inr (by linarith)
+    have hstep_eq : ∀ k, 1 ≤ k → k ≤ W + 3 → dubCarry ξ 0 (k + 1) = dubCarry ξ 0 k := by
+      intro k hk1 hk3
+      have hk0 := hF1 k hk1 (by omega)
+      have hk1_mem := hF1 (k + 1) (by omega) (by omega)
+      have hk2_mem := hF1 (k + 2) (by omega) (by omega)
+      have hs0 := nearest_int_fifth_carry_step hk0 hk1_mem
+      have hs1 := nearest_int_fifth_carry_step hk1_mem hk2_mem
+      rcases hk0 with hlt | hge
+      · rcases hs0.1 hlt with ⟨hc0, hlt1⟩
+        rcases hs1.1 hlt1 with ⟨hc1, _⟩
+        omega
+      · rcases hs0.2 hge with ⟨hc0, hge1⟩
+        rcases hs1.2 hge1 with ⟨hc1, _⟩
+        omega
+    have hmatch : ∀ t < W + 2, dubCarry ξ 0 (2 + t) = dubCarry ξ 0 (3 + t) := by
+      intro t ht
+      have hidx : 3 + t = (2 + t) + 1 := by omega
+      rw [hidx, hstep_eq (2 + t) (by omega) (by omega)]
+    have hexp :=
+      dubX_repeated_window_exp_bound (i := 2) (j := 3) (L := W + 2)
+        hξ1 hξW (by norm_num) (by norm_num) le_rfl (by omega) hmatch
+    have hpow : 3 ^ 3 * 2 ^ W < 2 ^ ((W + 2) + 3) := by
+      calc
+        3 ^ 3 * 2 ^ W = 27 * 2 ^ W := by ring
+        _ < 32 * 2 ^ W := Nat.mul_lt_mul_of_pos_right (by decide) (Nat.pow_pos (by decide))
+        _ = 2 ^ ((W + 2) + 3) := by
+          have h : (W + 2) + 3 = 5 + W := by omega
+          rw [h, Nat.pow_add]
+    omega
+  refine ⟨hexplicit, ?_⟩
+  intro ξ hξ N_0
+  obtain ⟨k, W, hk_ge, _, hge1, hltW⟩ := exists_pow_shift_ge_one_and_lt_two_pow hξ N_0
+  obtain ⟨m, _, hm_out⟩ := hexplicit hge1 hltW
+  refine ⟨k + m, by omega, ?_⟩
+  have hmul : ξ * (3 / 2 : ℝ) ^ k * (3 / 2 : ℝ) ^ m = ξ * (3 / 2 : ℝ) ^ (k + m) := by
+    rw [pow_add, mul_assoc]
+  rwa [← hmul]
+
+/-! ## 19. Arbitrary $K$-Defect Simultaneous Valuation Lock Tower (`rungDefectCocycle`, `general_rung_multi_defect_valuation_tower`)
+
+Finally, we generalize Section 16's two-defect simultaneous valuation lock to an arbitrary
+**$K$-block multi-defect tower** along any `ValidBlockChain a_0 s u K` with $s(k) \ge g$ for all $k < K$:
+1. **Universal $m$-Block Cocycle Identity (`rungDefectCocycle_tower_identity`):**
+   Defining `rungDefectCocycle g s m` recursively via
+   $$\text{rungDefectCocycle}(g, s, 0) = 0,$$
+   $$\text{rungDefectCocycle}(g, s, m + 1) =
+     3^{s(m)} \text{rungDefectCocycle}(g, s, m) +
+       2^{\text{blockSteps}(s, m) + g} 3^{g - 1}\left(3^{s(m) - g} - 2^{s(m) - g}\right)$$
+   (where pure blocks $s(m) = g$ contribute $0$ automatically), every step $m \le K$ satisfies:
+   $$2^{\text{blockSteps}(s, m)} \cdot I_g\big(\text{orbit}(a_0, \text{blockSteps}(s, m))\big) +
+     \text{rungDefectCocycle}(g, s, m) =
+     3^{\text{blockSteps}(s, m)} \cdot I_g(a_0).$$
+2. **Simultaneous Multi-Defect Valuation Lock Tower (`general_rung_multi_defect_valuation_tower`):**
+   At **every** defect index $m < K$ with $s(m) \ge g + 1$ simultaneously, the starting seed $a_0$
+   must satisfy:
+   $$\text{ExactTwoPowLock}\Big(\text{blockSteps}(s, m) + g,\;\;
+     3^{\text{blockSteps}(s, m)} \cdot I_g(a_0) - \text{rungDefectCocycle}(g, s, m)\Big),$$
+   with $2^{\text{blockSteps}(s, m) + g} \le 3^{\text{blockSteps}(s, m)} \cdot I_g(a_0) - \text{rungDefectCocycle}(g, s, m)$
+   and pairwise incompatibility against any alternative exponent $E' \ne \text{blockSteps}(s, m) + g$. -/
+
+/-- Accumulated Rung-$g$ defect cocycle across the first $m$ blocks of `s`. -/
+def rungDefectCocycle (g : ℕ) (s : ℕ → ℕ) : ℕ → ℕ
+  | 0 => 0
+  | m + 1 =>
+      3 ^ (s m) * rungDefectCocycle g s m +
+        2 ^ (blockSteps s m + g) * 3 ^ (g - 1) * (3 ^ (s m - g) - 2 ^ (s m - g))
+
+/-- **Universal $m$-Block Rung-$g$ Cocycle Tower Identity (`rungDefectCocycle_tower_identity`)**:
+Along any `ValidBlockChain a_0 s u K` with $s(k) \ge g \ge 1$ for all $k < K$, every horizon
+$m \le K$ satisfies:
+$$2^{\text{blockSteps}(s, m)} \cdot \text{rungAffInv}\big(g,\, \text{orbit}(a_0, \text{blockSteps}(s, m))\big) +
+  \text{rungDefectCocycle}(g, s, m) =
+  3^{\text{blockSteps}(s, m)} \cdot \text{rungAffInv}(g, a_0).$$ -/
+theorem rungDefectCocycle_tower_identity
+    {g a_0 K m : ℕ} {s u : ℕ → ℕ}
+    (hg : 1 ≤ g) (hmK : m ≤ K)
+    (hchain : ValidBlockChain a_0 s u K)
+    (hge_g : ∀ k < K, g ≤ s k) :
+    2 ^ (blockSteps s m) * rungAffInv g (orbit a_0 (blockSteps s m)) +
+      rungDefectCocycle g s m =
+      3 ^ (blockSteps s m) * rungAffInv g a_0 := by
+  induction m with
+  | zero =>
+      simp [blockSteps, orbit, rungDefectCocycle]
+  | succ m ih =>
+      have ihm := ih (by omega)
+      rcases hchain m (by omega) with ⟨_, _, hstep_m⟩
+      have hgm : g ≤ s m := hge_g m (by omega)
+      have hdef_m := rungAffInv_general_defect_step_identity hg hgm hstep_m
+      have hsteps_succ : blockSteps s (m + 1) = blockSteps s m + s m := rfl
+      unfold rungDefectCocycle
+      rw [hsteps_succ, orbit_add, Nat.pow_add 2 (blockSteps s m) (s m),
+        Nat.pow_add 2 (blockSteps s m) g, Nat.pow_add 3 (blockSteps s m) (s m)]
+      calc
+        (2 ^ blockSteps s m * 2 ^ s m) * rungAffInv g (orbit (orbit a_0 (blockSteps s m)) (s m)) +
+            (3 ^ s m * rungDefectCocycle g s m +
+              (2 ^ blockSteps s m * 2 ^ g) * 3 ^ (g - 1) * (3 ^ (s m - g) - 2 ^ (s m - g)))
+            = 2 ^ blockSteps s m *
+                (2 ^ s m * rungAffInv g (orbit (orbit a_0 (blockSteps s m)) (s m)) +
+                  2 ^ g * 3 ^ (g - 1) * (3 ^ (s m - g) - 2 ^ (s m - g))) +
+              3 ^ s m * rungDefectCocycle g s m := by
+          ring
+        _ = 2 ^ blockSteps s m * (3 ^ s m * rungAffInv g (orbit a_0 (blockSteps s m))) +
+              3 ^ s m * rungDefectCocycle g s m := by
+          rw [hdef_m]
+        _ = 3 ^ s m *
+              (2 ^ blockSteps s m * rungAffInv g (orbit a_0 (blockSteps s m)) +
+                rungDefectCocycle g s m) := by
+          ring
+        _ = 3 ^ s m * (3 ^ blockSteps s m * rungAffInv g a_0) := by
+          rw [ihm]
+        _ = (3 ^ blockSteps s m * 3 ^ s m) * rungAffInv g a_0 := by
+          ring
+
+/-- **Simultaneous Multi-Defect Valuation Lock Tower (`general_rung_multi_defect_valuation_tower`)**:
+Let $g \ge 1$ and suppose `ValidBlockChain a_0 s u K` satisfies $s(k) \ge g$ for all $k < K$.
+Then for **every** defect index $m < K$ with $s(m) \ge g + 1$ simultaneously:
+1. **Exact Shifted 2-Adic Valuation Lock at Step Sum $\text{blockSteps}(s, m) + g$:**
+   $$\text{ExactTwoPowLock}\Big(\text{blockSteps}(s, m) + g,\;\;
+     3^{\text{blockSteps}(s, m)} \cdot \text{rungAffInv}(g, a_0) - \text{rungDefectCocycle}(g, s, m)\Big),$$
+2. **Exponential Residual Lower Bound:**
+   $$2^{\text{blockSteps}(s, m) + g} \le
+     3^{\text{blockSteps}(s, m)} \cdot \text{rungAffInv}(g, a_0) - \text{rungDefectCocycle}(g, s, m),$$
+3. **Horizon Exponent Uniqueness:**
+   For every $E' \ne \text{blockSteps}(s, m) + g$,
+   $$\neg\,\text{ExactTwoPowLock}\Big(E',\;\;
+     3^{\text{blockSteps}(s, m)} \cdot \text{rungAffInv}(g, a_0) - \text{rungDefectCocycle}(g, s, m)\Big).$$ -/
+theorem general_rung_multi_defect_valuation_tower
+    {g a_0 K : ℕ} {s u : ℕ → ℕ}
+    (hg : 1 ≤ g)
+    (hchain : ValidBlockChain a_0 s u K)
+    (hge_g : ∀ k < K, g ≤ s k) :
+    ∀ m < K, g + 1 ≤ s m →
+      ExactTwoPowLock (blockSteps s m + g)
+        (3 ^ (blockSteps s m) * rungAffInv g a_0 - rungDefectCocycle g s m) ∧
+      2 ^ (blockSteps s m + g) ≤
+        3 ^ (blockSteps s m) * rungAffInv g a_0 - rungDefectCocycle g s m ∧
+      (∀ E' : ℕ, E' ≠ blockSteps s m + g →
+        ¬ ExactTwoPowLock E'
+            (3 ^ (blockSteps s m) * rungAffInv g a_0 - rungDefectCocycle g s m)) := by
+  intro m hmK hdef_m
+  have htower := rungDefectCocycle_tower_identity hg (le_of_lt hmK) hchain hge_g
+  have hsub :
+      3 ^ (blockSteps s m) * rungAffInv g a_0 - rungDefectCocycle g s m =
+        2 ^ (blockSteps s m) * rungAffInv g (orbit a_0 (blockSteps s m)) := by
+    omega
+  rcases hchain m hmK with ⟨_, _, hstep_m⟩
+  have hval_m := rungAffInv_single_defect_valuation hg hdef_m hstep_m
+  rcases hval_m.1 with ⟨q0, hq0⟩
+  have hdvd :
+      2 ^ (blockSteps s m + g) ∣
+        2 ^ (blockSteps s m) * rungAffInv g (orbit a_0 (blockSteps s m)) := by
+    refine ⟨q0, ?_⟩
+    rw [hq0, Nat.pow_add]
+    ring
+  have hnot_dvd :
+      ¬ (2 ^ (blockSteps s m + g + 1) ∣
+          2 ^ (blockSteps s m) * rungAffInv g (orbit a_0 (blockSteps s m))) := by
+    rintro ⟨q1, hq1⟩
+    have hpow_split :
+        2 ^ (blockSteps s m + g + 1) = 2 ^ (blockSteps s m) * 2 ^ (g + 1) := by
+      rw [← Nat.pow_add]
+      have h : blockSteps s m + g + 1 = blockSteps s m + (g + 1) := by omega
+      rw [h]
+    rw [hpow_split, mul_assoc] at hq1
+    have hcancel := Nat.eq_of_mul_eq_mul_left (Nat.pow_pos (by decide)) hq1
+    exact hval_m.2 ⟨q1, hcancel⟩
+  have hlock :
+      ExactTwoPowLock (blockSteps s m + g)
+        (3 ^ (blockSteps s m) * rungAffInv g a_0 - rungDefectCocycle g s m) := by
+    rw [hsub]
+    exact ⟨hdvd, hnot_dvd⟩
+  have hpos_rhs :
+      0 < 2 ^ (blockSteps s m) * rungAffInv g (orbit a_0 (blockSteps s m)) := by
+    have h1 : 0 < 2 ^ (blockSteps s m) := Nat.pow_pos (by decide)
+    have h2 : 0 < rungAffInv g (orbit a_0 (blockSteps s m)) := by
+      unfold rungAffInv
+      have h3 : 0 < 3 ^ (g - 1) := Nat.pow_pos (by decide)
+      omega
+    exact Nat.mul_pos h1 h2
+  have hle :
+      2 ^ (blockSteps s m + g) ≤
+        3 ^ (blockSteps s m) * rungAffInv g a_0 - rungDefectCocycle g s m := by
+    rw [hsub]
+    exact Nat.le_of_dvd hpos_rhs hdvd
+  refine ⟨hlock, hle, ?_⟩
+  intro E' hne hlock'
+  exact exactTwoPowLock_incompatible_of_ne hne ⟨hlock', hlock⟩
+
 end Mahler.DubickasExtension
+
 
 
 
