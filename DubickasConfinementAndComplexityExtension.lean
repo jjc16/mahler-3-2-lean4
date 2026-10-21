@@ -13115,6 +13115,332 @@ theorem dense_core_seed_free_two_return_loop_syzygy_and_congruence
   rw [hlhs, hrhs, Nat.add_mul_mod_self_left, Nat.add_mul_mod_self_left] at hmod_eq
   exact hmod_eq
 
+/-!
+## Section 35: Universal 3-Step Maximal Branching Loop Spawning, the Seed-Free Bit-$M_A$ Flip Law,
+## and the Seed-Free Two-Loop 7-Bit Spectral Gap Dichotomy on $\{1, 2\}^\mathbb{N}$
+
+In Section 34, we established the seed-free congruence
+$(C_B \tilde{\Delta}(j, r_1+d) + C_A D_B) \bmod 2^{M_A} = (C_A \tilde{\Delta}(j, r_1'+d') + C_B D_A) \bmod 2^{M_A}$
+between any two return loops $A = (r_1, d, K)$ and $B = (r_1', d', K')$ with $M_A \le M_B$.
+In this section, we push that seed-free obstruction to the **next binary bits above $M_A$** and
+prove that **every 3-step window in any Dense-Core trajectory automatically spawns a maximal
+branching return loop**:
+
+1. **Universal 3-Step Window Spawning of Maximal Branching Return Loops
+   (`dense_core_every_three_step_window_spawns_maximal_branching_return_loop`)**:
+   - Whenever $r_1 \in \mathbb{N}$ and $d \ge 1$ satisfy $j(r_1) = j(r_1 + d)$, strict suffix
+     aperiodicity guarantees a maximal matching horizon $K \le 6 (r_1 + d) + W + 3$ where
+     $(\forall t \le K,\; j(r_1 + t) = j(r_1 + d + t)) \land j(r_1 + K + 1) \ne j(r_1 + d + K + 1)$,
+     at which the Top-Part quotient $Q_A = V(r_1 + d) / 2^{E_K + 7} - V(r_1) / 2^{E_K + 7}$ is
+     **odd** ($Q_A \bmod 2 = 1$).
+   - By binary Pigeonhole on $\{j(r_0), j(r_0 + 1), j(r_0 + 2)\} \subseteq \{1, 2\}$, **every**
+     3-step window $[r_0, r_0 + 2]$ in the trajectory spawns such a maximal branching return loop
+     with $r_1 \in \{r_0, r_0 + 1\}$ and $d \in \{1, 2\}$.
+
+2. **Seed-Free Bit-$M_A$ Flip Law and Two-Loop 7-Bit Spectral Gap Dichotomy
+   (`dense_core_seed_free_two_loop_bit_flip_and_spectral_gap`)**:
+   For any two return loops $A = (r_1, d, K)$ and $B = (r_1', d', K')$, let
+   $\text{LHS}_{A, B} = C_B \cdot \tilde{\Delta}(j, r_1 + d) + C_A \cdot D_B$ and
+   $\text{RHS}_{A, B} = C_A \cdot \tilde{\Delta}(j, r_1' + d') + C_B \cdot D_A$:
+   - **Exact Bit-$M_A$ Flip Law (when Loop A branches at $K + 1$ and $M_A < M_B$)**:
+     Because both $C_B$ and $Q_A$ are odd, $2^{M_A} C_B Q_A \equiv 2^{M_A} \pmod{2^{M_A + 1}}$,
+     forcing $\text{LHS}_{A, B}$ and $\text{RHS}_{A, B}$ to **disagree at bit $M_A$**:
+     $$\big(\text{LHS}_{A, B} + 2^{M_A}\big) \bmod 2^{M_A + 1} = \text{RHS}_{A, B} \bmod 2^{M_A + 1}
+       \quad \text{and} \quad
+       \text{LHS}_{A, B} \bmod 2^{M_A + 1} \ne \text{RHS}_{A, B} \bmod 2^{M_A + 1}.$$
+   - **7-Bit Jump (when Loop A stays together at $K + 1$ and $M_A + 7 \le M_B$)**:
+     Because $128 \mid Q_A$, the seed-free congruence jumps by $+7$ bits to modulo $2^{M_A + 7}$:
+     $$\text{LHS}_{A, B} \bmod 2^{M_A + 7} = \text{RHS}_{A, B} \bmod 2^{M_A + 7}.$$
+   - **Seed-Free Two-Loop Spectral Gap Dichotomy (when $M_A + 7 \le M_B$)**:
+     $$j(r_1 + K + 1) = j(r_1 + d + K + 1)
+       \;\Longleftrightarrow\; \text{LHS}_{A, B} \bmod 2^{M_A + 1} = \text{RHS}_{A, B} \bmod 2^{M_A + 1}
+       \;\Longleftrightarrow\; \text{LHS}_{A, B} \bmod 2^{M_A + 7} = \text{RHS}_{A, B} \bmod 2^{M_A + 7}.$$
+-/
+
+/-- **Universal 3-Step Window Spawning of Maximal Branching Return Loops
+(`dense_core_every_three_step_window_spawns_maximal_branching_return_loop`)**:
+Suppose $1 \le V(0) < 2^W$, $j(r) \in \{1, 2\}$, and
+$2^{3 j(r + 1) + 4} V(r + 1) + 1 = 3^{3 j(r) + 4} V(r)$ for all $r \in \mathbb{N}$.
+1. **Maximal Branching Horizon for Any Local Repeat**:
+   Whenever $r_1 \in \mathbb{N}$ and $1 \le d$ satisfy $j(r_1) = j(r_1 + d)$, there exists
+   $K \le 6 (r_1 + d) + W + 3$ such that
+   $$(\forall t \le K,\; j(r_1 + t) = j(r_1 + d + t)) \;\land\; j(r_1 + K + 1) \ne j(r_1 + d + K + 1),$$
+   and at this maximal $K$, with $E_K = \text{defectStepSum}(\text{fun } t \Rightarrow j(r_1 + 1 + t),\, K)$,
+   the Top-Part jump $Q_A = V(r_1 + d) / 2^{E_K + 7} - V(r_1) / 2^{E_K + 7}$ satisfies $Q_A \bmod 2 = 1$.
+2. **Every 3-Step Window Spawns a Maximal Branching Return Loop**:
+   For every window start $r_0 \in \mathbb{N}$, there exist $r_1 \in \mathbb{N}$, $d \in \mathbb{N}$,
+   and $K \in \mathbb{N}$ such that $r_0 \le r_1 \le r_0 + 1$, $1 \le d \le 2$,
+   $K \le 6 (r_1 + d) + W + 3$,
+   $$(\forall t \le K,\; j(r_1 + t) = j(r_1 + d + t)) \;\land\; j(r_1 + K + 1) \ne j(r_1 + d + K + 1),$$
+   and $(V(r_1 + d) / 2^{E_K + 7} - V(r_1) / 2^{E_K + 7}) \bmod 2 = 1$. -/
+theorem dense_core_every_three_step_window_spawns_maximal_branching_return_loop
+    {V j : ℕ → ℕ} {W : ℕ}
+    (hV0_pos : 1 ≤ V 0) (hV0_lt : V 0 < 2 ^ W)
+    (hj : ∀ r : ℕ, j r = 1 ∨ j r = 2)
+    (hrec : ∀ r : ℕ, 2 ^ (3 * j (r + 1) + 4) * V (r + 1) + 1 = 3 ^ (3 * j r + 4) * V r) :
+    (∀ r_1 d : ℕ, 1 ≤ d → j r_1 = j (r_1 + d) →
+      ∃ K ≤ 6 * (r_1 + d) + W + 3,
+        (∀ t ≤ K, j (r_1 + t) = j (r_1 + d + t)) ∧
+        j (r_1 + K + 1) ≠ j (r_1 + d + K + 1) ∧
+        (V (r_1 + d) / 2 ^ (defectStepSum (fun t => j (r_1 + 1 + t)) K + 7) -
+          V r_1 / 2 ^ (defectStepSum (fun t => j (r_1 + 1 + t)) K + 7)) % 2 = 1) ∧
+    (∀ r_0 : ℕ,
+      ∃ r_1 d K : ℕ,
+        r_0 ≤ r_1 ∧ r_1 ≤ r_0 + 1 ∧ 1 ≤ d ∧ d ≤ 2 ∧
+        K ≤ 6 * (r_1 + d) + W + 3 ∧
+        (∀ t ≤ K, j (r_1 + t) = j (r_1 + d + t)) ∧
+        j (r_1 + K + 1) ≠ j (r_1 + d + K + 1) ∧
+        (V (r_1 + d) / 2 ^ (defectStepSum (fun t => j (r_1 + 1 + t)) K + 7) -
+          V r_1 / 2 ^ (defectStepSum (fun t => j (r_1 + 1 + t)) K + 7)) % 2 = 1) := by
+  have hexists_max_match :
+      ∀ (r_1 d N : ℕ),
+        j r_1 = j (r_1 + d) →
+        (∃ t ≤ N, j (r_1 + t) ≠ j (r_1 + d + t)) →
+        ∃ K ≤ N, (∀ t ≤ K, j (r_1 + t) = j (r_1 + d + t)) ∧
+          j (r_1 + K + 1) ≠ j (r_1 + d + K + 1) := by
+    intro r_1 d N h0
+    induction N with
+    | zero =>
+        rintro ⟨t, ht0, hne⟩
+        have ht : t = 0 := by omega
+        subst ht
+        simp only [Nat.add_zero] at hne
+        exact False.elim (hne h0)
+    | succ N ih =>
+        rintro ⟨t, ht_le, hne⟩
+        by_cases h_earlier : ∃ s ≤ N, j (r_1 + s) ≠ j (r_1 + d + s)
+        · rcases ih h_earlier with ⟨K, hKN, hmatchK, hneK⟩
+          exact ⟨K, by omega, hmatchK, hneK⟩
+        · push_neg at h_earlier
+          have ht_eq : t = N + 1 := by
+            rcases Nat.eq_or_lt_of_le ht_le with rfl | hlt
+            · rfl
+            · exact False.elim (hne (h_earlier t (by omega)))
+          subst ht_eq
+          refine ⟨N, by omega, h_earlier, ?_⟩
+          have hidx1 : r_1 + N + 1 = r_1 + (N + 1) := by omega
+          have hidx2 : r_1 + d + N + 1 = r_1 + d + (N + 1) := by omega
+          rw [hidx1, hidx2]
+          exact hne
+  have hpart1 :
+      ∀ r_1 d : ℕ, 1 ≤ d → j r_1 = j (r_1 + d) →
+        ∃ K ≤ 6 * (r_1 + d) + W + 3,
+          (∀ t ≤ K, j (r_1 + t) = j (r_1 + d + t)) ∧
+          j (r_1 + K + 1) ≠ j (r_1 + d + K + 1) ∧
+          (V (r_1 + d) / 2 ^ (defectStepSum (fun t => j (r_1 + 1 + t)) K + 7) -
+            V r_1 / 2 ^ (defectStepSum (fun t => j (r_1 + 1 + t)) K + 7)) % 2 = 1 := by
+    intro r_1 d hd1 hj0
+    have hr12 : r_1 < r_1 + d := by omega
+    have hdiv := ((no_subcritical_log_threshold_dense_core hV0_pos hj hrec).1
+      W r_1 (r_1 + d) hV0_lt hr12).1
+    rcases hexists_max_match r_1 d (6 * (r_1 + d) + W + 3) hj0 hdiv with ⟨K, hK_le, hmatchK, hneK⟩
+    have htop := dense_core_repeated_window_top_part_isolation_and_squeeze
+      hV0_pos hV0_lt hj hrec hr12 hmatchK
+    have hodd_Q := htop.2.1.1 hneK
+    exact ⟨K, hK_le, hmatchK, hneK, hodd_Q⟩
+  refine ⟨hpart1, ?_⟩
+  intro r_0
+  have hpig :
+      j r_0 = j (r_0 + 1) ∨ j r_0 = j (r_0 + 2) ∨ j (r_0 + 1) = j (r_0 + 1 + 1) := by
+    have hidx : r_0 + 1 + 1 = r_0 + 2 := by omega
+    rw [hidx]
+    rcases hj r_0 with h0 | h0 <;>
+      rcases hj (r_0 + 1) with h1 | h1 <;>
+      rcases hj (r_0 + 2) with h2 | h2 <;> omega
+  rcases hpig with h01 | h02 | h12
+  · rcases hpart1 r_0 1 le_rfl h01 with ⟨K, hK_le, hmatchK, hneK, hoddQ⟩
+    exact ⟨r_0, 1, K, le_rfl, by omega, le_rfl, by omega, hK_le, hmatchK, hneK, hoddQ⟩
+  · rcases hpart1 r_0 2 (by decide) h02 with ⟨K, hK_le, hmatchK, hneK, hoddQ⟩
+    exact ⟨r_0, 2, K, le_rfl, by omega, by decide, le_rfl, hK_le, hmatchK, hneK, hoddQ⟩
+  · rcases hpart1 (r_0 + 1) 1 le_rfl h12 with ⟨K, hK_le, hmatchK, hneK, hoddQ⟩
+    exact ⟨r_0 + 1, 1, K, by omega, le_rfl, le_rfl, by omega, hK_le, hmatchK, hneK, hoddQ⟩
+
+/-- **Seed-Free Bit-$M_A$ Flip Law and Two-Loop 7-Bit Spectral Gap Dichotomy on $\{1, 2\}^\mathbb{N}$
+(`dense_core_seed_free_two_loop_bit_flip_and_spectral_gap`)**:
+Suppose $1 \le V(0) < 2^W$, $j(r) \in \{1, 2\}$, and the trajectory contains two return loops:
+- **Loop A**: $(r_1, d, K)$ with $1 \le d$ and $\forall t \le K,\; j(r_1 + t) = j(r_1 + d + t)$,
+- **Loop B**: $(r_1', d', K')$ with $1 \le d'$ and $\forall t \le K',\; j(r_1' + t) = j(r_1' + d' + t)$.
+Let $\text{LHS}_{A, B} = C_B \cdot \text{normalizedDefectAcc}(j, r_1 + d) + C_A \cdot D_B$ and
+$\text{RHS}_{A, B} = C_A \cdot \text{normalizedDefectAcc}(j, r_1' + d') + C_B \cdot D_A$.
+Then:
+1. **Exact Bit-$M_A$ Flip Law When Loop A Branches ($j(r_1 + K + 1) \ne j(r_1 + d + K + 1)$ and $M_A < M_B$)**:
+   $$\big(\text{LHS}_{A, B} + 2^{M_A}\big) \bmod 2^{M_A + 1} = \text{RHS}_{A, B} \bmod 2^{M_A + 1}
+     \quad \text{and} \quad
+     \text{LHS}_{A, B} \bmod 2^{M_A + 1} \ne \text{RHS}_{A, B} \bmod 2^{M_A + 1}.$$
+2. **7-Bit Jump When Loop A Does Not Branch ($j(r_1 + K + 1) = j(r_1 + d + K + 1)$ and $M_A + 7 \le M_B$)**:
+   $$\text{LHS}_{A, B} \bmod 2^{M_A + 7} = \text{RHS}_{A, B} \bmod 2^{M_A + 7}
+     \quad \text{and} \quad
+     \text{LHS}_{A, B} \bmod 2^{M_A + 1} = \text{RHS}_{A, B} \bmod 2^{M_A + 1}.$$
+3. **Seed-Free Two-Loop Spectral Gap Dichotomy (when $M_A + 7 \le M_B$)**:
+   $$j(r_1 + K + 1) = j(r_1 + d + K + 1)
+     \;\Longleftrightarrow\; \text{LHS}_{A, B} \bmod 2^{M_A + 1} = \text{RHS}_{A, B} \bmod 2^{M_A + 1}
+     \;\Longleftrightarrow\; \text{LHS}_{A, B} \bmod 2^{M_A + 7} = \text{RHS}_{A, B} \bmod 2^{M_A + 7}.$$ -/
+theorem dense_core_seed_free_two_loop_bit_flip_and_spectral_gap
+    {V j : ℕ → ℕ} {W r_1 d K r_1' d' K' : ℕ}
+    (hV0_pos : 1 ≤ V 0) (hV0_lt : V 0 < 2 ^ W)
+    (hj : ∀ r : ℕ, j r = 1 ∨ j r = 2)
+    (hrec : ∀ r : ℕ, 2 ^ (3 * j (r + 1) + 4) * V (r + 1) + 1 = 3 ^ (3 * j r + 4) * V r)
+    (hd1 : 1 ≤ d) (hmatchA : ∀ t ≤ K, j (r_1 + t) = j (r_1 + d + t))
+    (hd1' : 1 ≤ d') (hmatchB : ∀ t ≤ K', j (r_1' + t) = j (r_1' + d' + t)) :
+    let S_r1 := defectStepSum j r_1
+    let E_ret := defectStepSum (fun t => j (r_1 + 1 + t)) d
+    let S_ret := defectStepSum (fun t => j (r_1 + t)) d
+    let E_r2 := defectStepSum (fun t => j (1 + t)) (r_1 + d)
+    let E_K := defectStepSum (fun t => j (r_1 + 1 + t)) K
+    let M_A := E_r2 + E_K + 7
+    let C_A := 3 ^ S_r1 * (3 ^ S_ret - 2 ^ E_ret)
+    let D_A := 2 ^ E_ret * normalizedDefectAcc j r_1
+    let S_r1' := defectStepSum j r_1'
+    let E_ret' := defectStepSum (fun t => j (r_1' + 1 + t)) d'
+    let S_ret' := defectStepSum (fun t => j (r_1' + t)) d'
+    let E_r2' := defectStepSum (fun t => j (1 + t)) (r_1' + d')
+    let E_K' := defectStepSum (fun t => j (r_1' + 1 + t)) K'
+    let M_B := E_r2' + E_K' + 7
+    let C_B := 3 ^ S_r1' * (3 ^ S_ret' - 2 ^ E_ret')
+    let D_B := 2 ^ E_ret' * normalizedDefectAcc j r_1'
+    let LHS := C_B * normalizedDefectAcc j (r_1 + d) + C_A * D_B
+    let RHS := C_A * normalizedDefectAcc j (r_1' + d') + C_B * D_A
+    (j (r_1 + K + 1) ≠ j (r_1 + d + K + 1) → M_A < M_B →
+      (LHS + 2 ^ M_A) % 2 ^ (M_A + 1) = RHS % 2 ^ (M_A + 1) ∧
+      LHS % 2 ^ (M_A + 1) ≠ RHS % 2 ^ (M_A + 1)) ∧
+    (j (r_1 + K + 1) = j (r_1 + d + K + 1) → M_A + 7 ≤ M_B →
+      LHS % 2 ^ (M_A + 7) = RHS % 2 ^ (M_A + 7) ∧
+      LHS % 2 ^ (M_A + 1) = RHS % 2 ^ (M_A + 1)) ∧
+    (M_A + 7 ≤ M_B →
+      (j (r_1 + K + 1) = j (r_1 + d + K + 1) ↔ LHS % 2 ^ (M_A + 1) = RHS % 2 ^ (M_A + 1)) ∧
+      (LHS % 2 ^ (M_A + 1) = RHS % 2 ^ (M_A + 1) ↔ LHS % 2 ^ (M_A + 7) = RHS % 2 ^ (M_A + 7))) := by
+  intro S_r1 E_ret S_ret E_r2 E_K M_A C_A D_A
+    S_r1' E_ret' S_ret' E_r2' E_K' M_B C_B D_B LHS RHS
+  set Q_A := V (r_1 + d) / 2 ^ (E_K + 7) - V r_1 / 2 ^ (E_K + 7)
+  set Q_B := V (r_1' + d') / 2 ^ (E_K' + 7) - V r_1' / 2 ^ (E_K' + 7)
+  have hsyz_AB := (dense_core_seed_free_two_return_loop_syzygy_and_congruence
+    hV0_pos hV0_lt hj hrec hd1 hmatchA hd1' hmatchB).1
+  change C_B * (normalizedDefectAcc j (r_1 + d) + 2 ^ M_A * Q_A) + C_A * D_B =
+    C_A * (normalizedDefectAcc j (r_1' + d') + 2 ^ M_B * Q_B) + C_B * D_A at hsyz_AB
+  have hCB_odd : C_B % 2 = 1 :=
+    (dense_core_global_origin_return_loop_syzygy hV0_pos hV0_lt hj hrec hd1' hmatchB).1.1
+  have hr12 : r_1 < r_1 + d := by omega
+  have htopA := dense_core_repeated_window_top_part_isolation_and_squeeze
+    hV0_pos hV0_lt hj hrec hr12 hmatchA
+  have hpart1 :
+      j (r_1 + K + 1) ≠ j (r_1 + d + K + 1) → M_A < M_B →
+        (LHS + 2 ^ M_A) % 2 ^ (M_A + 1) = RHS % 2 ^ (M_A + 1) ∧
+        LHS % 2 ^ (M_A + 1) ≠ RHS % 2 ^ (M_A + 1) := by
+    intro hjne hM_lt
+    have hQA_odd : Q_A % 2 = 1 := htopA.2.1.1 hjne
+    have hprod_odd : (C_B * Q_A) % 2 = 1 := by
+      rw [Nat.mul_mod, hCB_odd, hQA_odd]
+    set m_A := (C_B * Q_A) / 2
+    have hCB_QA : C_B * Q_A = 2 * m_A + 1 := by
+      have hd := (Nat.div_add_mod (C_B * Q_A) 2).symm
+      omega
+    have hpow1 : 2 ^ (M_A + 1) = 2 ^ M_A * 2 := by rw [Nat.pow_add]
+    have hlhs :
+        C_B * (normalizedDefectAcc j (r_1 + d) + 2 ^ M_A * Q_A) + C_A * D_B =
+          (LHS + 2 ^ M_A) + 2 ^ (M_A + 1) * m_A := by
+      calc C_B * (normalizedDefectAcc j (r_1 + d) + 2 ^ M_A * Q_A) + C_A * D_B
+          = LHS + 2 ^ M_A * (C_B * Q_A) := by
+            change C_B * (normalizedDefectAcc j (r_1 + d) + 2 ^ M_A * Q_A) + C_A * D_B =
+              (C_B * normalizedDefectAcc j (r_1 + d) + C_A * D_B) + 2 ^ M_A * (C_B * Q_A)
+            ring
+        _ = LHS + 2 ^ M_A * (2 * m_A + 1) := by rw [hCB_QA]
+        _ = (LHS + 2 ^ M_A) + (2 ^ M_A * 2) * m_A := by ring
+        _ = (LHS + 2 ^ M_A) + 2 ^ (M_A + 1) * m_A := by rw [← hpow1]
+    have hM1_le : M_A + 1 ≤ M_B := by omega
+    rcases Nat.pow_dvd_pow 2 hM1_le with ⟨U_1, hU1⟩
+    have hrhs :
+        C_A * (normalizedDefectAcc j (r_1' + d') + 2 ^ M_B * Q_B) + C_B * D_A =
+          RHS + 2 ^ (M_A + 1) * (C_A * U_1 * Q_B) := by
+      change C_A * (normalizedDefectAcc j (r_1' + d') + 2 ^ M_B * Q_B) + C_B * D_A =
+        (C_A * normalizedDefectAcc j (r_1' + d') + C_B * D_A) + 2 ^ (M_A + 1) * (C_A * U_1 * Q_B)
+      rw [hU1]
+      ring
+    have hmod_flip : (LHS + 2 ^ M_A) % 2 ^ (M_A + 1) = RHS % 2 ^ (M_A + 1) := by
+      have hm :
+          (C_B * (normalizedDefectAcc j (r_1 + d) + 2 ^ M_A * Q_A) + C_A * D_B) % 2 ^ (M_A + 1) =
+            (C_A * (normalizedDefectAcc j (r_1' + d') + 2 ^ M_B * Q_B) + C_B * D_A) % 2 ^ (M_A + 1) := by
+        rw [hsyz_AB]
+      rw [hlhs, hrhs, Nat.add_mul_mod_self_left, Nat.add_mul_mod_self_left] at hm
+      exact hm
+    refine ⟨hmod_flip, ?_⟩
+    intro hmod_eq
+    have heq_both : (LHS + 2 ^ M_A) % 2 ^ (M_A + 1) = LHS % 2 ^ (M_A + 1) :=
+      hmod_flip.trans hmod_eq.symm
+    have hpow1' : 2 ^ (M_A + 1) = 2 * 2 ^ M_A := by rw [hpow1]; ring
+    rw [hpow1'] at heq_both
+    have hadd_half_mod_ne : ∀ (X P : ℕ), 0 < P → (X + P) % (2 * P) ≠ X % (2 * P) := by
+      intro X P hP h_eq
+      have hd1 := (Nat.div_add_mod X (2 * P)).symm
+      have hd2 := (Nat.div_add_mod (X + P) (2 * P)).symm
+      have hlin : P + (2 * P) * (X / (2 * P)) = (2 * P) * ((X + P) / (2 * P)) := by
+        linarith only [hd1, hd2, h_eq]
+      have hmod : (P + (2 * P) * (X / (2 * P))) % (2 * P) =
+          ((2 * P) * ((X + P) / (2 * P))) % (2 * P) := by rw [hlin]
+      rw [Nat.add_mul_mod_self_left, Nat.mod_eq_of_lt (by omega : P < 2 * P),
+        Nat.mul_mod_right] at hmod
+      omega
+    exact hadd_half_mod_ne LHS (2 ^ M_A) (Nat.pow_pos (by decide)) heq_both
+  have hpart2 :
+      j (r_1 + K + 1) = j (r_1 + d + K + 1) → M_A + 7 ≤ M_B →
+        LHS % 2 ^ (M_A + 7) = RHS % 2 ^ (M_A + 7) ∧
+        LHS % 2 ^ (M_A + 1) = RHS % 2 ^ (M_A + 1) := by
+    intro hjeq hM7_le
+    rcases htopA.2.1.2 hjeq with ⟨T_A, hTA⟩
+    change Q_A = 128 * T_A at hTA
+    rcases Nat.pow_dvd_pow 2 hM7_le with ⟨U_7, hU7⟩
+    have hpow7 : 2 ^ (M_A + 7) = 2 ^ M_A * 128 := by rw [Nat.pow_add]
+    have hlhs :
+        C_B * (normalizedDefectAcc j (r_1 + d) + 2 ^ M_A * Q_A) + C_A * D_B =
+          LHS + 2 ^ (M_A + 7) * (C_B * T_A) := by
+      change C_B * (normalizedDefectAcc j (r_1 + d) + 2 ^ M_A * Q_A) + C_A * D_B =
+        (C_B * normalizedDefectAcc j (r_1 + d) + C_A * D_B) + 2 ^ (M_A + 7) * (C_B * T_A)
+      rw [hTA, hpow7]
+      ring
+    have hrhs :
+        C_A * (normalizedDefectAcc j (r_1' + d') + 2 ^ M_B * Q_B) + C_B * D_A =
+          RHS + 2 ^ (M_A + 7) * (C_A * U_7 * Q_B) := by
+      change C_A * (normalizedDefectAcc j (r_1' + d') + 2 ^ M_B * Q_B) + C_B * D_A =
+        (C_A * normalizedDefectAcc j (r_1' + d') + C_B * D_A) + 2 ^ (M_A + 7) * (C_A * U_7 * Q_B)
+      rw [hU7]
+      ring
+    have hmod7 : LHS % 2 ^ (M_A + 7) = RHS % 2 ^ (M_A + 7) := by
+      have hm :
+          (C_B * (normalizedDefectAcc j (r_1 + d) + 2 ^ M_A * Q_A) + C_A * D_B) % 2 ^ (M_A + 7) =
+            (C_A * (normalizedDefectAcc j (r_1' + d') + 2 ^ M_B * Q_B) + C_B * D_A) % 2 ^ (M_A + 7) := by
+        rw [hsyz_AB]
+      rw [hlhs, hrhs, Nat.add_mul_mod_self_left, Nat.add_mul_mod_self_left] at hm
+      exact hm
+    have hpow7_split : 2 ^ (M_A + 7) = 2 ^ (M_A + 1) * 64 := by
+      have hexp : M_A + 7 = (M_A + 1) + 6 := by omega
+      rw [hexp, Nat.pow_add]
+    have hmod1 : LHS % 2 ^ (M_A + 1) = RHS % 2 ^ (M_A + 1) := by
+      have hm := congrArg (fun x => x % 2 ^ (M_A + 1)) hmod7
+      dsimp only at hm
+      have hdvd : 2 ^ (M_A + 1) ∣ 2 ^ (M_A + 7) := ⟨64, hpow7_split⟩
+      rw [Nat.mod_mod_of_dvd LHS hdvd, Nat.mod_mod_of_dvd RHS hdvd] at hm
+      exact hm
+    exact ⟨hmod7, hmod1⟩
+  refine ⟨hpart1, hpart2, ?_⟩
+  intro hM7_le
+  have hM_lt : M_A < M_B := by omega
+  have heq_of_mod1 :
+      LHS % 2 ^ (M_A + 1) = RHS % 2 ^ (M_A + 1) → j (r_1 + K + 1) = j (r_1 + d + K + 1) := by
+    intro hmod1
+    exact Classical.byContradiction fun hjne => (hpart1 hjne hM_lt).2 hmod1
+  have hmod1_of_mod7 :
+      LHS % 2 ^ (M_A + 7) = RHS % 2 ^ (M_A + 7) → LHS % 2 ^ (M_A + 1) = RHS % 2 ^ (M_A + 1) := by
+    intro hmod7
+    have hm := congrArg (fun x => x % 2 ^ (M_A + 1)) hmod7
+    dsimp only at hm
+    have hpow7_split : 2 ^ (M_A + 7) = 2 ^ (M_A + 1) * 64 := by
+      have hexp : M_A + 7 = (M_A + 1) + 6 := by omega
+      rw [hexp, Nat.pow_add]
+    have hdvd : 2 ^ (M_A + 1) ∣ 2 ^ (M_A + 7) := ⟨64, hpow7_split⟩
+    rw [Nat.mod_mod_of_dvd LHS hdvd, Nat.mod_mod_of_dvd RHS hdvd] at hm
+    exact hm
+  exact ⟨⟨fun h => (hpart2 h hM7_le).2, heq_of_mod1⟩,
+    ⟨fun h => (hpart2 (heq_of_mod1 h) hM7_le).1, hmod1_of_mod7⟩⟩
+
 end Mahler.DubickasExtension
 
 

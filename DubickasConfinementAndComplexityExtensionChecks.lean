@@ -319,6 +319,10 @@ example (m : ℕ) :
 #print axioms Mahler.DubickasExtension.dense_core_global_origin_return_loop_syzygy
 #print axioms Mahler.DubickasExtension.dense_core_seed_free_two_return_loop_syzygy_and_congruence
 
+-- 29. Verify Section 35: Universal 3-step maximal branching loop spawning, seed-free bit-M_A flip law, and seed-free two-loop 7-bit spectral gap dichotomy
+#print axioms Mahler.DubickasExtension.dense_core_every_three_step_window_spawns_maximal_branching_return_loop
+#print axioms Mahler.DubickasExtension.dense_core_seed_free_two_loop_bit_flip_and_spectral_gap
+
 #print axioms Mahler.DubickasExtension.dubBaseCarry_eq_fract_linear
 #print axioms Mahler.DubickasExtension.dubBaseY_multi_step_carry_identity
 #print axioms Mahler.DubickasExtension.dubBaseCarry_mem_two_letters
