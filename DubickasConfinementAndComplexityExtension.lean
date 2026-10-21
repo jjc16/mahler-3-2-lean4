@@ -12526,6 +12526,353 @@ theorem dense_core_exact_prefix_collision_biconditional_and_mod_cutoff
   exact (dense_core_parameterized_pq_cutoff_and_convergents
     hV0_pos hV0_lt hj hrec).2.1 p q r_1 r_2 (K + 1) hq hpq hr12 hmatch_lt
 
+/-!
+## Section 33: Attacking the Conspiracy Barrier — Exact $\tilde{\Delta}$ Cocycle Composition,
+## Frozen-Remainder Stabilization ($V(0) / 2^{E_K + 7} = 0$ for $7(K+1) \ge W$), and the
+## Return-Loop Homoclinic Denominator Syzygy $\big(3^{S_{\text{ret}}} - 2^{E_{\text{ret}}}\big) V(r_1) = \tilde{\Delta}_{\text{ret}} + 2^{E_{\text{ret}} + E_K + 7} (\ell_2 - \ell_1)$
+
+In this section, we formalize the exact algebraic structure of the **"accidental binary zero
+conspiracy"** required for a finite integer $V(0) < 2^W$ to survive indefinitely in the Dense Core
+$\{1, 2\}^\mathbb{N}$:
+
+1. **Exact Cocycle Composition Law for `defectStepSum` and `normalizedDefectAcc`
+   (`normalizedDefectAcc_cocycle_composition_law`)**:
+   Across any split horizon $d_1 + m$, the step-sum $S_{d_1 + m}$ is additive and the normalized
+   accumulator $\tilde{\Delta}(j, d_1 + m)$ splits into a $3$-adic multiple of the prefix
+   accumulator $\tilde{\Delta}(j, d_1)$ plus a $2$-adic multiple of the shifted tail accumulator
+   $\tilde{\Delta}(\text{shift}_{d_1} j,\, m)$:
+   $$\tilde{\Delta}(j, d_1 + m) \;=\;
+     3^{\text{defectStepSum}(\text{fun } t \Rightarrow j(d_1 + t),\, m)} \cdot \tilde{\Delta}(j, d_1) +
+     2^{\text{defectStepSum}(\text{fun } t \Rightarrow j(1 + t),\, d_1)} \cdot
+       \tilde{\Delta}(\text{fun } t \Rightarrow j(d_1 + t),\, m).$$
+
+2. **Exact Valuation Lock on $3^{S_d} V(0) - \tilde{\Delta}(j, d)$ and Frozen-Remainder
+   Stabilization Beyond Bit $W$ (`dense_core_frozen_remainder_and_exact_valuation_conspiracy_law`)**:
+   For any Dense-Core trajectory $(V, j)$ with $1 \le V(0) < 2^W$:
+   - At **every** step $d \in \mathbb{N}$, $3^{S_d} V(0) - \tilde{\Delta}(j, d) = 2^{E_d} V(d)$ has
+     **exact 2-adic valuation $E_d$** ($2^{E_d} \mid (3^{S_d} V(0) - \tilde{\Delta}(j, d))$ and
+     $\neg (2^{E_d + 1} \mid (3^{S_d} V(0) - \tilde{\Delta}(j, d)))$), and the quotient
+     $((3^{S_d} V(0) - \tilde{\Delta}(j, d)) / 2^{E_d}) \bmod 128 \in \{35, 25\}$ directly locks $j(d)$.
+   - Once $W \le 7 (K + 1)$, the finite integer $V(0)$ has **exhausted all of its binary bits**:
+     $V(0) < 2^{E_K + 7}$, its Top Part is permanently zero ($V(0) / 2^{E_K + 7} = 0$), its sieve
+     remainder is frozen at $V(0)$ itself ($V(0) \bmod 2^{E_K + 7} = V(0)$), and the forward value
+     satisfies $V(K + 1) < 3^{S_{K+1}}$ ($V(K + 1) / 3^{S_{K+1}} = 0$).
+
+3. **Return-Loop Homoclinic Denominator Syzygy & Super-Modulus $2^{E_{\text{ret}} + E_K + 7}$ Lock
+   (`dense_core_return_loop_homoclinic_denominator_syzygy`)**:
+   Whenever a subword of length $K + 1$ at $r_1$ repeats at $r_2 = r_1 + d$ ($d \ge 1$,
+   $\forall t \le K,\; j(r_1 + t) = j(r_1 + d + t)$), combining the shifted master equation
+   $2^{E_{\text{ret}}} V(r_1 + d) + \tilde{\Delta}_{\text{ret}} = 3^{S_{\text{ret}}} V(r_1)$ with
+   the Top-Part isolation $V(r_1 + d) - V(r_1) = 2^{E_K + 7} (\ell_2 - \ell_1)$ eliminates $V(r_1 + d)$
+   completely and yields the **Exact Homoclinic Return Syzygy**:
+   $$\big(3^{S_{\text{ret}}} - 2^{E_{\text{ret}}}\big) V(r_1) \;=\;
+     \tilde{\Delta}_{\text{ret}} \;+\; 2^{E_{\text{ret}} + E_K + 7} (\ell_2 - \ell_1).$$
+   Consequently:
+   - **Super-Modulus $2^{E_{\text{ret}} + E_K + 7}$ Lock**: Because $3^{S_{\text{ret}}} - 2^{E_{\text{ret}}}$
+     is odd, $V(r_1)$ is uniquely locked modulo $2^{E_{\text{ret}} + E_K + 7} \ge 2^{7 (d + K + 1)}$
+     by the $d$-step return loop alone:
+     $$\Big(\big(3^{S_{\text{ret}}} - 2^{E_{\text{ret}}}\big) V(r_1)\Big) \bmod 2^{E_{\text{ret}} + E_K + 7}
+       \;=\; \tilde{\Delta}_{\text{ret}} \bmod 2^{E_{\text{ret}} + E_K + 7}.$$
+   - **Homoclinic Denominator Divisibility on the Top-Part Difference**: The odd, 3-coprime
+     homoclinic return denominator $D_{\text{ret}} = 3^{S_{\text{ret}}} - 2^{E_{\text{ret}}}$ must divide
+     $\tilde{\Delta}_{\text{ret}} + 2^{E_{\text{ret}} + E_K + 7} (\ell_2 - \ell_1)$:
+     $$\big(3^{S_{\text{ret}}} - 2^{E_{\text{ret}}}\big) \;\Big|\;
+       \Big(\tilde{\Delta}_{\text{ret}} + 2^{E_{\text{ret}} + E_K + 7} (\ell_2 - \ell_1)\Big).$$
+-/
+
+/-- **Exact Cocycle Composition Law for `defectStepSum` and `normalizedDefectAcc`
+(`normalizedDefectAcc_cocycle_composition_law`)**:
+For any sequence $j : \mathbb{N} \to \mathbb{N}$ and any $d_1, m \in \mathbb{N}$:
+1. $\text{defectStepSum}(j, d_1 + m) = \text{defectStepSum}(j, d_1) +
+   \text{defectStepSum}(\text{fun } t \Rightarrow j(d_1 + t),\, m)$.
+2. $\text{normalizedDefectAcc}(j, d_1 + m) =
+   3^{\text{defectStepSum}(\text{fun } t \Rightarrow j(d_1 + t),\, m)} \cdot \text{normalizedDefectAcc}(j, d_1) +
+   2^{\text{defectStepSum}(\text{fun } t \Rightarrow j(1 + t),\, d_1)} \cdot
+     \text{normalizedDefectAcc}(\text{fun } t \Rightarrow j(d_1 + t),\, m)$. -/
+theorem normalizedDefectAcc_cocycle_composition_law
+    (j : ℕ → ℕ) (d_1 m : ℕ) :
+    defectStepSum j (d_1 + m) =
+      defectStepSum j d_1 + defectStepSum (fun t => j (d_1 + t)) m ∧
+    normalizedDefectAcc j (d_1 + m) =
+      3 ^ (defectStepSum (fun t => j (d_1 + t)) m) * normalizedDefectAcc j d_1 +
+      2 ^ (defectStepSum (fun t => j (1 + t)) d_1) *
+        normalizedDefectAcc (fun t => j (d_1 + t)) m := by
+  have hsum :
+      ∀ (j' : ℕ → ℕ) (a b : ℕ),
+        defectStepSum j' (a + b) =
+          defectStepSum j' a + defectStepSum (fun t => j' (a + t)) b := by
+    intro j' a b
+    induction b with
+    | zero =>
+        simp only [defectStepSum, Nat.add_zero]
+    | succ b ih =>
+        change defectStepSum j' (a + b) + (3 * j' (a + b) + 4) =
+          defectStepSum j' a + (defectStepSum (fun t => j' (a + t)) b + (3 * j' (a + b) + 4))
+        rw [ih]
+        omega
+  refine ⟨hsum j d_1 m, ?_⟩
+  induction m with
+  | zero =>
+      simp only [defectStepSum, normalizedDefectAcc, Nat.add_zero, Nat.pow_zero,
+        Nat.one_mul, Nat.mul_zero]
+  | succ m ih =>
+      have hE_split :
+          defectStepSum (fun t => j (1 + t)) (d_1 + m) =
+            defectStepSum (fun t => j (1 + t)) d_1 +
+              defectStepSum (fun t => j (d_1 + (1 + t))) m := by
+        have hs := hsum (fun t => j (1 + t)) d_1 m
+        have h_eq :
+            defectStepSum (fun t => j (1 + (d_1 + t))) m =
+              defectStepSum (fun t => j (d_1 + (1 + t))) m := by
+          congr 1; funext t; congr 1; omega
+        rw [hs, h_eq]
+      have hpow2 :
+          2 ^ (defectStepSum (fun t => j (1 + t)) (d_1 + m)) =
+            2 ^ (defectStepSum (fun t => j (1 + t)) d_1) *
+              2 ^ (defectStepSum (fun t => j (d_1 + (1 + t))) m) := by
+        rw [hE_split, Nat.pow_add]
+      have hpow3 :
+          3 ^ (defectStepSum (fun t => j (d_1 + t)) (m + 1)) =
+            3 ^ (defectStepSum (fun t => j (d_1 + t)) m) * 3 ^ (3 * j (d_1 + m) + 4) :=
+        Nat.pow_add 3 (defectStepSum (fun t => j (d_1 + t)) m) (3 * j (d_1 + m) + 4)
+      change 3 ^ (3 * j (d_1 + m) + 4) * normalizedDefectAcc j (d_1 + m) +
+        2 ^ (defectStepSum (fun t => j (1 + t)) (d_1 + m)) =
+        3 ^ (defectStepSum (fun t => j (d_1 + t)) (m + 1)) * normalizedDefectAcc j d_1 +
+        2 ^ (defectStepSum (fun t => j (1 + t)) d_1) *
+          (3 ^ (3 * j (d_1 + m) + 4) * normalizedDefectAcc (fun t => j (d_1 + t)) m +
+            2 ^ (defectStepSum (fun t => j (d_1 + (1 + t))) m))
+      rw [ih, hpow2, hpow3]
+      ring
+
+/-- **Exact Valuation Lock on $3^{S_d} V(0) - \tilde{\Delta}(j, d)$ and Frozen-Remainder
+Stabilization Beyond Bit $W$ (`dense_core_frozen_remainder_and_exact_valuation_conspiracy_law`)**:
+Suppose $1 \le V(0) < 2^W$, $j(r) \in \{1, 2\}$, and
+$2^{3 j(r + 1) + 4} V(r + 1) + 1 = 3^{3 j(r) + 4} V(r)$ for all $r \in \mathbb{N}$.
+1. **Exact $E_d$ Valuation Lock & Mod-128 Bit Extraction at Every Step $d \in \mathbb{N}$**:
+   With $E_d = \text{defectStepSum}(\text{fun } t \Rightarrow j(1 + t),\, d)$ and
+   $S_d = \text{defectStepSum}(j, d)$:
+   - $\text{normalizedDefectAcc}(j, d) < 3^{S_d} V(0)$,
+   - $2^{E_d} \mid (3^{S_d} V(0) - \text{normalizedDefectAcc}(j, d))$ and
+     $\neg (2^{E_d + 1} \mid (3^{S_d} V(0) - \text{normalizedDefectAcc}(j, d)))$,
+   - $(3^{S_d} V(0) - \text{normalizedDefectAcc}(j, d)) / 2^{E_d} = V(d)$, and
+   - $(j(d) = 1 \leftrightarrow V(d) \bmod 128 = 35) \land (j(d) = 2 \leftrightarrow V(d) \bmod 128 = 25)$.
+2. **Frozen-Remainder Stabilization Once $W \le 7 (K + 1)$**:
+   For every $K \in \mathbb{N}$ with $W \le 7 (K + 1)$, let
+   $E_K = \text{defectStepSum}(\text{fun } t \Rightarrow j(1 + t),\, K)$,
+   $E_{K+1} = \text{defectStepSum}(\text{fun } t \Rightarrow j(1 + t),\, K + 1)$, and
+   $S_{K+1} = \text{defectStepSum}(j, K + 1)$:
+   - $V(0) < 2^{E_K + 7}$, $V(0) / 2^{E_K + 7} = 0$, and $V(0) \bmod 2^{E_K + 7} = V(0)$,
+   - $V(0) < 2^{E_{K+1}}$, $V(0) / 2^{E_{K+1}} = 0$, $V(K + 1) / 3^{S_{K+1}} = 0$, and $V(K + 1) < 3^{S_{K+1}}$. -/
+theorem dense_core_frozen_remainder_and_exact_valuation_conspiracy_law
+    {V j : ℕ → ℕ} {W : ℕ}
+    (hV0_pos : 1 ≤ V 0) (hV0_lt : V 0 < 2 ^ W)
+    (hj : ∀ r : ℕ, j r = 1 ∨ j r = 2)
+    (hrec : ∀ r : ℕ, 2 ^ (3 * j (r + 1) + 4) * V (r + 1) + 1 = 3 ^ (3 * j r + 4) * V r) :
+    (∀ d : ℕ,
+      let E_d := defectStepSum (fun t => j (1 + t)) d
+      let S_d := defectStepSum j d
+      normalizedDefectAcc j d < 3 ^ S_d * V 0 ∧
+      (2 ^ E_d ∣ (3 ^ S_d * V 0 - normalizedDefectAcc j d)) ∧
+      ¬ (2 ^ (E_d + 1) ∣ (3 ^ S_d * V 0 - normalizedDefectAcc j d)) ∧
+      (3 ^ S_d * V 0 - normalizedDefectAcc j d) / 2 ^ E_d = V d ∧
+      ((j d = 1 ↔ V d % 128 = 35) ∧ (j d = 2 ↔ V d % 128 = 25))) ∧
+    (∀ K : ℕ, W ≤ 7 * (K + 1) →
+      let E_K := defectStepSum (fun t => j (1 + t)) K
+      let E_K1 := defectStepSum (fun t => j (1 + t)) (K + 1)
+      let S_K1 := defectStepSum j (K + 1)
+      V 0 < 2 ^ (E_K + 7) ∧
+      V 0 / 2 ^ (E_K + 7) = 0 ∧
+      V 0 % 2 ^ (E_K + 7) = V 0 ∧
+      V 0 < 2 ^ E_K1 ∧
+      V 0 / 2 ^ E_K1 = 0 ∧
+      V (K + 1) / 3 ^ S_K1 = 0 ∧
+      V (K + 1) < 3 ^ S_K1) := by
+  have hpos_V : ∀ r : ℕ, 1 ≤ V r := fun r =>
+    ((dense_core_strict_doubling_and_monotonicity hV0_pos hj hrec).1 r).1
+  have hodd : ∀ r : ℕ, V r % 2 = 1 :=
+    (dense_core_all_V_odd_and_mod_four_divergence hV0_pos hj hrec).1
+  have hmaster := (normalizedDefectAcc_master_identity_and_infinite_sieve_tower j).2.1 V hrec
+  refine ⟨?_, ?_⟩
+  · intro d E_d S_d
+    have hm := hmaster d
+    change 2 ^ E_d * V d + normalizedDefectAcc j d = 3 ^ S_d * V 0 at hm
+    have hEd_pos : 0 < 2 ^ E_d := Nat.pow_pos (by decide)
+    have hVd_pos : 1 ≤ V d := hpos_V d
+    have hprod_pos : 1 ≤ 2 ^ E_d * V d := Nat.mul_le_mul hEd_pos hVd_pos
+    have hacc_lt : normalizedDefectAcc j d < 3 ^ S_d * V 0 := by omega
+    have hsub_eq : 3 ^ S_d * V 0 - normalizedDefectAcc j d = 2 ^ E_d * V d := by omega
+    have hdvd_Ed : 2 ^ E_d ∣ (3 ^ S_d * V 0 - normalizedDefectAcc j d) := ⟨V d, hsub_eq⟩
+    have hdiv_Ed : (3 ^ S_d * V 0 - normalizedDefectAcc j d) / 2 ^ E_d = V d := by
+      rw [hsub_eq, Nat.mul_div_right (V d) hEd_pos]
+    have hnot_dvd1 : ¬ (2 ^ (E_d + 1) ∣ (3 ^ S_d * V 0 - normalizedDefectAcc j d)) := by
+      rintro ⟨M, hM⟩
+      have hpow1 : 2 ^ (E_d + 1) = 2 ^ E_d * 2 := by rw [Nat.pow_add]
+      have hmul : 2 ^ E_d * V d = 2 ^ E_d * (2 * M) := by
+        rw [← hsub_eq, hM, hpow1]; ring
+      have hVd_even : V d = 2 * M := Nat.eq_of_mul_eq_mul_left hEd_pos hmul
+      have ho := hodd d
+      omega
+    have hj_next : 1 ≤ j (d + 1) := by rcases hj (d + 1) with h1 | h2 <;> omega
+    have h128 := defectNormalizedQuotient_cooldown_mod_128_and_three_adic_lock.1
+      (V d) (V (d + 1)) (j d) (j (d + 1)) hj_next (hrec d)
+    have hiff128 : (j d = 1 ↔ V d % 128 = 35) ∧ (j d = 2 ↔ V d % 128 = 25) := by
+      rcases hj d with hd1 | hd2
+      · have hm35 := h128.1 hd1
+        exact ⟨⟨fun _ => hm35, fun _ => hd1⟩, ⟨by omega, by omega⟩⟩
+      · have hm25 := h128.2 hd2
+        exact ⟨⟨by omega, by omega⟩, ⟨fun _ => hm25, fun _ => hd2⟩⟩
+    exact ⟨hacc_lt, hdvd_Ed, hnot_dvd1, hdiv_Ed, hiff128⟩
+  · intro K hW E_K E_K1 S_K1
+    have hEK_ge : 7 * K ≤ E_K := by
+      have h_all : ∀ m : ℕ, 7 * m ≤ defectStepSum (fun t => j (1 + t)) m := by
+        intro m
+        induction m with
+        | zero => simp only [defectStepSum, Nat.mul_zero, le_refl]
+        | succ m ih =>
+            change 7 * (m + 1) ≤ defectStepSum (fun t => j (1 + t)) m + (3 * j (1 + m) + 4)
+            rcases hj (1 + m) with h1 | h2 <;> omega
+      exact h_all K
+    have hW_le_EK7 : W ≤ E_K + 7 := by omega
+    have hEK7_le_EK1 : E_K + 7 ≤ E_K1 := by
+      change E_K + 7 ≤ E_K + (3 * j (1 + K) + 4)
+      rcases hj (1 + K) with h1 | h2 <;> omega
+    have hV0_lt_EK7 : V 0 < 2 ^ (E_K + 7) :=
+      lt_of_lt_of_le hV0_lt (Nat.pow_le_pow_right (by decide) hW_le_EK7)
+    have hV0_lt_EK1 : V 0 < 2 ^ E_K1 :=
+      lt_of_lt_of_le hV0_lt_EK7 (Nat.pow_le_pow_right (by decide) hEK7_le_EK1)
+    have hdiv_EK7 : V 0 / 2 ^ (E_K + 7) = 0 := Nat.div_eq_of_lt hV0_lt_EK7
+    have hmod_EK7 : V 0 % 2 ^ (E_K + 7) = V 0 := Nat.mod_eq_of_lt hV0_lt_EK7
+    have hdiv_EK1 : V 0 / 2 ^ E_K1 = 0 := Nat.div_eq_of_lt hV0_lt_EK1
+    have hdual := (universal_two_three_adic_quotient_duality hrec).1 (K + 1) 0 1 le_rfl
+    have hE_eq : defectStepSum (fun t => j (0 + 1 + t)) (K + 1) = E_K1 := rfl
+    have hS_eq : defectStepSum (fun t => j (0 + t)) (K + 1) = S_K1 := by
+      congr 1; funext t; rw [Nat.zero_add]
+    rw [Nat.zero_add, Nat.one_mul, Nat.one_mul, hE_eq, hS_eq] at hdual
+    have hVK1_div : V (K + 1) / 3 ^ S_K1 = 0 := hdual.trans hdiv_EK1
+    have hVK1_lt : V (K + 1) < 3 ^ S_K1 := by
+      have hd := (Nat.div_add_mod (V (K + 1)) (3 ^ S_K1)).symm
+      have hrem_lt : V (K + 1) % 3 ^ S_K1 < 3 ^ S_K1 :=
+        Nat.mod_lt (V (K + 1)) (Nat.pow_pos (by decide))
+      rw [hVK1_div, Nat.mul_zero, Nat.zero_add] at hd
+      omega
+    exact ⟨hV0_lt_EK7, hdiv_EK7, hmod_EK7, hV0_lt_EK1, hdiv_EK1, hVK1_div, hVK1_lt⟩
+
+/-- **Return-Loop Homoclinic Denominator Syzygy and Super-Modulus $2^{E_{\text{ret}} + E_K + 7}$ Lock
+(`dense_core_return_loop_homoclinic_denominator_syzygy`)**:
+Suppose $1 \le V(0) < 2^W$, $j(r) \in \{1, 2\}$, $d \ge 1$, and a subword of length $K + 1$ at
+$r_1$ repeats at $r_1 + d$ ($\forall t \le K,\; j(r_1 + t) = j(r_1 + d + t)$).
+Let $E_{\text{ret}} = \text{defectStepSum}(\text{fun } t \Rightarrow j(r_1 + 1 + t),\, d)$,
+$S_{\text{ret}} = \text{defectStepSum}(\text{fun } t \Rightarrow j(r_1 + t),\, d)$,
+$\tilde{\Delta}_{\text{ret}} = \text{normalizedDefectAcc}(\text{fun } t \Rightarrow j(r_1 + t),\, d)$,
+$E_K = \text{defectStepSum}(\text{fun } t \Rightarrow j(r_1 + 1 + t),\, K)$,
+$\ell_1 = V(r_1) / 2^{E_K + 7}$, and $\ell_2 = V(r_1 + d) / 2^{E_K + 7}$.
+Then:
+1. **Strict Positivity & $(2, 3)$-Coprimality of the Return Denominator $3^{S_{\text{ret}}} - 2^{E_{\text{ret}}}$**:
+   $2^{E_{\text{ret}}} < 3^{S_{\text{ret}}}$, $(3^{S_{\text{ret}}} - 2^{E_{\text{ret}}}) \bmod 2 = 1$, and
+   $1 \le \ell_2 - \ell_1$.
+2. **Exact Homoclinic Return Syzygy**:
+   $$\big(3^{S_{\text{ret}}} - 2^{E_{\text{ret}}}\big) \cdot V(r_1) \;=\;
+     \tilde{\Delta}_{\text{ret}} \;+\; 2^{E_{\text{ret}} + E_K + 7} \cdot (\ell_2 - \ell_1).$$
+3. **Super-Modulus $2^{E_{\text{ret}} + E_K + 7}$ Congruence Lock on $V(r_1)$**:
+   $$\Big(\big(3^{S_{\text{ret}}} - 2^{E_{\text{ret}}}\big) \cdot V(r_1)\Big) \bmod 2^{E_{\text{ret}} + E_K + 7}
+     \;=\; \tilde{\Delta}_{\text{ret}} \bmod 2^{E_{\text{ret}} + E_K + 7}.$$
+4. **Homoclinic Denominator Divisibility on the Top-Part Difference**:
+   $$\big(3^{S_{\text{ret}}} - 2^{E_{\text{ret}}}\big) \;\Big|\;
+     \Big(\tilde{\Delta}_{\text{ret}} + 2^{E_{\text{ret}} + E_K + 7} \cdot (\ell_2 - \ell_1)\Big).$$ -/
+theorem dense_core_return_loop_homoclinic_denominator_syzygy
+    {V j : ℕ → ℕ} {W r_1 d K : ℕ}
+    (hV0_pos : 1 ≤ V 0) (hV0_lt : V 0 < 2 ^ W)
+    (hj : ∀ r : ℕ, j r = 1 ∨ j r = 2)
+    (hrec : ∀ r : ℕ, 2 ^ (3 * j (r + 1) + 4) * V (r + 1) + 1 = 3 ^ (3 * j r + 4) * V r)
+    (hd1 : 1 ≤ d)
+    (hmatch : ∀ t ≤ K, j (r_1 + t) = j (r_1 + d + t)) :
+    let j_shift := fun t => j (r_1 + t)
+    let E_ret := defectStepSum (fun t => j (r_1 + 1 + t)) d
+    let S_ret := defectStepSum j_shift d
+    let Delta_ret := normalizedDefectAcc j_shift d
+    let E_K := defectStepSum (fun t => j (r_1 + 1 + t)) K
+    let l_1 := V r_1 / 2 ^ (E_K + 7)
+    let l_2 := V (r_1 + d) / 2 ^ (E_K + 7)
+    (2 ^ E_ret < 3 ^ S_ret ∧
+     (3 ^ S_ret - 2 ^ E_ret) % 2 = 1 ∧
+     1 ≤ l_2 - l_1) ∧
+    (3 ^ S_ret - 2 ^ E_ret) * V r_1 =
+      Delta_ret + 2 ^ (E_ret + E_K + 7) * (l_2 - l_1) ∧
+    ((3 ^ S_ret - 2 ^ E_ret) * V r_1) % 2 ^ (E_ret + E_K + 7) =
+      Delta_ret % 2 ^ (E_ret + E_K + 7) ∧
+    ((3 ^ S_ret - 2 ^ E_ret) ∣ (Delta_ret + 2 ^ (E_ret + E_K + 7) * (l_2 - l_1))) := by
+  intro j_shift E_ret S_ret Delta_ret E_K l_1 l_2
+  have hmono := (dense_core_strict_doubling_and_monotonicity hV0_pos hj hrec).2
+  have hr12 : r_1 < r_1 + d := by omega
+  have htop := dense_core_repeated_window_top_part_isolation_and_squeeze
+    hV0_pos hV0_lt hj hrec hr12 hmatch
+  have hl_lt : l_1 < l_2 := htop.1.2.1
+  have hV_diff : V (r_1 + d) - V r_1 = 2 ^ (E_K + 7) * (l_2 - l_1) := htop.1.2.2.1
+  have hV_lt : V r_1 < V (r_1 + d) := hmono r_1 (r_1 + d) hr12
+  have hVr1d_eq : V (r_1 + d) = V r_1 + 2 ^ (E_K + 7) * (l_2 - l_1) := by omega
+  set V_shift : ℕ → ℕ := fun t => V (r_1 + t)
+  have hrec_shift :
+      ∀ t : ℕ, 2 ^ (3 * j_shift (t + 1) + 4) * V_shift (t + 1) + 1 =
+        3 ^ (3 * j_shift t + 4) * V_shift t := by
+    intro t
+    have h := hrec (r_1 + t)
+    have hidx : r_1 + t + 1 = r_1 + (t + 1) := by omega
+    simpa [j_shift, V_shift, hidx] using h
+  have hm_shift := (normalizedDefectAcc_master_identity_and_infinite_sieve_tower j_shift).2.1
+    V_shift hrec_shift d
+  have hE_eq : defectStepSum (fun t => j_shift (1 + t)) d = E_ret := by
+    congr 1; funext t; change j (r_1 + (1 + t)) = j (r_1 + 1 + t); congr 1; omega
+  change 2 ^ (defectStepSum (fun t => j_shift (1 + t)) d) * V (r_1 + d) + Delta_ret =
+    3 ^ S_ret * V (r_1 + 0) at hm_shift
+  rw [hE_eq, Nat.add_zero] at hm_shift
+  have h2_lt_3 : 2 ^ E_ret < 3 ^ S_ret := by
+    have hVr1_pos : 1 ≤ V r_1 :=
+      ((dense_core_strict_doubling_and_monotonicity hV0_pos hj hrec).1 r_1).1
+    have hlt_prod : 2 ^ E_ret * V r_1 < 3 ^ S_ret * V r_1 := by
+      have hle : 2 ^ E_ret * V r_1 < 2 ^ E_ret * V (r_1 + d) :=
+        Nat.mul_lt_mul_of_pos_left hV_lt (Nat.pow_pos (by decide))
+      omega
+    exact Nat.lt_of_mul_lt_mul_right hlt_prod
+  have h3_odd : (3 ^ S_ret) % 2 = 1 := by
+    clear hm_shift h2_lt_3
+    induction S_ret with
+    | zero => decide
+    | succ n ih =>
+        rw [Nat.pow_succ, Nat.mul_mod, ih]
+  have hE_ret_pos : 1 ≤ E_ret := by
+    obtain ⟨m, rfl⟩ : ∃ m : ℕ, d = m + 1 := ⟨d - 1, by omega⟩
+    change 1 ≤ defectStepSum (fun t => j (r_1 + 1 + t)) m + (3 * j (r_1 + 1 + m) + 4)
+    omega
+  have h2_even : (2 ^ E_ret) % 2 = 0 := by
+    obtain ⟨m, hm_eq⟩ : ∃ m : ℕ, E_ret = m + 1 := ⟨E_ret - 1, by omega⟩
+    rw [hm_eq, Nat.pow_succ, Nat.mul_mod_left]
+  have hdiff_odd : (3 ^ S_ret - 2 ^ E_ret) % 2 = 1 := by omega
+  have hpow_comb : 2 ^ (E_ret + E_K + 7) = 2 ^ E_ret * 2 ^ (E_K + 7) := by
+    have hexp : E_ret + E_K + 7 = E_ret + (E_K + 7) := by omega
+    rw [hexp, Nat.pow_add]
+  have hsyz :
+      (3 ^ S_ret - 2 ^ E_ret) * V r_1 =
+        Delta_ret + 2 ^ (E_ret + E_K + 7) * (l_2 - l_1) := by
+    have hsub_dist :
+        (3 ^ S_ret - 2 ^ E_ret) * V r_1 + 2 ^ E_ret * V r_1 = 3 ^ S_ret * V r_1 := by
+      rw [← Nat.add_mul, Nat.sub_add_cancel (le_of_lt h2_lt_3)]
+    have hexp_Vr1d :
+        2 ^ E_ret * V (r_1 + d) =
+          2 ^ E_ret * V r_1 + 2 ^ (E_ret + E_K + 7) * (l_2 - l_1) := by
+      calc 2 ^ E_ret * V (r_1 + d)
+          = 2 ^ E_ret * (V r_1 + 2 ^ (E_K + 7) * (l_2 - l_1)) := by rw [hVr1d_eq]
+        _ = 2 ^ E_ret * V r_1 + (2 ^ E_ret * 2 ^ (E_K + 7)) * (l_2 - l_1) := by ring
+        _ = 2 ^ E_ret * V r_1 + 2 ^ (E_ret + E_K + 7) * (l_2 - l_1) := by rw [← hpow_comb]
+    linarith only [hm_shift, hsub_dist, hexp_Vr1d]
+  have hmod_super :
+      ((3 ^ S_ret - 2 ^ E_ret) * V r_1) % 2 ^ (E_ret + E_K + 7) =
+        Delta_ret % 2 ^ (E_ret + E_K + 7) := by
+    rw [hsyz, Nat.add_mul_mod_self_left]
+  have hdvd_hom :
+      (3 ^ S_ret - 2 ^ E_ret) ∣ (Delta_ret + 2 ^ (E_ret + E_K + 7) * (l_2 - l_1)) :=
+    ⟨V r_1, hsyz.symm⟩
+  exact ⟨⟨h2_lt_3, hdiff_odd, by omega⟩, hsyz, hmod_super, hdvd_hom⟩
+
 end Mahler.DubickasExtension
 
 

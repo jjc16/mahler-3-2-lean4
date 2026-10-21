@@ -310,6 +310,11 @@ example (m : ℕ) :
 #print axioms Mahler.DubickasExtension.dense_core_depth2_four_in_16384_and_depth3_eight_in_2097152_sieves
 #print axioms Mahler.DubickasExtension.dense_core_exact_prefix_collision_biconditional_and_mod_cutoff
 
+-- 27. Verify Section 33: Exact normalizedDefectAcc cocycle composition, frozen-remainder stabilization beyond bit W, and return-loop homoclinic denominator syzygy
+#print axioms Mahler.DubickasExtension.normalizedDefectAcc_cocycle_composition_law
+#print axioms Mahler.DubickasExtension.dense_core_frozen_remainder_and_exact_valuation_conspiracy_law
+#print axioms Mahler.DubickasExtension.dense_core_return_loop_homoclinic_denominator_syzygy
+
 #print axioms Mahler.DubickasExtension.dubBaseCarry_eq_fract_linear
 #print axioms Mahler.DubickasExtension.dubBaseY_multi_step_carry_identity
 #print axioms Mahler.DubickasExtension.dubBaseCarry_mem_two_letters
