@@ -12873,6 +12873,248 @@ theorem dense_core_return_loop_homoclinic_denominator_syzygy
     ⟨V r_1, hsyz.symm⟩
   exact ⟨⟨h2_lt_3, hdiff_odd, by omega⟩, hsyz, hmod_super, hdvd_hom⟩
 
+/-!
+## Section 34: Eliminating the Seed $V(0)$ Completely — The Global Origin-to-Return Syzygy and
+## the Seed-Free Two-Return-Loop Compatibility Obstruction on $\{1, 2\}^\mathbb{N}$
+
+In Section 33, we eliminated $V(r_1 + d)$ from a single return loop $(r_1, r_1 + d)$ to obtain
+an equation in $V(r_1)$. In this section, we push that elimination two steps further—first
+eliminating $V(r_1)$ in favor of the initial seed $V(0)$, and then **cross-eliminating $V(0)$
+and the Top-Part quotients $(\ell_2 - \ell_1)$ between any two return loops in the orbit**,
+yielding a **purely combinatorial, seed-free 2-adic obstruction on the spacing sequence
+$j \in \{1, 2\}^\mathbb{N}$ itself**:
+
+1. **Global Origin-to-Return Syzygy & Super-Modulus $2^{E_{r_1+d} + E_K + 7}$ Lock on $V(0)$
+   (`dense_core_global_origin_return_loop_syzygy`)**:
+   Whenever a subword of length $K + 1$ at $r_1$ repeats at $r_1 + d$ ($d \ge 1$), multiplying
+   Section 33's return-loop syzygy by $2^{E_{r_1}}$ and substituting
+   $2^{E_{r_1}} V(r_1) = 3^{S_{r_1}} V(0) - \tilde{\Delta}(j, r_1)$ together with the cocycle
+   law $3^{S_{\text{ret}}} \tilde{\Delta}(j, r_1) + 2^{E_{r_1}} \tilde{\Delta}_{\text{ret}} = \tilde{\Delta}(j, r_1 + d)$
+   proves:
+   $$C_A \cdot V(0) + D_A \;=\; \tilde{\Delta}(j, r_1 + d) + 2^{M_A} (\ell_2 - \ell_1),$$
+   where $C_A = 3^{S_{r_1}} (3^{S_{\text{ret}}} - 2^{E_{\text{ret}}})$ is odd,
+   $D_A = 2^{E_{\text{ret}}} \tilde{\Delta}(j, r_1)$, and $M_A = E_{r_1 + d} + E_K + 7 \ge 7 (r_1 + d + K + 1)$.
+   Reducing modulo $2^{M_A}$ locks $V(0)$ modulo $2^{M_A}$ directly from the return loop:
+   $$\big(C_A \cdot V(0) + D_A\big) \bmod 2^{M_A} \;=\; \tilde{\Delta}(j, r_1 + d) \bmod 2^{M_A}.$$
+
+2. **Seed-Free & Quotient-Free Two-Return-Loop Compatibility Obstruction
+   (`dense_core_seed_free_two_return_loop_syzygy_and_congruence`)**:
+   Suppose a Dense-Core trajectory $(V, j)$ contains two return loops:
+   Loop A at $(r_1, d, K)$ and Loop B at $(r_1', d', K')$. Because both loops must be satisfied
+   by the **same** initial integer $V(0)$, cross-multiplying by $C_B$ and $C_A$ eliminates $V(0)$
+   identically:
+   $$C_B \big(\tilde{\Delta}(j, r_1 + d) + 2^{M_A} Q_A\big) + C_A D_B
+     \;=\; C_A \big(\tilde{\Delta}(j, r_1' + d') + 2^{M_B} Q_B\big) + C_B D_A.$$
+   When $M_A \le M_B$, reducing modulo $2^{M_A}$ eliminates both Top-Part quotients $Q_A, Q_B$ as
+   well, leaving a **completely $V$-free and $W$-free 2-adic congruence on $j \in \{1, 2\}^\mathbb{N}$**:
+   $$\Big(C_B \cdot \tilde{\Delta}(j, r_1 + d) + C_A \cdot D_B\Big) \bmod 2^{M_A}
+     \;=\; \Big(C_A \cdot \tilde{\Delta}(j, r_1' + d') + C_B \cdot D_A\Big) \bmod 2^{M_A}.$$
+-/
+
+/-- **Global Origin-to-Return Syzygy and Super-Modulus $2^{E_{r_1+d} + E_K + 7}$ Lock on $V(0)$
+(`dense_core_global_origin_return_loop_syzygy`)**:
+Suppose $1 \le V(0) < 2^W$, $j(r) \in \{1, 2\}$, $1 \le d$, and a subword of length $K + 1$ at
+$r_1$ repeats at $r_1 + d$ ($\forall t \le K,\; j(r_1 + t) = j(r_1 + d + t)$).
+Let $E_{r_1} = \text{defectStepSum}(\text{fun } t \Rightarrow j(1 + t),\, r_1)$,
+$S_{r_1} = \text{defectStepSum}(j, r_1)$,
+$E_{\text{ret}} = \text{defectStepSum}(\text{fun } t \Rightarrow j(r_1 + 1 + t),\, d)$,
+$S_{\text{ret}} = \text{defectStepSum}(\text{fun } t \Rightarrow j(r_1 + t),\, d)$,
+$E_{r_2} = \text{defectStepSum}(\text{fun } t \Rightarrow j(1 + t),\, r_1 + d)$,
+$E_K = \text{defectStepSum}(\text{fun } t \Rightarrow j(r_1 + 1 + t),\, K)$,
+$M_A = E_{r_2} + E_K + 7$,
+$C_A = 3^{S_{r_1}} \cdot (3^{S_{\text{ret}}} - 2^{E_{\text{ret}}})$,
+$D_A = 2^{E_{\text{ret}}} \cdot \text{normalizedDefectAcc}(j, r_1)$,
+$\ell_1 = V(r_1) / 2^{E_K + 7}$, and $\ell_2 = V(r_1 + d) / 2^{E_K + 7}$.
+Then:
+1. $C_A \bmod 2 = 1$, $E_{r_2} = E_{r_1} + E_{\text{ret}}$, and $7 (r_1 + d + K + 1) \le M_A$.
+2. **Global Origin-to-Return Syzygy**:
+   $$C_A \cdot V(0) + D_A \;=\; \text{normalizedDefectAcc}(j, r_1 + d) + 2^{M_A} \cdot (\ell_2 - \ell_1).$$
+3. **Global Origin Super-Modulus Congruence**:
+   $$\big(C_A \cdot V(0) + D_A\big) \bmod 2^{M_A} \;=\;
+     \text{normalizedDefectAcc}(j, r_1 + d) \bmod 2^{M_A}.$$ -/
+theorem dense_core_global_origin_return_loop_syzygy
+    {V j : ℕ → ℕ} {W r_1 d K : ℕ}
+    (hV0_pos : 1 ≤ V 0) (hV0_lt : V 0 < 2 ^ W)
+    (hj : ∀ r : ℕ, j r = 1 ∨ j r = 2)
+    (hrec : ∀ r : ℕ, 2 ^ (3 * j (r + 1) + 4) * V (r + 1) + 1 = 3 ^ (3 * j r + 4) * V r)
+    (hd1 : 1 ≤ d)
+    (hmatch : ∀ t ≤ K, j (r_1 + t) = j (r_1 + d + t)) :
+    let E_r1 := defectStepSum (fun t => j (1 + t)) r_1
+    let S_r1 := defectStepSum j r_1
+    let E_ret := defectStepSum (fun t => j (r_1 + 1 + t)) d
+    let S_ret := defectStepSum (fun t => j (r_1 + t)) d
+    let E_r2 := defectStepSum (fun t => j (1 + t)) (r_1 + d)
+    let E_K := defectStepSum (fun t => j (r_1 + 1 + t)) K
+    let M_A := E_r2 + E_K + 7
+    let C_A := 3 ^ S_r1 * (3 ^ S_ret - 2 ^ E_ret)
+    let D_A := 2 ^ E_ret * normalizedDefectAcc j r_1
+    let l_1 := V r_1 / 2 ^ (E_K + 7)
+    let l_2 := V (r_1 + d) / 2 ^ (E_K + 7)
+    (C_A % 2 = 1 ∧ E_r2 = E_r1 + E_ret ∧ 7 * (r_1 + d + K + 1) ≤ M_A) ∧
+    C_A * V 0 + D_A = normalizedDefectAcc j (r_1 + d) + 2 ^ M_A * (l_2 - l_1) ∧
+    (C_A * V 0 + D_A) % 2 ^ M_A = normalizedDefectAcc j (r_1 + d) % 2 ^ M_A := by
+  intro E_r1 S_r1 E_ret S_ret E_r2 E_K M_A C_A D_A l_1 l_2
+  have hret := dense_core_return_loop_homoclinic_denominator_syzygy
+    hV0_pos hV0_lt hj hrec hd1 hmatch
+  have h2_lt_3 : 2 ^ E_ret < 3 ^ S_ret := hret.1.1
+  have hdiff_odd : (3 ^ S_ret - 2 ^ E_ret) % 2 = 1 := hret.1.2.1
+  have hsyz_r1 :
+      (3 ^ S_ret - 2 ^ E_ret) * V r_1 =
+        normalizedDefectAcc (fun t => j (r_1 + t)) d + 2 ^ (E_ret + E_K + 7) * (l_2 - l_1) :=
+    hret.2.1
+  have hcocycle := normalizedDefectAcc_cocycle_composition_law j r_1 d
+  have hE_split_raw := (normalizedDefectAcc_cocycle_composition_law (fun t => j (1 + t)) r_1 d).1
+  have hE_ret_eq :
+      defectStepSum (fun t => j (1 + (r_1 + t))) d = E_ret := by
+    congr 1; funext t; congr 1; omega
+  have hEr2_eq : E_r2 = E_r1 + E_ret := by
+    change defectStepSum (fun t => j (1 + t)) (r_1 + d) = E_r1 + E_ret
+    rw [hE_split_raw, hE_ret_eq]
+  have h3_odd : (3 ^ S_r1) % 2 = 1 := by
+    clear hret hsyz_r1 hcocycle
+    induction S_r1 with
+    | zero => decide
+    | succ n ih =>
+        rw [Nat.pow_succ, Nat.mul_mod, ih]
+  have hCA_odd : C_A % 2 = 1 := by
+    change (3 ^ S_r1 * (3 ^ S_ret - 2 ^ E_ret)) % 2 = 1
+    rw [Nat.mul_mod, h3_odd, hdiff_odd]
+  have hEr2_ge : 7 * (r_1 + d) ≤ E_r2 := by
+    have h_all : ∀ m : ℕ, 7 * m ≤ defectStepSum (fun t => j (1 + t)) m := by
+      intro m
+      induction m with
+      | zero => simp only [defectStepSum, Nat.mul_zero, le_refl]
+      | succ m ih =>
+          change 7 * (m + 1) ≤ defectStepSum (fun t => j (1 + t)) m + (3 * j (1 + m) + 4)
+          rcases hj (1 + m) with h1 | h2 <;> omega
+    exact h_all (r_1 + d)
+  have hEK_ge : 7 * K ≤ E_K := by
+    have h_all : ∀ m : ℕ, 7 * m ≤ defectStepSum (fun t => j (r_1 + 1 + t)) m := by
+      intro m
+      induction m with
+      | zero => simp only [defectStepSum, Nat.mul_zero, le_refl]
+      | succ m ih =>
+          change 7 * (m + 1) ≤ defectStepSum (fun t => j (r_1 + 1 + t)) m + (3 * j (r_1 + 1 + m) + 4)
+          rcases hj (r_1 + 1 + m) with h1 | h2 <;> omega
+    exact h_all K
+  have hMA_ge : 7 * (r_1 + d + K + 1) ≤ M_A := by omega
+  have hm_r1 := (normalizedDefectAcc_master_identity_and_infinite_sieve_tower j).2.1 V hrec r_1
+  change 2 ^ E_r1 * V r_1 + normalizedDefectAcc j r_1 = 3 ^ S_r1 * V 0 at hm_r1
+  have hpow_MA : 2 ^ M_A = 2 ^ E_r1 * 2 ^ (E_ret + E_K + 7) := by
+    have hexp : M_A = E_r1 + (E_ret + E_K + 7) := by omega
+    rw [hexp, Nat.pow_add]
+  have hmul_syz :
+      2 ^ E_r1 * ((3 ^ S_ret - 2 ^ E_ret) * V r_1) =
+        2 ^ E_r1 * (normalizedDefectAcc (fun t => j (r_1 + t)) d +
+          2 ^ (E_ret + E_K + 7) * (l_2 - l_1)) :=
+    congrArg (fun x => 2 ^ E_r1 * x) hsyz_r1
+  have hglobal_syz :
+      C_A * V 0 + D_A = normalizedDefectAcc j (r_1 + d) + 2 ^ M_A * (l_2 - l_1) := by
+    set D_ret := 3 ^ S_ret - 2 ^ E_ret
+    set acc_r1 := normalizedDefectAcc j r_1
+    set acc_ret := normalizedDefectAcc (fun t => j (r_1 + t)) d
+    set acc_r2 := normalizedDefectAcc j (r_1 + d)
+    have h1 : D_ret * (2 ^ E_r1 * V r_1) + D_ret * acc_r1 = D_ret * (3 ^ S_r1 * V 0) := by
+      calc D_ret * (2 ^ E_r1 * V r_1) + D_ret * acc_r1
+          = D_ret * (2 ^ E_r1 * V r_1 + acc_r1) := by ring
+        _ = D_ret * (3 ^ S_r1 * V 0) := by rw [hm_r1]
+    have h2 : D_ret * (3 ^ S_r1 * V 0) = C_A * V 0 := by
+      change D_ret * (3 ^ S_r1 * V 0) = (3 ^ S_r1 * D_ret) * V 0
+      ring
+    have h3 : D_ret * acc_r1 + D_A = 3 ^ S_ret * acc_r1 := by
+      change (3 ^ S_ret - 2 ^ E_ret) * acc_r1 + 2 ^ E_ret * acc_r1 = 3 ^ S_ret * acc_r1
+      rw [← Nat.add_mul, Nat.sub_add_cancel (le_of_lt h2_lt_3)]
+    have h4 : D_ret * (2 ^ E_r1 * V r_1) =
+        2 ^ E_r1 * acc_ret + 2 ^ M_A * (l_2 - l_1) := by
+      calc D_ret * (2 ^ E_r1 * V r_1)
+          = 2 ^ E_r1 * (D_ret * V r_1) := by ring
+        _ = 2 ^ E_r1 * (acc_ret + 2 ^ (E_ret + E_K + 7) * (l_2 - l_1)) := hmul_syz
+        _ = 2 ^ E_r1 * acc_ret + (2 ^ E_r1 * 2 ^ (E_ret + E_K + 7)) * (l_2 - l_1) := by ring
+        _ = 2 ^ E_r1 * acc_ret + 2 ^ M_A * (l_2 - l_1) := by rw [← hpow_MA]
+    have h5 : acc_r2 = 3 ^ S_ret * acc_r1 + 2 ^ E_r1 * acc_ret := hcocycle.2
+    linarith only [h1, h2, h3, h4, h5]
+  have hmod_MA :
+      (C_A * V 0 + D_A) % 2 ^ M_A = normalizedDefectAcc j (r_1 + d) % 2 ^ M_A := by
+    rw [hglobal_syz, Nat.add_mul_mod_self_left]
+  exact ⟨⟨hCA_odd, hEr2_eq, hMA_ge⟩, hglobal_syz, hmod_MA⟩
+
+/-- **Seed-Free and Quotient-Free Two-Return-Loop Compatibility Obstruction on $\{1, 2\}^\mathbb{N}$
+(`dense_core_seed_free_two_return_loop_syzygy_and_congruence`)**:
+Suppose $1 \le V(0) < 2^W$, $j(r) \in \{1, 2\}$, and the trajectory contains two return loops:
+- **Loop A**: $(r_1, d, K)$ with $1 \le d$ and $\forall t \le K,\; j(r_1 + t) = j(r_1 + d + t)$,
+- **Loop B**: $(r_1', d', K')$ with $1 \le d'$ and $\forall t \le K',\; j(r_1' + t) = j(r_1' + d' + t)$.
+Then cross-multiplying by the odd return coefficients $C_A, C_B$ eliminates $V(0)$ identically,
+and when $M_A \le M_B$, reducing modulo $2^{M_A}$ eliminates both Top-Part differences $Q_A, Q_B$
+as well, leaving a **purely combinatorial, seed-free and $W$-free 2-adic congruence on $j$**:
+$$\Big(C_B \cdot \text{normalizedDefectAcc}(j, r_1 + d) + C_A \cdot D_B\Big) \bmod 2^{M_A} \;=\;
+  \Big(C_A \cdot \text{normalizedDefectAcc}(j, r_1' + d') + C_B \cdot D_A\Big) \bmod 2^{M_A}.$$ -/
+theorem dense_core_seed_free_two_return_loop_syzygy_and_congruence
+    {V j : ℕ → ℕ} {W r_1 d K r_1' d' K' : ℕ}
+    (hV0_pos : 1 ≤ V 0) (hV0_lt : V 0 < 2 ^ W)
+    (hj : ∀ r : ℕ, j r = 1 ∨ j r = 2)
+    (hrec : ∀ r : ℕ, 2 ^ (3 * j (r + 1) + 4) * V (r + 1) + 1 = 3 ^ (3 * j r + 4) * V r)
+    (hd1 : 1 ≤ d) (hmatchA : ∀ t ≤ K, j (r_1 + t) = j (r_1 + d + t))
+    (hd1' : 1 ≤ d') (hmatchB : ∀ t ≤ K', j (r_1' + t) = j (r_1' + d' + t)) :
+    let S_r1 := defectStepSum j r_1
+    let E_ret := defectStepSum (fun t => j (r_1 + 1 + t)) d
+    let S_ret := defectStepSum (fun t => j (r_1 + t)) d
+    let E_r2 := defectStepSum (fun t => j (1 + t)) (r_1 + d)
+    let E_K := defectStepSum (fun t => j (r_1 + 1 + t)) K
+    let M_A := E_r2 + E_K + 7
+    let C_A := 3 ^ S_r1 * (3 ^ S_ret - 2 ^ E_ret)
+    let D_A := 2 ^ E_ret * normalizedDefectAcc j r_1
+    let Q_A := V (r_1 + d) / 2 ^ (E_K + 7) - V r_1 / 2 ^ (E_K + 7)
+    let S_r1' := defectStepSum j r_1'
+    let E_ret' := defectStepSum (fun t => j (r_1' + 1 + t)) d'
+    let S_ret' := defectStepSum (fun t => j (r_1' + t)) d'
+    let E_r2' := defectStepSum (fun t => j (1 + t)) (r_1' + d')
+    let E_K' := defectStepSum (fun t => j (r_1' + 1 + t)) K'
+    let M_B := E_r2' + E_K' + 7
+    let C_B := 3 ^ S_r1' * (3 ^ S_ret' - 2 ^ E_ret')
+    let D_B := 2 ^ E_ret' * normalizedDefectAcc j r_1'
+    let Q_B := V (r_1' + d') / 2 ^ (E_K' + 7) - V r_1' / 2 ^ (E_K' + 7)
+    C_B * (normalizedDefectAcc j (r_1 + d) + 2 ^ M_A * Q_A) + C_A * D_B =
+      C_A * (normalizedDefectAcc j (r_1' + d') + 2 ^ M_B * Q_B) + C_B * D_A ∧
+    (M_A ≤ M_B →
+      (C_B * normalizedDefectAcc j (r_1 + d) + C_A * D_B) % 2 ^ M_A =
+        (C_A * normalizedDefectAcc j (r_1' + d') + C_B * D_A) % 2 ^ M_A) := by
+  intro S_r1 E_ret S_ret E_r2 E_K M_A C_A D_A Q_A
+    S_r1' E_ret' S_ret' E_r2' E_K' M_B C_B D_B Q_B
+  have hA := (dense_core_global_origin_return_loop_syzygy
+    hV0_pos hV0_lt hj hrec hd1 hmatchA).2.1
+  have hB := (dense_core_global_origin_return_loop_syzygy
+    hV0_pos hV0_lt hj hrec hd1' hmatchB).2.1
+  change C_A * V 0 + D_A = normalizedDefectAcc j (r_1 + d) + 2 ^ M_A * Q_A at hA
+  change C_B * V 0 + D_B = normalizedDefectAcc j (r_1' + d') + 2 ^ M_B * Q_B at hB
+  set R_A := normalizedDefectAcc j (r_1 + d) + 2 ^ M_A * Q_A
+  set R_B := normalizedDefectAcc j (r_1' + d') + 2 ^ M_B * Q_B
+  have hsyz_AB : C_B * R_A + C_A * D_B = C_A * R_B + C_B * D_A := by
+    have hm1 : C_B * (C_A * V 0 + D_A) = C_B * R_A := congrArg (fun x => C_B * x) hA
+    have hm2 : C_A * (C_B * V 0 + D_B) = C_A * R_B := congrArg (fun x => C_A * x) hB
+    have hexp1 : C_B * (C_A * V 0 + D_A) = (C_A * C_B * V 0) + C_B * D_A := by ring
+    have hexp2 : C_A * (C_B * V 0 + D_B) = (C_A * C_B * V 0) + C_A * D_B := by ring
+    linarith only [hm1, hm2, hexp1, hexp2]
+  refine ⟨hsyz_AB, ?_⟩
+  intro hM_le
+  rcases Nat.pow_dvd_pow 2 hM_le with ⟨U, hU⟩
+  set acc_A := normalizedDefectAcc j (r_1 + d)
+  set acc_B := normalizedDefectAcc j (r_1' + d')
+  have hlhs :
+      C_B * R_A + C_A * D_B =
+        (C_B * acc_A + C_A * D_B) + 2 ^ M_A * (C_B * Q_A) := by
+    change C_B * (acc_A + 2 ^ M_A * Q_A) + C_A * D_B = _
+    ring
+  have hrhs :
+      C_A * R_B + C_B * D_A =
+        (C_A * acc_B + C_B * D_A) + 2 ^ M_A * (C_A * U * Q_B) := by
+    change C_A * (acc_B + 2 ^ M_B * Q_B) + C_B * D_A = _
+    rw [hU]
+    ring
+  have hmod_eq : (C_B * R_A + C_A * D_B) % 2 ^ M_A = (C_A * R_B + C_B * D_A) % 2 ^ M_A := by
+    rw [hsyz_AB]
+  rw [hlhs, hrhs, Nat.add_mul_mod_self_left, Nat.add_mul_mod_self_left] at hmod_eq
+  exact hmod_eq
+
 end Mahler.DubickasExtension
 
 

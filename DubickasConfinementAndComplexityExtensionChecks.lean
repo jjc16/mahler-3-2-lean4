@@ -315,6 +315,10 @@ example (m : ℕ) :
 #print axioms Mahler.DubickasExtension.dense_core_frozen_remainder_and_exact_valuation_conspiracy_law
 #print axioms Mahler.DubickasExtension.dense_core_return_loop_homoclinic_denominator_syzygy
 
+-- 28. Verify Section 34: Global origin-to-return syzygy and seed-free two-return-loop compatibility obstruction on {1, 2}^N
+#print axioms Mahler.DubickasExtension.dense_core_global_origin_return_loop_syzygy
+#print axioms Mahler.DubickasExtension.dense_core_seed_free_two_return_loop_syzygy_and_congruence
+
 #print axioms Mahler.DubickasExtension.dubBaseCarry_eq_fract_linear
 #print axioms Mahler.DubickasExtension.dubBaseY_multi_step_carry_identity
 #print axioms Mahler.DubickasExtension.dubBaseCarry_mem_two_letters
