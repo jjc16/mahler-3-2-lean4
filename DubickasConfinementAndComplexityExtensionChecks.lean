@@ -323,6 +323,10 @@ example (m : ℕ) :
 #print axioms Mahler.DubickasExtension.dense_core_every_three_step_window_spawns_maximal_branching_return_loop
 #print axioms Mahler.DubickasExtension.dense_core_seed_free_two_loop_bit_flip_and_spectral_gap
 
+-- 30. Verify Section 36: Exact constant-run (2059, 58025) and alternating-run (129009091) valuation locks across every 3-step window
+#print axioms Mahler.DubickasExtension.dense_core_constant_run_length_2059_and_58025_valuation_locks
+#print axioms Mahler.DubickasExtension.dense_core_alternating_run_129009091_valuation_locks
+
 #print axioms Mahler.DubickasExtension.dubBaseCarry_eq_fract_linear
 #print axioms Mahler.DubickasExtension.dubBaseY_multi_step_carry_identity
 #print axioms Mahler.DubickasExtension.dubBaseCarry_mem_two_letters

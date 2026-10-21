@@ -13441,6 +13441,360 @@ theorem dense_core_seed_free_two_loop_bit_flip_and_spectral_gap
   exact ⟨⟨fun h => (hpart2 h hM7_le).2, heq_of_mod1⟩,
     ⟨fun h => (hpart2 (heq_of_mod1 h) hM7_le).1, hmod1_of_mod7⟩⟩
 
+/-!
+## Section 36: Exact Run-Length & Alternating-Run Valuation Locks ($2059 V - 1$, $58025 V - 1$,
+## and $129{,}009{,}091 V - \{60073, 2315\}$) Across Every 3-Step Window in the Dense Core
+
+In Section 35, we proved that **every** 3-step window $[r_0, r_0 + 2]$ in the Dense Core spawns a
+local return loop with period $d = 1$ (a run of identical symbols `1, 1, ...` or `2, 2, ...`) or
+period $d = 2$ (an alternating run `1, 2, 1, ...` or `2, 1, 2, ...`). In this section, we evaluate
+Section 33's Return-Loop Homoclinic Denominator Syzygy explicitly at $d = 1$ and $d = 2$, proving
+that at **every single step of a Dense-Core trajectory**, the duration of the current constant or
+alternating run is **100% locked to the exact 2-adic valuation of one of four explicit linear forms**:
+
+1. **Constant-Run Valuation Locks ($2059 = 3^7 - 2^7$ and $58025 = 3^{10} - 2^{10}$)
+   (`dense_core_constant_run_length_2059_and_58025_valuation_locks`)**:
+   - **Run of $1$s (`0001001` repeat)**: Whenever $j(r_1 + t) = 1$ for all $t \le K + 1$,
+     with $\ell_1 = V(r_1) / 2^{7 (K + 1)}$ and $\ell_2 = V(r_1 + 1) / 2^{7 (K + 1)}$:
+     $$2059 \cdot V(r_1) \;=\; 1 + 2^{7 (K + 2)} (\ell_2 - \ell_1), \qquad
+       2^{7 (K + 2)} \;\Big|\; \big(2059 \cdot V(r_1) - 1\big),$$
+     and when the run of $1$s ends at $r_1 + K + 2$ ($j(r_1 + K + 2) = 2$),
+     $(\ell_2 - \ell_1) \bmod 2 = 1$ and $\neg \big(2^{7 (K + 2) + 1} \mid (2059 \cdot V(r_1) - 1)\big)$.
+   - **Run of $2$s (`0001001001` repeat)**: Whenever $j(r_1 + t) = 2$ for all $t \le K + 1$,
+     with $\ell_1 = V(r_1) / 2^{10 K + 7}$ and $\ell_2 = V(r_1 + 1) / 2^{10 K + 7}$:
+     $$58025 \cdot V(r_1) \;=\; 1 + 2^{10 (K + 1) + 7} (\ell_2 - \ell_1), \qquad
+       2^{10 (K + 1) + 7} \;\Big|\; \big(58025 \cdot V(r_1) - 1\big),$$
+     and when the run of $2$s ends at $r_1 + K + 2$ ($j(r_1 + K + 2) = 1$),
+     $(\ell_2 - \ell_1) \bmod 2 = 1$ and $\neg \big(2^{10 (K + 1) + 8} \mid (58025 \cdot V(r_1) - 1)\big)$.
+
+2. **Alternating-Run Valuation Locks ($129{,}009{,}091 = 3^{17} - 2^{17}$, $\tilde{\Delta}_{\text{ret}} \in \{60{,}073, 2{,}315\}$)
+   (`dense_core_alternating_run_129009091_valuation_locks`)**:
+   - **Alternating `1, 2, 1, ...` Run**: Whenever $j(r_1) = 1, j(r_1 + 1) = 2$, and
+     $\forall t \le K,\; j(r_1 + t) = j(r_1 + 2 + t)$, with
+     $E_K = \text{defectStepSum}(\text{fun } t \Rightarrow j(r_1 + 1 + t),\, K)$,
+     $\ell_1 = V(r_1) / 2^{E_K + 7}$, and $\ell_2 = V(r_1 + 2) / 2^{E_K + 7}$:
+     $$129009091 \cdot V(r_1) \;=\; 60073 + 2^{E_K + 24} (\ell_2 - \ell_1), \qquad
+       2^{E_K + 24} \;\Big|\; \big(129009091 \cdot V(r_1) - 60073\big),$$
+     and when the alternating run breaks at $j(r_1 + K + 1) \ne j(r_1 + 2 + K + 1)$,
+     $(\ell_2 - \ell_1) \bmod 2 = 1$ and $\neg \big(2^{E_K + 25} \mid (129009091 \cdot V(r_1) - 60073)\big)$.
+   - **Alternating `2, 1, 2, ...` Run**: Whenever $j(r_1) = 2, j(r_1 + 1) = 1$, and
+     $\forall t \le K,\; j(r_1 + t) = j(r_1 + 2 + t)$:
+     $$129009091 \cdot V(r_1) \;=\; 2315 + 2^{E_K + 24} (\ell_2 - \ell_1), \qquad
+       2^{E_K + 24} \;\Big|\; \big(129009091 \cdot V(r_1) - 2315\big),$$
+     and when the alternating run breaks at $j(r_1 + K + 1) \ne j(r_1 + 2 + K + 1)$,
+     $(\ell_2 - \ell_1) \bmod 2 = 1$ and $\neg \big(2^{E_K + 25} \mid (129009091 \cdot V(r_1) - 2315)\big)$.
+-/
+
+/-- **Constant-Run Valuation Locks ($2059 = 3^7 - 2^7$ and $58025 = 3^{10} - 2^{10}$) in the Dense Core
+(`dense_core_constant_run_length_2059_and_58025_valuation_locks`)**:
+Suppose $1 \le V(0) < 2^W$, $j(r) \in \{1, 2\}$, and
+$2^{3 j(r + 1) + 4} V(r + 1) + 1 = 3^{3 j(r) + 4} V(r)$ for all $r \in \mathbb{N}$.
+1. **Run of $1$s ($2059 \cdot V(r_1) - 1$)**: For any $r_1, K \in \mathbb{N}$ such that
+   $\forall t \le K + 1,\; j(r_1 + t) = 1$, let $\ell_1 = V(r_1) / 2^{7 (K + 1)}$ and
+   $\ell_2 = V(r_1 + 1) / 2^{7 (K + 1)}$:
+   - $2059 \cdot V(r_1) = 1 + 2^{7 (K + 2)} (\ell_2 - \ell_1)$ and $2^{7 (K + 2)} \mid (2059 \cdot V(r_1) - 1)$.
+   - If $j(r_1 + K + 2) = 2$, then $(\ell_2 - \ell_1) \bmod 2 = 1$ and
+     $\neg (2^{7 (K + 2) + 1} \mid (2059 \cdot V(r_1) - 1))$.
+2. **Run of $2$s ($58025 \cdot V(r_1) - 1$)**: For any $r_1, K \in \mathbb{N}$ such that
+   $\forall t \le K + 1,\; j(r_1 + t) = 2$, let $\ell_1 = V(r_1) / 2^{10 K + 7}$ and
+   $\ell_2 = V(r_1 + 1) / 2^{10 K + 7}$:
+   - $58025 \cdot V(r_1) = 1 + 2^{10 (K + 1) + 7} (\ell_2 - \ell_1)$ and
+     $2^{10 (K + 1) + 7} \mid (58025 \cdot V(r_1) - 1)$.
+   - If $j(r_1 + K + 2) = 1$, then $(\ell_2 - \ell_1) \bmod 2 = 1$ and
+     $\neg (2^{10 (K + 1) + 8} \mid (58025 \cdot V(r_1) - 1))$. -/
+theorem dense_core_constant_run_length_2059_and_58025_valuation_locks
+    {V j : ℕ → ℕ} {W : ℕ}
+    (hV0_pos : 1 ≤ V 0) (hV0_lt : V 0 < 2 ^ W)
+    (hj : ∀ r : ℕ, j r = 1 ∨ j r = 2)
+    (hrec : ∀ r : ℕ, 2 ^ (3 * j (r + 1) + 4) * V (r + 1) + 1 = 3 ^ (3 * j r + 4) * V r) :
+    (∀ r_1 K : ℕ, (∀ t ≤ K + 1, j (r_1 + t) = 1) →
+      let l_1 := V r_1 / 2 ^ (7 * (K + 1))
+      let l_2 := V (r_1 + 1) / 2 ^ (7 * (K + 1))
+      2059 * V r_1 = 1 + 2 ^ (7 * (K + 2)) * (l_2 - l_1) ∧
+      (2 ^ (7 * (K + 2)) ∣ (2059 * V r_1 - 1)) ∧
+      (j (r_1 + K + 2) = 2 →
+        (l_2 - l_1) % 2 = 1 ∧ ¬ (2 ^ (7 * (K + 2) + 1) ∣ (2059 * V r_1 - 1)))) ∧
+    (∀ r_1 K : ℕ, (∀ t ≤ K + 1, j (r_1 + t) = 2) →
+      let l_1 := V r_1 / 2 ^ (10 * K + 7)
+      let l_2 := V (r_1 + 1) / 2 ^ (10 * K + 7)
+      58025 * V r_1 = 1 + 2 ^ (10 * (K + 1) + 7) * (l_2 - l_1) ∧
+      (2 ^ (10 * (K + 1) + 7) ∣ (58025 * V r_1 - 1)) ∧
+      (j (r_1 + K + 2) = 1 →
+        (l_2 - l_1) % 2 = 1 ∧ ¬ (2 ^ (10 * (K + 1) + 8) ∣ (58025 * V r_1 - 1)))) := by
+  refine ⟨?_, ?_⟩
+  · intro r_1 K hrun l_1 l_2
+    have hmatch : ∀ t ≤ K, j (r_1 + t) = j (r_1 + 1 + t) := by
+      intro t ht
+      have h1 := hrun t (by omega)
+      have h2 := hrun (1 + t) (by omega)
+      have hidx : r_1 + (1 + t) = r_1 + 1 + t := by omega
+      rw [hidx] at h2
+      exact h1.trans h2.symm
+    have hEK : defectStepSum (fun t => j (r_1 + 1 + t)) K = 7 * K := by
+      have h_all : ∀ m ≤ K, defectStepSum (fun t => j (r_1 + 1 + t)) m = 7 * m := by
+        intro m hm
+        induction m with
+        | zero => rfl
+        | succ m ih =>
+            have ihm := ih (by omega)
+            have hm1 : j (r_1 + 1 + m) = 1 := by
+              have h := hrun (1 + m) (by omega)
+              have hidx : r_1 + (1 + m) = r_1 + 1 + m := by omega
+              rw [← hidx]; exact h
+            change defectStepSum (fun t => j (r_1 + 1 + t)) m + (3 * j (r_1 + 1 + m) + 4) =
+              7 * (m + 1)
+            rw [ihm, hm1]; omega
+      exact h_all K le_rfl
+    have hj0 : j r_1 = 1 := by simpa using hrun 0 (by omega)
+    have hj1 : j (r_1 + 1) = 1 := by simpa using hrun 1 (by omega)
+    have hE_ret : defectStepSum (fun t => j (r_1 + 1 + t)) 1 = 7 := by
+      change 0 + (3 * j (r_1 + 1) + 4) = 7
+      rw [hj1]
+    have hS_ret : defectStepSum (fun t => j (r_1 + t)) 1 = 7 := by
+      change 0 + (3 * j r_1 + 4) = 7
+      rw [hj0]
+    have hDelta_ret : normalizedDefectAcc (fun t => j (r_1 + t)) 1 = 1 := rfl
+    have hsyz := (dense_core_return_loop_homoclinic_denominator_syzygy
+      hV0_pos hV0_lt hj hrec (d := 1) le_rfl hmatch).2.1
+    change (3 ^ (defectStepSum (fun t => j (r_1 + t)) 1) -
+        2 ^ (defectStepSum (fun t => j (r_1 + 1 + t)) 1)) * V r_1 =
+      normalizedDefectAcc (fun t => j (r_1 + t)) 1 +
+        2 ^ (defectStepSum (fun t => j (r_1 + 1 + t)) 1 +
+          defectStepSum (fun t => j (r_1 + 1 + t)) K + 7) *
+          (V (r_1 + 1) / 2 ^ (defectStepSum (fun t => j (r_1 + 1 + t)) K + 7) -
+            V r_1 / 2 ^ (defectStepSum (fun t => j (r_1 + 1 + t)) K + 7)) at hsyz
+    rw [hS_ret, hE_ret, hDelta_ret, hEK] at hsyz
+    have hexp1 : 7 * K + 7 = 7 * (K + 1) := by omega
+    have hexp2 : 7 + 7 * K + 7 = 7 * (K + 2) := by omega
+    have h2059 : (3 : ℕ) ^ 7 - 2 ^ 7 = 2059 := by decide
+    rw [hexp1, hexp2, h2059] at hsyz
+    change 2059 * V r_1 = 1 + 2 ^ (7 * (K + 2)) * (l_2 - l_1) at hsyz
+    have hdvd : 2 ^ (7 * (K + 2)) ∣ (2059 * V r_1 - 1) := ⟨l_2 - l_1, by omega⟩
+    refine ⟨hsyz, hdvd, ?_⟩
+    intro hj_end
+    have hj_K1 : j (r_1 + K + 1) = 1 := by
+      have h := hrun (K + 1) le_rfl
+      have hidx : r_1 + (K + 1) = r_1 + K + 1 := by omega
+      rw [← hidx]; exact h
+    have hjne : j (r_1 + K + 1) ≠ j (r_1 + 1 + K + 1) := by
+      have hidx : r_1 + 1 + K + 1 = r_1 + K + 2 := by omega
+      rw [hidx, hj_K1, hj_end]
+      decide
+    have htop := dense_core_repeated_window_top_part_isolation_and_squeeze
+      hV0_pos hV0_lt hj hrec (r_2 := r_1 + 1) (by omega) hmatch
+    have hodd_Q := htop.2.1.1 hjne
+    rw [hEK, hexp1] at hodd_Q
+    change (l_2 - l_1) % 2 = 1 at hodd_Q
+    refine ⟨hodd_Q, ?_⟩
+    rintro ⟨M, hM⟩
+    have hpow1 : 2 ^ (7 * (K + 2) + 1) = 2 ^ (7 * (K + 2)) * 2 := by rw [Nat.pow_add]
+    have hmul : 2 ^ (7 * (K + 2)) * (l_2 - l_1) = 2 ^ (7 * (K + 2)) * (2 * M) := by
+      have hsub : 2059 * V r_1 - 1 = 2 ^ (7 * (K + 2)) * (l_2 - l_1) := by omega
+      rw [← hsub, hM, hpow1]; ring
+    have heven : l_2 - l_1 = 2 * M :=
+      Nat.eq_of_mul_eq_mul_left (Nat.pow_pos (by decide)) hmul
+    omega
+  · intro r_1 K hrun l_1 l_2
+    have hmatch : ∀ t ≤ K, j (r_1 + t) = j (r_1 + 1 + t) := by
+      intro t ht
+      have h1 := hrun t (by omega)
+      have h2 := hrun (1 + t) (by omega)
+      have hidx : r_1 + (1 + t) = r_1 + 1 + t := by omega
+      rw [hidx] at h2
+      exact h1.trans h2.symm
+    have hEK : defectStepSum (fun t => j (r_1 + 1 + t)) K = 10 * K := by
+      have h_all : ∀ m ≤ K, defectStepSum (fun t => j (r_1 + 1 + t)) m = 10 * m := by
+        intro m hm
+        induction m with
+        | zero => rfl
+        | succ m ih =>
+            have ihm := ih (by omega)
+            have hm2 : j (r_1 + 1 + m) = 2 := by
+              have h := hrun (1 + m) (by omega)
+              have hidx : r_1 + (1 + m) = r_1 + 1 + m := by omega
+              rw [← hidx]; exact h
+            change defectStepSum (fun t => j (r_1 + 1 + t)) m + (3 * j (r_1 + 1 + m) + 4) =
+              10 * (m + 1)
+            rw [ihm, hm2]; omega
+      exact h_all K le_rfl
+    have hj0 : j r_1 = 2 := by simpa using hrun 0 (by omega)
+    have hj1 : j (r_1 + 1) = 2 := by simpa using hrun 1 (by omega)
+    have hE_ret : defectStepSum (fun t => j (r_1 + 1 + t)) 1 = 10 := by
+      change 0 + (3 * j (r_1 + 1) + 4) = 10
+      rw [hj1]
+    have hS_ret : defectStepSum (fun t => j (r_1 + t)) 1 = 10 := by
+      change 0 + (3 * j r_1 + 4) = 10
+      rw [hj0]
+    have hDelta_ret : normalizedDefectAcc (fun t => j (r_1 + t)) 1 = 1 := rfl
+    have hsyz := (dense_core_return_loop_homoclinic_denominator_syzygy
+      hV0_pos hV0_lt hj hrec (d := 1) le_rfl hmatch).2.1
+    change (3 ^ (defectStepSum (fun t => j (r_1 + t)) 1) -
+        2 ^ (defectStepSum (fun t => j (r_1 + 1 + t)) 1)) * V r_1 =
+      normalizedDefectAcc (fun t => j (r_1 + t)) 1 +
+        2 ^ (defectStepSum (fun t => j (r_1 + 1 + t)) 1 +
+          defectStepSum (fun t => j (r_1 + 1 + t)) K + 7) *
+          (V (r_1 + 1) / 2 ^ (defectStepSum (fun t => j (r_1 + 1 + t)) K + 7) -
+            V r_1 / 2 ^ (defectStepSum (fun t => j (r_1 + 1 + t)) K + 7)) at hsyz
+    rw [hS_ret, hE_ret, hDelta_ret, hEK] at hsyz
+    have hexp2 : 10 + 10 * K + 7 = 10 * (K + 1) + 7 := by omega
+    have h58025 : (3 : ℕ) ^ 10 - 2 ^ 10 = 58025 := by decide
+    rw [hexp2, h58025] at hsyz
+    change 58025 * V r_1 = 1 + 2 ^ (10 * (K + 1) + 7) * (l_2 - l_1) at hsyz
+    have hdvd : 2 ^ (10 * (K + 1) + 7) ∣ (58025 * V r_1 - 1) := ⟨l_2 - l_1, by omega⟩
+    refine ⟨hsyz, hdvd, ?_⟩
+    intro hj_end
+    have hj_K1 : j (r_1 + K + 1) = 2 := by
+      have h := hrun (K + 1) le_rfl
+      have hidx : r_1 + (K + 1) = r_1 + K + 1 := by omega
+      rw [← hidx]; exact h
+    have hjne : j (r_1 + K + 1) ≠ j (r_1 + 1 + K + 1) := by
+      have hidx : r_1 + 1 + K + 1 = r_1 + K + 2 := by omega
+      rw [hidx, hj_K1, hj_end]
+      decide
+    have htop := dense_core_repeated_window_top_part_isolation_and_squeeze
+      hV0_pos hV0_lt hj hrec (r_2 := r_1 + 1) (by omega) hmatch
+    have hodd_Q := htop.2.1.1 hjne
+    rw [hEK] at hodd_Q
+    change (l_2 - l_1) % 2 = 1 at hodd_Q
+    refine ⟨hodd_Q, ?_⟩
+    rintro ⟨M, hM⟩
+    have hpow1 : 2 ^ (10 * (K + 1) + 8) = 2 ^ (10 * (K + 1) + 7) * 2 := by
+      have hexp : 10 * (K + 1) + 8 = (10 * (K + 1) + 7) + 1 := by omega
+      rw [hexp, Nat.pow_add]
+    have hmul : 2 ^ (10 * (K + 1) + 7) * (l_2 - l_1) = 2 ^ (10 * (K + 1) + 7) * (2 * M) := by
+      have hsub : 58025 * V r_1 - 1 = 2 ^ (10 * (K + 1) + 7) * (l_2 - l_1) := by omega
+      rw [← hsub, hM, hpow1]; ring
+    have heven : l_2 - l_1 = 2 * M :=
+      Nat.eq_of_mul_eq_mul_left (Nat.pow_pos (by decide)) hmul
+    omega
+
+/-- **Alternating-Run Valuation Locks ($129{,}009{,}091 = 3^{17} - 2^{17}$, $\tilde{\Delta}_{\text{ret}} \in \{60{,}073, 2{,}315\}$)
+in the Dense Core (`dense_core_alternating_run_129009091_valuation_locks`)**:
+Suppose $1 \le V(0) < 2^W$, $j(r) \in \{1, 2\}$, and
+$2^{3 j(r + 1) + 4} V(r + 1) + 1 = 3^{3 j(r) + 4} V(r)$ for all $r \in \mathbb{N}$.
+1. **Alternating `1, 2, 1, ...` Run ($129009091 \cdot V(r_1) - 60073$)**:
+   Whenever $j(r_1) = 1, j(r_1 + 1) = 2$, and $\forall t \le K,\; j(r_1 + t) = j(r_1 + 2 + t)$,
+   with $E_K = \text{defectStepSum}(\text{fun } t \Rightarrow j(r_1 + 1 + t),\, K)$,
+   $\ell_1 = V(r_1) / 2^{E_K + 7}$, and $\ell_2 = V(r_1 + 2) / 2^{E_K + 7}$:
+   - $129009091 \cdot V(r_1) = 60073 + 2^{E_K + 24} (\ell_2 - \ell_1)$ and
+     $2^{E_K + 24} \mid (129009091 \cdot V(r_1) - 60073)$.
+   - If $j(r_1 + K + 1) \ne j(r_1 + 2 + K + 1)$, then $(\ell_2 - \ell_1) \bmod 2 = 1$ and
+     $\neg (2^{E_K + 25} \mid (129009091 \cdot V(r_1) - 60073))$.
+2. **Alternating `2, 1, 2, ...` Run ($129009091 \cdot V(r_1) - 2315$)**:
+   Whenever $j(r_1) = 2, j(r_1 + 1) = 1$, and $\forall t \le K,\; j(r_1 + t) = j(r_1 + 2 + t)$:
+   - $129009091 \cdot V(r_1) = 2315 + 2^{E_K + 24} (\ell_2 - \ell_1)$ and
+     $2^{E_K + 24} \mid (129009091 \cdot V(r_1) - 2315)$.
+   - If $j(r_1 + K + 1) \ne j(r_1 + 2 + K + 1)$, then $(\ell_2 - \ell_1) \bmod 2 = 1$ and
+     $\neg (2^{E_K + 25} \mid (129009091 \cdot V(r_1) - 2315))$. -/
+theorem dense_core_alternating_run_129009091_valuation_locks
+    {V j : ℕ → ℕ} {W : ℕ}
+    (hV0_pos : 1 ≤ V 0) (hV0_lt : V 0 < 2 ^ W)
+    (hj : ∀ r : ℕ, j r = 1 ∨ j r = 2)
+    (hrec : ∀ r : ℕ, 2 ^ (3 * j (r + 1) + 4) * V (r + 1) + 1 = 3 ^ (3 * j r + 4) * V r) :
+    (∀ r_1 K : ℕ, j r_1 = 1 → j (r_1 + 1) = 2 →
+      (∀ t ≤ K, j (r_1 + t) = j (r_1 + 2 + t)) →
+      let E_K := defectStepSum (fun t => j (r_1 + 1 + t)) K
+      let l_1 := V r_1 / 2 ^ (E_K + 7)
+      let l_2 := V (r_1 + 2) / 2 ^ (E_K + 7)
+      129009091 * V r_1 = 60073 + 2 ^ (E_K + 24) * (l_2 - l_1) ∧
+      (2 ^ (E_K + 24) ∣ (129009091 * V r_1 - 60073)) ∧
+      (j (r_1 + K + 1) ≠ j (r_1 + 2 + K + 1) →
+        (l_2 - l_1) % 2 = 1 ∧ ¬ (2 ^ (E_K + 25) ∣ (129009091 * V r_1 - 60073)))) ∧
+    (∀ r_1 K : ℕ, j r_1 = 2 → j (r_1 + 1) = 1 →
+      (∀ t ≤ K, j (r_1 + t) = j (r_1 + 2 + t)) →
+      let E_K := defectStepSum (fun t => j (r_1 + 1 + t)) K
+      let l_1 := V r_1 / 2 ^ (E_K + 7)
+      let l_2 := V (r_1 + 2) / 2 ^ (E_K + 7)
+      129009091 * V r_1 = 2315 + 2 ^ (E_K + 24) * (l_2 - l_1) ∧
+      (2 ^ (E_K + 24) ∣ (129009091 * V r_1 - 2315)) ∧
+      (j (r_1 + K + 1) ≠ j (r_1 + 2 + K + 1) →
+        (l_2 - l_1) % 2 = 1 ∧ ¬ (2 ^ (E_K + 25) ∣ (129009091 * V r_1 - 2315)))) := by
+  refine ⟨?_, ?_⟩
+  · intro r_1 K hj0 hj1 hmatch E_K l_1 l_2
+    have hj2 : j (r_1 + 2) = 1 := by
+      have h0 := (hmatch 0 (by omega)).symm
+      simpa [hj0] using h0
+    have hE_ret : defectStepSum (fun t => j (r_1 + 1 + t)) 2 = 17 := by
+      change (0 + (3 * j (r_1 + 1) + 4)) + (3 * j (r_1 + 1 + 1) + 4) = 17
+      have hidx : r_1 + 1 + 1 = r_1 + 2 := by omega
+      rw [hidx, hj1, hj2]
+    have hS_ret : defectStepSum (fun t => j (r_1 + t)) 2 = 17 := by
+      change (0 + (3 * j r_1 + 4)) + (3 * j (r_1 + 1) + 4) = 17
+      rw [hj0, hj1]
+    have hDelta_ret : normalizedDefectAcc (fun t => j (r_1 + t)) 2 = 60073 := by
+      change 3 ^ (3 * j (r_1 + 1) + 4) * 1 + 2 ^ (0 + (3 * j (r_1 + 1) + 4)) = 60073
+      rw [hj1]; rfl
+    have hsyz := (dense_core_return_loop_homoclinic_denominator_syzygy
+      hV0_pos hV0_lt hj hrec (d := 2) (by decide) hmatch).2.1
+    change (3 ^ (defectStepSum (fun t => j (r_1 + t)) 2) -
+        2 ^ (defectStepSum (fun t => j (r_1 + 1 + t)) 2)) * V r_1 =
+      normalizedDefectAcc (fun t => j (r_1 + t)) 2 +
+        2 ^ (defectStepSum (fun t => j (r_1 + 1 + t)) 2 + E_K + 7) * (l_2 - l_1) at hsyz
+    rw [hS_ret, hE_ret, hDelta_ret] at hsyz
+    have hexp : 17 + E_K + 7 = E_K + 24 := by omega
+    have h129 : (3 : ℕ) ^ 17 - 2 ^ 17 = 129009091 := by decide
+    rw [hexp, h129] at hsyz
+    have hdvd : 2 ^ (E_K + 24) ∣ (129009091 * V r_1 - 60073) := ⟨l_2 - l_1, by omega⟩
+    refine ⟨hsyz, hdvd, ?_⟩
+    intro hjne
+    have htop := dense_core_repeated_window_top_part_isolation_and_squeeze
+      hV0_pos hV0_lt hj hrec (r_2 := r_1 + 2) (by omega) hmatch
+    have hodd_Q := htop.2.1.1 hjne
+    change (l_2 - l_1) % 2 = 1 at hodd_Q
+    refine ⟨hodd_Q, ?_⟩
+    rintro ⟨M, hM⟩
+    have hpow1 : 2 ^ (E_K + 25) = 2 ^ (E_K + 24) * 2 := by
+      have hexp1 : E_K + 25 = (E_K + 24) + 1 := by omega
+      rw [hexp1, Nat.pow_add]
+    have hmul : 2 ^ (E_K + 24) * (l_2 - l_1) = 2 ^ (E_K + 24) * (2 * M) := by
+      have hsub : 129009091 * V r_1 - 60073 = 2 ^ (E_K + 24) * (l_2 - l_1) := by omega
+      rw [← hsub, hM, hpow1]; ring
+    have heven : l_2 - l_1 = 2 * M :=
+      Nat.eq_of_mul_eq_mul_left (Nat.pow_pos (by decide)) hmul
+    omega
+  · intro r_1 K hj0 hj1 hmatch E_K l_1 l_2
+    have hj2 : j (r_1 + 2) = 2 := by
+      have h0 := (hmatch 0 (by omega)).symm
+      simpa [hj0] using h0
+    have hE_ret : defectStepSum (fun t => j (r_1 + 1 + t)) 2 = 17 := by
+      change (0 + (3 * j (r_1 + 1) + 4)) + (3 * j (r_1 + 1 + 1) + 4) = 17
+      have hidx : r_1 + 1 + 1 = r_1 + 2 := by omega
+      rw [hidx, hj1, hj2]
+    have hS_ret : defectStepSum (fun t => j (r_1 + t)) 2 = 17 := by
+      change (0 + (3 * j r_1 + 4)) + (3 * j (r_1 + 1) + 4) = 17
+      rw [hj0, hj1]
+    have hDelta_ret : normalizedDefectAcc (fun t => j (r_1 + t)) 2 = 2315 := by
+      change 3 ^ (3 * j (r_1 + 1) + 4) * 1 + 2 ^ (0 + (3 * j (r_1 + 1) + 4)) = 2315
+      rw [hj1]; rfl
+    have hsyz := (dense_core_return_loop_homoclinic_denominator_syzygy
+      hV0_pos hV0_lt hj hrec (d := 2) (by decide) hmatch).2.1
+    change (3 ^ (defectStepSum (fun t => j (r_1 + t)) 2) -
+        2 ^ (defectStepSum (fun t => j (r_1 + 1 + t)) 2)) * V r_1 =
+      normalizedDefectAcc (fun t => j (r_1 + t)) 2 +
+        2 ^ (defectStepSum (fun t => j (r_1 + 1 + t)) 2 + E_K + 7) * (l_2 - l_1) at hsyz
+    rw [hS_ret, hE_ret, hDelta_ret] at hsyz
+    have hexp : 17 + E_K + 7 = E_K + 24 := by omega
+    have h129 : (3 : ℕ) ^ 17 - 2 ^ 17 = 129009091 := by decide
+    rw [hexp, h129] at hsyz
+    have hdvd : 2 ^ (E_K + 24) ∣ (129009091 * V r_1 - 2315) := ⟨l_2 - l_1, by omega⟩
+    refine ⟨hsyz, hdvd, ?_⟩
+    intro hjne
+    have htop := dense_core_repeated_window_top_part_isolation_and_squeeze
+      hV0_pos hV0_lt hj hrec (r_2 := r_1 + 2) (by omega) hmatch
+    have hodd_Q := htop.2.1.1 hjne
+    change (l_2 - l_1) % 2 = 1 at hodd_Q
+    refine ⟨hodd_Q, ?_⟩
+    rintro ⟨M, hM⟩
+    have hpow1 : 2 ^ (E_K + 25) = 2 ^ (E_K + 24) * 2 := by
+      have hexp1 : E_K + 25 = (E_K + 24) + 1 := by omega
+      rw [hexp1, Nat.pow_add]
+    have hmul : 2 ^ (E_K + 24) * (l_2 - l_1) = 2 ^ (E_K + 24) * (2 * M) := by
+      have hsub : 129009091 * V r_1 - 2315 = 2 ^ (E_K + 24) * (l_2 - l_1) := by omega
+      rw [← hsub, hM, hpow1]; ring
+    have heven : l_2 - l_1 = 2 * M :=
+      Nat.eq_of_mul_eq_mul_left (Nat.pow_pos (by decide)) hmul
+    omega
+
 end Mahler.DubickasExtension
 
 
