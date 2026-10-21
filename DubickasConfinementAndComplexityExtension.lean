@@ -13795,6 +13795,388 @@ theorem dense_core_alternating_run_129009091_valuation_locks
       Nat.eq_of_mul_eq_mul_left (Nat.pow_pos (by decide)) hmul
     omega
 
+/-!
+## Section 37: Exact Run-Compression & Macro-Transition Laws ($8 \cdot 2059 V = 3^{7L} U_1 + 1$
+## and $58025 V = 3^{10L} U_2 + 8$) Across All Run Lengths $L = m + 1 \ge 1$
+
+In Section 36, we proved that multi-step runs ($L \ge 2$) of $1$s and $2$s lock the 2-adic
+valuations of $2059 V - 1$ and $58025 V - 1$. In this section, we discover that multiplying the
+one-step recurrence by the homoclinic denominators $2059 = 3^7 - 2^7$ and $58025 = 3^{10} - 2^{10}$
+**homogenizes** every interior $(1 \to 1)$ or $(2 \to 2)$ transition and compresses **any maximal
+run of length $L = m + 1 \ge 1$ (including singletons $L = 1$, $m = 0$)** into a single exact
+macro-transition connecting the start of the run $V(r_1)$ to the start of the next run $V(r_1 + L)$:
+
+1. **Run-of-$1$s Homogenization & Macro-Transition Law ($2059 = 29 \times 71$)
+   (`dense_core_one_run_compression_and_macro_transition`)**:
+   - **Homogeneous Interior Transition**: Across any $m \in \mathbb{N}$ steps with
+     $\forall t \le m,\; j(r_1 + t) = 1$:
+     $$2^{7 m} \big(2059 \cdot V(r_1 + m) - 1\big) \;=\; 3^{7 m} \big(2059 \cdot V(r_1) - 1\big).$$
+   - **Macro-Transition at the Switch $j(r_1 + m + 1) = 2$ (for all $m \in \mathbb{N}$, $L = m + 1 \ge 1$)**:
+     $$2^{7 L + 3} \big(2059 \cdot V(r_1 + L)\big) \;=\; 3^{7 L} \big(2059 \cdot V(r_1) - 1\big) \;+\; 2^{7 L}.$$
+     Dividing out $2^{7 L}$ with $U_1 = (2059 \cdot V(r_1) - 1) / 2^{7 L}$ proves:
+     $$2^{7 L} \;\Big|\; \big(2059 \cdot V(r_1) - 1\big), \qquad
+       \neg \Big(2^{7 L + 1} \;\Big|\; \big(2059 \cdot V(r_1) - 1\big)\Big) \quad (U_1 \bmod 2 = 1),$$
+     $$8 \cdot 2059 \cdot V(r_1 + L) \;=\; 3^{7 L} \cdot U_1 + 1,$$
+     $$\big(3^{7 L} \cdot U_1 + 1\big) \bmod 8 = 0, \qquad
+       \big(3^{7 L} \cdot U_1 + 1\big) \bmod 2059 = 0, \qquad
+       \big(8 \cdot 2059 \cdot V(r_1 + L)\big) \bmod 3^{7 L} = 1.$$
+
+2. **Run-of-$2$s Homogenization & Macro-Transition Law ($58025 = 25 \times 11 \times 211$)
+   (`dense_core_two_run_compression_and_macro_transition`)**:
+   - **Homogeneous Interior Transition**: Across any $m \in \mathbb{N}$ steps with
+     $\forall t \le m,\; j(r_1 + t) = 2$:
+     $$2^{10 m} \big(58025 \cdot V(r_1 + m) - 1\big) \;=\; 3^{10 m} \big(58025 \cdot V(r_1) - 1\big).$$
+   - **Macro-Transition at the Switch $j(r_1 + m + 1) = 1$ (for all $m \in \mathbb{N}$, $L = m + 1 \ge 1$)**:
+     $$2^{10 m + 7} \big(58025 \cdot V(r_1 + L)\big) \;=\; 3^{10 L} \big(58025 \cdot V(r_1) - 1\big) \;+\; 2^{10 L}.$$
+     Dividing out $2^{10 m + 7}$ with $U_2 = (58025 \cdot V(r_1) - 1) / 2^{10 m + 7}$ proves:
+     $$2^{10 m + 7} \;\Big|\; \big(58025 \cdot V(r_1) - 1\big), \qquad
+       \neg \Big(2^{10 m + 8} \;\Big|\; \big(58025 \cdot V(r_1) - 1\big)\Big) \quad (U_2 \bmod 2 = 1),$$
+     $$58025 \cdot V(r_1 + L) \;=\; 3^{10 L} \cdot U_2 + 8,$$
+     $$\big(3^{10 L} \cdot U_2 + 8\big) \bmod 58025 = 0, \qquad
+       \big(58025 \cdot V(r_1 + L)\big) \bmod 3^{10 L} = 8.$$
+-/
+
+/-- **Run-of-$1$s Homogenization and Macro-Transition Law ($8 \cdot 2059 V(r_1 + L) = 3^{7L} U_1 + 1$)
+for All Run Lengths $L = m + 1 \ge 1$ (`dense_core_one_run_compression_and_macro_transition`)**:
+Suppose $1 \le V(0)$, $j(r) \in \{1, 2\}$, and
+$2^{3 j(r + 1) + 4} V(r + 1) + 1 = 3^{3 j(r) + 4} V(r)$ for all $r \in \mathbb{N}$.
+1. **Homogeneous Interior Run Identity**: For any $r_1, m \in \mathbb{N}$ such that
+   $\forall t \le m,\; j(r_1 + t) = 1$:
+   $$2^{7 m} \big(2059 \cdot V(r_1 + m) - 1\big) \;=\; 3^{7 m} \big(2059 \cdot V(r_1) - 1\big).$$
+2. **Exact Macro-Transition at the Switch $j(r_1 + m + 1) = 2$**:
+   Whenever $\forall t \le m,\; j(r_1 + t) = 1$ and $j(r_1 + m + 1) = 2$, let $L = m + 1$ and
+   $U_1 = (2059 \cdot V(r_1) - 1) / 2^{7 L}$:
+   - $2^{7 L + 3} \cdot (2059 \cdot V(r_1 + L)) = 3^{7 L} \cdot (2059 \cdot V(r_1) - 1) + 2^{7 L}$,
+   - $2^{7 L} \mid (2059 \cdot V(r_1) - 1)$, $U_1 \bmod 2 = 1$, and $\neg (2^{7 L + 1} \mid (2059 \cdot V(r_1) - 1))$,
+   - $8 \cdot 2059 \cdot V(r_1 + L) = 3^{7 L} \cdot U_1 + 1$,
+   - $(3^{7 L} \cdot U_1 + 1) \bmod 8 = 0$, $(3^{7 L} \cdot U_1 + 1) \bmod 2059 = 0$, and
+     $(8 \cdot 2059 \cdot V(r_1 + L)) \bmod 3^{7 L} = 1$. -/
+theorem dense_core_one_run_compression_and_macro_transition
+    {V j : ℕ → ℕ}
+    (hV0_pos : 1 ≤ V 0)
+    (hj : ∀ r : ℕ, j r = 1 ∨ j r = 2)
+    (hrec : ∀ r : ℕ, 2 ^ (3 * j (r + 1) + 4) * V (r + 1) + 1 = 3 ^ (3 * j r + 4) * V r) :
+    (∀ r_1 m : ℕ, (∀ t ≤ m, j (r_1 + t) = 1) →
+      2 ^ (7 * m) * (2059 * V (r_1 + m) - 1) = 3 ^ (7 * m) * (2059 * V r_1 - 1)) ∧
+    (∀ r_1 m : ℕ, (∀ t ≤ m, j (r_1 + t) = 1) → j (r_1 + m + 1) = 2 →
+      let L := m + 1
+      let U_1 := (2059 * V r_1 - 1) / 2 ^ (7 * L)
+      2 ^ (7 * L + 3) * (2059 * V (r_1 + L)) =
+        3 ^ (7 * L) * (2059 * V r_1 - 1) + 2 ^ (7 * L) ∧
+      (2 ^ (7 * L) ∣ (2059 * V r_1 - 1)) ∧
+      U_1 % 2 = 1 ∧
+      ¬ (2 ^ (7 * L + 1) ∣ (2059 * V r_1 - 1)) ∧
+      8 * 2059 * V (r_1 + L) = 3 ^ (7 * L) * U_1 + 1 ∧
+      (3 ^ (7 * L) * U_1 + 1) % 8 = 0 ∧
+      (3 ^ (7 * L) * U_1 + 1) % 2059 = 0 ∧
+      (8 * 2059 * V (r_1 + L)) % 3 ^ (7 * L) = 1) := by
+  have hpos_V : ∀ r : ℕ, 1 ≤ V r := fun r =>
+    ((dense_core_strict_doubling_and_monotonicity hV0_pos hj hrec).1 r).1
+  have hodd_V : ∀ r : ℕ, V r % 2 = 1 :=
+    (dense_core_all_V_odd_and_mod_four_divergence hV0_pos hj hrec).1
+  have hhom :
+      ∀ r_1 m : ℕ, (∀ t ≤ m, j (r_1 + t) = 1) →
+        2 ^ (7 * m) * (2059 * V (r_1 + m) - 1) = 3 ^ (7 * m) * (2059 * V r_1 - 1) := by
+    intro r_1 m
+    induction m with
+    | zero =>
+        intro _
+        simp only [Nat.mul_zero, Nat.pow_zero, Nat.one_mul, Nat.add_zero]
+    | succ m ih =>
+        intro hrun
+        have ihm := ih (fun t ht => hrun t (by omega))
+        have hstep := hrec (r_1 + m)
+        have hj_m : j (r_1 + m) = 1 := hrun m (by omega)
+        have hj_m1 : j (r_1 + m + 1) = 1 := by
+          have h := hrun (m + 1) le_rfl
+          have hidx : r_1 + (m + 1) = r_1 + m + 1 := by omega
+          rw [← hidx]; exact h
+        rw [hj_m, hj_m1] at hstep
+        change 128 * V (r_1 + m + 1) + 1 = 2187 * V (r_1 + m) at hstep
+        have hidx : r_1 + m + 1 = r_1 + (m + 1) := by omega
+        rw [hidx] at hstep
+        have hVm_pos := hpos_V (r_1 + m)
+        have hVm1_pos := hpos_V (r_1 + (m + 1))
+        have h1step : 128 * (2059 * V (r_1 + (m + 1)) - 1) = 2187 * (2059 * V (r_1 + m) - 1) := by
+          omega
+        have hpow2 : 2 ^ (7 * (m + 1)) = 2 ^ (7 * m) * 128 := by
+          have hexp : 7 * (m + 1) = 7 * m + 7 := by omega
+          rw [hexp, Nat.pow_add]
+        have hpow3 : 3 ^ (7 * (m + 1)) = 3 ^ (7 * m) * 2187 := by
+          have hexp : 7 * (m + 1) = 7 * m + 7 := by omega
+          rw [hexp, Nat.pow_add]
+        calc 2 ^ (7 * (m + 1)) * (2059 * V (r_1 + (m + 1)) - 1)
+            = 2 ^ (7 * m) * (128 * (2059 * V (r_1 + (m + 1)) - 1)) := by rw [hpow2]; ring
+          _ = 2 ^ (7 * m) * (2187 * (2059 * V (r_1 + m) - 1)) := by rw [h1step]
+          _ = (2 ^ (7 * m) * (2059 * V (r_1 + m) - 1)) * 2187 := by ring
+          _ = (3 ^ (7 * m) * (2059 * V r_1 - 1)) * 2187 := by rw [ihm]
+          _ = 3 ^ (7 * (m + 1)) * (2059 * V r_1 - 1) := by rw [hpow3]; ring
+  refine ⟨hhom, ?_⟩
+  intro r_1 m hrun hj_sw L U_1
+  have ihm := hhom r_1 m hrun
+  have hstep := hrec (r_1 + m)
+  have hj_m : j (r_1 + m) = 1 := hrun m le_rfl
+  rw [hj_m, hj_sw] at hstep
+  change 1024 * V (r_1 + m + 1) + 1 = 2187 * V (r_1 + m) at hstep
+  have hidx : r_1 + m + 1 = r_1 + L := by omega
+  rw [hidx] at hstep
+  have hVm_pos := hpos_V (r_1 + m)
+  have hsw_step : 1024 * (2059 * V (r_1 + L)) = 2187 * (2059 * V (r_1 + m) - 1) + 128 := by
+    omega
+  have hpow2_L3 : 2 ^ (7 * L + 3) = 2 ^ (7 * m) * 1024 := by
+    have hexp : 7 * L + 3 = 7 * m + 10 := by omega
+    rw [hexp, Nat.pow_add]
+  have hpow2_L : 2 ^ (7 * L) = 2 ^ (7 * m) * 128 := by
+    have hexp : 7 * L = 7 * m + 7 := by omega
+    rw [hexp, Nat.pow_add]
+  have hpow3_L : 3 ^ (7 * L) = 3 ^ (7 * m) * 2187 := by
+    have hexp : 7 * L = 7 * m + 7 := by omega
+    rw [hexp, Nat.pow_add]
+  have hmacro_raw :
+      2 ^ (7 * L + 3) * (2059 * V (r_1 + L)) =
+        3 ^ (7 * L) * (2059 * V r_1 - 1) + 2 ^ (7 * L) := by
+    calc 2 ^ (7 * L + 3) * (2059 * V (r_1 + L))
+        = 2 ^ (7 * m) * (1024 * (2059 * V (r_1 + L))) := by rw [hpow2_L3]; ring
+      _ = 2 ^ (7 * m) * (2187 * (2059 * V (r_1 + m) - 1) + 128) := by rw [hsw_step]
+      _ = (2 ^ (7 * m) * (2059 * V (r_1 + m) - 1)) * 2187 + 2 ^ (7 * m) * 128 := by ring
+      _ = (3 ^ (7 * m) * (2059 * V r_1 - 1)) * 2187 + 2 ^ (7 * L) := by rw [ihm, ← hpow2_L]
+      _ = 3 ^ (7 * L) * (2059 * V r_1 - 1) + 2 ^ (7 * L) := by rw [hpow3_L]; ring
+  have hpow2_split8 : 2 ^ (7 * L + 3) = 2 ^ (7 * L) * 8 := by rw [Nat.pow_add]
+  have hdvd_prod : 2 ^ (7 * L) ∣ 3 ^ (7 * L) * (2059 * V r_1 - 1) := by
+    refine ⟨8 * (2059 * V (r_1 + L)) - 1, ?_⟩
+    have hVL_pos := hpos_V (r_1 + L)
+    have hd : (8 * (2059 * V (r_1 + L)) - 1) + 1 = 8 * (2059 * V (r_1 + L)) :=
+      Nat.sub_add_cancel (by linarith only [hVL_pos])
+    have hsub :
+        2 ^ (7 * L) * (8 * (2059 * V (r_1 + L)) - 1) + 2 ^ (7 * L) =
+          2 ^ (7 * L + 3) * (2059 * V (r_1 + L)) := by
+      calc 2 ^ (7 * L) * (8 * (2059 * V (r_1 + L)) - 1) + 2 ^ (7 * L)
+          = 2 ^ (7 * L) * ((8 * (2059 * V (r_1 + L)) - 1) + 1) := by ring
+        _ = 2 ^ (7 * L) * (8 * (2059 * V (r_1 + L))) := by rw [hd]
+        _ = 2 ^ (7 * L + 3) * (2059 * V (r_1 + L)) := by rw [hpow2_split8]; ring
+    linarith only [hmacro_raw, hsub]
+  have hcop : Nat.Coprime (2 ^ (7 * L)) (3 ^ (7 * L)) :=
+    Nat.Coprime.pow (7 * L) (7 * L) (by decide : Nat.Coprime 2 3)
+  have hdvd_7L : 2 ^ (7 * L) ∣ (2059 * V r_1 - 1) :=
+    hcop.dvd_of_dvd_mul_left hdvd_prod
+  have hU1_eq : 2059 * V r_1 - 1 = 2 ^ (7 * L) * U_1 :=
+    (Nat.mul_div_cancel' hdvd_7L).symm
+  have hmacro_div : 8 * 2059 * V (r_1 + L) = 3 ^ (7 * L) * U_1 + 1 := by
+    have hmul :
+        2 ^ (7 * L) * (8 * 2059 * V (r_1 + L)) =
+          2 ^ (7 * L) * (3 ^ (7 * L) * U_1 + 1) := by
+      calc 2 ^ (7 * L) * (8 * 2059 * V (r_1 + L))
+          = 2 ^ (7 * L + 3) * (2059 * V (r_1 + L)) := by rw [hpow2_split8]; ring
+        _ = 3 ^ (7 * L) * (2059 * V r_1 - 1) + 2 ^ (7 * L) := hmacro_raw
+        _ = 3 ^ (7 * L) * (2 ^ (7 * L) * U_1) + 2 ^ (7 * L) := by rw [hU1_eq]
+        _ = 2 ^ (7 * L) * (3 ^ (7 * L) * U_1 + 1) := by ring
+    exact Nat.eq_of_mul_eq_mul_left (Nat.pow_pos (by decide)) hmul
+  have hU1_odd : U_1 % 2 = 1 := by
+    have hmod2 : (8 * 2059 * V (r_1 + L)) % 2 = (3 ^ (7 * L) * U_1 + 1) % 2 := by
+      rw [hmacro_div]
+    have hlhs0 : (8 * 2059 * V (r_1 + L)) % 2 = 0 := by
+      have hassoc : 8 * 2059 * V (r_1 + L) = 2 * (4 * 2059 * V (r_1 + L)) := by ring
+      rw [hassoc, Nat.mul_mod_right]
+    rw [hlhs0] at hmod2
+    rcases Nat.mod_two_eq_zero_or_one U_1 with h0 | h1
+    · have hrhs1 : (3 ^ (7 * L) * U_1 + 1) % 2 = 1 := by
+        rw [Nat.add_mod, Nat.mul_mod, h0, Nat.mul_zero, Nat.zero_mod]
+      exact absurd (hmod2.trans hrhs1) (by decide)
+    · exact h1
+  have hnot_dvd1 : ¬ (2 ^ (7 * L + 1) ∣ (2059 * V r_1 - 1)) := by
+    rintro ⟨M, hM⟩
+    have hpow1 : 2 ^ (7 * L + 1) = 2 ^ (7 * L) * 2 := by rw [Nat.pow_add]
+    have hmul : 2 ^ (7 * L) * U_1 = 2 ^ (7 * L) * (2 * M) := by
+      rw [← hU1_eq, hM, hpow1]; ring
+    have heven : U_1 = 2 * M :=
+      Nat.eq_of_mul_eq_mul_left (Nat.pow_pos (by decide)) hmul
+    have hmod0 : U_1 % 2 = 0 := by rw [heven, Nat.mul_mod_right]
+    exact absurd (hU1_odd.symm.trans hmod0) (by decide)
+  have hmod8 : (3 ^ (7 * L) * U_1 + 1) % 8 = 0 := by
+    rw [← hmacro_div]
+    have hassoc : 8 * 2059 * V (r_1 + L) = (2059 * V (r_1 + L)) * 8 := by ring
+    rw [hassoc, Nat.mul_mod_left]
+  have hmod2059 : (3 ^ (7 * L) * U_1 + 1) % 2059 = 0 := by
+    rw [← hmacro_div]
+    have hassoc : 8 * 2059 * V (r_1 + L) = (8 * V (r_1 + L)) * 2059 := by ring
+    rw [hassoc, Nat.mul_mod_left]
+  have hmod3 : (8 * 2059 * V (r_1 + L)) % 3 ^ (7 * L) = 1 := by
+    have hrew : 8 * 2059 * V (r_1 + L) = 1 + 3 ^ (7 * L) * U_1 := by linarith only [hmacro_div]
+    have hgt1 : 1 < 3 ^ (7 * L) := by
+      have hle : 3 ^ 7 ≤ 3 ^ (7 * L) :=
+        Nat.pow_le_pow_right (by decide) (by omega : 7 ≤ 7 * L)
+      exact lt_of_lt_of_le (by decide : 1 < 3 ^ 7) hle
+    rw [hrew, Nat.add_mul_mod_self_left, Nat.mod_eq_of_lt hgt1]
+  exact ⟨hmacro_raw, hdvd_7L, hU1_odd, hnot_dvd1, hmacro_div, hmod8, hmod2059, hmod3⟩
+
+/-- **Run-of-$2$s Homogenization and Macro-Transition Law ($58025 V(r_1 + L) = 3^{10L} U_2 + 8$)
+for All Run Lengths $L = m + 1 \ge 1$ (`dense_core_two_run_compression_and_macro_transition`)**:
+Suppose $1 \le V(0)$, $j(r) \in \{1, 2\}$, and
+$2^{3 j(r + 1) + 4} V(r + 1) + 1 = 3^{3 j(r) + 4} V(r)$ for all $r \in \mathbb{N}$.
+1. **Homogeneous Interior Run Identity**: For any $r_1, m \in \mathbb{N}$ such that
+   $\forall t \le m,\; j(r_1 + t) = 2$:
+   $$2^{10 m} \big(58025 \cdot V(r_1 + m) - 1\big) \;=\; 3^{10 m} \big(58025 \cdot V(r_1) - 1\big).$$
+2. **Exact Macro-Transition at the Switch $j(r_1 + m + 1) = 1$**:
+   Whenever $\forall t \le m,\; j(r_1 + t) = 2$ and $j(r_1 + m + 1) = 1$, let $L = m + 1$ and
+   $U_2 = (58025 \cdot V(r_1) - 1) / 2^{10 m + 7}$:
+   - $2^{10 m + 7} \cdot (58025 \cdot V(r_1 + L)) = 3^{10 L} \cdot (58025 \cdot V(r_1) - 1) + 2^{10 L}$,
+   - $2^{10 m + 7} \mid (58025 \cdot V(r_1) - 1)$, $U_2 \bmod 2 = 1$, and
+     $\neg (2^{10 m + 8} \mid (58025 \cdot V(r_1) - 1))$,
+   - $58025 \cdot V(r_1 + L) = 3^{10 L} \cdot U_2 + 8$,
+   - $(3^{10 L} \cdot U_2 + 8) \bmod 58025 = 0$ and $(58025 \cdot V(r_1 + L)) \bmod 3^{10 L} = 8$. -/
+theorem dense_core_two_run_compression_and_macro_transition
+    {V j : ℕ → ℕ}
+    (hV0_pos : 1 ≤ V 0)
+    (hj : ∀ r : ℕ, j r = 1 ∨ j r = 2)
+    (hrec : ∀ r : ℕ, 2 ^ (3 * j (r + 1) + 4) * V (r + 1) + 1 = 3 ^ (3 * j r + 4) * V r) :
+    (∀ r_1 m : ℕ, (∀ t ≤ m, j (r_1 + t) = 2) →
+      2 ^ (10 * m) * (58025 * V (r_1 + m) - 1) = 3 ^ (10 * m) * (58025 * V r_1 - 1)) ∧
+    (∀ r_1 m : ℕ, (∀ t ≤ m, j (r_1 + t) = 2) → j (r_1 + m + 1) = 1 →
+      let L := m + 1
+      let U_2 := (58025 * V r_1 - 1) / 2 ^ (10 * m + 7)
+      2 ^ (10 * m + 7) * (58025 * V (r_1 + L)) =
+        3 ^ (10 * L) * (58025 * V r_1 - 1) + 2 ^ (10 * L) ∧
+      (2 ^ (10 * m + 7) ∣ (58025 * V r_1 - 1)) ∧
+      U_2 % 2 = 1 ∧
+      ¬ (2 ^ (10 * m + 8) ∣ (58025 * V r_1 - 1)) ∧
+      58025 * V (r_1 + L) = 3 ^ (10 * L) * U_2 + 8 ∧
+      (3 ^ (10 * L) * U_2 + 8) % 58025 = 0 ∧
+      (58025 * V (r_1 + L)) % 3 ^ (10 * L) = 8) := by
+  have hpos_V : ∀ r : ℕ, 1 ≤ V r := fun r =>
+    ((dense_core_strict_doubling_and_monotonicity hV0_pos hj hrec).1 r).1
+  have hodd_V : ∀ r : ℕ, V r % 2 = 1 :=
+    (dense_core_all_V_odd_and_mod_four_divergence hV0_pos hj hrec).1
+  have hhom :
+      ∀ r_1 m : ℕ, (∀ t ≤ m, j (r_1 + t) = 2) →
+        2 ^ (10 * m) * (58025 * V (r_1 + m) - 1) = 3 ^ (10 * m) * (58025 * V r_1 - 1) := by
+    intro r_1 m
+    induction m with
+    | zero =>
+        intro _
+        simp only [Nat.mul_zero, Nat.pow_zero, Nat.one_mul, Nat.add_zero]
+    | succ m ih =>
+        intro hrun
+        have ihm := ih (fun t ht => hrun t (by omega))
+        have hstep := hrec (r_1 + m)
+        have hj_m : j (r_1 + m) = 2 := hrun m (by omega)
+        have hj_m1 : j (r_1 + m + 1) = 2 := by
+          have h := hrun (m + 1) le_rfl
+          have hidx : r_1 + (m + 1) = r_1 + m + 1 := by omega
+          rw [← hidx]; exact h
+        rw [hj_m, hj_m1] at hstep
+        change 1024 * V (r_1 + m + 1) + 1 = 59049 * V (r_1 + m) at hstep
+        have hidx : r_1 + m + 1 = r_1 + (m + 1) := by omega
+        rw [hidx] at hstep
+        have hVm_pos := hpos_V (r_1 + m)
+        have hVm1_pos := hpos_V (r_1 + (m + 1))
+        have h1step : 1024 * (58025 * V (r_1 + (m + 1)) - 1) = 59049 * (58025 * V (r_1 + m) - 1) := by
+          omega
+        have hpow2 : 2 ^ (10 * (m + 1)) = 2 ^ (10 * m) * 1024 := by
+          have hexp : 10 * (m + 1) = 10 * m + 10 := by omega
+          rw [hexp, Nat.pow_add]
+        have hpow3 : 3 ^ (10 * (m + 1)) = 3 ^ (10 * m) * 59049 := by
+          have hexp : 10 * (m + 1) = 10 * m + 10 := by omega
+          rw [hexp, Nat.pow_add]
+        calc 2 ^ (10 * (m + 1)) * (58025 * V (r_1 + (m + 1)) - 1)
+            = 2 ^ (10 * m) * (1024 * (58025 * V (r_1 + (m + 1)) - 1)) := by rw [hpow2]; ring
+          _ = 2 ^ (10 * m) * (59049 * (58025 * V (r_1 + m) - 1)) := by rw [h1step]
+          _ = (2 ^ (10 * m) * (58025 * V (r_1 + m) - 1)) * 59049 := by ring
+          _ = (3 ^ (10 * m) * (58025 * V r_1 - 1)) * 59049 := by rw [ihm]
+          _ = 3 ^ (10 * (m + 1)) * (58025 * V r_1 - 1) := by rw [hpow3]; ring
+  refine ⟨hhom, ?_⟩
+  intro r_1 m hrun hj_sw L U_2
+  have ihm := hhom r_1 m hrun
+  have hstep := hrec (r_1 + m)
+  have hj_m : j (r_1 + m) = 2 := hrun m le_rfl
+  rw [hj_m, hj_sw] at hstep
+  change 128 * V (r_1 + m + 1) + 1 = 59049 * V (r_1 + m) at hstep
+  have hidx : r_1 + m + 1 = r_1 + L := by omega
+  rw [hidx] at hstep
+  have hVm_pos := hpos_V (r_1 + m)
+  have hsw_step : 128 * (58025 * V (r_1 + L)) = 59049 * (58025 * V (r_1 + m) - 1) + 1024 := by
+    omega
+  have hpow2_m7 : 2 ^ (10 * m + 7) = 2 ^ (10 * m) * 128 := by rw [Nat.pow_add]
+  have hpow2_10L : 2 ^ (10 * L) = 2 ^ (10 * m) * 1024 := by
+    have hexp : 10 * L = 10 * m + 10 := by omega
+    rw [hexp, Nat.pow_add]
+  have hpow3_10L : 3 ^ (10 * L) = 3 ^ (10 * m) * 59049 := by
+    have hexp : 10 * L = 10 * m + 10 := by omega
+    rw [hexp, Nat.pow_add]
+  have hmacro_raw :
+      2 ^ (10 * m + 7) * (58025 * V (r_1 + L)) =
+        3 ^ (10 * L) * (58025 * V r_1 - 1) + 2 ^ (10 * L) := by
+    calc 2 ^ (10 * m + 7) * (58025 * V (r_1 + L))
+        = 2 ^ (10 * m) * (128 * (58025 * V (r_1 + L))) := by rw [hpow2_m7]; ring
+      _ = 2 ^ (10 * m) * (59049 * (58025 * V (r_1 + m) - 1) + 1024) := by rw [hsw_step]
+      _ = (2 ^ (10 * m) * (58025 * V (r_1 + m) - 1)) * 59049 + 2 ^ (10 * m) * 1024 := by ring
+      _ = (3 ^ (10 * m) * (58025 * V r_1 - 1)) * 59049 + 2 ^ (10 * L) := by rw [ihm, ← hpow2_10L]
+      _ = 3 ^ (10 * L) * (58025 * V r_1 - 1) + 2 ^ (10 * L) := by rw [hpow3_10L]; ring
+  have hpow2_split8 : 2 ^ (10 * L) = 2 ^ (10 * m + 7) * 8 := by
+    have hexp : 10 * L = (10 * m + 7) + 3 := by omega
+    rw [hexp, Nat.pow_add]
+  have hdvd_prod : 2 ^ (10 * m + 7) ∣ 3 ^ (10 * L) * (58025 * V r_1 - 1) := by
+    refine ⟨58025 * V (r_1 + L) - 8, ?_⟩
+    have hVL_pos := hpos_V (r_1 + L)
+    have hd : (58025 * V (r_1 + L) - 8) + 8 = 58025 * V (r_1 + L) :=
+      Nat.sub_add_cancel (by linarith only [hVL_pos])
+    have hsub :
+        2 ^ (10 * m + 7) * (58025 * V (r_1 + L) - 8) + 2 ^ (10 * L) =
+          2 ^ (10 * m + 7) * (58025 * V (r_1 + L)) := by
+      calc 2 ^ (10 * m + 7) * (58025 * V (r_1 + L) - 8) + 2 ^ (10 * L)
+          = 2 ^ (10 * m + 7) * (58025 * V (r_1 + L) - 8) + 2 ^ (10 * m + 7) * 8 := by
+            rw [hpow2_split8]
+        _ = 2 ^ (10 * m + 7) * ((58025 * V (r_1 + L) - 8) + 8) := by ring
+        _ = 2 ^ (10 * m + 7) * (58025 * V (r_1 + L)) := by rw [hd]
+    linarith only [hmacro_raw, hsub]
+  have hcop : Nat.Coprime (2 ^ (10 * m + 7)) (3 ^ (10 * L)) :=
+    Nat.Coprime.pow (10 * m + 7) (10 * L) (by decide : Nat.Coprime 2 3)
+  have hdvd_m7 : 2 ^ (10 * m + 7) ∣ (58025 * V r_1 - 1) :=
+    hcop.dvd_of_dvd_mul_left hdvd_prod
+  have hU2_eq : 58025 * V r_1 - 1 = 2 ^ (10 * m + 7) * U_2 :=
+    (Nat.mul_div_cancel' hdvd_m7).symm
+  have hmacro_div : 58025 * V (r_1 + L) = 3 ^ (10 * L) * U_2 + 8 := by
+    have hmul :
+        2 ^ (10 * m + 7) * (58025 * V (r_1 + L)) =
+          2 ^ (10 * m + 7) * (3 ^ (10 * L) * U_2 + 8) := by
+      calc 2 ^ (10 * m + 7) * (58025 * V (r_1 + L))
+          = 3 ^ (10 * L) * (58025 * V r_1 - 1) + 2 ^ (10 * L) := hmacro_raw
+        _ = 3 ^ (10 * L) * (2 ^ (10 * m + 7) * U_2) + 2 ^ (10 * m + 7) * 8 := by
+          rw [hU2_eq, hpow2_split8]
+        _ = 2 ^ (10 * m + 7) * (3 ^ (10 * L) * U_2 + 8) := by ring
+    exact Nat.eq_of_mul_eq_mul_left (Nat.pow_pos (by decide)) hmul
+  have hU2_odd : U_2 % 2 = 1 := by
+    have hmod2 : (58025 * V (r_1 + L)) % 2 = (3 ^ (10 * L) * U_2 + 8) % 2 := by
+      rw [hmacro_div]
+    have hlhs1 : (58025 * V (r_1 + L)) % 2 = 1 := by
+      rw [Nat.mul_mod, hodd_V (r_1 + L)]
+    rw [hlhs1] at hmod2
+    rcases Nat.mod_two_eq_zero_or_one U_2 with h0 | h1
+    · have hrhs0 : (3 ^ (10 * L) * U_2 + 8) % 2 = 0 := by
+        rw [Nat.add_mod, Nat.mul_mod, h0, Nat.mul_zero, Nat.zero_mod]
+      exact absurd (hmod2.trans hrhs0) (by decide)
+    · exact h1
+  have hnot_dvd1 : ¬ (2 ^ (10 * m + 8) ∣ (58025 * V r_1 - 1)) := by
+    rintro ⟨M, hM⟩
+    have hpow1 : 2 ^ (10 * m + 8) = 2 ^ (10 * m + 7) * 2 := by
+      have hexp : 10 * m + 8 = (10 * m + 7) + 1 := by omega
+      rw [hexp, Nat.pow_add]
+    have hmul : 2 ^ (10 * m + 7) * U_2 = 2 ^ (10 * m + 7) * (2 * M) := by
+      rw [← hU2_eq, hM, hpow1]; ring
+    have heven : U_2 = 2 * M :=
+      Nat.eq_of_mul_eq_mul_left (Nat.pow_pos (by decide)) hmul
+    have hmod0 : U_2 % 2 = 0 := by rw [heven, Nat.mul_mod_right]
+    exact absurd (hU2_odd.symm.trans hmod0) (by decide)
+  have hmod58025 : (3 ^ (10 * L) * U_2 + 8) % 58025 = 0 := by
+    rw [← hmacro_div, Nat.mul_comm 58025 (V (r_1 + L)), Nat.mul_mod_left]
+  have hmod3 : (58025 * V (r_1 + L)) % 3 ^ (10 * L) = 8 := by
+    have hrew : 58025 * V (r_1 + L) = 8 + 3 ^ (10 * L) * U_2 := by linarith only [hmacro_div]
+    have hgt8 : 8 < 3 ^ (10 * L) := by
+      have hle : 3 ^ 10 ≤ 3 ^ (10 * L) :=
+        Nat.pow_le_pow_right (by decide) (by omega : 10 ≤ 10 * L)
+      exact lt_of_lt_of_le (by decide : 8 < 3 ^ 10) hle
+    rw [hrew, Nat.add_mul_mod_self_left, Nat.mod_eq_of_lt hgt8]
+  exact ⟨hmacro_raw, hdvd_m7, hU2_odd, hnot_dvd1, hmacro_div, hmod58025, hmod3⟩
+
 end Mahler.DubickasExtension
 
 

@@ -327,6 +327,10 @@ example (m : ℕ) :
 #print axioms Mahler.DubickasExtension.dense_core_constant_run_length_2059_and_58025_valuation_locks
 #print axioms Mahler.DubickasExtension.dense_core_alternating_run_129009091_valuation_locks
 
+-- 31. Verify Section 37: Exact run-compression and macro-transition laws (8*2059*V = 3^(7L)*U_1 + 1 and 58025*V = 3^(10L)*U_2 + 8) for all run lengths L = m + 1 >= 1
+#print axioms Mahler.DubickasExtension.dense_core_one_run_compression_and_macro_transition
+#print axioms Mahler.DubickasExtension.dense_core_two_run_compression_and_macro_transition
+
 #print axioms Mahler.DubickasExtension.dubBaseCarry_eq_fract_linear
 #print axioms Mahler.DubickasExtension.dubBaseY_multi_step_carry_identity
 #print axioms Mahler.DubickasExtension.dubBaseCarry_mem_two_letters
