@@ -331,6 +331,10 @@ example (m : ℕ) :
 #print axioms Mahler.DubickasExtension.dense_core_one_run_compression_and_macro_transition
 #print axioms Mahler.DubickasExtension.dense_core_two_run_compression_and_macro_transition
 
+-- 32. Verify Section 38: Universal 4(L+1) exponent-weight anagram pigeonhole and anagram drift-cancellation cutoff
+#print axioms Mahler.DubickasExtension.dense_core_anagram_weight_decomposition_and_universal_pigeonhole
+#print axioms Mahler.DubickasExtension.dense_core_anagram_collision_syzygy_and_drift_cancellation_cutoff
+
 #print axioms Mahler.DubickasExtension.dubBaseCarry_eq_fract_linear
 #print axioms Mahler.DubickasExtension.dubBaseY_multi_step_carry_identity
 #print axioms Mahler.DubickasExtension.dubBaseCarry_mem_two_letters

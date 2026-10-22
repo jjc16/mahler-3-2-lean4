@@ -14177,6 +14177,419 @@ theorem dense_core_two_run_compression_and_macro_transition
     rw [hrew, Nat.add_mul_mod_self_left, Nat.mod_eq_of_lt hgt8]
   exact ⟨hmacro_raw, hdvd_m7, hU2_odd, hnot_dvd1, hmacro_div, hmod58025, hmod3⟩
 
+/-!
+## Section 38: Bypassing Exponential Word Complexity ($2^L$) via the Universal $4(L + 1)$
+## Exponent-Weight Pigeonhole Theorem and the Anagram Drift-Cancellation Cutoff
+
+In Sections 29–30, our subword repetition cutoffs required two windows of length $L$ at $r_1 < r_2$
+to match symbol-by-symbol ($j(r_1 + t) = j(r_2 + t)$ for all $t < L$), which can take up to $2^L$
+steps if the sequence has maximum word complexity. In this section, we observe that the homogeneous
+multipliers $2^{E_L(r)}$ and $3^{S_L(r)}$ across a window of length $L$ do **not** depend on the
+order of the $1$s and $2$s inside the window—they depend only on the **count of $2$s**
+`defectWindowTwoCount j r L ∈ {0, ..., L}` ($L + 1$ possibilities) and the **boundary pair**
+$(j(r), j(r + L)) \in \{1, 2\}^2$ ($4$ possibilities):
+
+1. **Exact Weight Decomposition & Universal $4(L + 1)$ Anagram Pigeonhole Theorem
+   (`dense_core_anagram_weight_decomposition_and_universal_pigeonhole`)**:
+   - For every $r, L \in \mathbb{N}$ in the Dense Core $j(r) \in \{1, 2\}$,
+     $\text{defectWindowTwoCount}(j, r, L) \le L$,
+     $$\text{defectStepSum}(\text{fun } t \Rightarrow j(r + t),\, L) \;=\;
+       7 L + 3 \cdot \text{defectWindowTwoCount}(j, r, L),$$
+     and the combined classifier
+     $$\text{defectAnagramClass}(j, L, r) \;:=\;
+       4 \cdot \text{defectWindowTwoCount}(j, r, L) + 2 \cdot (j(r) - 1) + (j(r + L) - 1)$$
+     satisfies $\text{defectAnagramClass}(j, L, r) < 4 (L + 1)$.
+   - Whenever $\text{defectAnagramClass}(j, L, r_1) = \text{defectAnagramClass}(j, L, r_2)$,
+     both the 3-adic and 2-adic step sums match identically:
+     $$j(r_1) = j(r_2), \qquad j(r_1 + L) = j(r_2 + L), \qquad S_L(r_1) = S_L(r_2), \qquad E_L(r_1) = E_L(r_2).$$
+   - By the Finite Pigeonhole Principle over $r \in \{0, \dots, 4 (L + 1)\}$, for **every**
+     sequence $j \in \{1, 2\}^\mathbb{N}$ (even one with maximum $2^L$ word complexity!) and
+     **every** length $L \in \mathbb{N}$, there exist $r_1 < r_2 \le 4 (L + 1)$ with
+     $\text{defectAnagramClass}(j, L, r_1) = \text{defectAnagramClass}(j, L, r_2)$.
+
+2. **Anagram Collision Syzygy & Partial Drift-Cancellation Cutoff
+   (`dense_core_anagram_collision_syzygy_and_drift_cancellation_cutoff`)**:
+   Whenever $r_1 < r_2$ share the same anagram class at length $L$ (with common exponents
+   $E = E_L(r_1) = E_L(r_2) \ge 7 L$ and $S = S_L(r_1) = S_L(r_2) \ge 7 L$):
+   - **Exact Anagram Collision Identity**:
+     $$2^E \cdot \big(V(r_2 + L) - V(r_1 + L)\big) + \tilde{\Delta}_2 \;=\;
+       3^S \cdot \big(V(r_2) - V(r_1)\big) + \tilde{\Delta}_1.$$
+   - **Partial Drift-Cancellation Cutoff**: If the two anagram accumulators $\tilde{\Delta}_1$ and
+     $\tilde{\Delta}_2$ agree modulo $2^m$ for any $m \le E$ ($\tilde{\Delta}_1 \bmod 2^m = \tilde{\Delta}_2 \bmod 2^m$),
+     then $2^m \mid (V(r_2) - V(r_1))$, $2^m < V(r_2)$, and for every rational power bound
+     $3^q \le 2^{p + q}$ ($q \ge 1$) and $V(0) < 2^W$:
+     $$q m \;<\; p \cdot \text{defectStepSum}(j, r_2) + q (W + 3) \;\le\; 10 p r_2 + q (W + 3),$$
+     which at the guaranteed anagram collision $r_2 \le 4 (L + 1)$ forces
+     $$q m \;<\; 40 p (L + 1) + q (W + 3) \qquad \big(17 m < 400 (L + 1) + 17 (W + 3) \text{ at } (p, q) = (10, 17)\big).$$
+-/
+
+/-- Number of $j(r + t) = 2$ steps in the window of length $L$ starting at $r$. -/
+def defectWindowTwoCount (j : ℕ → ℕ) (r : ℕ) : ℕ → ℕ
+  | 0 => 0
+  | L + 1 => defectWindowTwoCount j r L + (j (r + L) - 1)
+
+/-- Combined weight-and-boundary classifier in $\{0, \dots, 4 L + 3\}$ encoding both
+`defectWindowTwoCount j r L ≤ L` and the boundary pair $(j(r), j(r + L)) \in \{1, 2\}^2$. -/
+def defectAnagramClass (j : ℕ → ℕ) (L r : ℕ) : ℕ :=
+  4 * defectWindowTwoCount j r L + 2 * (j r - 1) + (j (r + L) - 1)
+
+/-- **Exact Weight Decomposition and Universal $4(L + 1)$ Anagram Pigeonhole Theorem
+(`dense_core_anagram_weight_decomposition_and_universal_pigeonhole`)**:
+For any Dense-Core sequence $j : \mathbb{N} \to \mathbb{N}$ satisfying
+$\forall r : \mathbb{N},\; j(r) = 1 \lor j(r) = 2$, and for every window length $L \in \mathbb{N}$:
+1. **Weight Decomposition & Classifier Bound**: For every $r \in \mathbb{N}$,
+   - $\text{defectWindowTwoCount}(j, r, L) \le L$,
+   - $\text{defectStepSum}(\text{fun } t \Rightarrow j(r + t),\, L) = 7 L + 3 \cdot \text{defectWindowTwoCount}(j, r, L)$,
+   - $\text{defectAnagramClass}(j, L, r) < 4 (L + 1)$.
+2. **Exact $(E, S)$ Exponent Equality from Matching Anagram Class**:
+   For any $r_1, r_2 \in \mathbb{N}$ with $\text{defectAnagramClass}(j, L, r_1) = \text{defectAnagramClass}(j, L, r_2)$:
+   - $\text{defectWindowTwoCount}(j, r_1, L) = \text{defectWindowTwoCount}(j, r_2, L)$,
+   - $j(r_1) = j(r_2)$ and $j(r_1 + L) = j(r_2 + L)$,
+   - $\text{defectStepSum}(\text{fun } t \Rightarrow j(r_1 + t),\, L) = \text{defectStepSum}(\text{fun } t \Rightarrow j(r_2 + t),\, L)$,
+   - $\text{defectStepSum}(\text{fun } t \Rightarrow j(r_1 + 1 + t),\, L) = \text{defectStepSum}(\text{fun } t \Rightarrow j(r_2 + 1 + t),\, L)$.
+3. **Universal $4(L + 1)$ Anagram Pigeonhole (Zero Complexity Assumptions)**:
+   There always exist $r_1 < r_2 \le 4 (L + 1)$ such that
+   $\text{defectAnagramClass}(j, L, r_1) = \text{defectAnagramClass}(j, L, r_2)$. -/
+theorem dense_core_anagram_weight_decomposition_and_universal_pigeonhole
+    {j : ℕ → ℕ}
+    (hj : ∀ r : ℕ, j r = 1 ∨ j r = 2)
+    (L : ℕ) :
+    (∀ r : ℕ,
+      defectWindowTwoCount j r L ≤ L ∧
+      defectStepSum (fun t => j (r + t)) L = 7 * L + 3 * defectWindowTwoCount j r L ∧
+      defectAnagramClass j L r < 4 * (L + 1)) ∧
+    (∀ r_1 r_2 : ℕ,
+      defectAnagramClass j L r_1 = defectAnagramClass j L r_2 →
+      defectWindowTwoCount j r_1 L = defectWindowTwoCount j r_2 L ∧
+      j r_1 = j r_2 ∧
+      j (r_1 + L) = j (r_2 + L) ∧
+      defectStepSum (fun t => j (r_1 + t)) L = defectStepSum (fun t => j (r_2 + t)) L ∧
+      defectStepSum (fun t => j (r_1 + 1 + t)) L = defectStepSum (fun t => j (r_2 + 1 + t)) L) ∧
+    (∃ r_1 r_2 : ℕ,
+      r_1 < r_2 ∧
+      r_2 ≤ 4 * (L + 1) ∧
+      defectAnagramClass j L r_1 = defectAnagramClass j L r_2) := by
+  have hweight :
+      ∀ (m r : ℕ),
+        defectWindowTwoCount j r m ≤ m ∧
+        defectStepSum (fun t => j (r + t)) m = 7 * m + 3 * defectWindowTwoCount j r m := by
+    intro m
+    induction m with
+    | zero =>
+        intro r
+        simp only [defectWindowTwoCount, defectStepSum, Nat.mul_zero, Nat.add_zero, le_refl, and_self]
+    | succ m ih =>
+        intro r
+        rcases ih r with ⟨hw_le, hS_eq⟩
+        change defectWindowTwoCount j r m + (j (r + m) - 1) ≤ m + 1 ∧
+          defectStepSum (fun t => j (r + t)) m + (3 * j (r + m) + 4) =
+            7 * (m + 1) + 3 * (defectWindowTwoCount j r m + (j (r + m) - 1))
+        rcases hj (r + m) with h1 | h2 <;> omega
+  have hpart1 :
+      ∀ r : ℕ,
+        defectWindowTwoCount j r L ≤ L ∧
+        defectStepSum (fun t => j (r + t)) L = 7 * L + 3 * defectWindowTwoCount j r L ∧
+        defectAnagramClass j L r < 4 * (L + 1) := by
+    intro r
+    rcases hweight L r with ⟨hw_le, hS_eq⟩
+    have hlt : defectAnagramClass j L r < 4 * (L + 1) := by
+      unfold defectAnagramClass
+      rcases hj r with h0_1 | h0_2 <;> rcases hj (r + L) with hL_1 | hL_2 <;> omega
+    exact ⟨hw_le, hS_eq, hlt⟩
+  have hpart2 :
+      ∀ r_1 r_2 : ℕ,
+        defectAnagramClass j L r_1 = defectAnagramClass j L r_2 →
+        defectWindowTwoCount j r_1 L = defectWindowTwoCount j r_2 L ∧
+        j r_1 = j r_2 ∧
+        j (r_1 + L) = j (r_2 + L) ∧
+        defectStepSum (fun t => j (r_1 + t)) L = defectStepSum (fun t => j (r_2 + t)) L ∧
+        defectStepSum (fun t => j (r_1 + 1 + t)) L = defectStepSum (fun t => j (r_2 + 1 + t)) L := by
+    intro r_1 r_2 hcls
+    have hcls_unfold :
+        4 * defectWindowTwoCount j r_1 L + 2 * (j r_1 - 1) + (j (r_1 + L) - 1) =
+          4 * defectWindowTwoCount j r_2 L + 2 * (j r_2 - 1) + (j (r_2 + L) - 1) := hcls
+    have h_eqs :
+        defectWindowTwoCount j r_1 L = defectWindowTwoCount j r_2 L ∧
+        j r_1 = j r_2 ∧
+        j (r_1 + L) = j (r_2 + L) := by
+      rcases hj r_1 with h1_0 | h1_0 <;>
+        rcases hj (r_1 + L) with h1_L | h1_L <;>
+        rcases hj r_2 with h2_0 | h2_0 <;>
+        rcases hj (r_2 + L) with h2_L | h2_L <;> omega
+    have hS1 := (hweight L r_1).2
+    have hS2 := (hweight L r_2).2
+    have hS_eq : defectStepSum (fun t => j (r_1 + t)) L = defectStepSum (fun t => j (r_2 + t)) L := by
+      rw [hS1, hS2, h_eqs.1]
+    have hshift1 := ((defectStepSum_shift_cancellation_and_single_exponent_identity
+      (fun t => j (r_1 + t))).1 L).2
+    have hshift2 := ((defectStepSum_shift_cancellation_and_single_exponent_identity
+      (fun t => j (r_2 + t))).1 L).2
+    have hE1_eq :
+        defectStepSum (fun t => j (r_1 + (1 + t))) L =
+          defectStepSum (fun t => j (r_1 + 1 + t)) L := by
+      congr 1; funext t; congr 1; omega
+    have hE2_eq :
+        defectStepSum (fun t => j (r_2 + (1 + t))) L =
+          defectStepSum (fun t => j (r_2 + 1 + t)) L := by
+      congr 1; funext t; congr 1; omega
+    change defectStepSum (fun t => j (r_1 + (1 + t))) L + 3 * j r_1 =
+      defectStepSum (fun t => j (r_1 + t)) L + 3 * j (r_1 + L) at hshift1
+    change defectStepSum (fun t => j (r_2 + (1 + t))) L + 3 * j r_2 =
+      defectStepSum (fun t => j (r_2 + t)) L + 3 * j (r_2 + L) at hshift2
+    rw [hE1_eq] at hshift1
+    rw [hE2_eq] at hshift2
+    have hE_eq :
+        defectStepSum (fun t => j (r_1 + 1 + t)) L =
+          defectStepSum (fun t => j (r_2 + 1 + t)) L := by
+      linarith only [hshift1, hshift2, hS_eq, h_eqs.2.1, h_eqs.2.2]
+    exact ⟨h_eqs.1, h_eqs.2.1, h_eqs.2.2, hS_eq, hE_eq⟩
+  refine ⟨hpart1, hpart2, ?_⟩
+  set C := 4 * (L + 1)
+  set pat : Fin (C + 1) → Fin C := fun x => ⟨defectAnagramClass j L x.val, (hpart1 x.val).2.2⟩
+  have hcard : Fintype.card (Fin C) < Fintype.card (Fin (C + 1)) := by simp
+  obtain ⟨a, b, hab, heq⟩ := Fintype.exists_ne_map_eq_of_card_lt pat hcard
+  have hval_ne : a.val ≠ b.val := fun h => hab (Fin.ext h)
+  have hcls_eq : defectAnagramClass j L a.val = defectAnagramClass j L b.val :=
+    congrArg Fin.val heq
+  rcases lt_or_gt_of_ne hval_ne with hlt | hgt
+  · exact ⟨a.val, b.val, hlt, Nat.le_of_lt_succ b.isLt, hcls_eq⟩
+  · exact ⟨b.val, a.val, hgt, Nat.le_of_lt_succ a.isLt, hcls_eq.symm⟩
+
+/-- **Anagram Collision Syzygy and Partial Drift-Cancellation Cutoff in the Dense Core
+(`dense_core_anagram_collision_syzygy_and_drift_cancellation_cutoff`)**:
+Suppose $1 \le V(0) < 2^W$, $j(r) \in \{1, 2\}$, and
+$2^{3 j(r + 1) + 4} V(r + 1) + 1 = 3^{3 j(r) + 4} V(r)$ for all $r \in \mathbb{N}$.
+1. **Anagram Collision Syzygy & Partial Drift-Cancellation Cutoff for Any $r_1 < r_2$**:
+   Whenever $r_1 < r_2$ and $L \in \mathbb{N}$ satisfy
+   $\text{defectAnagramClass}(j, L, r_1) = \text{defectAnagramClass}(j, L, r_2)$, let
+   $E = \text{defectStepSum}(\text{fun } t \Rightarrow j(r_1 + 1 + t),\, L)$,
+   $S = \text{defectStepSum}(\text{fun } t \Rightarrow j(r_1 + t),\, L)$,
+   $\tilde{\Delta}_1 = \text{normalizedDefectAcc}(\text{fun } t \Rightarrow j(r_1 + t),\, L)$, and
+   $\tilde{\Delta}_2 = \text{normalizedDefectAcc}(\text{fun } t \Rightarrow j(r_2 + t),\, L)$:
+   - $2^E \cdot (V(r_2 + L) - V(r_1 + L)) + \tilde{\Delta}_2 = 3^S \cdot (V(r_2) - V(r_1)) + \tilde{\Delta}_1$,
+   - $(3^S \cdot (V(r_2) - V(r_1)) + \tilde{\Delta}_1) \bmod 2^E = \tilde{\Delta}_2 \bmod 2^E$,
+   - $(2^E \cdot (V(r_2 + L) - V(r_1 + L)) + \tilde{\Delta}_2) \bmod 3^S = \tilde{\Delta}_1 \bmod 3^S$,
+   - For every $m \le E$ such that $\tilde{\Delta}_1 \bmod 2^m = \tilde{\Delta}_2 \bmod 2^m$:
+     $2^m \mid (V(r_2) - V(r_1))$, $2^m < V(r_2)$, and for every $p, q \in \mathbb{N}$ with
+     $1 \le q$ and $3^q \le 2^{p + q}$:
+     $$q m \;<\; p \cdot \text{defectStepSum}(j, r_2) + q (W + 3) \;\le\; 10 p r_2 + q (W + 3).$$
+2. **Guaranteed $4(L + 1)$ Anagram Collision with Partial Drift Cutoff**:
+   For every $L \in \mathbb{N}$, there exist $r_1 < r_2 \le 4 (L + 1)$ with
+   $\text{defectAnagramClass}(j, L, r_1) = \text{defectAnagramClass}(j, L, r_2)$ such that
+   whenever $m \le \text{defectStepSum}(\text{fun } t \Rightarrow j(r_1 + 1 + t),\, L)$ and
+   $\tilde{\Delta}_1 \bmod 2^m = \tilde{\Delta}_2 \bmod 2^m$, for every $1 \le q$ with $3^q \le 2^{p + q}$:
+   $$q m \;<\; 40 p (L + 1) + q (W + 3) \quad
+     \big(\text{and } 17 m < 400 (L + 1) + 17 (W + 3)\big).$$ -/
+theorem dense_core_anagram_collision_syzygy_and_drift_cancellation_cutoff
+    {V j : ℕ → ℕ} {W : ℕ}
+    (hV0_pos : 1 ≤ V 0) (hV0_lt : V 0 < 2 ^ W)
+    (hj : ∀ r : ℕ, j r = 1 ∨ j r = 2)
+    (hrec : ∀ r : ℕ, 2 ^ (3 * j (r + 1) + 4) * V (r + 1) + 1 = 3 ^ (3 * j r + 4) * V r) :
+    (∀ r_1 r_2 L : ℕ, r_1 < r_2 →
+      defectAnagramClass j L r_1 = defectAnagramClass j L r_2 →
+      let E := defectStepSum (fun t => j (r_1 + 1 + t)) L
+      let S := defectStepSum (fun t => j (r_1 + t)) L
+      let Delta_1 := normalizedDefectAcc (fun t => j (r_1 + t)) L
+      let Delta_2 := normalizedDefectAcc (fun t => j (r_2 + t)) L
+      2 ^ E * (V (r_2 + L) - V (r_1 + L)) + Delta_2 = 3 ^ S * (V r_2 - V r_1) + Delta_1 ∧
+      (3 ^ S * (V r_2 - V r_1) + Delta_1) % 2 ^ E = Delta_2 % 2 ^ E ∧
+      (2 ^ E * (V (r_2 + L) - V (r_1 + L)) + Delta_2) % 3 ^ S = Delta_1 % 3 ^ S ∧
+      ∀ m : ℕ, m ≤ E → Delta_1 % 2 ^ m = Delta_2 % 2 ^ m →
+        (2 ^ m ∣ (V r_2 - V r_1)) ∧
+        2 ^ m < V r_2 ∧
+        ∀ p q : ℕ, 1 ≤ q → 3 ^ q ≤ 2 ^ (p + q) →
+          q * m < p * defectStepSum j r_2 + q * (W + 3) ∧
+          q * m < 10 * p * r_2 + q * (W + 3)) ∧
+    (∀ L : ℕ,
+      ∃ r_1 r_2 : ℕ,
+        r_1 < r_2 ∧
+        r_2 ≤ 4 * (L + 1) ∧
+        defectAnagramClass j L r_1 = defectAnagramClass j L r_2 ∧
+        ∀ m : ℕ, m ≤ defectStepSum (fun t => j (r_1 + 1 + t)) L →
+          normalizedDefectAcc (fun t => j (r_1 + t)) L % 2 ^ m =
+            normalizedDefectAcc (fun t => j (r_2 + t)) L % 2 ^ m →
+          (∀ p q : ℕ, 1 ≤ q → 3 ^ q ≤ 2 ^ (p + q) →
+            q * m < 40 * p * (L + 1) + q * (W + 3)) ∧
+          17 * m < 400 * (L + 1) + 17 * (W + 3)) := by
+  have hmono := (dense_core_strict_doubling_and_monotonicity hV0_pos hj hrec).2
+  have hpos_V : ∀ r : ℕ, 1 ≤ V r := fun r =>
+    ((dense_core_strict_doubling_and_monotonicity hV0_pos hj hrec).1 r).1
+  have hshift_rec :
+      ∀ r_0 t : ℕ,
+        2 ^ (3 * j (r_0 + (t + 1)) + 4) * V (r_0 + (t + 1)) + 1 =
+          3 ^ (3 * j (r_0 + t) + 4) * V (r_0 + t) := by
+    intro r_0 t
+    have h := hrec (r_0 + t)
+    have hidx : r_0 + t + 1 = r_0 + (t + 1) := by omega
+    rw [← hidx]; exact h
+  have hpart1 :
+      ∀ r_1 r_2 L : ℕ, r_1 < r_2 →
+        defectAnagramClass j L r_1 = defectAnagramClass j L r_2 →
+        let E := defectStepSum (fun t => j (r_1 + 1 + t)) L
+        let S := defectStepSum (fun t => j (r_1 + t)) L
+        let Delta_1 := normalizedDefectAcc (fun t => j (r_1 + t)) L
+        let Delta_2 := normalizedDefectAcc (fun t => j (r_2 + t)) L
+        2 ^ E * (V (r_2 + L) - V (r_1 + L)) + Delta_2 = 3 ^ S * (V r_2 - V r_1) + Delta_1 ∧
+        (3 ^ S * (V r_2 - V r_1) + Delta_1) % 2 ^ E = Delta_2 % 2 ^ E ∧
+        (2 ^ E * (V (r_2 + L) - V (r_1 + L)) + Delta_2) % 3 ^ S = Delta_1 % 3 ^ S ∧
+        ∀ m : ℕ, m ≤ E → Delta_1 % 2 ^ m = Delta_2 % 2 ^ m →
+          (2 ^ m ∣ (V r_2 - V r_1)) ∧
+          2 ^ m < V r_2 ∧
+          ∀ p q : ℕ, 1 ≤ q → 3 ^ q ≤ 2 ^ (p + q) →
+            q * m < p * defectStepSum j r_2 + q * (W + 3) ∧
+            q * m < 10 * p * r_2 + q * (W + 3) := by
+    intro r_1 r_2 L hr12 hcls E S Delta_1 Delta_2
+    have hanag := (dense_core_anagram_weight_decomposition_and_universal_pigeonhole hj L).2.1
+      r_1 r_2 hcls
+    have hS_eq : defectStepSum (fun t => j (r_2 + t)) L = S := hanag.2.2.2.1.symm
+    have hE_eq : defectStepSum (fun t => j (r_2 + 1 + t)) L = E := hanag.2.2.2.2.symm
+    have hm1 := (normalizedDefectAcc_master_identity_and_infinite_sieve_tower
+      (fun t => j (r_1 + t))).2.1 (fun t => V (r_1 + t)) (hshift_rec r_1) L
+    have hm2 := (normalizedDefectAcc_master_identity_and_infinite_sieve_tower
+      (fun t => j (r_2 + t))).2.1 (fun t => V (r_2 + t)) (hshift_rec r_2) L
+    have hE1_shift :
+        defectStepSum (fun t => j (r_1 + (1 + t))) L = E := by
+      congr 1; funext t; congr 1; omega
+    have hE2_shift :
+        defectStepSum (fun t => j (r_2 + (1 + t))) L = E := by
+      rw [← hE_eq]; congr 1; funext t; congr 1; omega
+    change 2 ^ (defectStepSum (fun t => j (r_1 + (1 + t))) L) * V (r_1 + L) + Delta_1 =
+      3 ^ S * V r_1 at hm1
+    change 2 ^ (defectStepSum (fun t => j (r_2 + (1 + t))) L) * V (r_2 + L) + Delta_2 =
+      3 ^ (defectStepSum (fun t => j (r_2 + t)) L) * V r_2 at hm2
+    rw [hE1_shift] at hm1
+    rw [hE2_shift, hS_eq] at hm2
+    have hV_lt : V r_1 < V r_2 := hmono r_1 r_2 hr12
+    have hVL_lt : V (r_1 + L) < V (r_2 + L) := hmono (r_1 + L) (r_2 + L) (by omega)
+    have hsyz :
+        2 ^ E * (V (r_2 + L) - V (r_1 + L)) + Delta_2 =
+          3 ^ S * (V r_2 - V r_1) + Delta_1 := by
+      have hd1 : 2 ^ E * (V (r_2 + L) - V (r_1 + L)) + 2 ^ E * V (r_1 + L) =
+          2 ^ E * V (r_2 + L) := by
+        rw [← Nat.mul_add, Nat.sub_add_cancel (le_of_lt hVL_lt)]
+      have hd2 : 3 ^ S * (V r_2 - V r_1) + 3 ^ S * V r_1 = 3 ^ S * V r_2 := by
+        rw [← Nat.mul_add, Nat.sub_add_cancel (le_of_lt hV_lt)]
+      linarith only [hm1, hm2, hd1, hd2]
+    have hmod2E : (3 ^ S * (V r_2 - V r_1) + Delta_1) % 2 ^ E = Delta_2 % 2 ^ E := by
+      have hrew : 3 ^ S * (V r_2 - V r_1) + Delta_1 =
+          Delta_2 + 2 ^ E * (V (r_2 + L) - V (r_1 + L)) := by linarith only [hsyz]
+      rw [hrew, Nat.add_mul_mod_self_left]
+    have hmod3S : (2 ^ E * (V (r_2 + L) - V (r_1 + L)) + Delta_2) % 3 ^ S = Delta_1 % 3 ^ S := by
+      have hrew : 2 ^ E * (V (r_2 + L) - V (r_1 + L)) + Delta_2 =
+          Delta_1 + 3 ^ S * (V r_2 - V r_1) := by linarith only [hsyz]
+      rw [hrew, Nat.add_mul_mod_self_left]
+    refine ⟨hsyz, hmod2E, hmod3S, ?_⟩
+    intro m hm_le hmod_m
+    rcases Nat.pow_dvd_pow 2 hm_le with ⟨U_E, hUE⟩
+    have hdiv1 := (Nat.div_add_mod Delta_1 (2 ^ m)).symm
+    have hdiv2 := (Nat.div_add_mod Delta_2 (2 ^ m)).symm
+    rw [hmod_m] at hdiv1
+    set q_1 := Delta_1 / 2 ^ m
+    set q_2 := Delta_2 / 2 ^ m
+    set diff_L := V (r_2 + L) - V (r_1 + L)
+    have hlin_m :
+        3 ^ S * (V r_2 - V r_1) + 2 ^ m * q_1 =
+          2 ^ m * (U_E * diff_L + q_2) := by
+      have hexp : 2 ^ E * diff_L = 2 ^ m * (U_E * diff_L) := by
+        rw [hUE]; ring
+      have hexp2 : 2 ^ m * (U_E * diff_L + q_2) =
+          2 ^ m * (U_E * diff_L) + 2 ^ m * q_2 := by ring
+      linarith only [hsyz, hdiv1, hdiv2, hexp, hexp2]
+    have hq_le : q_1 ≤ U_E * diff_L + q_2 := by
+      have hle_mul : 2 ^ m * q_1 ≤ 2 ^ m * (U_E * diff_L + q_2) := by omega
+      exact Nat.le_of_mul_le_mul_left hle_mul (Nat.pow_pos (by decide))
+    have hdvd_prod : 2 ^ m ∣ 3 ^ S * (V r_2 - V r_1) := by
+      refine ⟨(U_E * diff_L + q_2) - q_1, ?_⟩
+      have hsub :
+          2 ^ m * ((U_E * diff_L + q_2) - q_1) + 2 ^ m * q_1 =
+            2 ^ m * (U_E * diff_L + q_2) := by
+        rw [← Nat.mul_add, Nat.sub_add_cancel hq_le]
+      linarith only [hlin_m, hsub]
+    have hcop : Nat.Coprime (2 ^ m) (3 ^ S) :=
+      Nat.Coprime.pow m S (by decide : Nat.Coprime 2 3)
+    have hdvd_m : 2 ^ m ∣ (V r_2 - V r_1) :=
+      hcop.dvd_of_dvd_mul_left hdvd_prod
+    have h2m_lt_Vr2 : 2 ^ m < V r_2 := by
+      rcases hdvd_m with ⟨Q, hQ⟩
+      have hQ_pos : 1 ≤ Q := by
+        rcases Nat.eq_zero_or_pos Q with rfl | hpos
+        · omega
+        · exact hpos
+      have hle : 2 ^ m ≤ V r_2 - V r_1 := by
+        calc 2 ^ m = 2 ^ m * 1 := (Nat.mul_one _).symm
+          _ ≤ 2 ^ m * Q := Nat.mul_le_mul_left _ hQ_pos
+          _ = V r_2 - V r_1 := hQ.symm
+      have hVr1_pos := hpos_V r_1
+      omega
+    refine ⟨hdvd_m, h2m_lt_Vr2, ?_⟩
+    intro p q hq hpq
+    have hr2_pos : 1 ≤ r_2 := by omega
+    have harch := ((defectNormalizedQuotient_archimedean_floor_invariant hV0_pos hrec).2
+      r_2 hr2_pos).2.2.1
+    set E_r2 := defectStepSum (fun t => j (1 + t)) r_2
+    set S_r2 := defectStepSum j r_2
+    have hmul1 : 2 ^ (m + E_r2) < 2 ^ E_r2 * V r_2 := by
+      rw [Nat.add_comm m E_r2, Nat.pow_add]
+      exact Nat.mul_lt_mul_of_pos_left h2m_lt_Vr2 (Nat.pow_pos (by decide))
+    have hlt_S : 2 ^ (m + E_r2) < 3 ^ S_r2 * 2 ^ W := by
+      have hlt_V0 : 3 ^ S_r2 * V 0 < 3 ^ S_r2 * 2 ^ W :=
+        Nat.mul_lt_mul_of_pos_left hV0_lt (Nat.pow_pos (by decide))
+      exact lt_trans (lt_trans hmul1 harch) hlt_V0
+    have hpow_q : (2 ^ (m + E_r2)) ^ q < (3 ^ S_r2 * 2 ^ W) ^ q :=
+      Nat.pow_lt_pow_left hlt_S (by omega)
+    have h3q : (3 ^ S_r2) ^ q ≤ (2 ^ (p + q)) ^ S_r2 := by
+      have hcomm : (3 ^ S_r2) ^ q = (3 ^ q) ^ S_r2 := by
+        rw [← Nat.pow_mul, ← Nat.pow_mul, Nat.mul_comm]
+      rw [hcomm]
+      exact Nat.pow_le_pow_left hpq S_r2
+    have hrhs : (3 ^ S_r2 * 2 ^ W) ^ q ≤ 2 ^ ((p + q) * S_r2 + W * q) := by
+      calc (3 ^ S_r2 * 2 ^ W) ^ q
+          = (3 ^ S_r2) ^ q * (2 ^ W) ^ q := Nat.mul_pow _ _ _
+        _ ≤ (2 ^ (p + q)) ^ S_r2 * (2 ^ W) ^ q := Nat.mul_le_mul_right _ h3q
+        _ = 2 ^ ((p + q) * S_r2 + W * q) := by
+          rw [← Nat.pow_mul, ← Nat.pow_mul, ← Nat.pow_add]
+    have hlt2 : 2 ^ ((m + E_r2) * q) < 2 ^ ((p + q) * S_r2 + W * q) := by
+      rw [← Nat.pow_mul] at hpow_q
+      exact lt_of_lt_of_le hpow_q hrhs
+    have hexp_lt : (m + E_r2) * q < (p + q) * S_r2 + W * q :=
+      (Nat.pow_lt_pow_iff_right (by decide : 1 < 2)).mp hlt2
+    have hshift := ((defectStepSum_shift_cancellation_and_single_exponent_identity j).1 r_2).2
+    have hj0 : j 0 = 1 ∨ j 0 = 2 := hj 0
+    have hjr2 : j r_2 = 1 ∨ j r_2 = 2 := hj r_2
+    have hS_le_E3 : S_r2 ≤ E_r2 + 3 := by omega
+    have hqS_le : q * S_r2 ≤ q * E_r2 + 3 * q := by
+      calc q * S_r2 ≤ q * (E_r2 + 3) := Nat.mul_le_mul_left q hS_le_E3
+        _ = q * E_r2 + 3 * q := by ring
+    have hring1 : (m + E_r2) * q = q * m + q * E_r2 := by ring
+    have hring2 : (p + q) * S_r2 + W * q = p * S_r2 + q * S_r2 + q * W := by ring
+    have hring3 : q * (W + 3) = q * W + 3 * q := by ring
+    have hcut1 : q * m < p * S_r2 + q * (W + 3) := by
+      linarith only [hexp_lt, hqS_le, hring1, hring2, hring3]
+    have hS_r2_le : S_r2 ≤ 10 * r_2 :=
+      ((dense_core_parameterized_pq_cutoff_and_convergents hV0_pos hV0_lt hj hrec).1 r_2).2
+    have hp_le : p * S_r2 ≤ 10 * p * r_2 := by
+      calc p * S_r2 ≤ p * (10 * r_2) := Nat.mul_le_mul_left p hS_r2_le
+        _ = 10 * p * r_2 := by ring
+    exact ⟨hcut1, by linarith only [hcut1, hp_le]⟩
+  refine ⟨hpart1, ?_⟩
+  intro L
+  rcases (dense_core_anagram_weight_decomposition_and_universal_pigeonhole hj L).2.2 with
+    ⟨r_1, r_2, hr12, hr2_le, hcls⟩
+  refine ⟨r_1, r_2, hr12, hr2_le, hcls, ?_⟩
+  intro m hm_le hmod_m
+  have hcut := ((hpart1 r_1 r_2 L hr12 hcls).2.2.2 m hm_le hmod_m).2.2
+  have hpq_all :
+      ∀ p q : ℕ, 1 ≤ q → 3 ^ q ≤ 2 ^ (p + q) →
+        q * m < 40 * p * (L + 1) + q * (W + 3) := by
+    intro p q hq hpq
+    have hc := (hcut p q hq hpq).2
+    have hmul : 10 * p * r_2 ≤ 40 * p * (L + 1) := by
+      calc 10 * p * r_2 ≤ 10 * p * (4 * (L + 1)) := Nat.mul_le_mul_left (10 * p) hr2_le
+        _ = 40 * p * (L + 1) := by ring
+    linarith only [hc, hmul]
+  have h10_17 := hpq_all 10 17 (by decide) (by decide : 3 ^ 17 ≤ 2 ^ (10 + 17))
+  exact ⟨hpq_all, by omega⟩
+
 end Mahler.DubickasExtension
 
 
