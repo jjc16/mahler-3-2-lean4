@@ -357,6 +357,13 @@ example (m : ℕ) :
 #print axioms Mahler.DubickasExtension.dense_core_macro_run_pure_power_three_sieves_and_exact_residues
 #print axioms Mahler.DubickasExtension.dense_core_macro_wave_archimedean_floor_invariant_and_corridor
 
+-- 39. Verify Sections 48–52: 3-adic mirror sieves (mod 2187 and mod 59049), universal mod-24 conservation, mod-9 & mod-144 bijections, 12x/24x/36x/72x accelerated wave descent, exact full-power 3-adic remainders, dual 1->2->1 floor invariant, +19-cancellation homogeneous difference & run-expansion laws, Fermat-prime mod-11 & mod-25 homoclinic sieves (mod 4400 & mod 39600), and 4-run W_2-free cross-wave syzygy
+#print axioms Mahler.DubickasExtension.dense_core_three_adic_mirror_sieves_and_mod_24_144_bijections
+#print axioms Mahler.DubickasExtension.dense_core_dual_wave_full_three_adic_remainders_and_one_run_floor_invariant
+#print axioms Mahler.DubickasExtension.dense_core_plus_19_cancellation_homogeneous_difference_and_run_expansion_laws
+#print axioms Mahler.DubickasExtension.dense_core_fermat_homoclinic_sieves_and_mod_4400_39600_bijections
+#print axioms Mahler.DubickasExtension.dense_core_four_run_W2_free_cross_wave_syzygy
+
 #print axioms Mahler.DubickasExtension.dubBaseCarry_eq_fract_linear
 #print axioms Mahler.DubickasExtension.dubBaseY_multi_step_carry_identity
 #print axioms Mahler.DubickasExtension.dubBaseCarry_mem_two_letters

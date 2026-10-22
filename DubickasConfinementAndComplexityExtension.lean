@@ -16446,7 +16446,1038 @@ theorem dense_core_macro_wave_archimedean_floor_invariant_and_corridor
     Nat.eq_of_mul_eq_mul_left hS3_pos hmul_S3
   exact ⟨⟨hQ_pos, h108_lt⟩, ⟨hcor1, hcor2⟩, ⟨hlower, hupper, hfloor⟩⟩
 
+/-!
+## Section 48: The 3-Adic Mirror Sieves (`mod 2187` and `mod 59049`), Universal Mod-24 Conservation (`W_two % 24 = 1`, `W_one % 24 ∈ {13, 23}`), Mod-9 & Mod-144 6-Way Bijections & 12x/24x/36x/72x Accelerated Wave Descent
+
+In Section 47, we used `2059 ≡ 3^7 (mod 128)` and `58025 ≡ 3^10 (mod 1024)` to derive the
+**2-adic pure power-of-3 sieves** `(3^(10*L_2 + 7) * W_2) % 128 = 19` and
+`(3^(7*L_3 + 10) * W_3 + 19) % 1024 = 0`.
+
+We now establish the **exact 3-adic mirror-image pure power-of-2 sieves** by exploiting the dual
+identities `2059 + 128 = 2187 = 3^7` and `58025 + 1024 = 59049 = 3^10` inside the macro-run
+interface equations:
+1. **The 3-Adic Mirror Sieve on `2`-Run Quotients (`mod 3^7 = 2187`):**
+   Whenever `2187 ∣ 3^(7*m_1) * U_1` (which holds automatically whenever `m_1 ≥ 1` or after the
+   first wave where `U_3 = 2187 * W_3`), adding `128 * 2^(10*L_2) * W_2 = 2^(10*L_2 + 7) * W_2` to
+   `58025 * 3^(7*m_1) * U_1 + 19 = 2059 * 2^(10*L_2) * W_2` yields:
+     `58025 * 3^(7*m_1) * U_1 + 2^(10*L_2 + 7) * W_2 + 19 = 2187 * 2^(10*L_2) * W_2`,
+   eliminating `2059` and `58025` modulo `2187 = 3^7`:
+     `(2^(10*L_2 + 7) * W_2 + 19) % 2187 = 0`   (`2187 ∣ (2^(10*L_2 + 7) * W_2 + 19)`).
+   In particular:
+   - For `m_2 = 0` (`L_2 = 1`): `W_2 % 2187 = 340` (`W_2 % 9 = 7`, `W_2 % 3 = 1`),
+   - For `m_2 = 1` (`L_2 = 2`): `W_2 % 2187 = 829` (`W_2 % 9 = 1`, `W_2 % 3 = 1`).
+2. **The 3-Adic Mirror Sieve on `1`-Run Quotients (`mod 3^10 = 59049`):**
+   Unconditionally for **every** `2`-run to `1`-run interface (`L_2 = m_2 + 1 ≥ 1`,
+   `L_3 = m_3 + 1 ≥ 1`), adding `1024 * 2^(7*L_3) * W_3 = 2^(7*L_3 + 10) * W_3` to
+   `58025 * 2^(7*L_3) * W_3 + 19 = 2059 * 3^(10*L_2) * W_2` yields:
+     `59049 * 2^(7*L_3) * W_3 + 19 = 2059 * 59049 * 3^(10*m_2) * W_2 + 2^(7*L_3 + 10) * W_3`,
+   eliminating `58025` and `2059` modulo `59049 = 3^10`:
+     `(2^(7*L_3 + 10) * W_3) % 59049 = 19`   (`59049 ∣ (2^(7*L_3 + 10) * W_3 - 19)`).
+   In particular:
+   - For `m_3 = 0` (`L_3 = 1`): `W_3 % 59049 = 23717` (`W_3 % 9 = 2`, `W_3 % 3 = 2`),
+   - For `m_3 = 1` (`L_3 = 2`): `W_3 % 59049 = 45856` (`W_3 % 9 = 1`, `W_3 % 3 = 1`).
+3. **Universal Mod-24 Conservation, Mod-9 & Mod-144 6-Way Bijections, and 12x/24x/36x/72x Accelerated Wave Descent:**
+   - Every `2`-run quotient satisfies `W_2 % 3 = 1` and **`W_2 % 24 = 1` universally**, while
+     `W_2 % 9 ∈ {7, 1, 4}` bijectively determines `m_2 % 3 ∈ {0, 1, 2}` and
+     `W_2 % 144 ∈ {97, 73, 49, 25, 1, 121}` bijectively determines `m_2 % 6 ∈ {0, 1, 2, 3, 4, 5}`!
+   - Every `1`-run quotient satisfies `(m_3 % 2 = 0 ↔ W_3 % 3 = 2 ↔ W_3 % 24 = 23)` and
+     `(m_3 % 2 = 1 ↔ W_3 % 3 = 1 ↔ W_3 % 24 = 13)`, and `W_3 % 9 ∈ {2, 1, 5, 7, 8, 4}`
+     bijectively determines `m_3 % 6`!
+   - Consequently, on any descending wave `3^(10*L_2 + 7*L_3) ≤ 2^(7*L_3 + 10*L_4)`, `W` drops by
+     **at least `24`** (`W_4 + 24 ≤ W_2`, `24 ∣ (W_2 - W_4)`), by **at least `48`** when
+     `m_2 % 2 = m_4 % 2`, by **at least `72`** when `m_2 % 3 = m_4 % 3`, and by **at least `144`**
+     when `m_2 % 6 = m_4 % 6`!
+-/
+
+private lemma two_pow_six_mul_mod_nine (k : ℕ) : (2 ^ (6 * k)) % 9 = 1 := by
+  induction k with
+  | zero => rfl
+  | succ k ih =>
+    have h1 : 2 ^ (6 * (k + 1)) = 2 ^ (6 * k) * 64 := by
+      rw [Nat.mul_add, Nat.pow_add]
+    rw [h1, Nat.mul_mod, ih]
+
+private lemma two_pow_lt_three_pow_of_pos (n : ℕ) (hn : 1 ≤ n) : 2 ^ n < 3 ^ n := by
+  obtain ⟨k, rfl⟩ : ∃ k : ℕ, n = k + 1 := ⟨n - 1, by omega⟩
+  clear hn
+  induction k with
+  | zero => decide
+  | succ k ih =>
+      rw [Nat.pow_succ 2 (k + 1), Nat.pow_succ 3 (k + 1)]
+      omega
+
+private lemma pow_lt_pow_of_lt {a b n : ℕ} (hab : a < b) (hn : 1 ≤ n) : a ^ n < b ^ n := by
+  obtain ⟨k, rfl⟩ : ∃ k : ℕ, n = k + 1 := ⟨n - 1, by omega⟩
+  clear hn
+  induction k with
+  | zero => simpa using hab
+  | succ k ih =>
+      rw [Nat.pow_succ a (k + 1), Nat.pow_succ b (k + 1)]
+      have hb_pos : 0 < b := by omega
+      have hbk_pos : 0 < b ^ (k + 1) := Nat.pow_pos hb_pos
+      have hm1 : a ^ (k + 1) * a ≤ b ^ (k + 1) * a :=
+        Nat.mul_le_mul_right a (le_of_lt ih)
+      have hm2 : b ^ (k + 1) * a < b ^ (k + 1) * b :=
+        Nat.mul_lt_mul_of_pos_left hab hbk_pos
+      exact lt_of_le_of_lt hm1 hm2
+
+private lemma mod_144_six_way_bijection {L W : ℕ}
+    (h8 : W % 8 = 1)
+    (h16 : (L % 2 = 1 ↔ W % 16 = 1) ∧ (L % 2 = 0 ↔ W % 16 = 9))
+    (h9 : (L % 3 = 1 → W % 9 = 7) ∧ (L % 3 = 2 → W % 9 = 1) ∧ (L % 3 = 0 → W % 9 = 4)) :
+    W % 3 = 1 ∧ W % 24 = 1 ∧
+    ((L % 3 = 1 ↔ W % 9 = 7) ∧ (L % 3 = 2 ↔ W % 9 = 1) ∧ (L % 3 = 0 ↔ W % 9 = 4)) ∧
+    ((L % 6 = 1 ↔ W % 144 = 97) ∧ (L % 6 = 2 ↔ W % 144 = 73) ∧
+     (L % 6 = 3 ↔ W % 144 = 49) ∧ (L % 6 = 4 ↔ W % 144 = 25) ∧
+     (L % 6 = 5 ↔ W % 144 = 1) ∧ (L % 6 = 0 ↔ W % 144 = 121)) := by
+  omega
+
+private lemma mod_24_and_9_six_way_bijection {L W : ℕ}
+    (h16 : (L % 4 = 0 ↔ W % 16 = 5) ∧ (L % 4 = 1 ↔ W % 16 = 15) ∧
+           (L % 4 = 2 ↔ W % 16 = 13) ∧ (L % 4 = 3 ↔ W % 16 = 7))
+    (h9 : (L % 6 = 1 → W % 9 = 2) ∧ (L % 6 = 2 → W % 9 = 1) ∧
+          (L % 6 = 3 → W % 9 = 5) ∧ (L % 6 = 4 → W % 9 = 7) ∧
+          (L % 6 = 5 → W % 9 = 8) ∧ (L % 6 = 0 → W % 9 = 4)) :
+    ((L % 2 = 1 ↔ W % 3 = 2) ∧ (L % 2 = 0 ↔ W % 3 = 1)) ∧
+    ((L % 2 = 1 ↔ W % 24 = 23) ∧ (L % 2 = 0 ↔ W % 24 = 13)) ∧
+    ((L % 6 = 1 ↔ W % 9 = 2) ∧ (L % 6 = 2 ↔ W % 9 = 1) ∧
+     (L % 6 = 3 ↔ W % 9 = 5) ∧ (L % 6 = 4 ↔ W % 9 = 7) ∧
+     (L % 6 = 5 ↔ W % 9 = 8) ∧ (L % 6 = 0 ↔ W % 9 = 4)) := by
+  omega
+
+private lemma w2_mod_nine_cases {L_2 W_2 : ℕ}
+    (hW2_mod9_eq : (2 ^ (10 * L_2 + 7) * W_2 + 19) % 9 = 0) :
+    (L_2 % 3 = 1 → W_2 % 9 = 7) ∧ (L_2 % 3 = 2 → W_2 % 9 = 1) ∧ (L_2 % 3 = 0 → W_2 % 9 = 4) := by
+  have hexp : 10 * L_2 + 7 = 6 * (5 * (L_2 / 3)) + (10 * (L_2 % 3) + 7) := by omega
+  have hpow_mod : (2 ^ (10 * L_2 + 7)) % 9 = (2 ^ (10 * (L_2 % 3) + 7)) % 9 := by
+    rw [hexp, Nat.pow_add, Nat.mul_mod, two_pow_six_mul_mod_nine, Nat.one_mul, Nat.mod_mod]
+  have h9 : ((2 ^ (10 * (L_2 % 3) + 7) % 9 * (W_2 % 9)) % 9 + 19 % 9) % 9 = 0 := by
+    have h0 := hW2_mod9_eq
+    rw [Nat.add_mod, Nat.mul_mod, hpow_mod] at h0
+    exact h0
+  refine ⟨?_, ?_, ?_⟩
+  · intro hm; rw [hm] at h9
+    have hc : (2 ^ (10 * 1 + 7)) % 9 = 5 := by decide
+    rw [hc] at h9; omega
+  · intro hm; rw [hm] at h9
+    have hc : (2 ^ (10 * 2 + 7)) % 9 = 8 := by decide
+    rw [hc] at h9; omega
+  · intro hm; rw [hm] at h9
+    have hc : (2 ^ (10 * 0 + 7)) % 9 = 2 := by decide
+    rw [hc] at h9; omega
+
+private lemma w3_mod_nine_cases {L_3 W_3 : ℕ}
+    (hW3_mod9_eq : (2 ^ (7 * L_3 + 10) * W_3) % 9 = 1) :
+    (L_3 % 6 = 1 → W_3 % 9 = 2) ∧ (L_3 % 6 = 2 → W_3 % 9 = 1) ∧
+    (L_3 % 6 = 3 → W_3 % 9 = 5) ∧ (L_3 % 6 = 4 → W_3 % 9 = 7) ∧
+    (L_3 % 6 = 5 → W_3 % 9 = 8) ∧ (L_3 % 6 = 0 → W_3 % 9 = 4) := by
+  have hexp : 7 * L_3 + 10 = 6 * (7 * (L_3 / 6)) + (7 * (L_3 % 6) + 10) := by omega
+  have hpow_mod : (2 ^ (7 * L_3 + 10)) % 9 = (2 ^ (7 * (L_3 % 6) + 10)) % 9 := by
+    rw [hexp, Nat.pow_add, Nat.mul_mod, two_pow_six_mul_mod_nine, Nat.one_mul, Nat.mod_mod]
+  have h9 : (((2 ^ (7 * (L_3 % 6) + 10)) % 9) * (W_3 % 9)) % 9 = 1 := by
+    have h0 := hW3_mod9_eq
+    rw [Nat.mul_mod, hpow_mod] at h0
+    exact h0
+  refine ⟨?_, ?_, ?_, ?_, ?_, ?_⟩
+  · intro hm; rw [hm] at h9
+    have hc : (2 ^ (7 * 1 + 10)) % 9 = 5 := by decide
+    rw [hc] at h9; omega
+  · intro hm; rw [hm] at h9
+    have hc : (2 ^ (7 * 2 + 10)) % 9 = 1 := by decide
+    rw [hc] at h9; omega
+  · intro hm; rw [hm] at h9
+    have hc : (2 ^ (7 * 3 + 10)) % 9 = 2 := by decide
+    rw [hc] at h9; omega
+  · intro hm; rw [hm] at h9
+    have hc : (2 ^ (7 * 4 + 10)) % 9 = 4 := by decide
+    rw [hc] at h9; omega
+  · intro hm; rw [hm] at h9
+    have hc : (2 ^ (7 * 5 + 10)) % 9 = 8 := by decide
+    rw [hc] at h9; omega
+  · intro hm; rw [hm] at h9
+    have hc : (2 ^ (7 * 0 + 10)) % 9 = 7 := by decide
+    rw [hc] at h9; omega
+
+private lemma w3_59049_linear_id {A B : ℕ} (h : 58025 * A + 19 = 59049 * B) :
+    1024 * A = 19 + 59049 * (A - B) := by
+  have hge : B ≤ A := by omega
+  rw [Nat.mul_sub_left_distrib]
+  omega
+
+private lemma w3_mod_59049_of_L3_eq_one {W_3 K3 : ℕ}
+    (hK3 : 131072 * W_3 = 19 + 59049 * K3) : W_3 % 59049 = 23717 := by
+  have hbez : W_3 + 59049 * (57959 * W_3) = 59049 * (26111 * K3 + 8) + 23717 := by
+    linarith only [hK3]
+  exact (mod_and_div_of_bezout (V := W_3) (M := 59049)
+    (a := 57959 * W_3) (b := 26111 * K3 + 8) (r := 23717) hbez (by decide)).1
+
+private lemma w3_mod_59049_of_L3_eq_two {W_3 K3 : ℕ}
+    (hK3 : 16777216 * W_3 = 19 + 59049 * K3) : W_3 % 59049 = 45856 := by
+  have hbez : W_3 + 59049 * (3334759 * W_3) = 59049 * (11737 * K3 + 3) + 45856 := by
+    linarith only [hK3]
+  exact (mod_and_div_of_bezout (V := W_3) (M := 59049)
+    (a := 3334759 * W_3) (b := 11737 * K3 + 3) (r := 45856) hbez (by decide)).1
+
+private lemma w3_three_adic_mirror_sieve_and_bijections
+    (W_2 W_3 W_4 L_2 L_3 L_4 : ℕ) (hL2 : 1 ≤ L_2) (_hL3 : 1 ≤ L_3) (hL4 : 1 ≤ L_4)
+    (h23 : 58025 * 2 ^ (7 * L_3) * W_3 + 19 = 2059 * 3 ^ (10 * L_2) * W_2)
+    (h34 : 58025 * 3 ^ (7 * L_3) * W_3 + 19 = 2 ^ (10 * L_4) * 2059 * W_4) :
+    (2 ^ (7 * L_3 + 10) * W_3) % 59049 = 19 ∧
+    59049 ∣ (2 ^ (7 * L_3 + 10) * W_3 - 19) ∧
+    (L_3 = 1 → W_3 % 59049 = 23717) ∧
+    (L_3 = 2 → W_3 % 59049 = 45856) ∧
+    ((L_3 % 2 = 1 ↔ W_3 % 3 = 2) ∧ (L_3 % 2 = 0 ↔ W_3 % 3 = 1)) ∧
+    ((L_3 % 2 = 1 ↔ W_3 % 24 = 23) ∧ (L_3 % 2 = 0 ↔ W_3 % 24 = 13)) ∧
+    ((L_3 % 6 = 1 ↔ W_3 % 9 = 2) ∧ (L_3 % 6 = 2 ↔ W_3 % 9 = 1) ∧
+     (L_3 % 6 = 3 ↔ W_3 % 9 = 5) ∧ (L_3 % 6 = 4 ↔ W_3 % 9 = 7) ∧
+     (L_3 % 6 = 5 ↔ W_3 % 9 = 8) ∧ (L_3 % 6 = 0 ↔ W_3 % 9 = 4)) := by
+  have h10_le : 10 ≤ 10 * L_2 := by omega
+  rcases Nat.pow_dvd_pow 3 h10_le with ⟨U_10, hU10⟩
+  have hp10 : (3 : ℕ) ^ 10 = 59049 := by decide
+  rw [hp10] at hU10
+  have hpow2_L3_norm : 2 ^ (7 * L_3 + 10) * W_3 = 1024 * (2 ^ (7 * L_3) * W_3) := by
+    rw [Nat.pow_add]; ring
+  have h23_norm : 58025 * (2 ^ (7 * L_3) * W_3) + 19 = 59049 * (2059 * U_10 * W_2) := by
+    calc 58025 * (2 ^ (7 * L_3) * W_3) + 19
+        = 58025 * 2 ^ (7 * L_3) * W_3 + 19 := by ring
+      _ = 2059 * 3 ^ (10 * L_2) * W_2 := h23
+      _ = 2059 * (59049 * U_10) * W_2 := by rw [hU10]
+      _ = 59049 * (2059 * U_10 * W_2) := by ring
+  have hW3_59049_ex : ∃ K3 : ℕ, 2 ^ (7 * L_3 + 10) * W_3 = 19 + 59049 * K3 := by
+    refine ⟨2 ^ (7 * L_3) * W_3 - 2059 * U_10 * W_2, ?_⟩
+    rw [hpow2_L3_norm]
+    exact w3_59049_linear_id h23_norm
+  have hW3_59049_mod : (2 ^ (7 * L_3 + 10) * W_3) % 59049 = 19 := by
+    rcases hW3_59049_ex with ⟨K3, hK3⟩
+    rw [hK3, Nat.add_mul_mod_self_left]
+  have hW3_59049_dvd : 59049 ∣ (2 ^ (7 * L_3 + 10) * W_3 - 19) := by
+    rcases hW3_59049_ex with ⟨K3, hK3⟩
+    refine ⟨K3, ?_⟩
+    rw [hK3, Nat.add_comm 19 (59049 * K3), Nat.add_sub_cancel]
+  have hL3_1 : L_3 = 1 → W_3 % 59049 = 23717 := by
+    intro h1
+    rcases hW3_59049_ex with ⟨K3, hK3⟩
+    rw [h1] at hK3
+    have h17 : (2 : ℕ) ^ (7 * 1 + 10) = 131072 := by decide
+    rw [h17] at hK3
+    exact w3_mod_59049_of_L3_eq_one hK3
+  have hL3_2 : L_3 = 2 → W_3 % 59049 = 45856 := by
+    intro h2
+    rcases hW3_59049_ex with ⟨K3, hK3⟩
+    rw [h2] at hK3
+    have h24 : (2 : ℕ) ^ (7 * 2 + 10) = 16777216 := by decide
+    rw [h24] at hK3
+    exact w3_mod_59049_of_L3_eq_two hK3
+  have hW3_mod9_eq : (2 ^ (7 * L_3 + 10) * W_3) % 9 = 1 := by
+    rcases hW3_59049_ex with ⟨K3, hK3⟩
+    have h9 : 19 + 59049 * K3 = 1 + 9 * (2 + 6561 * K3) := by ring
+    rw [hK3, h9, Nat.add_mul_mod_self_left]
+  have hW3_9_cases := w3_mod_nine_cases hW3_mod9_eq
+  have hW3_16_bij :=
+    (dense_core_macro_run_mod_16_128_1024_bijections_and_step_8_descent.2.1 W_3 W_4 L_3 L_4 hL4 h34).2.2.2
+  have hbij := mod_24_and_9_six_way_bijection hW3_16_bij hW3_9_cases
+  exact ⟨hW3_59049_mod, hW3_59049_dvd, hL3_1, hL3_2, hbij.1, hbij.2.1, hbij.2.2⟩
+
+/-- **The 3-Adic Mirror Sieves (`mod 2187` and `mod 59049`), Universal Mod-24 Conservation, Mod-9 & Mod-144 6-Way Bijections & 12x/24x/36x/72x Accelerated Wave Descent:**
+1. **The 3-Adic Mirror Sieve on `2`-Run Quotients (`mod 3^7 = 2187`):**
+   Whenever `58025 * 3 ^ (7 * L_1) * W_1 + 19 = 2059 * 2 ^ (10 * L_2) * W_2` and
+   `58025 * 2 ^ (7 * L_3) * W_3 + 19 = 2059 * 3 ^ (10 * L_2) * W_2` with `1 ≤ L_1, 1 ≤ L_2, 1 ≤ L_3`:
+   - `(2 ^ (10 * L_2 + 7) * W_2 + 19) % 2187 = 0` and `2187 ∣ (2 ^ (10 * L_2 + 7) * W_2 + 19)`,
+   - `(L_2 = 1 → W_2 % 2187 = 340) ∧ (L_2 = 2 → W_2 % 2187 = 829)`,
+   - `W_2 % 3 = 1 ∧ W_2 % 24 = 1`,
+   - `((L_2 % 3 = 1 ↔ W_2 % 9 = 7) ∧ (L_2 % 3 = 2 ↔ W_2 % 9 = 1) ∧ (L_2 % 3 = 0 ↔ W_2 % 9 = 4))`,
+   - `((L_2 % 6 = 1 ↔ W_2 % 144 = 97) ∧ (L_2 % 6 = 2 ↔ W_2 % 144 = 73) ∧
+      (L_2 % 6 = 3 ↔ W_2 % 144 = 49) ∧ (L_2 % 6 = 4 ↔ W_2 % 144 = 25) ∧
+      (L_2 % 6 = 5 ↔ W_2 % 144 = 1) ∧ (L_2 % 6 = 0 ↔ W_2 % 144 = 121))`.
+2. **The 3-Adic Mirror Sieve on `1`-Run Quotients (`mod 3^10 = 59049`):**
+   Whenever `58025 * 2 ^ (7 * L_3) * W_3 + 19 = 2059 * 3 ^ (10 * L_2) * W_2` and
+   `58025 * 3 ^ (7 * L_3) * W_3 + 19 = 2 ^ (10 * L_4) * 2059 * W_4` with `1 ≤ L_2, 1 ≤ L_3, 1 ≤ L_4`:
+   - `(2 ^ (7 * L_3 + 10) * W_3) % 59049 = 19` and `59049 ∣ (2 ^ (7 * L_3 + 10) * W_3 - 19)`,
+   - `(L_3 = 1 → W_3 % 59049 = 23717) ∧ (L_3 = 2 → W_3 % 59049 = 45856)`,
+   - `((L_3 % 2 = 1 ↔ W_3 % 3 = 2) ∧ (L_3 % 2 = 0 ↔ W_3 % 3 = 1))`,
+   - `((L_3 % 2 = 1 ↔ W_3 % 24 = 23) ∧ (L_3 % 2 = 0 ↔ W_3 % 24 = 13))`,
+   - `((L_3 % 6 = 1 ↔ W_3 % 9 = 2) ∧ (L_3 % 6 = 2 ↔ W_3 % 9 = 1) ∧
+      (L_3 % 6 = 3 ↔ W_3 % 9 = 5) ∧ (L_3 % 6 = 4 ↔ W_3 % 9 = 7) ∧
+      (L_3 % 6 = 5 ↔ W_3 % 9 = 8) ∧ (L_3 % 6 = 0 ↔ W_3 % 9 = 4))`.
+3. **12x, 24x, 36x, and 72x Accelerated Wave Descent:**
+   - `W_2 % 24 = 1 → W_4 % 24 = 1 → W_4 < W_2 → W_4 + 24 ≤ W_2 ∧ 24 ∣ (W_2 - W_4)`,
+   - `W_2 % 144 = W_4 % 144 → W_4 < W_2 → W_4 + 144 ≤ W_2 ∧ 144 ∣ (W_2 - W_4)`. -/
+theorem dense_core_three_adic_mirror_sieves_and_mod_24_144_bijections :
+    (∀ (W_1 W_2 W_3 L_1 L_2 L_3 : ℕ), 1 ≤ L_1 → 1 ≤ L_2 → 1 ≤ L_3 →
+      58025 * 3 ^ (7 * L_1) * W_1 + 19 = 2059 * 2 ^ (10 * L_2) * W_2 →
+      58025 * 2 ^ (7 * L_3) * W_3 + 19 = 2059 * 3 ^ (10 * L_2) * W_2 →
+      (2 ^ (10 * L_2 + 7) * W_2 + 19) % 2187 = 0 ∧
+      2187 ∣ (2 ^ (10 * L_2 + 7) * W_2 + 19) ∧
+      (L_2 = 1 → W_2 % 2187 = 340) ∧
+      (L_2 = 2 → W_2 % 2187 = 829) ∧
+      W_2 % 3 = 1 ∧ W_2 % 24 = 1 ∧
+      ((L_2 % 3 = 1 ↔ W_2 % 9 = 7) ∧ (L_2 % 3 = 2 ↔ W_2 % 9 = 1) ∧ (L_2 % 3 = 0 ↔ W_2 % 9 = 4)) ∧
+      ((L_2 % 6 = 1 ↔ W_2 % 144 = 97) ∧ (L_2 % 6 = 2 ↔ W_2 % 144 = 73) ∧
+       (L_2 % 6 = 3 ↔ W_2 % 144 = 49) ∧ (L_2 % 6 = 4 ↔ W_2 % 144 = 25) ∧
+       (L_2 % 6 = 5 ↔ W_2 % 144 = 1) ∧ (L_2 % 6 = 0 ↔ W_2 % 144 = 121))) ∧
+    (∀ (W_2 W_3 W_4 L_2 L_3 L_4 : ℕ), 1 ≤ L_2 → 1 ≤ L_3 → 1 ≤ L_4 →
+      58025 * 2 ^ (7 * L_3) * W_3 + 19 = 2059 * 3 ^ (10 * L_2) * W_2 →
+      58025 * 3 ^ (7 * L_3) * W_3 + 19 = 2 ^ (10 * L_4) * 2059 * W_4 →
+      (2 ^ (7 * L_3 + 10) * W_3) % 59049 = 19 ∧
+      59049 ∣ (2 ^ (7 * L_3 + 10) * W_3 - 19) ∧
+      (L_3 = 1 → W_3 % 59049 = 23717) ∧
+      (L_3 = 2 → W_3 % 59049 = 45856) ∧
+      ((L_3 % 2 = 1 ↔ W_3 % 3 = 2) ∧ (L_3 % 2 = 0 ↔ W_3 % 3 = 1)) ∧
+      ((L_3 % 2 = 1 ↔ W_3 % 24 = 23) ∧ (L_3 % 2 = 0 ↔ W_3 % 24 = 13)) ∧
+      ((L_3 % 6 = 1 ↔ W_3 % 9 = 2) ∧ (L_3 % 6 = 2 ↔ W_3 % 9 = 1) ∧
+       (L_3 % 6 = 3 ↔ W_3 % 9 = 5) ∧ (L_3 % 6 = 4 ↔ W_3 % 9 = 7) ∧
+       (L_3 % 6 = 5 ↔ W_3 % 9 = 8) ∧ (L_3 % 6 = 0 ↔ W_3 % 9 = 4))) ∧
+    ((∀ W_2 W_4 : ℕ, W_2 % 24 = 1 → W_4 % 24 = 1 → W_4 < W_2 → W_4 + 24 ≤ W_2 ∧ 24 ∣ (W_2 - W_4)) ∧
+     (∀ W_2 W_4 : ℕ, W_2 % 24 = 1 → W_4 % 24 = 1 → W_2 % 16 = W_4 % 16 → W_4 < W_2 →
+       W_4 + 48 ≤ W_2 ∧ 48 ∣ (W_2 - W_4)) ∧
+     (∀ W_2 W_4 : ℕ, W_2 % 24 = 1 → W_4 % 24 = 1 → W_2 % 9 = W_4 % 9 → W_4 < W_2 →
+       W_4 + 72 ≤ W_2 ∧ 72 ∣ (W_2 - W_4)) ∧
+     (∀ W_2 W_4 : ℕ, W_2 % 144 = W_4 % 144 → W_4 < W_2 → W_4 + 144 ≤ W_2 ∧ 144 ∣ (W_2 - W_4))) := by
+  refine ⟨?_, ?_, ?_⟩
+  · intro W_1 W_2 W_3 L_1 L_2 L_3 hL1 hL2 hL3 h12 h23
+    have h7_le : 7 ≤ 7 * L_1 := by omega
+    rcases Nat.pow_dvd_pow 3 h7_le with ⟨U_7, hU7⟩
+    have hp7 : (3 : ℕ) ^ 7 = 2187 := rfl
+    rw [hp7] at hU7
+    have hpow2_norm : 2 ^ (10 * L_2 + 7) * W_2 = 128 * (2 ^ (10 * L_2) * W_2) := by
+      rw [Nat.pow_add]; ring
+    have h12_norm : 2187 * (58025 * U_7 * W_1) + 19 = 2059 * (2 ^ (10 * L_2) * W_2) := by
+      calc 2187 * (58025 * U_7 * W_1) + 19
+          = 58025 * (2187 * U_7) * W_1 + 19 := by ring
+        _ = 58025 * 3 ^ (7 * L_1) * W_1 + 19 := by rw [← hU7]
+        _ = 2059 * 2 ^ (10 * L_2) * W_2 := h12
+        _ = 2059 * (2 ^ (10 * L_2) * W_2) := by ring
+    have hge : 58025 * U_7 * W_1 ≤ 2 ^ (10 * L_2) * W_2 := by omega
+    have hW2_2187_id :
+        2 ^ (10 * L_2 + 7) * W_2 + 19 = 2187 * (2 ^ (10 * L_2) * W_2 - 58025 * U_7 * W_1) := by
+      rw [Nat.mul_sub_left_distrib, hpow2_norm]
+      omega
+    have hW2_2187_mod : (2 ^ (10 * L_2 + 7) * W_2 + 19) % 2187 = 0 := by omega
+    have hW2_2187_dvd : 2187 ∣ (2 ^ (10 * L_2 + 7) * W_2 + 19) :=
+      Nat.dvd_of_mod_eq_zero hW2_2187_mod
+    have hL2_1 : L_2 = 1 → W_2 % 2187 = 340 := by
+      intro h1
+      subst h1
+      rcases hW2_2187_dvd with ⟨K2, hK2⟩
+      have h17 : (2 : ℕ) ^ (10 * 1 + 7) = 131072 := by decide
+      rw [h17] at hK2
+      have hbez : W_2 + 2187 * (123101 * W_2 + 18) = 2187 * (2054 * K2) + 340 := by
+        linarith only [hK2]
+      exact (mod_and_div_of_bezout (V := W_2) (M := 2187)
+        (a := 123101 * W_2 + 18) (b := 2054 * K2) (r := 340) hbez (by decide)).1
+    have hL2_2 : L_2 = 2 → W_2 % 2187 = 829 := by
+      intro h2
+      subst h2
+      rcases hW2_2187_dvd with ⟨K2, hK2⟩
+      have h27 : (2 : ℕ) ^ (10 * 2 + 7) = 134217728 := by decide
+      rw [h27] at hK2
+      have hbez : W_2 + 2187 * (39706845 * W_2 + 6) = 2187 * (647 * K2) + 829 := by
+        linarith only [hK2]
+      exact (mod_and_div_of_bezout (V := W_2) (M := 2187)
+        (a := 39706845 * W_2 + 6) (b := 647 * K2) (r := 829) hbez (by decide)).1
+    have hW2_mod9_eq : (2 ^ (10 * L_2 + 7) * W_2 + 19) % 9 = 0 := by
+      rcases hW2_2187_dvd with ⟨K2, hK2⟩
+      have h9 : 2187 * K2 = 9 * (243 * K2) := by ring
+      rw [hK2, h9, Nat.mul_mod_right]
+    have hW2_9_cases := w2_mod_nine_cases hW2_mod9_eq
+    have hW2_8 : W_2 % 8 = 1 :=
+      (dense_core_macro_run_mod_16_128_1024_bijections_and_step_8_descent.1 W_2 W_3 L_2 L_3 hL3 h23).2.1
+    have hW2_16_bij :=
+      (dense_core_macro_run_mod_16_128_1024_bijections_and_step_8_descent.1 W_2 W_3 L_2 L_3 hL3 h23).2.2.2
+    have hbij := mod_144_six_way_bijection hW2_8 hW2_16_bij hW2_9_cases
+    exact ⟨hW2_2187_mod, hW2_2187_dvd, hL2_1, hL2_2, hbij.1, hbij.2.1, hbij.2.2.1, hbij.2.2.2⟩
+  · exact w3_three_adic_mirror_sieve_and_bijections
+  · refine ⟨?_, ?_, ?_, ?_⟩ <;> intros <;> omega
+
+/-!
+## Section 49: Exact Full-Power 3-Adic Remainder Laws for Both Waves & the Dual `1 → 2 → 1` Wave Corridor and Floor Invariant
+
+In Section 47, we proved that for every `2 → 1 → 2` wave, `(2^(7*L_3 + 10*L_4) * W_4) / 3^(10*L_2 + 7*L_3) = W_2 - 1`.
+We now establish the **exact full-power 3-adic remainder formula** for the `2 → 1 → 2` wave alongside
+the **complete dual `1 → 2 → 1` wave corridor, floor invariant, and full-power 3-adic remainder law**:
+
+1. **The `2 → 1 → 2` Wave Exact Full-Power `3`-Adic Remainder:**
+   Rewriting `2^(7*L_3 + 10*L_4) * W_4 + 19 * Q_{L_3} = 3^(10*L_2 + 7*L_3) * W_2` as
+     `2^(7*L_3 + 10*L_4) * W_4 = 3^(10*L_2 + 7*L_3) * (W_2 - 1) + (3^(10*L_2 + 7*L_3) - 19 * Q_{L_3})`,
+   since `0 < 19 * Q_{L_3} < 3^(10*L_2 + 7*L_3)` holds unconditionally for all `W_2, W_4 ∈ ℕ`,
+   Euclidean division uniqueness yields:
+     `(2^(7*L_3 + 10*L_4) * W_4) % 3^(10*L_2 + 7*L_3) = 3^(10*L_2 + 7*L_3) - 19 * Q_{L_3}`,
+   whose right-hand side is **100% independent of `W_2, W_4,` and `L_4`**!
+2. **The Dual `1 → 2 → 1` Wave `1/3053` Corridor, Floor Invariant & Exact Full-Power `3`-Adic Remainder:**
+   In the `1 → 2 → 1` wave equation (Section 40):
+     `3^(10*L_2 + 7*m_1) * U_1 + 19 * R_{L_2} = 2^(10*L_2 + 7*L_3) * W_3`,
+   where `58025 * R_{L_2} = 3^(10*L_2) - 2^(10*L_2)` (`R_{L_2} ≥ 1`), because `19 * 3053 = 58007 < 58025`,
+   we have `3053 * (19 * R_{L_2}) + 2^(10*L_2) < 3^(10*L_2)`. Consequently, for **all** `U_1, W_3 ∈ ℕ`:
+   - **Tight `1/3053` Archimedean Corridor:**
+     `(3053 * 3^(7*m_1)) * (2^(10*L_2 + 7*L_3) * W_3 - 3^(10*L_2 + 7*m_1) * U_1) < 3^(10*L_2 + 7*m_1)`,
+     and `3^(10*L_2 + 7*m_1) * U_1 < 2^(10*L_2 + 7*L_3) * W_3 < 3^(10*L_2 + 7*m_1) * (U_1 + 1)`,
+   - **Unconditional Floor Invariant:**
+     `(2^(10*L_2 + 7*L_3) * W_3) / 3^(10*L_2 + 7*m_1) = U_1`,
+   - **Unconditional Exact Full-Power `3`-Adic Remainder (100% independent of `U_1, W_3, m_1, L_3`):**
+     `(2^(10*L_2 + 7*L_3) * W_3) % 3^(10*L_2 + 7*m_1) = 19 * R_{L_2}`.
+-/
+
+/-- **Exact Full-Power 3-Adic Remainder Laws for Both Waves & the Dual `1 → 2 → 1` Wave Corridor and Floor Invariant:**
+Both the `2 → 1 → 2` wave and the `1 → 2 → 1` wave admit unconditional Euclidean division quotient and
+full-power `3`-adic remainder formulas whose remainders are completely independent of the wave quotients. -/
+theorem dense_core_dual_wave_full_three_adic_remainders_and_one_run_floor_invariant
+    {U_1 W_2 W_3 W_4 m_1 L_2 L_3 L_4 Q_L3 R_L2 : ℕ}
+    (hW2_pos : 1 ≤ W_2) (hL2_pos : 1 ≤ L_2) (hL3_pos : 1 ≤ L_3)
+    (hQ_eq : 2059 * Q_L3 = 3 ^ (7 * L_3) - 2 ^ (7 * L_3))
+    (hR_eq : 58025 * R_L2 = 3 ^ (10 * L_2) - 2 ^ (10 * L_2))
+    (hwave212 : 2 ^ (7 * L_3 + 10 * L_4) * W_4 + 19 * Q_L3 = 3 ^ (10 * L_2 + 7 * L_3) * W_2)
+    (hwave121 : 3 ^ (10 * L_2 + 7 * m_1) * U_1 + 19 * R_L2 = 2 ^ (10 * L_2 + 7 * L_3) * W_3) :
+    -- 1. Exact full-power 3-adic remainder for the 2 → 1 → 2 wave (independent of W_2, W_4, L_4):
+    ((2 ^ (7 * L_3 + 10 * L_4) * W_4) % 3 ^ (10 * L_2 + 7 * L_3) =
+      3 ^ (10 * L_2 + 7 * L_3) - 19 * Q_L3) ∧
+    -- 2. Dual 1 → 2 → 1 wave drift bound, 1/3053 corridor, floor invariant, and exact 3-adic remainder:
+    (1 ≤ R_L2 ∧ 3053 * (19 * R_L2) + 2 ^ (10 * L_2) < 3 ^ (10 * L_2) ∧
+     (3053 * 3 ^ (7 * m_1)) *
+       (2 ^ (10 * L_2 + 7 * L_3) * W_3 - 3 ^ (10 * L_2 + 7 * m_1) * U_1) <
+       3 ^ (10 * L_2 + 7 * m_1) ∧
+     3 ^ (10 * L_2 + 7 * m_1) * U_1 < 2 ^ (10 * L_2 + 7 * L_3) * W_3 ∧
+     2 ^ (10 * L_2 + 7 * L_3) * W_3 < 3 ^ (10 * L_2 + 7 * m_1) * (U_1 + 1) ∧
+     (2 ^ (10 * L_2 + 7 * L_3) * W_3) / 3 ^ (10 * L_2 + 7 * m_1) = U_1 ∧
+     (2 ^ (10 * L_2 + 7 * L_3) * W_3) % 3 ^ (10 * L_2 + 7 * m_1) = 19 * R_L2) := by
+  have h47 := dense_core_macro_wave_archimedean_floor_invariant_and_corridor
+    hW2_pos hL2_pos hL3_pos hQ_eq hwave212
+  set S3 := 3 ^ (10 * L_2 + 7 * L_3)
+  set E2 := 2 ^ (7 * L_3 + 10 * L_4)
+  have hlower212 : S3 * (W_2 - 1) < E2 * W_4 := h47.2.2.1
+  have hupper212 : E2 * W_4 < S3 * W_2 := h47.2.2.2.1
+  have hdist212 : S3 * (W_2 - 1) + S3 = S3 * W_2 := by
+    have hw : (W_2 - 1) + 1 = W_2 := by omega
+    calc S3 * (W_2 - 1) + S3 = S3 * ((W_2 - 1) + 1) := by ring
+      _ = S3 * W_2 := by rw [hw]
+  have hrem212_lt : S3 - 19 * Q_L3 < S3 := by
+    have hQ_pos : 1 ≤ Q_L3 := h47.1.1
+    omega
+  have hbez212 := mod_and_div_of_bezout (V := E2 * W_4) (M := S3) (a := 0) (b := W_2 - 1)
+    (r := S3 - 19 * Q_L3) (by omega) hrem212_lt
+  -- Dual 1 → 2 → 1 wave analysis:
+  have h2_lt_3_L2 : 2 ^ (10 * L_2) < 3 ^ (10 * L_2) :=
+    two_pow_lt_three_pow_of_pos (10 * L_2) (by omega)
+  have hR_pos : 1 ≤ R_L2 := by
+    rcases Nat.eq_zero_or_pos R_L2 with h0 | hpos
+    · rw [h0, Nat.mul_zero] at hR_eq; omega
+    · exact hpos
+  have h3_split_L2 : 3 ^ (10 * L_2) = 58025 * R_L2 + 2 ^ (10 * L_2) := by
+    have hd := Nat.sub_add_cancel (le_of_lt h2_lt_3_L2)
+    linarith only [hR_eq, hd]
+  have h3053_lt : 3053 * (19 * R_L2) + 2 ^ (10 * L_2) < 3 ^ (10 * L_2) := by
+    linarith only [h3_split_L2, hR_pos]
+  set S1 := 3 ^ (10 * L_2 + 7 * m_1)
+  set E1 := 2 ^ (10 * L_2 + 7 * L_3)
+  have hS1_split : S1 = 3 ^ (10 * L_2) * 3 ^ (7 * m_1) :=
+    Nat.pow_add 3 (10 * L_2) (7 * m_1)
+  have hdiff121 : E1 * W_3 - S1 * U_1 = 19 * R_L2 := by omega
+  have hcor121 : (3053 * 3 ^ (7 * m_1)) * (E1 * W_3 - S1 * U_1) < S1 := by
+    have hlt_R : 3053 * (19 * R_L2) < 3 ^ (10 * L_2) := by
+      have hp : 1 ≤ 2 ^ (10 * L_2) := Nat.pow_pos (by decide)
+      omega
+    have hmul :
+        (3053 * (19 * R_L2)) * 3 ^ (7 * m_1) < 3 ^ (10 * L_2) * 3 ^ (7 * m_1) :=
+      Nat.mul_lt_mul_of_pos_right hlt_R (Nat.pow_pos (by decide))
+    rw [hdiff121, hS1_split]
+    linarith only [hmul]
+  have h19R_lt_S1 : 19 * R_L2 < S1 := by
+    have hp : 1 ≤ 3053 * 3 ^ (7 * m_1) := by
+      have h3p : 1 ≤ 3 ^ (7 * m_1) := Nat.pow_pos (by decide)
+      omega
+    have hle : 1 * (19 * R_L2) ≤ (3053 * 3 ^ (7 * m_1)) * (E1 * W_3 - S1 * U_1) := by
+      rw [hdiff121]
+      exact Nat.mul_le_mul_right _ hp
+    omega
+  have hlower121 : S1 * U_1 < E1 * W_3 := by omega
+  have hupper121 : E1 * W_3 < S1 * (U_1 + 1) := by
+    have hdist : S1 * (U_1 + 1) = S1 * U_1 + S1 := by ring
+    omega
+  have hbez121 := mod_and_div_of_bezout (V := E1 * W_3) (M := S1) (a := 0) (b := U_1)
+    (r := 19 * R_L2) (by omega) h19R_lt_S1
+  have hS1_pos : 0 < S1 := Nat.pow_pos (by decide)
+  have hmul_S1 : S1 * ((E1 * W_3) / S1) = S1 * U_1 := by omega
+  have hfloor121 : (E1 * W_3) / S1 = U_1 :=
+    Nat.eq_of_mul_eq_mul_left hS1_pos hmul_S1
+  exact ⟨hbez212.1, hR_pos, h3053_lt, hcor121, hlower121, hupper121, hfloor121, hbez121.1⟩
+
+/-!
+## Section 50: The `+19`-Cancellation Homogeneous Difference Identities, Two-Sided `(2, 3)`-Power Wave Corridors & Mandatory Run-Expansion Laws
+
+In Sections 40 and 41, we eliminated the middle run quotient (`W_2` or `W_3`) between two consecutive
+macro-run interfaces by cross-multiplying by powers of `2` and `3`, keeping the `+19` constant.
+What happens if we instead **directly subtract** the two consecutive macro-run interface equations?
+The `+19` term cancels out **identically**, and the resulting difference divides cleanly by the
+homoclinic denominators `2059 = 3^7 - 2^7` and `58025 = 3^10 - 2^10`:
+
+1. **The `2 → 1 → 2` Homogeneous Difference Identity:**
+   Subtracting `58025 * 2^(7*L_3) * W_3 + 19 = 2059 * 3^(10*L_2) * W_2` from
+   `58025 * 3^(7*L_3) * W_3 + 19 = 2^(10*L_4) * 2059 * W_4` yields:
+     `2059 * (2^(10*L_4) * W_4 - 3^(10*L_2) * W_2) = 58025 * (3^(7*L_3) - 2^(7*L_3)) * W_3`,
+   and dividing both sides by `2059 = 3^7 - 2^7` gives the **Exact Homogeneous Difference Identity**:
+     `2^(10*L_4) * W_4 = 3^(10*L_2) * W_2 + 58025 * Q_{L_3} * W_3`.
+2. **The Two-Sided `(2, 3)`-Power Wave Pinch & Mandatory Run Expansion Under `W_4 ≤ W_2`:**
+   Combining the homogeneous difference identity with the `W_3`-eliminated wave equation traps
+   `2^(10*L_4) * W_4` and `3^(10*L_2) * W_2` inside the two-sided `(2, 3)`-power pinch:
+     `3^(10*L_2) * W_2 < 2^(10*L_4) * W_4`   AND   `2^(7*L_3 + 10*L_4) * W_4 < 3^(10*L_2 + 7*L_3) * W_2`.
+   Consequently:
+   - **Strict `W`-Growth Whenever `2^(10*L_4) ≤ 3^(10*L_2)` (including `L_4 ≤ L_2` and `2*L_4 ≤ 3*L_2`):**
+     `2^(10*L_4) ≤ 3^(10*L_2) ⟹ W_2 < W_4` (`W_2 + 8 ≤ W_4`), so `W_4 = W_2` is impossible!
+   - **Mandatory Run Expansion Whenever `W_4 ≤ W_2`:**
+     `W_4 ≤ W_2 ⟹ 3^(10*L_2) < 2^(10*L_4) ∧ L_2 < L_4 ∧ 3 * L_2 < 2 * L_4`,
+     and for every rational lower bound `2^(p' + q') ≤ 3^q'` (`q' ≥ 1`), `(p' + q') * L_2 < q' * L_4`!
+3. **The Dual `1 → 2 → 1` Homogeneous Difference Identity:**
+   Subtracting `58025 * 3^(7*m_1) * U_1 + 19 = 2059 * 2^(10*L_2) * W_2` from
+   `58025 * 2^(7*L_3) * W_3 + 19 = 2059 * 3^(10*L_2) * W_2` and dividing by `58025 = 3^10 - 2^10` yields:
+     `2^(7*L_3) * W_3 = 3^(7*m_1) * U_1 + 2059 * R_{L_2} * W_2`,
+   forcing `(2059 * R_{L_2}) ∣ (2^(7*L_3) * W_3 - 3^(7*m_1) * U_1)` and `3^(7*m_1) * U_1 < 2^(7*L_3) * W_3`!
+-/
+
+/-- **The `+19`-Cancellation Homogeneous Difference Identities, Two-Sided `(2, 3)`-Power Wave Corridors & Mandatory Run-Expansion Laws:**
+Subtracting consecutive macro-run interface equations cancels `+19` identically and yields exact
+homogeneous difference identities for both `2 → 1 → 2` and `1 → 2 → 1` waves, proving the two-sided
+`(2, 3)`-power wave pinch, strict `W`-growth whenever `2^(10*L_4) ≤ 3^(10*L_2)`, and mandatory run
+expansion `3^(10*L_2) < 2^(10*L_4)` (`3 * L_2 < 2 * L_4`) whenever `W_4 ≤ W_2`. -/
+theorem dense_core_plus_19_cancellation_homogeneous_difference_and_run_expansion_laws
+    {U_1 W_2 W_3 W_4 W_5 m_1 L_2 L_3 L_4 L_5 Q_L3 R_L2 : ℕ}
+    (hW2_pos : 1 ≤ W_2) (hW3_pos : 1 ≤ W_3)
+    (hL2_pos : 1 ≤ L_2) (hL3_pos : 1 ≤ L_3) (_hL4_pos : 1 ≤ L_4) (hL5_pos : 1 ≤ L_5)
+    (h12 : 58025 * 3 ^ (7 * m_1) * U_1 + 19 = 2059 * 2 ^ (10 * L_2) * W_2)
+    (h23 : 58025 * 2 ^ (7 * L_3) * W_3 + 19 = 2059 * 3 ^ (10 * L_2) * W_2)
+    (h34 : 58025 * 3 ^ (7 * L_3) * W_3 + 19 = 2 ^ (10 * L_4) * 2059 * W_4)
+    (h45 : 58025 * 2 ^ (7 * L_5) * W_5 + 19 = 2059 * 3 ^ (10 * L_4) * W_4)
+    (hQ_eq : 2059 * Q_L3 = 3 ^ (7 * L_3) - 2 ^ (7 * L_3))
+    (hR_eq : 58025 * R_L2 = 3 ^ (10 * L_2) - 2 ^ (10 * L_2)) :
+    -- 1. Exact homogeneous difference identities and (58025 * Q_L3) / (2059 * R_L2) divisibilities:
+    (2 ^ (10 * L_4) * W_4 = 3 ^ (10 * L_2) * W_2 + 58025 * Q_L3 * W_3 ∧
+     (58025 * Q_L3) ∣ (2 ^ (10 * L_4) * W_4 - 3 ^ (10 * L_2) * W_2) ∧
+     58025 ∣ (2 ^ (10 * L_4) * W_4 - 3 ^ (10 * L_2) * W_2) ∧
+     Q_L3 ∣ (2 ^ (10 * L_4) * W_4 - 3 ^ (10 * L_2) * W_2) ∧
+     2 ^ (7 * L_3) * W_3 = 3 ^ (7 * m_1) * U_1 + 2059 * R_L2 * W_2 ∧
+     (2059 * R_L2) ∣ (2 ^ (7 * L_3) * W_3 - 3 ^ (7 * m_1) * U_1)) ∧
+    -- 2. Two-sided (2, 3)-power wave corridors:
+    (3 ^ (10 * L_2) * W_2 < 2 ^ (10 * L_4) * W_4 ∧
+     2 ^ (7 * L_3 + 10 * L_4) * W_4 < 3 ^ (10 * L_2 + 7 * L_3) * W_2 ∧
+     3 ^ (7 * m_1) * U_1 < 2 ^ (7 * L_3) * W_3) ∧
+    -- 3. Strict W-growth under 2^(10*L_4) ≤ 3^(10*L_2) and mandatory run expansion under W_4 ≤ W_2:
+    ((2 ^ (10 * L_4) ≤ 3 ^ (10 * L_2) → W_2 < W_4 ∧ W_2 + 8 ≤ W_4 ∧ W_4 ≠ W_2) ∧
+     (L_4 ≤ L_2 → W_2 < W_4 ∧ W_2 + 8 ≤ W_4 ∧ W_4 ≠ W_2) ∧
+     (W_4 ≤ W_2 →
+       3 ^ (10 * L_2) < 2 ^ (10 * L_4) ∧ L_2 < L_4 ∧ 3 * L_2 < 2 * L_4 ∧
+       (∀ p' q' : ℕ, 1 ≤ q' → 2 ^ (p' + q') ≤ 3 ^ q' → (p' + q') * L_2 < q' * L_4))) := by
+  have h2_lt_3_L3 : 2 ^ (7 * L_3) < 3 ^ (7 * L_3) :=
+    two_pow_lt_three_pow_of_pos (7 * L_3) (by omega)
+  have hQ_pos : 1 ≤ Q_L3 := by
+    rcases Nat.eq_zero_or_pos Q_L3 with h0 | hpos
+    · rw [h0, Nat.mul_zero] at hQ_eq; omega
+    · exact hpos
+  have h3_split_L3 : 3 ^ (7 * L_3) = 2059 * Q_L3 + 2 ^ (7 * L_3) := by
+    have hd := Nat.sub_add_cancel (le_of_lt h2_lt_3_L3)
+    linarith only [hQ_eq, hd]
+  -- Proof of 2^(10*L_4)*W_4 = 3^(10*L_2)*W_2 + 58025 * Q_L3 * W_3:
+  have h3_W3 : 58025 * 3 ^ (7 * L_3) * W_3 =
+      58025 * (2059 * Q_L3 + 2 ^ (7 * L_3)) * W_3 := by rw [h3_split_L3]
+  have h3_W3_exp : 58025 * (2059 * Q_L3 + 2 ^ (7 * L_3)) * W_3 =
+      2059 * (58025 * Q_L3 * W_3) + 58025 * 2 ^ (7 * L_3) * W_3 := by ring
+  have h2059_comm : 2 ^ (10 * L_4) * 2059 * W_4 = 2059 * (2 ^ (10 * L_4) * W_4) := by ring
+  have hmul_2059 :
+      2059 * (2 ^ (10 * L_4) * W_4) =
+        2059 * (3 ^ (10 * L_2) * W_2 + 58025 * Q_L3 * W_3) := by
+    have hdist : 2059 * (3 ^ (10 * L_2) * W_2 + 58025 * Q_L3 * W_3) =
+        2059 * 3 ^ (10 * L_2) * W_2 + 2059 * (58025 * Q_L3 * W_3) := by ring
+    linarith only [h23, h34, h3_W3, h3_W3_exp, h2059_comm, hdist]
+  have hdiff_212 : 2 ^ (10 * L_4) * W_4 = 3 ^ (10 * L_2) * W_2 + 58025 * Q_L3 * W_3 :=
+    Nat.eq_of_mul_eq_mul_left (by decide : 0 < 2059) hmul_2059
+  have hsub_212 : 2 ^ (10 * L_4) * W_4 - 3 ^ (10 * L_2) * W_2 = 58025 * Q_L3 * W_3 := by omega
+  have hdvd_58025_Q : (58025 * Q_L3) ∣ (2 ^ (10 * L_4) * W_4 - 3 ^ (10 * L_2) * W_2) :=
+    ⟨W_3, hsub_212⟩
+  have hdvd_58025 : 58025 ∣ (2 ^ (10 * L_4) * W_4 - 3 ^ (10 * L_2) * W_2) :=
+    ⟨Q_L3 * W_3, by rw [hsub_212]; ring⟩
+  have hdvd_Q : Q_L3 ∣ (2 ^ (10 * L_4) * W_4 - 3 ^ (10 * L_2) * W_2) :=
+    ⟨58025 * W_3, by rw [hsub_212]; ring⟩
+  -- Dual 1 → 2 → 1 difference identity:
+  have h2_lt_3_L2 : 2 ^ (10 * L_2) < 3 ^ (10 * L_2) :=
+    two_pow_lt_three_pow_of_pos (10 * L_2) (by omega)
+  have hR_pos : 1 ≤ R_L2 := by
+    rcases Nat.eq_zero_or_pos R_L2 with h0 | hpos
+    · rw [h0, Nat.mul_zero] at hR_eq; omega
+    · exact hpos
+  have h3_split_L2 : 3 ^ (10 * L_2) = 58025 * R_L2 + 2 ^ (10 * L_2) := by
+    have hd := Nat.sub_add_cancel (le_of_lt h2_lt_3_L2)
+    linarith only [hR_eq, hd]
+  have h3_W2 : 2059 * 3 ^ (10 * L_2) * W_2 =
+      2059 * (58025 * R_L2 + 2 ^ (10 * L_2)) * W_2 := by rw [h3_split_L2]
+  have h3_W2_exp : 2059 * (58025 * R_L2 + 2 ^ (10 * L_2)) * W_2 =
+      58025 * (2059 * R_L2 * W_2) + 2059 * 2 ^ (10 * L_2) * W_2 := by ring
+  have hmul_58025 :
+      58025 * (2 ^ (7 * L_3) * W_3) =
+        58025 * (3 ^ (7 * m_1) * U_1 + 2059 * R_L2 * W_2) := by
+    have hdist : 58025 * (3 ^ (7 * m_1) * U_1 + 2059 * R_L2 * W_2) =
+        58025 * 3 ^ (7 * m_1) * U_1 + 58025 * (2059 * R_L2 * W_2) := by ring
+    have hcomm : 58025 * (2 ^ (7 * L_3) * W_3) = 58025 * 2 ^ (7 * L_3) * W_3 := by ring
+    linarith only [h12, h23, h3_W2, h3_W2_exp, hdist, hcomm]
+  have hdiff_121 : 2 ^ (7 * L_3) * W_3 = 3 ^ (7 * m_1) * U_1 + 2059 * R_L2 * W_2 :=
+    Nat.eq_of_mul_eq_mul_left (by decide : 0 < 58025) hmul_58025
+  have hdvd_2059_R : (2059 * R_L2) ∣ (2 ^ (7 * L_3) * W_3 - 3 ^ (7 * m_1) * U_1) :=
+    ⟨W_2, by omega⟩
+  -- Wave equation 2^(7*L_3 + 10*L_4) * W_4 + 19 * Q_L3 = 3^(10*L_2 + 7*L_3) * W_2:
+  have hpow2_add : 2 ^ (7 * L_3 + 10 * L_4) = 2 ^ (7 * L_3) * 2 ^ (10 * L_4) :=
+    Nat.pow_add 2 (7 * L_3) (10 * L_4)
+  have hpow3_add : 3 ^ (10 * L_2 + 7 * L_3) = 3 ^ (10 * L_2) * 3 ^ (7 * L_3) :=
+    Nat.pow_add 3 (10 * L_2) (7 * L_3)
+  have hw1 : 3 ^ (7 * L_3) * (58025 * 2 ^ (7 * L_3) * W_3 + 19) =
+      3 ^ (7 * L_3) * (2059 * 3 ^ (10 * L_2) * W_2) :=
+    congrArg (fun x => 3 ^ (7 * L_3) * x) h23
+  have hw2 : 2 ^ (7 * L_3) * (58025 * 3 ^ (7 * L_3) * W_3 + 19) =
+      2 ^ (7 * L_3) * (2 ^ (10 * L_4) * 2059 * W_4) :=
+    congrArg (fun x => 2 ^ (7 * L_3) * x) h34
+  have hw3 : 19 * 3 ^ (7 * L_3) = 2059 * (19 * Q_L3) + 19 * 2 ^ (7 * L_3) := by
+    rw [h3_split_L3]; ring
+  have hw4 : 3 ^ (7 * L_3) * (58025 * 2 ^ (7 * L_3) * W_3 + 19) =
+      58025 * 2 ^ (7 * L_3) * 3 ^ (7 * L_3) * W_3 + 19 * 3 ^ (7 * L_3) := by ring
+  have hw5 : 2 ^ (7 * L_3) * (58025 * 3 ^ (7 * L_3) * W_3 + 19) =
+      58025 * 2 ^ (7 * L_3) * 3 ^ (7 * L_3) * W_3 + 19 * 2 ^ (7 * L_3) := by ring
+  have hw6 : 3 ^ (7 * L_3) * (2059 * 3 ^ (10 * L_2) * W_2) =
+      2059 * ((3 ^ (10 * L_2) * 3 ^ (7 * L_3)) * W_2) := by ring
+  have hw7 : 2 ^ (7 * L_3) * (2 ^ (10 * L_4) * 2059 * W_4) =
+      2059 * ((2 ^ (7 * L_3) * 2 ^ (10 * L_4)) * W_4) := by ring
+  rw [← hpow3_add] at hw6
+  rw [← hpow2_add] at hw7
+  have hw8 : 2059 * (2 ^ (7 * L_3 + 10 * L_4) * W_4 + 19 * Q_L3) =
+      2059 * (2 ^ (7 * L_3 + 10 * L_4) * W_4) + 2059 * (19 * Q_L3) := by ring
+  have hwave_mul :
+      2059 * (2 ^ (7 * L_3 + 10 * L_4) * W_4 + 19 * Q_L3) =
+        2059 * (3 ^ (10 * L_2 + 7 * L_3) * W_2) := by
+    linarith only [hw1, hw2, hw3, hw4, hw5, hw6, hw7, hw8]
+  have hwave_212 : 2 ^ (7 * L_3 + 10 * L_4) * W_4 + 19 * Q_L3 = 3 ^ (10 * L_2 + 7 * L_3) * W_2 :=
+    Nat.eq_of_mul_eq_mul_left (by decide : 0 < 2059) hwave_mul
+  -- Two-sided corridors:
+  have hlow_212 : 3 ^ (10 * L_2) * W_2 < 2 ^ (10 * L_4) * W_4 := by
+    have hp1 : 1 ≤ Q_L3 * W_3 := Nat.mul_pos hQ_pos hW3_pos
+    have hp : 58025 ≤ 58025 * (Q_L3 * W_3) := Nat.le_mul_of_pos_right 58025 hp1
+    have hp' : 58025 * (Q_L3 * W_3) = 58025 * Q_L3 * W_3 := by ring
+    omega
+  have hup_212 : 2 ^ (7 * L_3 + 10 * L_4) * W_4 < 3 ^ (10 * L_2 + 7 * L_3) * W_2 := by omega
+  have hlow_121 : 3 ^ (7 * m_1) * U_1 < 2 ^ (7 * L_3) * W_3 := by
+    have hp1 : 1 ≤ R_L2 * W_2 := Nat.mul_pos hR_pos hW2_pos
+    have hp : 2059 ≤ 2059 * (R_L2 * W_2) := Nat.le_mul_of_pos_right 2059 hp1
+    have hp' : 2059 * (R_L2 * W_2) = 2059 * R_L2 * W_2 := by ring
+    omega
+  -- Growth and expansion laws:
+  have hW2_8 : W_2 % 8 = 1 :=
+    (dense_core_macro_run_mod_16_128_1024_bijections_and_step_8_descent.1 W_2 W_3 L_2 L_3 hL3_pos h23).2.1
+  have hW4_8 : W_4 % 8 = 1 :=
+    (dense_core_macro_run_mod_16_128_1024_bijections_and_step_8_descent.1 W_4 W_5 L_4 L_5 hL5_pos h45).2.1
+  have hgrow_of_pow : 2 ^ (10 * L_4) ≤ 3 ^ (10 * L_2) → W_2 < W_4 ∧ W_2 + 8 ≤ W_4 ∧ W_4 ≠ W_2 := by
+    intro hle
+    have hmul : 2 ^ (10 * L_4) * W_2 ≤ 3 ^ (10 * L_2) * W_2 := Nat.mul_le_mul_right W_2 hle
+    have hlt_mul : 2 ^ (10 * L_4) * W_2 < 2 ^ (10 * L_4) * W_4 := lt_of_le_of_lt hmul hlow_212
+    have hlt : W_2 < W_4 := by
+      refine Nat.lt_of_not_le (fun hge => ?_)
+      have hm2 : 2 ^ (10 * L_4) * W_4 ≤ 2 ^ (10 * L_4) * W_2 :=
+        Nat.mul_le_mul_left (2 ^ (10 * L_4)) hge
+      omega
+    omega
+  have hgrow_of_L : L_4 ≤ L_2 → W_2 < W_4 ∧ W_2 + 8 ≤ W_4 ∧ W_4 ≠ W_2 := by
+    intro hle_L
+    have h1 : 2 ^ (10 * L_4) ≤ 2 ^ (10 * L_2) :=
+      Nat.pow_le_pow_right (by decide) (by omega)
+    have h2 : 2 ^ (10 * L_2) ≤ 3 ^ (10 * L_2) :=
+      Nat.pow_le_pow_left (by decide) (10 * L_2)
+    exact hgrow_of_pow (le_trans h1 h2)
+  have hexp_of_W :
+      W_4 ≤ W_2 →
+        3 ^ (10 * L_2) < 2 ^ (10 * L_4) ∧ L_2 < L_4 ∧ 3 * L_2 < 2 * L_4 ∧
+        (∀ p' q' : ℕ, 1 ≤ q' → 2 ^ (p' + q') ≤ 3 ^ q' → (p' + q') * L_2 < q' * L_4) := by
+    intro hle_W
+    have hpow_lt : 3 ^ (10 * L_2) < 2 ^ (10 * L_4) := by
+      refine Nat.lt_of_not_le (fun hge => ?_)
+      have hg := (hgrow_of_pow hge).1
+      omega
+    have hL_lt : L_2 < L_4 := by
+      refine Nat.lt_of_not_le (fun hge => ?_)
+      have hg := (hgrow_of_L hge).1
+      omega
+    have hpq : ∀ p' q' : ℕ, 1 ≤ q' → 2 ^ (p' + q') ≤ 3 ^ q' → (p' + q') * L_2 < q' * L_4 := by
+      intro p' q' hq' hpq_le
+      have hpow_q : (3 ^ (10 * L_2)) ^ q' < (2 ^ (10 * L_4)) ^ q' :=
+        pow_lt_pow_of_lt hpow_lt hq'
+      have h3_ge : 2 ^ ((p' + q') * (10 * L_2)) ≤ (3 ^ (10 * L_2)) ^ q' := by
+        calc 2 ^ ((p' + q') * (10 * L_2))
+            = (2 ^ (p' + q')) ^ (10 * L_2) := by rw [Nat.pow_mul]
+          _ ≤ (3 ^ q') ^ (10 * L_2) := Nat.pow_le_pow_left hpq_le (10 * L_2)
+          _ = 3 ^ (q' * (10 * L_2)) := by rw [← Nat.pow_mul]
+          _ = 3 ^ ((10 * L_2) * q') := by rw [Nat.mul_comm q' (10 * L_2)]
+          _ = (3 ^ (10 * L_2)) ^ q' := by rw [Nat.pow_mul]
+      have h2_eq : (2 ^ (10 * L_4)) ^ q' = 2 ^ ((10 * L_4) * q') :=
+        (Nat.pow_mul 2 (10 * L_4) q').symm
+      have h2_lt : 2 ^ ((p' + q') * (10 * L_2)) < 2 ^ ((10 * L_4) * q') := by
+        rw [← h2_eq]
+        exact lt_of_le_of_lt h3_ge hpow_q
+      have hexp_lt : (p' + q') * (10 * L_2) < (10 * L_4) * q' := by
+        refine Nat.lt_of_not_le (fun hge => ?_)
+        have hpow_ge : 2 ^ ((10 * L_4) * q') ≤ 2 ^ ((p' + q') * (10 * L_2)) :=
+          Nat.pow_le_pow_right (by decide) hge
+        omega
+      have heq1 : (p' + q') * (10 * L_2) = 10 * ((p' + q') * L_2) := by ring
+      have heq2 : (10 * L_4) * q' = 10 * (q' * L_4) := by ring
+      rw [heq1, heq2] at hexp_lt
+      omega
+    have h32 := hpq 1 2 (by decide) (by decide : 2 ^ (1 + 2) ≤ 3 ^ 2)
+    exact ⟨hpow_lt, hL_lt, by omega, hpq⟩
+  exact ⟨⟨hdiff_212, hdvd_58025_Q, hdvd_58025, hdvd_Q, hdiff_121, hdvd_2059_R⟩,
+    ⟨hlow_212, hup_212, hlow_121⟩,
+    ⟨hgrow_of_pow, hgrow_of_L, hexp_of_W⟩⟩
+
+/-!
+## Section 51: The Fermat-Prime Mod-11 & Mod-25 Homoclinic Sieves (`W_2 % 11 = 4` Universally, `W_2 % 25 ∈ {9, 16}`), Mod-58025 & Mod-2059 Locks, the Two-Residue Mod-4400 Law & 2200x/19,800x Accelerated Wave Descent
+
+In Sections 45, 47, and 48, we analyzed `W_2` and `W_3` modulo the powers of `2` and `3` (`128, 1024, 2187, 59049`).
+We now reduce the macro-run interface equation `58025 * 2^(7*L_3) * W_3 + 19 = 2059 * 3^(10*L_2) * W_2`
+modulo the **homoclinic denominators `58025 = 25 × 11 × 211` and `2059 = 29 × 71` themselves**:
+
+1. **Exact Mod-58025 & Mod-2059 Homoclinic Sieves:**
+   - Modulo `58025`: `(2059 * 3^(10*L_2) * W_2) % 58025 = 19`, locking `W_2 % 58025 = 52034` (`L_2 = 1`)
+     and `W_2 % 58025 = 51616` (`L_2 = 2`).
+   - Modulo `2059`: `(58025 * 2^(7*L_3) * W_3 + 19) % 2059 = 0`, locking `W_3 % 2059 = 117` (`L_3 = 1`)
+     and `W_3 % 2059 = 17` (`L_3 = 2`).
+2. **The Fermat-Prime Mod-11 Invariant (`W_2 % 11 = 4` Universally) & Mod-25 Period-2 Alternation:**
+   - Because `11 ∣ 58025` and by Fermat's Little Theorem `3^10 = 59049 ≡ 1 (mod 11)`, the exponent `L_2`
+     vanishes completely modulo `11` (`(3^(10*L_2)) % 11 = 1`), forcing `(2059 * W_2) % 11 = 19 % 11`, i.e.,
+       **`W_2 % 11 = 4` universally for ALL `L_2 ≥ 1`**!
+   - Because `25 ∣ 58025` and `3^10 = 59049 = 25 * 2362 - 1 ≡ 24 ≡ -1 (mod 25)` while `3^20 ≡ 1 (mod 25)`,
+     `3^(10*L_2) % 25` has period `2` in `L_2`, locking:
+       `(L_2 % 2 = 1 ↔ W_2 % 25 = 9 ↔ W_2 % 5 = 4)` and `(L_2 % 2 = 0 ↔ W_2 % 25 = 16 ↔ W_2 % 5 = 1)`.
+3. **The Two-Residue Mod-4400 Law, Mod-39600 6-Way Bijection & 2200x/19,800x Wave Descent:**
+   - Combining `W_2 % 16 ∈ {1, 9}`, `W_2 % 11 = 4`, and `W_2 % 25 ∈ {9, 16}` via CRT modulo
+     `16 × 11 × 25 = 4400` proves that across **all** `L_2 ≥ 1`, `W_2 % 4400` can only take **two values**:
+       `W_2 % 88 = 81` universally, and `(L_2 % 2 = 1 ↔ W_2 % 4400 = 609) ∧ (L_2 % 2 = 0 ↔ W_2 % 4400 = 4041)`.
+   - Combining with `W_2 % 9 ∈ {7, 1, 4}` (for post-initial `2`-runs) locks `W_2 % 264 = 169` universally,
+     `W_2 % 13200 ∈ {9409, 12841}`, and a 6-way bijection between `L_2 % 6` and
+     `W_2 % 39600 ∈ {35809, 39241, 9409, 12841, 22609, 26041}`!
+   - Consequently, on any descending wave `W_4 < W_2`:
+     `W_4 + 88 ≤ W_2` (unconditionally), `W_4 + 264 ≤ W_2` (post-initial), `W_4 + 4400 ≤ W_2` (`L_2 ≡ L_4 (mod 2)`),
+     `W_4 + 13200 ≤ W_2` (`L_2 ≡ L_4 (mod 2)`, post-initial), and **`W_4 + 39600 ≤ W_2`** (`L_2 ≡ L_4 (mod 6)`,
+     a **19,800x speedup** over `W_4 + 2 ≤ W_2`)!
+-/
+
+private lemma three_pow_ten_mul_mod_eleven (k : ℕ) : (3 ^ (10 * k)) % 11 = 1 := by
+  induction k with
+  | zero => rfl
+  | succ k ih =>
+    have h1 : 3 ^ (10 * (k + 1)) = 3 ^ (10 * k) * 3 ^ 10 := by
+      rw [Nat.mul_add, Nat.pow_add]
+    have hc : (3 ^ 10) % 11 = 1 := by decide
+    rw [h1, Nat.mul_mod, ih, hc]
+
+private lemma three_pow_twenty_mul_mod_twenty_five (k : ℕ) : (3 ^ (20 * k)) % 25 = 1 := by
+  induction k with
+  | zero => rfl
+  | succ k ih =>
+    have h1 : 3 ^ (20 * (k + 1)) = 3 ^ (20 * k) * 3 ^ 20 := by
+      rw [Nat.mul_add, Nat.pow_add]
+    have hc : (3 ^ 20) % 25 = 1 := by decide
+    rw [h1, Nat.mul_mod, ih, hc]
+
+private lemma w2_mod_11_of_raw {L_2 W_2 : ℕ}
+    (h11 : (2059 * 3 ^ (10 * L_2) * W_2) % 11 = 8) : W_2 % 11 = 4 := by
+  have h0 := h11
+  rw [Nat.mul_mod, Nat.mul_mod 2059, three_pow_ten_mul_mod_eleven] at h0
+  have hc : ((2059 % 11) * 1) % 11 = 2 := by decide
+  rw [hc] at h0
+  omega
+
+private lemma w2_mod_25_cases {L_2 W_2 : ℕ}
+    (h25 : (2059 * 3 ^ (10 * L_2) * W_2) % 25 = 19) :
+    (L_2 % 2 = 1 → W_2 % 25 = 9) ∧ (L_2 % 2 = 0 → W_2 % 25 = 16) := by
+  have hexp : 10 * L_2 = 20 * (L_2 / 2) + 10 * (L_2 % 2) := by omega
+  have hpow : (3 ^ (10 * L_2)) % 25 = (3 ^ (10 * (L_2 % 2))) % 25 := by
+    rw [hexp, Nat.pow_add, Nat.mul_mod, three_pow_twenty_mul_mod_twenty_five, Nat.one_mul, Nat.mod_mod]
+  have hmod : (((2059 % 25) * ((3 ^ (10 * (L_2 % 2))) % 25)) % 25 * (W_2 % 25)) % 25 = 19 := by
+    have h0 := h25
+    rw [Nat.mul_mod, Nat.mul_mod 2059, hpow] at h0
+    exact h0
+  refine ⟨?_, ?_⟩
+  · intro hm; rw [hm] at hmod
+    have hc : ((2059 % 25) * ((3 ^ (10 * 1)) % 25)) % 25 = 16 := by decide
+    rw [hc] at hmod; omega
+  · intro hm; rw [hm] at hmod
+    have hc : ((2059 % 25) * ((3 ^ (10 * 0)) % 25)) % 25 = 9 := by decide
+    rw [hc] at hmod; omega
+
+private lemma mod_4400_and_39600_bijections {L_2 W_2 : ℕ}
+    (h16 : (L_2 % 2 = 1 ↔ W_2 % 16 = 1) ∧ (L_2 % 2 = 0 ↔ W_2 % 16 = 9))
+    (h11 : W_2 % 11 = 4)
+    (h25 : (L_2 % 2 = 1 → W_2 % 25 = 9) ∧ (L_2 % 2 = 0 → W_2 % 25 = 16)) :
+    W_2 % 88 = 81 ∧
+    ((L_2 % 2 = 1 ↔ W_2 % 25 = 9) ∧ (L_2 % 2 = 0 ↔ W_2 % 25 = 16)) ∧
+    ((L_2 % 2 = 1 ↔ W_2 % 5 = 4) ∧ (L_2 % 2 = 0 ↔ W_2 % 5 = 1)) ∧
+    ((L_2 % 2 = 1 ↔ W_2 % 4400 = 609) ∧ (L_2 % 2 = 0 ↔ W_2 % 4400 = 4041)) := by
+  omega
+
+private lemma mod_39600_six_way_bijection {L_2 W_2 : ℕ}
+    (h4400 : (L_2 % 2 = 1 ↔ W_2 % 4400 = 609) ∧ (L_2 % 2 = 0 ↔ W_2 % 4400 = 4041))
+    (h144 : (L_2 % 6 = 1 ↔ W_2 % 144 = 97) ∧ (L_2 % 6 = 2 ↔ W_2 % 144 = 73) ∧
+            (L_2 % 6 = 3 ↔ W_2 % 144 = 49) ∧ (L_2 % 6 = 4 ↔ W_2 % 144 = 25) ∧
+            (L_2 % 6 = 5 ↔ W_2 % 144 = 1) ∧ (L_2 % 6 = 0 ↔ W_2 % 144 = 121)) :
+    W_2 % 264 = 169 ∧
+    ((L_2 % 2 = 1 ↔ W_2 % 13200 = 9409) ∧ (L_2 % 2 = 0 ↔ W_2 % 13200 = 12841)) ∧
+    ((L_2 % 6 = 1 ↔ W_2 % 39600 = 35809) ∧ (L_2 % 6 = 2 ↔ W_2 % 39600 = 39241) ∧
+     (L_2 % 6 = 3 ↔ W_2 % 39600 = 9409) ∧ (L_2 % 6 = 4 ↔ W_2 % 39600 = 12841) ∧
+     (L_2 % 6 = 5 ↔ W_2 % 39600 = 22609) ∧ (L_2 % 6 = 0 ↔ W_2 % 39600 = 26041)) := by
+  omega
+
+private lemma w2_mod_58025_of_L2_eq_one {W_2 K : ℕ}
+    (hK : 2059 * 59049 * W_2 = 19 + 58025 * K) : W_2 % 58025 = 52034 := by
+  have hbez : W_2 + 58025 * (82526917 * W_2) = 58025 * (39386 * K + 12) + 52034 := by
+    linarith only [hK]
+  exact (mod_and_div_of_bezout (V := W_2) (M := 58025)
+    (a := 82526917 * W_2) (b := 39386 * K + 12) (r := 52034) hbez (by decide)).1
+
+private lemma w2_mod_58025_of_L2_eq_two {W_2 K : ℕ}
+    (hK : 2059 * 3486784401 * W_2 = 19 + 58025 * K) : W_2 % 58025 = 51616 := by
+  have hbez : W_2 + 58025 * (4870409916595 * W_2) = 58025 * (39364 * K + 12) + 51616 := by
+    linarith only [hK]
+  exact (mod_and_div_of_bezout (V := W_2) (M := 58025)
+    (a := 4870409916595 * W_2) (b := 39364 * K + 12) (r := 51616) hbez (by decide)).1
+
+private lemma w3_mod_2059_of_L3_eq_one {W_3 K : ℕ}
+    (hK : 58025 * 128 * W_3 + 19 = 2059 * K) : W_3 % 2059 = 117 := by
+  have hbez : W_3 + 2059 * (5450461 * W_3 + 14) = 2059 * (1511 * K) + 117 := by
+    linarith only [hK]
+  exact (mod_and_div_of_bezout (V := W_3) (M := 2059)
+    (a := 5450461 * W_3 + 14) (b := 1511 * K) (r := 117) hbez (by decide)).1
+
+private lemma w3_mod_2059_of_L3_eq_two {W_3 K : ℕ}
+    (hK : 58025 * 16384 * W_3 + 19 = 2059 * K) : W_3 % 2059 = 17 := by
+  have hbez : W_3 + 2059 * (800160861 * W_3 + 16) = 2059 * (1733 * K) + 17 := by
+    linarith only [hK]
+  exact (mod_and_div_of_bezout (V := W_3) (M := 2059)
+    (a := 800160861 * W_3 + 16) (b := 1733 * K) (r := 17) hbez (by decide)).1
+
+/-- **The Fermat-Prime Mod-11 & Mod-25 Homoclinic Sieves (`W_2 % 11 = 4` Universally, `W_2 % 25 ∈ {9, 16}`), Mod-58025 & Mod-2059 Locks, the Two-Residue Mod-4400 Law & 2200x/19,800x Accelerated Wave Descent:**
+Reducing the macro-run interface equation `58025 * 2^(7*L_3) * W_3 + 19 = 2059 * 3^(10*L_2) * W_2`
+modulo `58025 = 25 × 11 × 211` and `2059 = 29 × 71` locks `W_2 % 11 = 4` universally across all `L_2`,
+`W_2 % 25 ∈ {9, 16}`, `W_2 % 88 = 81`, `W_2 % 4400 ∈ {609, 4041}`, and (with `W_2 % 144`)
+`W_2 % 264 = 169`, `W_2 % 13200 ∈ {9409, 12841}`, and a 6-way bijection modulo `39600`, accelerating
+wave descent up to `W_4 + 39600 ≤ W_2`. -/
+theorem dense_core_fermat_homoclinic_sieves_and_mod_4400_39600_bijections :
+    (∀ (W_2 W_3 L_2 L_3 : ℕ), 1 ≤ L_3 →
+      58025 * 2 ^ (7 * L_3) * W_3 + 19 = 2059 * 3 ^ (10 * L_2) * W_2 →
+      (2059 * 3 ^ (10 * L_2) * W_2) % 58025 = 19 ∧
+      (58025 * 2 ^ (7 * L_3) * W_3 + 19) % 2059 = 0 ∧
+      (L_2 = 1 → W_2 % 58025 = 52034) ∧
+      (L_2 = 2 → W_2 % 58025 = 51616) ∧
+      (L_3 = 1 → W_3 % 2059 = 117) ∧
+      (L_3 = 2 → W_3 % 2059 = 17) ∧
+      W_2 % 11 = 4 ∧ W_2 % 88 = 81 ∧
+      ((L_2 % 2 = 1 ↔ W_2 % 25 = 9) ∧ (L_2 % 2 = 0 ↔ W_2 % 25 = 16)) ∧
+      ((L_2 % 2 = 1 ↔ W_2 % 5 = 4) ∧ (L_2 % 2 = 0 ↔ W_2 % 5 = 1)) ∧
+      ((L_2 % 2 = 1 ↔ W_2 % 4400 = 609) ∧ (L_2 % 2 = 0 ↔ W_2 % 4400 = 4041))) ∧
+    (∀ (W_1 W_2 W_3 L_1 L_2 L_3 : ℕ), 1 ≤ L_1 → 1 ≤ L_2 → 1 ≤ L_3 →
+      58025 * 3 ^ (7 * L_1) * W_1 + 19 = 2059 * 2 ^ (10 * L_2) * W_2 →
+      58025 * 2 ^ (7 * L_3) * W_3 + 19 = 2059 * 3 ^ (10 * L_2) * W_2 →
+      W_2 % 264 = 169 ∧
+      ((L_2 % 2 = 1 ↔ W_2 % 13200 = 9409) ∧ (L_2 % 2 = 0 ↔ W_2 % 13200 = 12841)) ∧
+      ((L_2 % 6 = 1 ↔ W_2 % 39600 = 35809) ∧ (L_2 % 6 = 2 ↔ W_2 % 39600 = 39241) ∧
+       (L_2 % 6 = 3 ↔ W_2 % 39600 = 9409) ∧ (L_2 % 6 = 4 ↔ W_2 % 39600 = 12841) ∧
+       (L_2 % 6 = 5 ↔ W_2 % 39600 = 22609) ∧ (L_2 % 6 = 0 ↔ W_2 % 39600 = 26041))) ∧
+    ((∀ W_2 W_4 : ℕ, W_2 % 88 = 81 → W_4 % 88 = 81 → W_4 < W_2 → W_4 + 88 ≤ W_2 ∧ 88 ∣ (W_2 - W_4)) ∧
+     (∀ W_2 W_4 : ℕ, W_2 % 264 = 169 → W_4 % 264 = 169 → W_4 < W_2 → W_4 + 264 ≤ W_2 ∧ 264 ∣ (W_2 - W_4)) ∧
+     (∀ W_2 W_4 : ℕ, W_2 % 4400 = W_4 % 4400 → W_4 < W_2 → W_4 + 4400 ≤ W_2 ∧ 4400 ∣ (W_2 - W_4)) ∧
+     (∀ W_2 W_4 : ℕ, W_2 % 13200 = W_4 % 13200 → W_4 < W_2 → W_4 + 13200 ≤ W_2 ∧ 13200 ∣ (W_2 - W_4)) ∧
+     (∀ W_2 W_4 : ℕ, W_2 % 39600 = W_4 % 39600 → W_4 < W_2 → W_4 + 39600 ≤ W_2 ∧ 39600 ∣ (W_2 - W_4))) := by
+  refine ⟨?_, ?_, ?_⟩
+  · intro W_2 W_3 L_2 L_3 hL3 h23
+    have hrew58025 : 2059 * 3 ^ (10 * L_2) * W_2 = 19 + 58025 * (2 ^ (7 * L_3) * W_3) := by
+      linarith only [h23]
+    have hmod58025 : (2059 * 3 ^ (10 * L_2) * W_2) % 58025 = 19 := by
+      rw [hrew58025, Nat.add_mul_mod_self_left]
+    have hrew2059 : 58025 * 2 ^ (7 * L_3) * W_3 + 19 = 2059 * (3 ^ (10 * L_2) * W_2) := by
+      linarith only [h23]
+    have hmod2059 : (58025 * 2 ^ (7 * L_3) * W_3 + 19) % 2059 = 0 := by
+      rw [hrew2059, Nat.mul_mod_right]
+    have hex58025 : ∃ K : ℕ, 2059 * 3 ^ (10 * L_2) * W_2 = 19 + 58025 * K :=
+      ⟨2 ^ (7 * L_3) * W_3, hrew58025⟩
+    have hex2059 : ∃ K : ℕ, 58025 * 2 ^ (7 * L_3) * W_3 + 19 = 2059 * K :=
+      ⟨3 ^ (10 * L_2) * W_2, hrew2059⟩
+    have hL2_1 : L_2 = 1 → W_2 % 58025 = 52034 := by
+      intro h1
+      rcases hex58025 with ⟨K, hK⟩
+      rw [h1] at hK
+      have hc : (3 : ℕ) ^ (10 * 1) = 59049 := by decide
+      rw [hc] at hK
+      exact w2_mod_58025_of_L2_eq_one hK
+    have hL2_2 : L_2 = 2 → W_2 % 58025 = 51616 := by
+      intro h2
+      rcases hex58025 with ⟨K, hK⟩
+      rw [h2] at hK
+      have hc : (3 : ℕ) ^ (10 * 2) = 3486784401 := by decide
+      rw [hc] at hK
+      exact w2_mod_58025_of_L2_eq_two hK
+    have hL3_1 : L_3 = 1 → W_3 % 2059 = 117 := by
+      intro h1
+      rcases hex2059 with ⟨K, hK⟩
+      rw [h1] at hK
+      have hc : (2 : ℕ) ^ (7 * 1) = 128 := by decide
+      rw [hc] at hK
+      exact w3_mod_2059_of_L3_eq_one hK
+    have hL3_2 : L_3 = 2 → W_3 % 2059 = 17 := by
+      intro h2
+      rcases hex2059 with ⟨K, hK⟩
+      rw [h2] at hK
+      have hc : (2 : ℕ) ^ (7 * 2) = 16384 := by decide
+      rw [hc] at hK
+      exact w3_mod_2059_of_L3_eq_two hK
+    have hmod11_raw : (2059 * 3 ^ (10 * L_2) * W_2) % 11 = 8 := by
+      rcases hex58025 with ⟨K, hK⟩
+      have h11 : 19 + 58025 * K = 8 + 11 * (1 + 5275 * K) := by ring
+      rw [hK, h11, Nat.add_mul_mod_self_left]
+    have hW2_11 : W_2 % 11 = 4 := w2_mod_11_of_raw hmod11_raw
+    have hmod25_raw : (2059 * 3 ^ (10 * L_2) * W_2) % 25 = 19 := by
+      rcases hex58025 with ⟨K, hK⟩
+      have h25 : 19 + 58025 * K = 19 + 25 * (2321 * K) := by ring
+      rw [hK, h25, Nat.add_mul_mod_self_left]
+    have hW2_25 := w2_mod_25_cases hmod25_raw
+    have hW2_16 :=
+      (dense_core_macro_run_mod_16_128_1024_bijections_and_step_8_descent.1 W_2 W_3 L_2 L_3 hL3 h23).2.2.2
+    have hbij := mod_4400_and_39600_bijections hW2_16 hW2_11 hW2_25
+    exact ⟨hmod58025, hmod2059, hL2_1, hL2_2, hL3_1, hL3_2,
+      hW2_11, hbij.1, hbij.2.1, hbij.2.2.1, hbij.2.2.2⟩
+  · intro W_1 W_2 W_3 L_1 L_2 L_3 hL1 hL2 hL3 h12 h23
+    have h4400 : (L_2 % 2 = 1 ↔ W_2 % 4400 = 609) ∧ (L_2 % 2 = 0 ↔ W_2 % 4400 = 4041) := by
+      have hrew58025 : 2059 * 3 ^ (10 * L_2) * W_2 = 19 + 58025 * (2 ^ (7 * L_3) * W_3) := by
+        linarith only [h23]
+      have hex58025 : ∃ K : ℕ, 2059 * 3 ^ (10 * L_2) * W_2 = 19 + 58025 * K :=
+        ⟨2 ^ (7 * L_3) * W_3, hrew58025⟩
+      have hmod11_raw : (2059 * 3 ^ (10 * L_2) * W_2) % 11 = 8 := by
+        rcases hex58025 with ⟨K, hK⟩
+        have h11 : 19 + 58025 * K = 8 + 11 * (1 + 5275 * K) := by ring
+        rw [hK, h11, Nat.add_mul_mod_self_left]
+      have hW2_11 : W_2 % 11 = 4 := w2_mod_11_of_raw hmod11_raw
+      have hmod25_raw : (2059 * 3 ^ (10 * L_2) * W_2) % 25 = 19 := by
+        rcases hex58025 with ⟨K, hK⟩
+        have h25 : 19 + 58025 * K = 19 + 25 * (2321 * K) := by ring
+        rw [hK, h25, Nat.add_mul_mod_self_left]
+      have hW2_25 := w2_mod_25_cases hmod25_raw
+      have hW2_16 :=
+        (dense_core_macro_run_mod_16_128_1024_bijections_and_step_8_descent.1 W_2 W_3 L_2 L_3 hL3 h23).2.2.2
+      exact (mod_4400_and_39600_bijections hW2_16 hW2_11 hW2_25).2.2.2
+    have h144 :=
+      (dense_core_three_adic_mirror_sieves_and_mod_24_144_bijections.1
+        W_1 W_2 W_3 L_1 L_2 L_3 hL1 hL2 hL3 h12 h23).2.2.2.2.2.2.2
+    exact mod_39600_six_way_bijection h4400 h144
+  · refine ⟨?_, ?_, ?_, ?_, ?_⟩ <;> intros <;> omega
+
+/-!
+## Section 52: The 4-Run `W_2`-Free Cross-Wave Syzygy & the Closed-Form `W_3`-Multiplier Factorization
+
+In Section 50, we established the two homogeneous difference identities across a 4-run chain
+`1^(L_1) → 2^(L_2) → 1^(L_3) → 2^(L_4)`:
+- `2^(10*L_4) * W_4 = 3^(10*L_2) * W_2 + 58025 * Q_{L_3} * W_3`,
+- `2^(7*L_3) * W_3  = 3^(7*m_1) * U_1  + 2059 * R_{L_2} * W_2`.
+
+What happens when we **eliminate `W_2`** between these two homogeneous difference equations by
+cross-multiplying by `2059 * R_{L_2}` and `3^(10*L_2)`?
+1. **The Exact 4-Run `W_2`-Free Cross-Wave Syzygy:**
+     `2059 * R_{L_2} * 2^(10*L_4) * W_4 + 3^(10*L_2 + 7*m_1) * U_1 = (3^(10*L_2) * 2^(7*L_3) + 58025 * 2059 * R_{L_2} * Q_{L_3}) * W_3`,
+   connecting `U_1`, `W_3`, and `W_4` directly without `W_2` or `+19`!
+2. **Closed-Form `(2, 3)`-Power Factorization of the `W_3`-Multiplier:**
+   Expanding `58025 * R_{L_2} = 3^(10*L_2) - 2^(10*L_2)` and `2059 * Q_{L_3} = 3^(7*L_3) - 2^(7*L_3)` proves:
+     `(3^(10*L_2) * 2^(7*L_3) + 58025 * 2059 * R_{L_2} * Q_{L_3}) + 2^(10*L_2) * 3^(7*L_3) = 3^(10*L_2 + 7*L_3) + 2^(10*L_2 + 7*L_3)`,
+   and forces the exact divisibility:
+     `(3^(10*L_2) * 2^(7*L_3) + 58025 * 2059 * R_{L_2} * Q_{L_3}) ∣ (2059 * R_{L_2} * 2^(10*L_4) * W_4 + 3^(10*L_2 + 7*m_1) * U_1)`.
+-/
+
+/-- **The 4-Run `W_2`-Free Cross-Wave Syzygy & Closed-Form `W_3`-Multiplier Factorization:**
+Eliminating `W_2` between the two `+19`-cancelled homogeneous difference equations across a 4-run
+chain `1^(L_1) → 2^(L_2) → 1^(L_3) → 2^(L_4)` yields a pure linear syzygy between `U_1`, `W_3`, and `W_4`
+whose `W_3`-coefficient equals `3^(10*L_2 + 7*L_3) + 2^(10*L_2 + 7*L_3) - 2^(10*L_2) * 3^(7*L_3)`. -/
+theorem dense_core_four_run_W2_free_cross_wave_syzygy
+    {U_1 W_2 W_3 W_4 m_1 L_2 L_3 L_4 Q_L3 R_L2 : ℕ}
+    (hL2_pos : 1 ≤ L_2) (hL3_pos : 1 ≤ L_3)
+    (h12 : 58025 * 3 ^ (7 * m_1) * U_1 + 19 = 2059 * 2 ^ (10 * L_2) * W_2)
+    (h23 : 58025 * 2 ^ (7 * L_3) * W_3 + 19 = 2059 * 3 ^ (10 * L_2) * W_2)
+    (h34 : 58025 * 3 ^ (7 * L_3) * W_3 + 19 = 2 ^ (10 * L_4) * 2059 * W_4)
+    (hQ_eq : 2059 * Q_L3 = 3 ^ (7 * L_3) - 2 ^ (7 * L_3))
+    (hR_eq : 58025 * R_L2 = 3 ^ (10 * L_2) - 2 ^ (10 * L_2)) :
+    let M_W3 := 3 ^ (10 * L_2) * 2 ^ (7 * L_3) + 58025 * 2059 * R_L2 * Q_L3
+    (2059 * R_L2 * 2 ^ (10 * L_4) * W_4 + 3 ^ (10 * L_2 + 7 * m_1) * U_1 = M_W3 * W_3) ∧
+    (M_W3 ∣ (2059 * R_L2 * 2 ^ (10 * L_4) * W_4 + 3 ^ (10 * L_2 + 7 * m_1) * U_1)) ∧
+    (M_W3 + 2 ^ (10 * L_2) * 3 ^ (7 * L_3) =
+      3 ^ (10 * L_2 + 7 * L_3) + 2 ^ (10 * L_2 + 7 * L_3)) := by
+  intro M_W3
+  have h2_lt_3_L3 : 2 ^ (7 * L_3) < 3 ^ (7 * L_3) :=
+    two_pow_lt_three_pow_of_pos (7 * L_3) (by omega)
+  have h3_split_L3 : 3 ^ (7 * L_3) = 2059 * Q_L3 + 2 ^ (7 * L_3) := by
+    have hd := Nat.sub_add_cancel (le_of_lt h2_lt_3_L3)
+    linarith only [hQ_eq, hd]
+  have h3_W3 : 58025 * 3 ^ (7 * L_3) * W_3 =
+      58025 * (2059 * Q_L3 + 2 ^ (7 * L_3)) * W_3 := by rw [h3_split_L3]
+  have h3_W3_exp : 58025 * (2059 * Q_L3 + 2 ^ (7 * L_3)) * W_3 =
+      2059 * (58025 * Q_L3 * W_3) + 58025 * 2 ^ (7 * L_3) * W_3 := by ring
+  have h2059_comm : 2 ^ (10 * L_4) * 2059 * W_4 = 2059 * (2 ^ (10 * L_4) * W_4) := by ring
+  have hmul_2059 :
+      2059 * (2 ^ (10 * L_4) * W_4) =
+        2059 * (3 ^ (10 * L_2) * W_2 + 58025 * Q_L3 * W_3) := by
+    have hdist : 2059 * (3 ^ (10 * L_2) * W_2 + 58025 * Q_L3 * W_3) =
+        2059 * 3 ^ (10 * L_2) * W_2 + 2059 * (58025 * Q_L3 * W_3) := by ring
+    linarith only [h23, h34, h3_W3, h3_W3_exp, h2059_comm, hdist]
+  have hdiff_212 : 2 ^ (10 * L_4) * W_4 = 3 ^ (10 * L_2) * W_2 + 58025 * Q_L3 * W_3 :=
+    Nat.eq_of_mul_eq_mul_left (by decide : 0 < 2059) hmul_2059
+  have h2_lt_3_L2 : 2 ^ (10 * L_2) < 3 ^ (10 * L_2) :=
+    two_pow_lt_three_pow_of_pos (10 * L_2) (by omega)
+  have h3_split_L2 : 3 ^ (10 * L_2) = 58025 * R_L2 + 2 ^ (10 * L_2) := by
+    have hd := Nat.sub_add_cancel (le_of_lt h2_lt_3_L2)
+    linarith only [hR_eq, hd]
+  have h3_W2 : 2059 * 3 ^ (10 * L_2) * W_2 =
+      2059 * (58025 * R_L2 + 2 ^ (10 * L_2)) * W_2 := by rw [h3_split_L2]
+  have h3_W2_exp : 2059 * (58025 * R_L2 + 2 ^ (10 * L_2)) * W_2 =
+      58025 * (2059 * R_L2 * W_2) + 2059 * 2 ^ (10 * L_2) * W_2 := by ring
+  have hmul_58025 :
+      58025 * (2 ^ (7 * L_3) * W_3) =
+        58025 * (3 ^ (7 * m_1) * U_1 + 2059 * R_L2 * W_2) := by
+    have hdist : 58025 * (3 ^ (7 * m_1) * U_1 + 2059 * R_L2 * W_2) =
+        58025 * 3 ^ (7 * m_1) * U_1 + 58025 * (2059 * R_L2 * W_2) := by ring
+    have hcomm : 58025 * (2 ^ (7 * L_3) * W_3) = 58025 * 2 ^ (7 * L_3) * W_3 := by ring
+    linarith only [h12, h23, h3_W2, h3_W2_exp, hdist, hcomm]
+  have hdiff_121 : 2 ^ (7 * L_3) * W_3 = 3 ^ (7 * m_1) * U_1 + 2059 * R_L2 * W_2 :=
+    Nat.eq_of_mul_eq_mul_left (by decide : 0 < 58025) hmul_58025
+  -- Eliminate W_2 by cross-multiplying hdiff_212 by (2059 * R_L2) and hdiff_121 by 3^(10*L_2):
+  have hc1 := congrArg (fun x => (2059 * R_L2) * x) hdiff_212
+  have hc2 := congrArg (fun x => 3 ^ (10 * L_2) * x) hdiff_121
+  have hpow3_S1 : 3 ^ (10 * L_2 + 7 * m_1) = 3 ^ (10 * L_2) * 3 ^ (7 * m_1) :=
+    Nat.pow_add 3 (10 * L_2) (7 * m_1)
+  have hsyz :
+      2059 * R_L2 * 2 ^ (10 * L_4) * W_4 + 3 ^ (10 * L_2 + 7 * m_1) * U_1 = M_W3 * W_3 := by
+    have hd1 : (2059 * R_L2) * (2 ^ (10 * L_4) * W_4) =
+        2059 * R_L2 * 2 ^ (10 * L_4) * W_4 := by ring
+    have hd2 : (2059 * R_L2) * (3 ^ (10 * L_2) * W_2 + 58025 * Q_L3 * W_3) =
+        3 ^ (10 * L_2) * (2059 * R_L2 * W_2) + (58025 * 2059 * R_L2 * Q_L3) * W_3 := by ring
+    have hd3 : 3 ^ (10 * L_2) * (3 ^ (7 * m_1) * U_1 + 2059 * R_L2 * W_2) =
+        (3 ^ (10 * L_2) * 3 ^ (7 * m_1)) * U_1 + 3 ^ (10 * L_2) * (2059 * R_L2 * W_2) := by ring
+    have hd4 : M_W3 * W_3 =
+        3 ^ (10 * L_2) * (2 ^ (7 * L_3) * W_3) + (58025 * 2059 * R_L2 * Q_L3) * W_3 := by ring
+    rw [← hpow3_S1] at hd3
+    linarith only [hc1, hc2, hd1, hd2, hd3, hd4]
+  have hdvd_MW3 :
+      M_W3 ∣ (2059 * R_L2 * 2 ^ (10 * L_4) * W_4 + 3 ^ (10 * L_2 + 7 * m_1) * U_1) :=
+    ⟨W_3, hsyz⟩
+  have hpow3_23 : 3 ^ (10 * L_2 + 7 * L_3) = 3 ^ (10 * L_2) * 3 ^ (7 * L_3) :=
+    Nat.pow_add 3 (10 * L_2) (7 * L_3)
+  have hpow2_23 : 2 ^ (10 * L_2 + 7 * L_3) = 2 ^ (10 * L_2) * 2 ^ (7 * L_3) :=
+    Nat.pow_add 2 (10 * L_2) (7 * L_3)
+  have hMW3_id :
+      M_W3 + 2 ^ (10 * L_2) * 3 ^ (7 * L_3) =
+        3 ^ (10 * L_2 + 7 * L_3) + 2 ^ (10 * L_2 + 7 * L_3) := by
+    change (3 ^ (10 * L_2) * 2 ^ (7 * L_3) + 58025 * 2059 * R_L2 * Q_L3) +
+        2 ^ (10 * L_2) * 3 ^ (7 * L_3) =
+      3 ^ (10 * L_2 + 7 * L_3) + 2 ^ (10 * L_2 + 7 * L_3)
+    rw [hpow3_23, hpow2_23, h3_split_L2, h3_split_L3]
+    ring
+  exact ⟨hsyz, hdvd_MW3, hMW3_id⟩
+
 end Mahler.DubickasExtension
+
 
 
 
