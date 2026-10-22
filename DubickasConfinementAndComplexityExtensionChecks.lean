@@ -335,6 +335,16 @@ example (m : ℕ) :
 #print axioms Mahler.DubickasExtension.dense_core_anagram_weight_decomposition_and_universal_pigeonhole
 #print axioms Mahler.DubickasExtension.dense_core_anagram_collision_syzygy_and_drift_cancellation_cutoff
 
+-- 33. Verify Section 39 & 40: (1-Run -> 2-Run) and (2-Run -> 1-Run) interface renormalizations, 58025 - 8*2059 = 2187*19 determinant identity, and 3-run wave W_2 elimination
+#print axioms Mahler.DubickasExtension.dense_core_one_to_two_run_interface_syzygy_and_ten_mul_valuation_lock
+#print axioms Mahler.DubickasExtension.dense_core_two_to_one_run_interface_and_wave_elimination
+
+-- 34. Verify Section 41: Complete 2 -> 1 -> 2 wave elimination, Mod-19 conservation, and strict well-founded odd-quotient descent W_4 + 2 <= W_2 inside the Dense Core
+#print axioms Mahler.DubickasExtension.dense_core_two_one_two_wave_elimination_and_strict_W_descent
+
+-- 35. Verify Section 42: Multi-wave telescoping cancellation, terminal run-spike descent, and unconditional exclusion of infinite wave-descent epochs
+#print axioms Mahler.DubickasExtension.dense_core_multi_wave_telescoping_and_epoch_W_descent
+
 #print axioms Mahler.DubickasExtension.dubBaseCarry_eq_fract_linear
 #print axioms Mahler.DubickasExtension.dubBaseY_multi_step_carry_identity
 #print axioms Mahler.DubickasExtension.dubBaseCarry_mem_two_letters

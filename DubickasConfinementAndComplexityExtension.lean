@@ -14590,6 +14590,924 @@ theorem dense_core_anagram_collision_syzygy_and_drift_cancellation_cutoff
   have h10_17 := hpq_all 10 17 (by decide) (by decide : 3 ^ 17 ≤ 2 ^ (10 + 17))
   exact ⟨hpq_all, by omega⟩
 
+/-!
+## Section 39: The $58025 - 8 \cdot 2059 = 3^7 \cdot 19$ Homoclinic Determinant Identity and the
+## $(1\text{-Run} \to 2\text{-Run})$ Interface Renormalization ($58025 \cdot 3^{7 m_1} U_1 + 19 = 2^{10 L_2} \cdot 2059 \cdot W_2$)
+
+In Section 37, we compressed any maximal run of $L_1 = m_1 + 1$ ones into
+$8 \cdot 2059 \cdot V(r_2) = 3^{7 L_1} U_1 + 1$ ($r_2 = r_1 + L_1$) and any maximal run of
+$L_2 = m_2 + 1$ twos starting at $r_2$ into $58025 \cdot V(r_2) - 1 = 2^{10 m_2 + 7} U_2$.
+In this section, we eliminate the interface state $V(r_2)$ between those two equations and discover
+a remarkable algebraic identity:
+$$58025 - 8 \cdot 2059 \;=\; (3^{10} - 2^{10}) - 2^3 (3^7 - 2^7) \;=\; 3^7 (3^3 - 2^3) \;=\; 2187 \cdot 19 \;=\; 41{,}553.$$
+Because $3^{7 L_1} = 2187 \cdot 3^{7 m_1}$, dividing out $3^7 = 2187$ across the $(1\text{-Run} \to 2\text{-Run})$
+interface proves:
+
+1. **Universal $3^7 = 2187$ Divisibility of $U_2$ (`dense_core_one_to_two_run_interface_syzygy_and_ten_mul_valuation_lock`)**:
+   At every $(1\text{-Run} \to 2\text{-Run})$ interface, the odd run-of-$2$s quotient $U_2$ is
+   divisible by $2187 = 3^7$: $U_2 = 2187 \cdot W_2$ with $W_2 \bmod 2 = 1$.
+2. **Exact $(1\text{-Run} \to 2\text{-Run})$ Interface Syzygy**:
+   $$58025 \cdot 3^{7 m_1} U_1 + 19 \;=\; 2^{10 L_2} \cdot 2059 \cdot W_2.$$
+3. **Exact $10 L_2$ Valuation Lock on $58025 \cdot 3^{7 m_1} U_1 + 19$**:
+   Because $2059 \cdot W_2$ is odd, the exact 2-adic valuation of $58025 \cdot 3^{7 m_1} U_1 + 19$
+   is **10 times the length $L_2$ of the next run of $2$s**:
+   $$2^{10 L_2} \;\Big|\; \big(58025 \cdot 3^{7 m_1} U_1 + 19\big) \qquad \text{and} \qquad
+     \neg \Big(2^{10 L_2 + 1} \;\Big|\; \big(58025 \cdot 3^{7 m_1} U_1 + 19\big)\Big),$$
+   forcing both $(58025 \cdot 3^{7 m_1} U_1 + 19) \bmod 1024 = 0$ and
+   $(58025 \cdot 3^{7 m_1} U_1 + 19) \bmod 2059 = 0$.
+-/
+
+/-- **$(1\text{-Run} \to 2\text{-Run})$ Interface Renormalization and Exact $10 L_2$ Valuation Lock
+(`dense_core_one_to_two_run_interface_syzygy_and_ten_mul_valuation_lock`)**:
+Suppose $1 \le V(0)$, $j(r) \in \{1, 2\}$, and
+$2^{3 j(r + 1) + 4} V(r + 1) + 1 = 3^{3 j(r) + 4} V(r)$ for all $r \in \mathbb{N}$.
+Suppose a run of $L_1 = m_1 + 1$ ones at $r_1$ ($\forall t \le m_1,\; j(r_1 + t) = 1$) switches at
+$r_2 = r_1 + L_1$ to a run of $L_2 = m_2 + 1$ twos ($\forall t \le m_2,\; j(r_2 + t) = 2$) that
+switches back to $1$ at $r_2 + m_2 + 1$ ($j(r_2 + m_2 + 1) = 1$).
+Let $U_1 = (2059 \cdot V(r_1) - 1) / 2^{7 L_1}$, $U_2 = (58025 \cdot V(r_2) - 1) / 2^{10 m_2 + 7}$,
+and $W_2 = U_2 / 2187$.
+Then:
+1. $2187 \mid U_2$, $U_2 = 2187 \cdot W_2$, and $W_2 \bmod 2 = 1$.
+2. **Exact Interface Syzygy**:
+   $$58025 \cdot 3^{7 m_1} U_1 + 19 \;=\; 2^{10 L_2} \cdot 2059 \cdot W_2.$$
+3. **Exact $10 L_2$ 2-Adic Valuation Lock & Mod-$1024$/Mod-$2059$ Sieves**:
+   $$2^{10 L_2} \;\Big|\; \big(58025 \cdot 3^{7 m_1} U_1 + 19\big), \qquad
+     \neg \Big(2^{10 L_2 + 1} \;\Big|\; \big(58025 \cdot 3^{7 m_1} U_1 + 19\big)\Big),$$
+   $$\big(58025 \cdot 3^{7 m_1} U_1 + 19\big) \bmod 1024 = 0, \qquad
+     \big(58025 \cdot 3^{7 m_1} U_1 + 19\big) \bmod 2059 = 0.$$ -/
+theorem dense_core_one_to_two_run_interface_syzygy_and_ten_mul_valuation_lock
+    {V j : ℕ → ℕ} {r_1 m_1 m_2 : ℕ}
+    (hV0_pos : 1 ≤ V 0)
+    (hj : ∀ r : ℕ, j r = 1 ∨ j r = 2)
+    (hrec : ∀ r : ℕ, 2 ^ (3 * j (r + 1) + 4) * V (r + 1) + 1 = 3 ^ (3 * j r + 4) * V r)
+    (hrun1 : ∀ t ≤ m_1, j (r_1 + t) = 1)
+    (hrun2 : ∀ t ≤ m_2, j (r_1 + (m_1 + 1) + t) = 2)
+    (hsw2 : j (r_1 + (m_1 + 1) + m_2 + 1) = 1) :
+    let L_1 := m_1 + 1
+    let L_2 := m_2 + 1
+    let r_2 := r_1 + L_1
+    let U_1 := (2059 * V r_1 - 1) / 2 ^ (7 * L_1)
+    let U_2 := (58025 * V r_2 - 1) / 2 ^ (10 * m_2 + 7)
+    let W_2 := U_2 / 2187
+    ((2187 ∣ U_2) ∧ U_2 = 2187 * W_2 ∧ W_2 % 2 = 1) ∧
+    58025 * 3 ^ (7 * m_1) * U_1 + 19 = 2 ^ (10 * L_2) * 2059 * W_2 ∧
+    (2 ^ (10 * L_2) ∣ (58025 * 3 ^ (7 * m_1) * U_1 + 19)) ∧
+    ¬ (2 ^ (10 * L_2 + 1) ∣ (58025 * 3 ^ (7 * m_1) * U_1 + 19)) ∧
+    (58025 * 3 ^ (7 * m_1) * U_1 + 19) % 1024 = 0 ∧
+    (58025 * 3 ^ (7 * m_1) * U_1 + 19) % 2059 = 0 := by
+  intro L_1 L_2 r_2 U_1 U_2 W_2
+  have hsw1 : j (r_1 + m_1 + 1) = 2 := by
+    have h0 := hrun2 0 (by omega)
+    have hidx : r_1 + (m_1 + 1) + 0 = r_1 + m_1 + 1 := by omega
+    rw [hidx] at h0
+    exact h0
+  have h1 := (dense_core_one_run_compression_and_macro_transition hV0_pos hj hrec).2
+    r_1 m_1 hrun1 hsw1
+  have h2 := (dense_core_two_run_compression_and_macro_transition hV0_pos hj hrec).2
+    r_2 m_2 hrun2 hsw2
+  have hmacro1 : 8 * 2059 * V r_2 = 3 ^ (7 * L_1) * U_1 + 1 := h1.2.2.2.2.1
+  have hdvd_U2 : 2 ^ (10 * m_2 + 7) ∣ (58025 * V r_2 - 1) := h2.2.1
+  have hU2_odd : U_2 % 2 = 1 := h2.2.2.1
+  have hVr2_eq : 58025 * V r_2 - 1 = 2 ^ (10 * m_2 + 7) * U_2 :=
+    (Nat.mul_div_cancel' hdvd_U2).symm
+  have hVr2_pos : 1 ≤ V r_2 :=
+    ((dense_core_strict_doubling_and_monotonicity hV0_pos hj hrec).1 r_2).1
+  have hVr2_add : 58025 * V r_2 = 2 ^ (10 * m_2 + 7) * U_2 + 1 := by
+    have hd : (58025 * V r_2 - 1) + 1 = 58025 * V r_2 :=
+      Nat.sub_add_cancel (by linarith only [hVr2_pos])
+    linarith only [hVr2_eq, hd]
+  have hpow3_L1 : 3 ^ (7 * L_1) = 2187 * 3 ^ (7 * m_1) := by
+    have hexp : 7 * L_1 = 7 + 7 * m_1 := by omega
+    rw [hexp, Nat.pow_add]
+  have hpow2_L2 : 2 ^ (10 * L_2) = 8 * 2 ^ (10 * m_2 + 7) := by
+    have hexp : 10 * L_2 = 3 + (10 * m_2 + 7) := by omega
+    rw [hexp, Nat.pow_add]
+  have hcross :
+      2187 * (58025 * 3 ^ (7 * m_1) * U_1 + 19) =
+        (2 ^ (10 * L_2) * 2059) * U_2 := by
+    have hm1 : 58025 * (8 * 2059 * V r_2) = 58025 * (3 ^ (7 * L_1) * U_1 + 1) :=
+      congrArg (fun x => 58025 * x) hmacro1
+    have hm2 : (8 * 2059) * (58025 * V r_2) = (8 * 2059) * (2 ^ (10 * m_2 + 7) * U_2 + 1) :=
+      congrArg (fun x => (8 * 2059) * x) hVr2_add
+    rw [hpow3_L1] at hm1
+    have hexp1 : 58025 * (8 * 2059 * V r_2) = (8 * 2059) * (58025 * V r_2) := by ring
+    have hexp2 : 58025 * ((2187 * 3 ^ (7 * m_1)) * U_1 + 1) =
+        2187 * (58025 * 3 ^ (7 * m_1) * U_1 + 19) + 16472 := by ring
+    have hexp3 : (8 * 2059) * (2 ^ (10 * m_2 + 7) * U_2 + 1) =
+        ((8 * 2 ^ (10 * m_2 + 7)) * 2059) * U_2 + 16472 := by ring
+    rw [← hpow2_L2] at hexp3
+    linarith only [hm1, hm2, hexp1, hexp2, hexp3]
+  have hdvd_prod_2187 : 2187 ∣ (2 ^ (10 * L_2) * 2059) * U_2 :=
+    ⟨58025 * 3 ^ (7 * m_1) * U_1 + 19, hcross.symm⟩
+  have hcop_2187 : Nat.Coprime 2187 (2 ^ (10 * L_2) * 2059) := by
+    have hc1 : Nat.Coprime (3 ^ 7) (2 ^ (10 * L_2)) :=
+      Nat.Coprime.pow 7 (10 * L_2) (by decide : Nat.Coprime 3 2)
+    exact Nat.Coprime.mul_right hc1 (by decide : Nat.Coprime 2187 2059)
+  have hdvd_2187 : 2187 ∣ U_2 :=
+    hcop_2187.dvd_of_dvd_mul_left hdvd_prod_2187
+  have hW2_eq : U_2 = 2187 * W_2 := (Nat.mul_div_cancel' hdvd_2187).symm
+  have hW2_odd : W_2 % 2 = 1 := by
+    rcases Nat.mod_two_eq_zero_or_one W_2 with h0 | h1
+    · have hU2_even : U_2 % 2 = 0 := by
+        rw [hW2_eq, Nat.mul_mod, h0, Nat.mul_zero, Nat.zero_mod]
+      exact absurd (hU2_odd.symm.trans hU2_even) (by decide)
+    · exact h1
+  have hsyz : 58025 * 3 ^ (7 * m_1) * U_1 + 19 = 2 ^ (10 * L_2) * 2059 * W_2 := by
+    have hmul :
+        2187 * (58025 * 3 ^ (7 * m_1) * U_1 + 19) =
+          2187 * (2 ^ (10 * L_2) * 2059 * W_2) := by
+      calc 2187 * (58025 * 3 ^ (7 * m_1) * U_1 + 19)
+          = (2 ^ (10 * L_2) * 2059) * U_2 := hcross
+        _ = (2 ^ (10 * L_2) * 2059) * (2187 * W_2) := by rw [hW2_eq]
+        _ = 2187 * (2 ^ (10 * L_2) * 2059 * W_2) := by ring
+    exact Nat.eq_of_mul_eq_mul_left (by decide : 0 < 2187) hmul
+  have hdvd_2pow : 2 ^ (10 * L_2) ∣ (58025 * 3 ^ (7 * m_1) * U_1 + 19) := by
+    refine ⟨2059 * W_2, ?_⟩
+    linarith only [hsyz]
+  have hnot_dvd1 : ¬ (2 ^ (10 * L_2 + 1) ∣ (58025 * 3 ^ (7 * m_1) * U_1 + 19)) := by
+    rintro ⟨M, hM⟩
+    have hpow1 : 2 ^ (10 * L_2 + 1) = 2 ^ (10 * L_2) * 2 := by rw [Nat.pow_add]
+    have hmul : 2 ^ (10 * L_2) * (2059 * W_2) = 2 ^ (10 * L_2) * (2 * M) := by
+      calc 2 ^ (10 * L_2) * (2059 * W_2)
+          = 2 ^ (10 * L_2) * 2059 * W_2 := by ring
+        _ = 58025 * 3 ^ (7 * m_1) * U_1 + 19 := hsyz.symm
+        _ = 2 ^ (10 * L_2 + 1) * M := hM
+        _ = 2 ^ (10 * L_2) * (2 * M) := by rw [hpow1]; ring
+    have heven : 2059 * W_2 = 2 * M :=
+      Nat.eq_of_mul_eq_mul_left (Nat.pow_pos (by decide)) hmul
+    have hmod0 : (2059 * W_2) % 2 = 0 := by rw [heven, Nat.mul_mod_right]
+    have hmod1 : (2059 * W_2) % 2 = 1 := by rw [Nat.mul_mod, hW2_odd]
+    exact absurd (hmod1.symm.trans hmod0) (by decide)
+  have hmod1024 : (58025 * 3 ^ (7 * m_1) * U_1 + 19) % 1024 = 0 := by
+    have hpow_split : 2 ^ (10 * L_2) = 1024 * 2 ^ (10 * m_2) := by
+      have hexp : 10 * L_2 = 10 + 10 * m_2 := by omega
+      rw [hexp, Nat.pow_add]
+    have hrew : 58025 * 3 ^ (7 * m_1) * U_1 + 19 =
+        (2 ^ (10 * m_2) * 2059 * W_2) * 1024 := by
+      rw [hsyz, hpow_split]; ring
+    rw [hrew, Nat.mul_mod_left]
+  have hmod2059 : (58025 * 3 ^ (7 * m_1) * U_1 + 19) % 2059 = 0 := by
+    have hrew : 58025 * 3 ^ (7 * m_1) * U_1 + 19 =
+        (2 ^ (10 * L_2) * W_2) * 2059 := by
+      rw [hsyz]; ring
+    rw [hrew, Nat.mul_mod_left]
+  exact ⟨⟨hdvd_2187, hW2_eq, hW2_odd⟩, hsyz, hdvd_2pow, hnot_dvd1, hmod1024, hmod2059⟩
+
+/-!
+## Section 40: The $(2\text{-Run} \to 1\text{-Run})$ Interface Law, Dual $(7 L_3, 10 L_2)$ 2-Adic/3-Adic
+## Valuation Locks, and Complete $1 \to 2 \to 1$ Three-Run Wave Elimination
+
+In Section 39, we analyzed the $(1\text{-Run} \to 2\text{-Run})$ interface. In this section, we
+analyze the complementary $(2\text{-Run} \to 1\text{-Run})$ interface and chain both interfaces
+across a complete $1\text{-Run}(L_1) \to 2\text{-Run}(L_2) \to 1\text{-Run}(L_3)$ wave, eliminating
+the middle run quotient $W_2$ completely and uncovering a direct Mod-19 conservation law between
+successive $1$-run quotients:
+
+1. **$(2\text{-Run} \to 1\text{-Run})$ Interface Renormalization & Exact $7 L_3$ Valuation Lock
+   (`dense_core_two_to_one_run_interface_and_wave_elimination`)**:
+   Eliminating $V(r_3)$ between $58025 \cdot V(r_3) = 3^{10 L_2} U_2 + 8$ and
+   $2059 \cdot V(r_3) = 2^{7 L_3} U_3 + 1$ via $58025 - 8 \cdot 2059 = 2187 \cdot 19$ proves:
+   - $2187 \mid U_3$ ($U_3 = 2187 \cdot W_3$ with $W_3 \bmod 2 = 1$),
+   - $58025 \cdot 2^{7 L_3} W_3 + 19 = 2059 \cdot 3^{10 m_2 + 3} U_2$, and
+   - $\nu_2\big(2059 \cdot 3^{10 m_2 + 3} U_2 - 19\big) = 7 L_3$ **exactly**.
+
+2. **Complete $1 \to 2 \to 1$ Three-Run Wave Syzygy & $W_2$-Elimination**:
+   When the $2$-run is preceded by a $1$-run of length $L_1 = m_1 + 1$ (so $U_2 = 2187 \cdot W_2$):
+   - The two interfaces form the symmetric pair:
+     $$\begin{aligned}
+     58025 \cdot 3^{7 m_1} U_1 + 19 \;&=\; 2059 \cdot 2^{10 L_2} W_2, \\
+     58025 \cdot 2^{7 L_3} W_3 + 19 \;&=\; 2059 \cdot 3^{10 L_2} W_2,
+     \end{aligned}$$
+     so $3^{10 L_2} \mid (58025 \cdot 2^{7 L_3} W_3 + 19)$ (a **backward $3^{10 L_2}$ valuation lock**!).
+   - Eliminating $W_2$ between the two equations and dividing by $58025 = 3^{10} - 2^{10}$ yields
+     the **Exact Three-Run Wave Equation**:
+     $$3^{10 L_2 + 7 m_1} U_1 \;+\; 19 \cdot \left(\frac{3^{10 L_2} - 2^{10 L_2}}{58025}\right)
+       \;=\; 2^{10 L_2 + 7 L_3} W_3,$$
+     which reduces modulo $19$ to the homogeneous conservation law:
+     $$\big(3^{10 L_2 + 7 m_1} U_1\big) \bmod 19 \;=\; \big(2^{10 L_2 + 7 L_3} W_3\big) \bmod 19.$$
+-/
+
+/-- **$(2\text{-Run} \to 1\text{-Run})$ Interface Renormalization and Complete $1 \to 2 \to 1$
+Three-Run Wave Elimination (`dense_core_two_to_one_run_interface_and_wave_elimination`)**:
+Suppose $1 \le V(0)$, $j(r) \in \{1, 2\}$, and
+$2^{3 j(r + 1) + 4} V(r + 1) + 1 = 3^{3 j(r) + 4} V(r)$ for all $r \in \mathbb{N}$.
+1. **$(2\text{-Run} \to 1\text{-Run})$ Interface Law**:
+   Whenever a run of $L_2 = m_2 + 1$ twos at $r_2$ ($\forall t \le m_2,\; j(r_2 + t) = 2$) switches
+   at $r_3 = r_2 + L_2$ to a run of $L_3 = m_3 + 1$ ones ($\forall t \le m_3,\; j(r_3 + t) = 1$)
+   that switches back to $2$ at $r_3 + m_3 + 1$ ($j(r_3 + m_3 + 1) = 2$), let
+   $U_2 = (58025 \cdot V(r_2) - 1) / 2^{10 m_2 + 7}$, $U_3 = (2059 \cdot V(r_3) - 1) / 2^{7 L_3}$,
+   and $W_3 = U_3 / 2187$:
+   - $2187 \mid U_3$, $U_3 = 2187 \cdot W_3$, and $W_3 \bmod 2 = 1$,
+   - $58025 \cdot 2^{7 L_3} W_3 + 19 = 2059 \cdot 3^{10 m_2 + 3} U_2$,
+   - $2^{7 L_3} \mid (2059 \cdot 3^{10 m_2 + 3} U_2 - 19)$ and
+     $\neg (2^{7 L_3 + 1} \mid (2059 \cdot 3^{10 m_2 + 3} U_2 - 19))$.
+2. **Complete $1 \to 2 \to 1$ Three-Run Wave Elimination**:
+   When preceded by a run of $L_1 = m_1 + 1$ ones at $r_1$ ($\forall t \le m_1,\; j(r_1 + t) = 1$)
+   with $r_2 = r_1 + L_1$, $U_1 = (2059 \cdot V(r_1) - 1) / 2^{7 L_1}$, and $W_2 = U_2 / 2187$:
+   - $58025 \cdot 2^{7 L_3} W_3 + 19 = 2059 \cdot 3^{10 L_2} W_2$ and
+     $3^{10 L_2} \mid (58025 \cdot 2^{7 L_3} W_3 + 19)$,
+   - $58025 \mid (3^{10 L_2} - 2^{10 L_2})$,
+   - $3^{10 L_2 + 7 m_1} U_1 + 19 \cdot ((3^{10 L_2} - 2^{10 L_2}) / 58025) = 2^{10 L_2 + 7 L_3} W_3$,
+   - $(3^{10 L_2 + 7 m_1} U_1) \bmod 19 = (2^{10 L_2 + 7 L_3} W_3) \bmod 19$. -/
+theorem dense_core_two_to_one_run_interface_and_wave_elimination
+    {V j : ℕ → ℕ}
+    (hV0_pos : 1 ≤ V 0)
+    (hj : ∀ r : ℕ, j r = 1 ∨ j r = 2)
+    (hrec : ∀ r : ℕ, 2 ^ (3 * j (r + 1) + 4) * V (r + 1) + 1 = 3 ^ (3 * j r + 4) * V r) :
+    (∀ r_2 m_2 m_3 : ℕ,
+      (∀ t ≤ m_2, j (r_2 + t) = 2) →
+      (∀ t ≤ m_3, j (r_2 + (m_2 + 1) + t) = 1) →
+      j (r_2 + (m_2 + 1) + m_3 + 1) = 2 →
+      let L_2 := m_2 + 1
+      let L_3 := m_3 + 1
+      let r_3 := r_2 + L_2
+      let U_2 := (58025 * V r_2 - 1) / 2 ^ (10 * m_2 + 7)
+      let U_3 := (2059 * V r_3 - 1) / 2 ^ (7 * L_3)
+      let W_3 := U_3 / 2187
+      ((2187 ∣ U_3) ∧ U_3 = 2187 * W_3 ∧ W_3 % 2 = 1) ∧
+      58025 * 2 ^ (7 * L_3) * W_3 + 19 = 2059 * 3 ^ (10 * m_2 + 3) * U_2 ∧
+      (2 ^ (7 * L_3) ∣ (2059 * 3 ^ (10 * m_2 + 3) * U_2 - 19)) ∧
+      ¬ (2 ^ (7 * L_3 + 1) ∣ (2059 * 3 ^ (10 * m_2 + 3) * U_2 - 19))) ∧
+    (∀ r_1 m_1 m_2 m_3 : ℕ,
+      (∀ t ≤ m_1, j (r_1 + t) = 1) →
+      (∀ t ≤ m_2, j (r_1 + (m_1 + 1) + t) = 2) →
+      (∀ t ≤ m_3, j (r_1 + (m_1 + 1) + (m_2 + 1) + t) = 1) →
+      j (r_1 + (m_1 + 1) + (m_2 + 1) + m_3 + 1) = 2 →
+      let L_1 := m_1 + 1
+      let L_2 := m_2 + 1
+      let L_3 := m_3 + 1
+      let r_2 := r_1 + L_1
+      let r_3 := r_2 + L_2
+      let U_1 := (2059 * V r_1 - 1) / 2 ^ (7 * L_1)
+      let U_2 := (58025 * V r_2 - 1) / 2 ^ (10 * m_2 + 7)
+      let W_2 := U_2 / 2187
+      let U_3 := (2059 * V r_3 - 1) / 2 ^ (7 * L_3)
+      let W_3 := U_3 / 2187
+      58025 * 2 ^ (7 * L_3) * W_3 + 19 = 2059 * 3 ^ (10 * L_2) * W_2 ∧
+      (3 ^ (10 * L_2) ∣ (58025 * 2 ^ (7 * L_3) * W_3 + 19)) ∧
+      (58025 ∣ (3 ^ (10 * L_2) - 2 ^ (10 * L_2))) ∧
+      3 ^ (10 * L_2 + 7 * m_1) * U_1 + 19 * ((3 ^ (10 * L_2) - 2 ^ (10 * L_2)) / 58025) =
+        2 ^ (10 * L_2 + 7 * L_3) * W_3 ∧
+      (3 ^ (10 * L_2 + 7 * m_1) * U_1) % 19 = (2 ^ (10 * L_2 + 7 * L_3) * W_3) % 19) := by
+  have hpart1 :
+      ∀ r_2 m_2 m_3 : ℕ,
+        (∀ t ≤ m_2, j (r_2 + t) = 2) →
+        (∀ t ≤ m_3, j (r_2 + (m_2 + 1) + t) = 1) →
+        j (r_2 + (m_2 + 1) + m_3 + 1) = 2 →
+        let L_2 := m_2 + 1
+        let L_3 := m_3 + 1
+        let r_3 := r_2 + L_2
+        let U_2 := (58025 * V r_2 - 1) / 2 ^ (10 * m_2 + 7)
+        let U_3 := (2059 * V r_3 - 1) / 2 ^ (7 * L_3)
+        let W_3 := U_3 / 2187
+        ((2187 ∣ U_3) ∧ U_3 = 2187 * W_3 ∧ W_3 % 2 = 1) ∧
+        58025 * 2 ^ (7 * L_3) * W_3 + 19 = 2059 * 3 ^ (10 * m_2 + 3) * U_2 ∧
+        (2 ^ (7 * L_3) ∣ (2059 * 3 ^ (10 * m_2 + 3) * U_2 - 19)) ∧
+        ¬ (2 ^ (7 * L_3 + 1) ∣ (2059 * 3 ^ (10 * m_2 + 3) * U_2 - 19)) := by
+    intro r_2 m_2 m_3 hrun2 hrun3 hsw3 L_2 L_3 r_3 U_2 U_3 W_3
+    have hsw2 : j (r_2 + m_2 + 1) = 1 := by
+      have h0 := hrun3 0 (by omega)
+      have hidx : r_2 + (m_2 + 1) + 0 = r_2 + m_2 + 1 := by omega
+      rw [hidx] at h0
+      exact h0
+    have h2 := (dense_core_two_run_compression_and_macro_transition hV0_pos hj hrec).2
+      r_2 m_2 hrun2 hsw2
+    have h3 := (dense_core_one_run_compression_and_macro_transition hV0_pos hj hrec).2
+      r_3 m_3 hrun3 hsw3
+    have hmacro2 : 58025 * V r_3 = 3 ^ (10 * L_2) * U_2 + 8 := h2.2.2.2.2.1
+    have hU2_odd : U_2 % 2 = 1 := h2.2.2.1
+    have hdvd_U3 : 2 ^ (7 * L_3) ∣ (2059 * V r_3 - 1) := h3.2.1
+    have hU3_odd : U_3 % 2 = 1 := h3.2.2.1
+    have hVr3_eq : 2059 * V r_3 - 1 = 2 ^ (7 * L_3) * U_3 :=
+      (Nat.mul_div_cancel' hdvd_U3).symm
+    have hVr3_pos : 1 ≤ V r_3 :=
+      ((dense_core_strict_doubling_and_monotonicity hV0_pos hj hrec).1 r_3).1
+    have hVr3_add : 2059 * V r_3 = 2 ^ (7 * L_3) * U_3 + 1 := by
+      have hd : (2059 * V r_3 - 1) + 1 = 2059 * V r_3 :=
+        Nat.sub_add_cancel (by linarith only [hVr3_pos])
+      linarith only [hVr3_eq, hd]
+    have hpow3_L2 : 3 ^ (10 * L_2) = 2187 * 3 ^ (10 * m_2 + 3) := by
+      have hexp : 10 * L_2 = 7 + (10 * m_2 + 3) := by omega
+      rw [hexp, Nat.pow_add]
+    have hcross :
+        (58025 * 2 ^ (7 * L_3)) * U_3 + 2187 * 19 =
+          2187 * (2059 * 3 ^ (10 * m_2 + 3) * U_2) := by
+      have hm1 : 2059 * (58025 * V r_3) = 2059 * (3 ^ (10 * L_2) * U_2 + 8) :=
+        congrArg (fun x => 2059 * x) hmacro2
+      have hm2 : 58025 * (2059 * V r_3) = 58025 * (2 ^ (7 * L_3) * U_3 + 1) :=
+        congrArg (fun x => 58025 * x) hVr3_add
+      rw [hpow3_L2] at hm1
+      have hexp1 : 2059 * (58025 * V r_3) = 58025 * (2059 * V r_3) := by ring
+      have hexp2 : 2059 * ((2187 * 3 ^ (10 * m_2 + 3)) * U_2 + 8) =
+          2187 * (2059 * 3 ^ (10 * m_2 + 3) * U_2) + 16472 := by ring
+      have hexp3 : 58025 * (2 ^ (7 * L_3) * U_3 + 1) =
+          (58025 * 2 ^ (7 * L_3)) * U_3 + 2187 * 19 + 16472 := by ring
+      linarith only [hm1, hm2, hexp1, hexp2, hexp3]
+    have hdvd_prod_2187 : 2187 ∣ (58025 * 2 ^ (7 * L_3)) * U_3 := by
+      refine ⟨2059 * 3 ^ (10 * m_2 + 3) * U_2 - 19, ?_⟩
+      have hU2_pos : 1 ≤ U_2 := by
+        rcases Nat.eq_zero_or_pos U_2 with h0 | hpos
+        · rw [h0] at hU2_odd; exact absurd hU2_odd (by decide)
+        · exact hpos
+      have hpow3_pos : 1 ≤ 3 ^ (10 * m_2 + 3) := Nat.pow_pos (by decide)
+      have hprod_ge : 2059 ≤ 2059 * 3 ^ (10 * m_2 + 3) * U_2 := by
+        have h1 : 2059 ≤ 2059 * 3 ^ (10 * m_2 + 3) :=
+          Nat.le_mul_of_pos_right 2059 hpow3_pos
+        have h2 : 2059 * 3 ^ (10 * m_2 + 3) ≤ 2059 * 3 ^ (10 * m_2 + 3) * U_2 :=
+          Nat.le_mul_of_pos_right _ hU2_pos
+        exact le_trans h1 h2
+      have hsub :
+          2187 * (2059 * 3 ^ (10 * m_2 + 3) * U_2 - 19) + 2187 * 19 =
+            2187 * (2059 * 3 ^ (10 * m_2 + 3) * U_2) := by
+        rw [← Nat.mul_add, Nat.sub_add_cancel (by linarith only [hprod_ge])]
+      linarith only [hcross, hsub]
+    have hcop_2187 : Nat.Coprime 2187 (58025 * 2 ^ (7 * L_3)) := by
+      have hc2 : Nat.Coprime (3 ^ 7) (2 ^ (7 * L_3)) :=
+        Nat.Coprime.pow 7 (7 * L_3) (by decide : Nat.Coprime 3 2)
+      exact Nat.Coprime.mul_right (by decide : Nat.Coprime 2187 58025) hc2
+    have hdvd_2187 : 2187 ∣ U_3 :=
+      hcop_2187.dvd_of_dvd_mul_left hdvd_prod_2187
+    have hW3_eq : U_3 = 2187 * W_3 := (Nat.mul_div_cancel' hdvd_2187).symm
+    have hW3_odd : W_3 % 2 = 1 := by
+      rcases Nat.mod_two_eq_zero_or_one W_3 with h0 | h1
+      · have hU3_even : U_3 % 2 = 0 := by
+          rw [hW3_eq, Nat.mul_mod, h0, Nat.mul_zero, Nat.zero_mod]
+        exact absurd (hU3_odd.symm.trans hU3_even) (by decide)
+      · exact h1
+    have hsyz : 58025 * 2 ^ (7 * L_3) * W_3 + 19 = 2059 * 3 ^ (10 * m_2 + 3) * U_2 := by
+      have hmul :
+          2187 * (58025 * 2 ^ (7 * L_3) * W_3 + 19) =
+            2187 * (2059 * 3 ^ (10 * m_2 + 3) * U_2) := by
+        calc 2187 * (58025 * 2 ^ (7 * L_3) * W_3 + 19)
+            = (58025 * 2 ^ (7 * L_3)) * (2187 * W_3) + 2187 * 19 := by ring
+          _ = (58025 * 2 ^ (7 * L_3)) * U_3 + 2187 * 19 := by rw [← hW3_eq]
+          _ = 2187 * (2059 * 3 ^ (10 * m_2 + 3) * U_2) := hcross
+      exact Nat.eq_of_mul_eq_mul_left (by decide : 0 < 2187) hmul
+    have hsub_syz : 2059 * 3 ^ (10 * m_2 + 3) * U_2 - 19 = 2 ^ (7 * L_3) * (58025 * W_3) := by
+      have hrew : 2059 * 3 ^ (10 * m_2 + 3) * U_2 = 2 ^ (7 * L_3) * (58025 * W_3) + 19 := by
+        calc 2059 * 3 ^ (10 * m_2 + 3) * U_2
+            = 58025 * 2 ^ (7 * L_3) * W_3 + 19 := hsyz.symm
+          _ = 2 ^ (7 * L_3) * (58025 * W_3) + 19 := by ring
+      rw [hrew, Nat.add_sub_cancel]
+    have hdvd_2pow : 2 ^ (7 * L_3) ∣ (2059 * 3 ^ (10 * m_2 + 3) * U_2 - 19) :=
+      ⟨58025 * W_3, hsub_syz⟩
+    have hnot_dvd1 : ¬ (2 ^ (7 * L_3 + 1) ∣ (2059 * 3 ^ (10 * m_2 + 3) * U_2 - 19)) := by
+      rintro ⟨M, hM⟩
+      have hpow1 : 2 ^ (7 * L_3 + 1) = 2 ^ (7 * L_3) * 2 := by rw [Nat.pow_add]
+      have hmul : 2 ^ (7 * L_3) * (58025 * W_3) = 2 ^ (7 * L_3) * (2 * M) := by
+        rw [← hsub_syz, hM, hpow1]; ring
+      have heven : 58025 * W_3 = 2 * M :=
+        Nat.eq_of_mul_eq_mul_left (Nat.pow_pos (by decide)) hmul
+      have hmod0 : (58025 * W_3) % 2 = 0 := by rw [heven, Nat.mul_mod_right]
+      have hmod1 : (58025 * W_3) % 2 = 1 := by rw [Nat.mul_mod, hW3_odd]
+      exact absurd (hmod1.symm.trans hmod0) (by decide)
+    exact ⟨⟨hdvd_2187, hW3_eq, hW3_odd⟩, hsyz, hdvd_2pow, hnot_dvd1⟩
+  have hdvd_58025_all : ∀ k : ℕ, 58025 ∣ (3 ^ (10 * k) - 2 ^ (10 * k)) := by
+    intro k
+    induction k with
+    | zero => exact ⟨0, by decide⟩
+    | succ k ih =>
+        rcases ih with ⟨Q, hQ⟩
+        have h2_le_3 : 2 ^ (10 * k) ≤ 3 ^ (10 * k) :=
+          Nat.pow_le_pow_left (by decide) (10 * k)
+        have h3_eq : 3 ^ (10 * k) = 58025 * Q + 2 ^ (10 * k) := by
+          have hd := Nat.sub_add_cancel h2_le_3
+          linarith only [hQ, hd]
+        have hpow3 : 3 ^ (10 * (k + 1)) = 59049 * 3 ^ (10 * k) := by
+          have hexp : 10 * (k + 1) = 10 + 10 * k := by omega
+          rw [hexp, Nat.pow_add]
+        have hpow2 : 2 ^ (10 * (k + 1)) = 1024 * 2 ^ (10 * k) := by
+          have hexp : 10 * (k + 1) = 10 + 10 * k := by omega
+          rw [hexp, Nat.pow_add]
+        refine ⟨59049 * Q + 2 ^ (10 * k), ?_⟩
+        have hlin :
+            3 ^ (10 * (k + 1)) =
+              58025 * (59049 * Q + 2 ^ (10 * k)) + 2 ^ (10 * (k + 1)) := by
+          rw [hpow3, hpow2, h3_eq]; ring
+        rw [hlin, Nat.add_sub_cancel]
+  refine ⟨hpart1, ?_⟩
+  intro r_1 m_1 m_2 m_3 hrun1 hrun2 hrun3 hsw3 L_1 L_2 L_3 r_2 r_3 U_1 U_2 W_2 U_3 W_3
+  have hsw2 : j (r_1 + (m_1 + 1) + m_2 + 1) = 1 := by
+    have h0 := hrun3 0 (by omega)
+    have hidx : r_1 + (m_1 + 1) + (m_2 + 1) + 0 = r_1 + (m_1 + 1) + m_2 + 1 := by omega
+    rw [hidx] at h0
+    exact h0
+  have hint12 := dense_core_one_to_two_run_interface_syzygy_and_ten_mul_valuation_lock
+    hV0_pos hj hrec hrun1 hrun2 hsw2
+  have hint23 := hpart1 r_2 m_2 m_3 hrun2 hrun3 hsw3
+  have hU2_eq : U_2 = 2187 * W_2 := hint12.1.2.1
+  have hsyz12 : 58025 * 3 ^ (7 * m_1) * U_1 + 19 = 2 ^ (10 * L_2) * 2059 * W_2 := hint12.2.1
+  have hsyz23_raw : 58025 * 2 ^ (7 * L_3) * W_3 + 19 = 2059 * 3 ^ (10 * m_2 + 3) * U_2 :=
+    hint23.2.1
+  have hpow3_L2 : 3 ^ (10 * L_2) = 3 ^ (10 * m_2 + 3) * 2187 := by
+    have hexp : 10 * L_2 = (10 * m_2 + 3) + 7 := by omega
+    rw [hexp, Nat.pow_add]
+  have hsyz23 : 58025 * 2 ^ (7 * L_3) * W_3 + 19 = 2059 * 3 ^ (10 * L_2) * W_2 := by
+    calc 58025 * 2 ^ (7 * L_3) * W_3 + 19
+        = 2059 * 3 ^ (10 * m_2 + 3) * U_2 := hsyz23_raw
+      _ = 2059 * 3 ^ (10 * m_2 + 3) * (2187 * W_2) := by rw [hU2_eq]
+      _ = 2059 * (3 ^ (10 * m_2 + 3) * 2187) * W_2 := by ring
+      _ = 2059 * 3 ^ (10 * L_2) * W_2 := by rw [← hpow3_L2]
+  have hdvd_3pow : 3 ^ (10 * L_2) ∣ (58025 * 2 ^ (7 * L_3) * W_3 + 19) := by
+    refine ⟨2059 * W_2, ?_⟩
+    linarith only [hsyz23]
+  have hdvd_58025 := hdvd_58025_all L_2
+  set Q_L2 := (3 ^ (10 * L_2) - 2 ^ (10 * L_2)) / 58025
+  have hQ_eq : 3 ^ (10 * L_2) - 2 ^ (10 * L_2) = 58025 * Q_L2 :=
+    (Nat.mul_div_cancel' hdvd_58025).symm
+  have h2_le_3 : 2 ^ (10 * L_2) ≤ 3 ^ (10 * L_2) :=
+    Nat.pow_le_pow_left (by decide) (10 * L_2)
+  have h3_split : 3 ^ (10 * L_2) = 58025 * Q_L2 + 2 ^ (10 * L_2) := by
+    have hd := Nat.sub_add_cancel h2_le_3
+    linarith only [hQ_eq, hd]
+  have hpow3_comb : 3 ^ (10 * L_2 + 7 * m_1) = 3 ^ (10 * L_2) * 3 ^ (7 * m_1) :=
+    Nat.pow_add 3 (10 * L_2) (7 * m_1)
+  have hpow2_comb : 2 ^ (10 * L_2 + 7 * L_3) = 2 ^ (10 * L_2) * 2 ^ (7 * L_3) :=
+    Nat.pow_add 2 (10 * L_2) (7 * L_3)
+  have hwave :
+      3 ^ (10 * L_2 + 7 * m_1) * U_1 + 19 * Q_L2 = 2 ^ (10 * L_2 + 7 * L_3) * W_3 := by
+    have hm1 :
+        3 ^ (10 * L_2) * (58025 * 3 ^ (7 * m_1) * U_1 + 19) =
+          3 ^ (10 * L_2) * (2 ^ (10 * L_2) * 2059 * W_2) :=
+      congrArg (fun x => 3 ^ (10 * L_2) * x) hsyz12
+    have hm2 :
+        2 ^ (10 * L_2) * (58025 * 2 ^ (7 * L_3) * W_3 + 19) =
+          2 ^ (10 * L_2) * (2059 * 3 ^ (10 * L_2) * W_2) :=
+      congrArg (fun x => 2 ^ (10 * L_2) * x) hsyz23
+    have hexp_rhs :
+        3 ^ (10 * L_2) * (2 ^ (10 * L_2) * 2059 * W_2) =
+          2 ^ (10 * L_2) * (2059 * 3 ^ (10 * L_2) * W_2) := by ring
+    have hexp1 :
+        3 ^ (10 * L_2) * (58025 * 3 ^ (7 * m_1) * U_1 + 19) =
+          58025 * (3 ^ (10 * L_2) * 3 ^ (7 * m_1)) * U_1 +
+            19 * (58025 * Q_L2 + 2 ^ (10 * L_2)) := by
+      conv_lhs => rw [ Nat.mul_add]
+      rw [h3_split]
+      ring
+    have hexp2 :
+        2 ^ (10 * L_2) * (58025 * 2 ^ (7 * L_3) * W_3 + 19) =
+          58025 * (2 ^ (10 * L_2) * 2 ^ (7 * L_3)) * W_3 + 19 * 2 ^ (10 * L_2) := by ring
+    rw [← hpow3_comb] at hexp1
+    rw [← hpow2_comb] at hexp2
+    have hmul_58025 :
+        58025 * (3 ^ (10 * L_2 + 7 * m_1) * U_1 + 19 * Q_L2) =
+          58025 * (2 ^ (10 * L_2 + 7 * L_3) * W_3) := by
+      have hexp3 :
+          58025 * (3 ^ (10 * L_2 + 7 * m_1) * U_1 + 19 * Q_L2) + 19 * 2 ^ (10 * L_2) =
+            58025 * 3 ^ (10 * L_2 + 7 * m_1) * U_1 +
+              19 * (58025 * Q_L2 + 2 ^ (10 * L_2)) := by ring
+      linarith only [hm1, hm2, hexp_rhs, hexp1, hexp2, hexp3]
+    exact Nat.eq_of_mul_eq_mul_left (by decide : 0 < 58025) hmul_58025
+  have hmod19 :
+      (3 ^ (10 * L_2 + 7 * m_1) * U_1) % 19 = (2 ^ (10 * L_2 + 7 * L_3) * W_3) % 19 := by
+    have hm := congrArg (fun x => x % 19) hwave
+    dsimp only at hm
+    rw [Nat.add_mul_mod_self_left] at hm
+    exact hm
+  exact ⟨hsyz23, hdvd_3pow, hdvd_58025, hwave, hmod19⟩
+
+/-!
+## Section 41: Complete $2 \to 1 \to 2$ Wave Elimination, Mod-19 Conservation, and Strict
+## Well-Founded Odd-Quotient Descent $W_4 + 2 \le W_2$ Inside the Dense Core $\{1, 2\}^\mathbb{N}$
+
+In Section 40, eliminating $W_2$ across a $1 \to 2 \to 1$ wave placed the $+19$ inhomogeneous
+term on the $3^{10 L_2 + 7 m_1} U_1$ side. In this section, we eliminate the middle $1$-run
+quotient $W_3$ across a $2\text{-Run}(L_2) \to 1\text{-Run}(L_3) \to 2\text{-Run}(L_4)$ wave and
+discover that **the $+19$ inhomogeneous term flips to the $2^{7 L_3 + 10 L_4} W_4$ side**:
+$$2^{7 L_3 + 10 L_4} W_4 \;+\; 19 \cdot \left(\frac{3^{7 L_3} - 2^{7 L_3}}{2059}\right)
+  \;=\; 3^{10 L_2 + 7 L_3} W_2.$$
+Because the inhomogeneous term is strictly positive ($19 \cdot (3^{7 L_3} - 2^{7 L_3}) / 2059 \ge 19 > 0$),
+this yields a profound surprise: even though the raw orbit integers $V(r)$ strictly more than
+double at every step of the Dense Core ($V(r + 1) \ge 2 V(r) + 1$), **the renormalized $2$-run
+odd quotient $W$ undergoes strict well-founded descent $W_4 + 2 \le W_2$ inside the Dense Core**
+whenever $3^{10 L_2 + 7 L_3} \le 2^{7 L_3 + 10 L_4}$ (which already holds on the 4-step pattern
+`2, 1, 2, 2`, where $L_2 = 1, L_3 = 1, L_4 \ge 2$ and $3^{17} = 129{,}140{,}163 < 134{,}217{,}728 = 2^{27}$)!
+-/
+
+/-- **Complete $2 \to 1 \to 2$ Wave Elimination and Strict Well-Founded Odd-Quotient Descent
+$W_4 + 2 \le W_2$ Inside the Dense Core (`dense_core_two_one_two_wave_elimination_and_strict_W_descent`)**:
+Suppose $1 \le V(0)$, $j(r) \in \{1, 2\}$, and
+$2^{3 j(r + 1) + 4} V(r + 1) + 1 = 3^{3 j(r) + 4} V(r)$ for all $r \in \mathbb{N}$.
+Suppose a run of $L_2 = m_2 + 1$ twos at $r_2$ ($\forall t \le m_2,\; j(r_2 + t) = 2$) switches at
+$r_3 = r_2 + L_2$ to a run of $L_3 = m_3 + 1$ ones ($\forall t \le m_3,\; j(r_3 + t) = 1$), which
+switches at $r_4 = r_3 + L_3$ to a run of $L_4 = m_4 + 1$ twos ($\forall t \le m_4,\; j(r_4 + t) = 2$)
+that switches back to $1$ at $r_4 + m_4 + 1$ ($j(r_4 + m_4 + 1) = 1$).
+Let $U_2 = (58025 \cdot V(r_2) - 1) / 2^{10 m_2 + 7}$,
+$U_4 = (58025 \cdot V(r_4) - 1) / 2^{10 m_4 + 7}$, and $W_4 = U_4 / 2187$.
+Then:
+1. $2059 \mid (3^{7 L_3} - 2^{7 L_3})$ and $1 \le (3^{7 L_3} - 2^{7 L_3}) / 2059$.
+2. **Exact $2 \to 1 \to 2$ Wave Equation (in terms of $U_2$ and $W_4$)**:
+   $$2^{7 L_3 + 10 L_4} W_4 \;+\; 19 \cdot \left(\frac{3^{7 L_3} - 2^{7 L_3}}{2059}\right)
+     \;=\; 3^{10 m_2 + 3 + 7 L_3} U_2.$$
+3. **Renormalized $W_2 \to W_4$ Wave Equation & Strict Descent (when $2187 \mid U_2$, $W_2 = U_2 / 2187$)**:
+   - $2^{7 L_3 + 10 L_4} W_4 + 19 \cdot ((3^{7 L_3} - 2^{7 L_3}) / 2059) = 3 ^ (10 L_2 + 7 L_3) W_2$,
+   - $(2^{7 L_3 + 10 L_4} W_4) \bmod 19 = (3^{10 L_2 + 7 L_3} W_2) \bmod 19$,
+   - $2^{7 L_3 + 10 L_4} W_4 < 3^{10 L_2 + 7 L_3} W_2$,
+   - **Strict Well-Founded Descent Inside the Dense Core**: Whenever
+     $3^{10 L_2 + 7 L_3} \le 2^{7 L_3 + 10 L_4}$ (and in particular whenever $m_2 = 0, m_3 = 0$,
+     and $1 \le m_4$, i.e. $L_2 = 1, L_3 = 1, L_4 \ge 2$),
+     $$W_4 < W_2 \qquad \text{and} \qquad W_4 + 2 \le W_2.$$ -/
+theorem dense_core_two_one_two_wave_elimination_and_strict_W_descent
+    {V j : ℕ → ℕ} {r_2 m_2 m_3 m_4 : ℕ}
+    (hV0_pos : 1 ≤ V 0)
+    (hj : ∀ r : ℕ, j r = 1 ∨ j r = 2)
+    (hrec : ∀ r : ℕ, 2 ^ (3 * j (r + 1) + 4) * V (r + 1) + 1 = 3 ^ (3 * j r + 4) * V r)
+    (hrun2 : ∀ t ≤ m_2, j (r_2 + t) = 2)
+    (hrun3 : ∀ t ≤ m_3, j (r_2 + (m_2 + 1) + t) = 1)
+    (hrun4 : ∀ t ≤ m_4, j (r_2 + (m_2 + 1) + (m_3 + 1) + t) = 2)
+    (hsw4 : j (r_2 + (m_2 + 1) + (m_3 + 1) + m_4 + 1) = 1) :
+    let L_2 := m_2 + 1
+    let L_3 := m_3 + 1
+    let L_4 := m_4 + 1
+    let r_3 := r_2 + L_2
+    let r_4 := r_3 + L_3
+    let U_2 := (58025 * V r_2 - 1) / 2 ^ (10 * m_2 + 7)
+    let W_2 := U_2 / 2187
+    let U_4 := (58025 * V r_4 - 1) / 2 ^ (10 * m_4 + 7)
+    let W_4 := U_4 / 2187
+    let Q_L3 := (3 ^ (7 * L_3) - 2 ^ (7 * L_3)) / 2059
+    ((2059 ∣ (3 ^ (7 * L_3) - 2 ^ (7 * L_3))) ∧ 1 ≤ Q_L3) ∧
+    2 ^ (7 * L_3 + 10 * L_4) * W_4 + 19 * Q_L3 =
+      3 ^ (10 * m_2 + 3 + 7 * L_3) * U_2 ∧
+    ((2187 ∣ U_2) →
+      2 ^ (7 * L_3 + 10 * L_4) * W_4 + 19 * Q_L3 = 3 ^ (10 * L_2 + 7 * L_3) * W_2 ∧
+      (2 ^ (7 * L_3 + 10 * L_4) * W_4) % 19 = (3 ^ (10 * L_2 + 7 * L_3) * W_2) % 19 ∧
+      2 ^ (7 * L_3 + 10 * L_4) * W_4 < 3 ^ (10 * L_2 + 7 * L_3) * W_2 ∧
+      (3 ^ (10 * L_2 + 7 * L_3) ≤ 2 ^ (7 * L_3 + 10 * L_4) →
+        W_4 < W_2 ∧ W_4 + 2 ≤ W_2) ∧
+      (m_2 = 0 → m_3 = 0 → 1 ≤ m_4 → W_4 < W_2 ∧ W_4 + 2 ≤ W_2)) := by
+  intro L_2 L_3 L_4 r_3 r_4 U_2 W_2 U_4 W_4 Q_L3
+  have hdvd_2059_all : ∀ k : ℕ, 2059 ∣ (3 ^ (7 * k) - 2 ^ (7 * k)) := by
+    intro k
+    induction k with
+    | zero => exact ⟨0, by decide⟩
+    | succ k ih =>
+        rcases ih with ⟨Q, hQ⟩
+        have h2_le_3 : 2 ^ (7 * k) ≤ 3 ^ (7 * k) :=
+          Nat.pow_le_pow_left (by decide) (7 * k)
+        have h3_eq : 3 ^ (7 * k) = 2059 * Q + 2 ^ (7 * k) := by
+          have hd := Nat.sub_add_cancel h2_le_3
+          linarith only [hQ, hd]
+        have hpow3 : 3 ^ (7 * (k + 1)) = 2187 * 3 ^ (7 * k) := by
+          have hexp : 7 * (k + 1) = 7 + 7 * k := by omega
+          rw [hexp, Nat.pow_add]
+        have hpow2 : 2 ^ (7 * (k + 1)) = 128 * 2 ^ (7 * k) := by
+          have hexp : 7 * (k + 1) = 7 + 7 * k := by omega
+          rw [hexp, Nat.pow_add]
+        refine ⟨2187 * Q + 2 ^ (7 * k), ?_⟩
+        have hlin :
+            3 ^ (7 * (k + 1)) =
+              2059 * (2187 * Q + 2 ^ (7 * k)) + 2 ^ (7 * (k + 1)) := by
+          rw [hpow3, hpow2, h3_eq]; ring
+        rw [hlin, Nat.add_sub_cancel]
+  have hdvd_2059 := hdvd_2059_all L_3
+  have hQ_eq : 3 ^ (7 * L_3) - 2 ^ (7 * L_3) = 2059 * Q_L3 :=
+    (Nat.mul_div_cancel' hdvd_2059).symm
+  have h2_lt_3 : 2 ^ (7 * L_3) < 3 ^ (7 * L_3) := by
+    have h1 : 2 ^ (7 * L_3) < 3 ^ (7 * L_3) := by
+      have h_all : ∀ n : ℕ, 1 ≤ n → 2 ^ n < 3 ^ n := by
+        intro n hn
+        obtain ⟨k, rfl⟩ : ∃ k : ℕ, n = k + 1 := ⟨n - 1, by omega⟩
+        clear hn
+        induction k with
+        | zero => decide
+        | succ k ih =>
+            rw [Nat.pow_succ 2 (k + 1), Nat.pow_succ 3 (k + 1)]
+            omega
+      exact h_all (7 * L_3) (by omega)
+    exact h1
+  have hQ_pos : 1 ≤ Q_L3 := by
+    rcases Nat.eq_zero_or_pos Q_L3 with h0 | hpos
+    · rw [h0, Nat.mul_zero] at hQ_eq; omega
+    · exact hpos
+  have h3_split : 3 ^ (7 * L_3) = 2059 * Q_L3 + 2 ^ (7 * L_3) := by
+    have hd := Nat.sub_add_cancel (le_of_lt h2_lt_3)
+    linarith only [hQ_eq, hd]
+  have hsw3 : j (r_2 + (m_2 + 1) + m_3 + 1) = 2 := by
+    have h0 := hrun4 0 (by omega)
+    have hidx : r_2 + (m_2 + 1) + (m_3 + 1) + 0 = r_2 + (m_2 + 1) + m_3 + 1 := by omega
+    rw [hidx] at h0
+    exact h0
+  have hint23 := (dense_core_two_to_one_run_interface_and_wave_elimination
+    hV0_pos hj hrec).1 r_2 m_2 m_3 hrun2 hrun3 hsw3
+  have hint34 := dense_core_one_to_two_run_interface_syzygy_and_ten_mul_valuation_lock
+    hV0_pos hj hrec (r_1 := r_3) hrun3 hrun4 hsw4
+  set U_3 := (2059 * V r_3 - 1) / 2 ^ (7 * L_3)
+  set W_3 := U_3 / 2187
+  have hU3_eq : U_3 = 2187 * W_3 := hint23.1.2.1
+  have hsyz23 : 58025 * 2 ^ (7 * L_3) * W_3 + 19 = 2059 * 3 ^ (10 * m_2 + 3) * U_2 :=
+    hint23.2.1
+  have hsyz34_raw : 58025 * 3 ^ (7 * m_3) * U_3 + 19 = 2 ^ (10 * L_4) * 2059 * W_4 :=
+    hint34.2.1
+  have hpow3_L3 : 3 ^ (7 * L_3) = 3 ^ (7 * m_3) * 2187 := by
+    have hexp : 7 * L_3 = 7 * m_3 + 7 := by omega
+    rw [hexp, Nat.pow_add]
+  have hsyz34 : 58025 * 3 ^ (7 * L_3) * W_3 + 19 = 2 ^ (10 * L_4) * 2059 * W_4 := by
+    calc 58025 * 3 ^ (7 * L_3) * W_3 + 19
+        = 58025 * (3 ^ (7 * m_3) * 2187) * W_3 + 19 := by rw [← hpow3_L3]
+      _ = 58025 * 3 ^ (7 * m_3) * (2187 * W_3) + 19 := by ring
+      _ = 58025 * 3 ^ (7 * m_3) * U_3 + 19 := by rw [← hU3_eq]
+      _ = 2 ^ (10 * L_4) * 2059 * W_4 := hsyz34_raw
+  have hpow2_comb : 2 ^ (7 * L_3 + 10 * L_4) = 2 ^ (7 * L_3) * 2 ^ (10 * L_4) :=
+    Nat.pow_add 2 (7 * L_3) (10 * L_4)
+  have hpow3_comb_raw : 3 ^ (10 * m_2 + 3 + 7 * L_3) = 3 ^ (7 * L_3) * 3 ^ (10 * m_2 + 3) := by
+    rw [Nat.add_comm (10 * m_2 + 3) (7 * L_3), Nat.pow_add]
+  have hcancel_2059 :
+      2 ^ (7 * L_3 + 10 * L_4) * W_4 + 19 * Q_L3 =
+        3 ^ (10 * m_2 + 3 + 7 * L_3) * U_2 := by
+    have hm1 :
+        3 ^ (7 * L_3) * (58025 * 2 ^ (7 * L_3) * W_3 + 19) =
+          3 ^ (7 * L_3) * (2059 * 3 ^ (10 * m_2 + 3) * U_2) :=
+      congrArg (fun x => 3 ^ (7 * L_3) * x) hsyz23
+    have hm2 :
+        2 ^ (7 * L_3) * (58025 * 3 ^ (7 * L_3) * W_3 + 19) =
+          2 ^ (7 * L_3) * (2 ^ (10 * L_4) * 2059 * W_4) :=
+      congrArg (fun x => 2 ^ (7 * L_3) * x) hsyz34
+    have hexp1 :
+        3 ^ (7 * L_3) * (58025 * 2 ^ (7 * L_3) * W_3 + 19) =
+          (58025 * 2 ^ (7 * L_3) * 3 ^ (7 * L_3) * W_3) +
+            19 * (2059 * Q_L3 + 2 ^ (7 * L_3)) := by
+      conv_lhs => rw [Nat.mul_add]
+      conv_lhs => rhs; rw [h3_split]
+      ring
+    have hexp2 :
+        2 ^ (7 * L_3) * (58025 * 3 ^ (7 * L_3) * W_3 + 19) =
+          (58025 * 2 ^ (7 * L_3) * 3 ^ (7 * L_3) * W_3) + 19 * 2 ^ (7 * L_3) := by ring
+    have hexp3 :
+        3 ^ (7 * L_3) * (2059 * 3 ^ (10 * m_2 + 3) * U_2) =
+          2059 * (3 ^ (7 * L_3) * 3 ^ (10 * m_2 + 3)) * U_2 := by ring
+    have hexp4 :
+        2 ^ (7 * L_3) * (2 ^ (10 * L_4) * 2059 * W_4) =
+          2059 * (2 ^ (7 * L_3) * 2 ^ (10 * L_4)) * W_4 := by ring
+    rw [← hpow3_comb_raw] at hexp3
+    rw [← hpow2_comb] at hexp4
+    have hmul_2059 :
+        2059 * (2 ^ (7 * L_3 + 10 * L_4) * W_4 + 19 * Q_L3) =
+          2059 * (3 ^ (10 * m_2 + 3 + 7 * L_3) * U_2) := by
+      have hexp5 :
+          2059 * (2 ^ (7 * L_3 + 10 * L_4) * W_4 + 19 * Q_L3) + 19 * 2 ^ (7 * L_3) =
+            2059 * 2 ^ (7 * L_3 + 10 * L_4) * W_4 +
+              19 * (2059 * Q_L3 + 2 ^ (7 * L_3)) := by ring
+      linarith only [hm1, hm2, hexp1, hexp2, hexp3, hexp4, hexp5]
+    exact Nat.eq_of_mul_eq_mul_left (by decide : 0 < 2059) hmul_2059
+  refine ⟨⟨hdvd_2059, hQ_pos⟩, hcancel_2059, ?_⟩
+  intro hdvd_U2
+  have hW2_eq : U_2 = 2187 * W_2 := (Nat.mul_div_cancel' hdvd_U2).symm
+  have h2_macro := (dense_core_two_run_compression_and_macro_transition hV0_pos hj hrec).2
+    r_2 m_2 hrun2 (by
+      have h0 := hrun3 0 (by omega)
+      have hidx : r_2 + (m_2 + 1) + 0 = r_2 + m_2 + 1 := by omega
+      rw [hidx] at h0; exact h0)
+  have hU2_odd : U_2 % 2 = 1 := h2_macro.2.2.1
+  have hW2_odd : W_2 % 2 = 1 := by
+    rcases Nat.mod_two_eq_zero_or_one W_2 with h0 | h1
+    · have hU2_even : U_2 % 2 = 0 := by
+        rw [hW2_eq, Nat.mul_mod, h0, Nat.mul_zero, Nat.zero_mod]
+      exact absurd (hU2_odd.symm.trans hU2_even) (by decide)
+    · exact h1
+  have hW4_odd : W_4 % 2 = 1 := hint34.1.2.2
+  have hpow3_W2 :
+      3 ^ (10 * m_2 + 3 + 7 * L_3) * U_2 =
+        3 ^ (10 * L_2 + 7 * L_3) * W_2 := by
+    have hexp : 10 * L_2 + 7 * L_3 = (10 * m_2 + 3 + 7 * L_3) + 7 := by omega
+    have hp : 3 ^ (10 * L_2 + 7 * L_3) = 3 ^ (10 * m_2 + 3 + 7 * L_3) * 2187 := by
+      rw [hexp, Nat.pow_add]
+    rw [hW2_eq, hp]
+    ring
+  have hwave_W :
+      2 ^ (7 * L_3 + 10 * L_4) * W_4 + 19 * Q_L3 = 3 ^ (10 * L_2 + 7 * L_3) * W_2 :=
+    hcancel_2059.trans hpow3_W2
+  have hmod19 :
+      (2 ^ (7 * L_3 + 10 * L_4) * W_4) % 19 = (3 ^ (10 * L_2 + 7 * L_3) * W_2) % 19 := by
+    have hm := congrArg (fun x => x % 19) hwave_W
+    dsimp only at hm
+    rw [Nat.add_mul_mod_self_left] at hm
+    exact hm
+  have hlt_wave : 2 ^ (7 * L_3 + 10 * L_4) * W_4 < 3 ^ (10 * L_2 + 7 * L_3) * W_2 := by
+    linarith only [hwave_W, hQ_pos]
+  have hdesc_of_le :
+      3 ^ (10 * L_2 + 7 * L_3) ≤ 2 ^ (7 * L_3 + 10 * L_4) →
+        W_4 < W_2 ∧ W_4 + 2 ≤ W_2 := by
+    intro hpow_le
+    have hmul_le :
+        3 ^ (10 * L_2 + 7 * L_3) * W_2 ≤ 2 ^ (7 * L_3 + 10 * L_4) * W_2 :=
+      Nat.mul_le_mul_right W_2 hpow_le
+    have hmul_lt :
+        2 ^ (7 * L_3 + 10 * L_4) * W_4 < 2 ^ (7 * L_3 + 10 * L_4) * W_2 :=
+      lt_of_lt_of_le hlt_wave hmul_le
+    have hW4_lt : W_4 < W_2 := Nat.lt_of_mul_lt_mul_left hmul_lt
+    have hW4_add2 : W_4 + 2 ≤ W_2 := by
+      rcases Nat.eq_or_lt_of_le (Nat.succ_le_of_lt hW4_lt) with heq1 | hlt2
+      · have hmod_eq : (W_4 + 1) % 2 = W_2 % 2 := congrArg (· % 2) heq1
+        rw [Nat.add_mod, hW4_odd, hW2_odd] at hmod_eq
+        exact absurd hmod_eq (by decide)
+      · exact hlt2
+    exact ⟨hW4_lt, hW4_add2⟩
+  refine ⟨hwave_W, hmod19, hlt_wave, hdesc_of_le, ?_⟩
+  intro hm2_0 hm3_0 hm4_1
+  apply hdesc_of_le
+  have hexp3 : 10 * L_2 + 7 * L_3 = 17 := by omega
+  have hexp2 : 27 ≤ 7 * L_3 + 10 * L_4 := by omega
+  rw [hexp3]
+  have h17_27 : (3 : ℕ) ^ 17 ≤ 2 ^ 27 := by decide
+  exact le_trans h17_27 (Nat.pow_le_pow_right (by decide) hexp2)
+
+/-!
+## Section 42: Multi-Wave Telescoping Cancellation, Terminal Run-Spike Descent, and Unconditional
+## Exclusion of Infinite Wave-Descent Epochs Inside the Dense Core $\{1, 2\}^\mathbb{N}$
+
+In Section 41, we proved that a single $2\text{-Run}(L_2(i)) \to 1\text{-Run}(L_1(i)) \to 2\text{-Run}(L_2(i+1))$
+wave satisfies the strict inequality
+$$2^{7 L_1(i) + 10 L_2(i + 1)} \cdot W(i + 1) \;<\; 3^{10 L_2(i) + 7 L_1(i)} \cdot W(i).$$
+In this section, we chain $N \ge 1$ consecutive waves together and discover that **all interior
+$2$-run lengths $L_2(1), \dots, L_2(N - 1)$ telescope out of the exponent difference**:
+
+1. **Multi-Wave Telescoping Exponent Cancellation & Inequality
+   (`dense_core_multi_wave_telescoping_and_epoch_W_descent`)**:
+   Defining the cumulative wave step-sum
+   $$\text{waveStepSum}(L_2, L_1, N) \;:=\; \sum_{i=0}^{N-1} \big(10 L_2(i) + 7 L_1(i)\big),$$
+   the shifted 2-adic wave sum $\sum_{i=0}^{N-1} (7 L_1(i) + 10 L_2(i + 1))$ satisfies the exact
+   telescoping identity:
+   $$\text{waveStepSum}(L_2, L_1, N) + 10 L_2(N) \;=\;
+     10 L_2(0) + \sum_{i=0}^{N-1} \big(7 L_1(i) + 10 L_2(i + 1)\big).$$
+   Consequently, across any $N \ge 1$ waves:
+   $$2^{\text{waveStepSum}(L_2, L_1, N) + 10 L_2(N)} \cdot W(N) \;<\;
+     2^{10 L_2(0)} \cdot 3^{\text{waveStepSum}(L_2, L_1, N)} \cdot W(0).$$
+
+2. **Terminal Run-Spike Descent & Extinction of Infinite Wave-Descent Chains**:
+   - Whenever $2^{10 L_2(0)} \cdot 3^{\text{waveStepSum}(L_2, L_1, N)} \le
+     2^{\text{waveStepSum}(L_2, L_1, N) + 10 L_2(N)}$ (i.e., when the terminal $2$-run $L_2(N)$
+     spikes enough to absorb the cumulative wave drift), the odd integer $W$ strictly decreases
+     across the $N$-wave epoch:
+     $$W(N) < W(0) \qquad \text{and} \qquad W(N) + 2 \le W(0).$$
+   - Consequently, **no infinite chain of wave-descent epochs $0 \le K_0 < K_1 < K_2 < \dots$
+     can exist inside the Dense Core**: after $n$ epochs, $W(K_n) + 2 n \le W(K_0)$, which is
+     impossible for $2 n > W(K_0)$.
+-/
+
+/-- Cumulative step-sum $\sum_{i=0}^{N-1} (10 L_2(i) + 7 L_1(i))$ across $N$ consecutive
+$2 \to 1 \to 2$ waves. -/
+def waveStepSum (L_2 L_1 : ℕ → ℕ) : ℕ → ℕ
+  | 0 => 0
+  | N + 1 => waveStepSum L_2 L_1 N + (10 * L_2 N + 7 * L_1 N)
+
+/-- Shifted 2-adic step-sum $\sum_{i=0}^{N-1} (7 L_1(i) + 10 L_2(i + 1))$ across $N$ consecutive
+$2 \to 1 \to 2$ waves. -/
+def waveNextTwoSum (L_2 L_1 : ℕ → ℕ) : ℕ → ℕ
+  | 0 => 0
+  | N + 1 => waveNextTwoSum L_2 L_1 N + (7 * L_1 N + 10 * L_2 (N + 1))
+
+/-- **Multi-Wave Telescoping Cancellation, Terminal Run-Spike Descent, and Unconditional
+Exclusion of Infinite Wave-Descent Epochs (`dense_core_multi_wave_telescoping_and_epoch_W_descent`)**:
+1. **Exact Multi-Wave Telescoping Identity**: For any $L_2, L_1 : \mathbb{N} \to \mathbb{N}$ and
+   $N \in \mathbb{N}$,
+   $$\text{waveStepSum}(L_2, L_1, N) + 10 L_2(N) \;=\;
+     10 L_2(0) + \text{waveNextTwoSum}(L_2, L_1, N).$$
+2. **Multi-Wave Telescoped Inequality & Terminal Run-Spike Descent**:
+   For any odd sequence $W : \mathbb{N} \to \mathbb{N}$ ($W(i) \bmod 2 = 1$) satisfying the
+   single-wave inequality
+   $$2^{7 L_1(i) + 10 L_2(i + 1)} \cdot W(i + 1) \;<\; 3^{10 L_2(i) + 7 L_1(i)} \cdot W(i)$$
+   for all $i \in \mathbb{N}$, and for every $N \ge 1$:
+   - $2^{\text{waveNextTwoSum}(L_2, L_1, N)} \cdot W(N) < 3^{\text{waveStepSum}(L_2, L_1, N)} \cdot W(0)$,
+   - $2^{\text{waveStepSum}(L_2, L_1, N) + 10 L_2(N)} \cdot W(N) <
+     2^{10 L_2(0)} \cdot 3^{\text{waveStepSum}(L_2, L_1, N)} \cdot W(0)$,
+   - If $2^{10 L_2(0)} \cdot 3^{\text{waveStepSum}(L_2, L_1, N)} \le
+     2^{\text{waveStepSum}(L_2, L_1, N) + 10 L_2(N)}$, then $W(N) < W(0)$ and $W(N) + 2 \le W(0)$.
+3. **Unconditional Exclusion of Infinite Wave-Descent Epochs**:
+   For any odd sequence $W : \mathbb{N} \to \mathbb{N}$ ($W(i) \bmod 2 = 1$) and any strictly
+   increasing epoch sequence $K : \mathbb{N} \to \mathbb{N}$ ($K(n) < K(n + 1)$), it is impossible
+   that $W(K(n + 1)) < W(K(n))$ for all $n \in \mathbb{N}$. -/
+theorem dense_core_multi_wave_telescoping_and_epoch_W_descent :
+    (∀ (L_2 L_1 : ℕ → ℕ) (N : ℕ),
+      waveStepSum L_2 L_1 N + 10 * L_2 N =
+        10 * L_2 0 + waveNextTwoSum L_2 L_1 N) ∧
+    (∀ (W L_2 L_1 : ℕ → ℕ),
+      (∀ i : ℕ, W i % 2 = 1) →
+      (∀ i : ℕ, 2 ^ (7 * L_1 i + 10 * L_2 (i + 1)) * W (i + 1) <
+        3 ^ (10 * L_2 i + 7 * L_1 i) * W i) →
+      ∀ N : ℕ, 1 ≤ N →
+        2 ^ (waveNextTwoSum L_2 L_1 N) * W N <
+          3 ^ (waveStepSum L_2 L_1 N) * W 0 ∧
+        2 ^ (waveStepSum L_2 L_1 N + 10 * L_2 N) * W N <
+          2 ^ (10 * L_2 0) * 3 ^ (waveStepSum L_2 L_1 N) * W 0 ∧
+        (2 ^ (10 * L_2 0) * 3 ^ (waveStepSum L_2 L_1 N) ≤
+          2 ^ (waveStepSum L_2 L_1 N + 10 * L_2 N) →
+          W N < W 0 ∧ W N + 2 ≤ W 0)) ∧
+    (∀ (W K : ℕ → ℕ),
+      (∀ i : ℕ, W i % 2 = 1) →
+      (∀ n : ℕ, K n < K (n + 1)) →
+      ¬ (∀ n : ℕ, W (K (n + 1)) < W (K n))) := by
+  have htel :
+      ∀ (L_2 L_1 : ℕ → ℕ) (N : ℕ),
+        waveStepSum L_2 L_1 N + 10 * L_2 N =
+          10 * L_2 0 + waveNextTwoSum L_2 L_1 N := by
+    intro L_2 L_1 N
+    induction N with
+    | zero =>
+        simp only [waveStepSum, waveNextTwoSum, Nat.zero_add, Nat.add_zero]
+    | succ N ih =>
+        change (waveStepSum L_2 L_1 N + (10 * L_2 N + 7 * L_1 N)) + 10 * L_2 (N + 1) =
+          10 * L_2 0 + (waveNextTwoSum L_2 L_1 N + (7 * L_1 N + 10 * L_2 (N + 1)))
+        omega
+  refine ⟨htel, ?_, ?_⟩
+  · intro W L_2 L_1 hodd hstep N hN1
+    have hW_pos : ∀ i : ℕ, 1 ≤ W i := by
+      intro i
+      have ho := hodd i
+      omega
+    have hprod :
+        ∀ m : ℕ, 1 ≤ m →
+          2 ^ (waveNextTwoSum L_2 L_1 m) * W m <
+            3 ^ (waveStepSum L_2 L_1 m) * W 0 := by
+      intro m hm1
+      obtain ⟨k, rfl⟩ : ∃ k : ℕ, m = k + 1 := ⟨m - 1, by omega⟩
+      clear hm1
+      induction k with
+      | zero =>
+          simpa [waveNextTwoSum, waveStepSum] using hstep 0
+      | succ k ih =>
+          have h_next := hstep (k + 1)
+          have hpow2 :
+              2 ^ (waveNextTwoSum L_2 L_1 (k + 1 + 1)) =
+                2 ^ (waveNextTwoSum L_2 L_1 (k + 1)) *
+                  2 ^ (7 * L_1 (k + 1) + 10 * L_2 (k + 1 + 1)) :=
+            Nat.pow_add 2 (waveNextTwoSum L_2 L_1 (k + 1))
+              (7 * L_1 (k + 1) + 10 * L_2 (k + 1 + 1))
+          have hpow3 :
+              3 ^ (waveStepSum L_2 L_1 (k + 1 + 1)) =
+                3 ^ (waveStepSum L_2 L_1 (k + 1)) *
+                  3 ^ (10 * L_2 (k + 1) + 7 * L_1 (k + 1)) :=
+            Nat.pow_add 3 (waveStepSum L_2 L_1 (k + 1))
+              (10 * L_2 (k + 1) + 7 * L_1 (k + 1))
+          rw [hpow2, hpow3]
+          set E_k := 2 ^ (waveNextTwoSum L_2 L_1 (k + 1))
+          set S_k := 3 ^ (waveStepSum L_2 L_1 (k + 1))
+          set B_k := 2 ^ (7 * L_1 (k + 1) + 10 * L_2 (k + 1 + 1))
+          set A_k := 3 ^ (10 * L_2 (k + 1) + 7 * L_1 (k + 1))
+          have hlt1 : (E_k * B_k) * W (k + 1 + 1) < E_k * (A_k * W (k + 1)) := by
+            calc (E_k * B_k) * W (k + 1 + 1)
+                = E_k * (B_k * W (k + 1 + 1)) := by ring
+              _ < E_k * (A_k * W (k + 1)) :=
+                Nat.mul_lt_mul_of_pos_left h_next (Nat.pow_pos (by decide))
+          have hlt2 : E_k * (A_k * W (k + 1)) < (S_k * A_k) * W 0 := by
+            calc E_k * (A_k * W (k + 1))
+                = A_k * (E_k * W (k + 1)) := by ring
+              _ < A_k * (S_k * W 0) :=
+                Nat.mul_lt_mul_of_pos_left ih (Nat.pow_pos (by decide))
+              _ = (S_k * A_k) * W 0 := by ring
+          exact lt_trans hlt1 hlt2
+    have hlt_raw := hprod N hN1
+    have htel_N := htel L_2 L_1 N
+    have hpow2_tel :
+        2 ^ (waveStepSum L_2 L_1 N + 10 * L_2 N) =
+          2 ^ (10 * L_2 0) * 2 ^ (waveNextTwoSum L_2 L_1 N) := by
+      rw [htel_N, Nat.pow_add]
+    have hlt_tel :
+        2 ^ (waveStepSum L_2 L_1 N + 10 * L_2 N) * W N <
+          2 ^ (10 * L_2 0) * 3 ^ (waveStepSum L_2 L_1 N) * W 0 := by
+      calc 2 ^ (waveStepSum L_2 L_1 N + 10 * L_2 N) * W N
+          = 2 ^ (10 * L_2 0) * (2 ^ (waveNextTwoSum L_2 L_1 N) * W N) := by
+            rw [hpow2_tel]; ring
+        _ < 2 ^ (10 * L_2 0) * (3 ^ (waveStepSum L_2 L_1 N) * W 0) :=
+          Nat.mul_lt_mul_of_pos_left hlt_raw (Nat.pow_pos (by decide))
+        _ = 2 ^ (10 * L_2 0) * 3 ^ (waveStepSum L_2 L_1 N) * W 0 := by ring
+    refine ⟨hlt_raw, hlt_tel, ?_⟩
+    intro hpow_le
+    have hmul_le :
+        (2 ^ (10 * L_2 0) * 3 ^ (waveStepSum L_2 L_1 N)) * W 0 ≤
+          2 ^ (waveStepSum L_2 L_1 N + 10 * L_2 N) * W 0 :=
+      Nat.mul_le_mul_right (W 0) hpow_le
+    have hmul_lt :
+        2 ^ (waveStepSum L_2 L_1 N + 10 * L_2 N) * W N <
+          2 ^ (waveStepSum L_2 L_1 N + 10 * L_2 N) * W 0 :=
+      lt_of_lt_of_le hlt_tel hmul_le
+    have hWN_lt : W N < W 0 := Nat.lt_of_mul_lt_mul_left hmul_lt
+    have hWN_add2 : W N + 2 ≤ W 0 := by
+      rcases Nat.eq_or_lt_of_le (Nat.succ_le_of_lt hWN_lt) with heq1 | hlt2
+      · have hmod_eq : (W N + 1) % 2 = W 0 % 2 := congrArg (· % 2) heq1
+        rw [Nat.add_mod, hodd N, hodd 0] at hmod_eq
+        exact absurd hmod_eq (by decide)
+      · exact hlt2
+    exact ⟨hWN_lt, hWN_add2⟩
+  · intro W K hodd _ hdesc
+    have hstep2 : ∀ n : ℕ, W (K (n + 1)) + 2 ≤ W (K n) := by
+      intro n
+      have hlt := hdesc n
+      rcases Nat.eq_or_lt_of_le (Nat.succ_le_of_lt hlt) with heq1 | hlt2
+      · have hmod_eq : (W (K (n + 1)) + 1) % 2 = W (K n) % 2 := congrArg (· % 2) heq1
+        rw [Nat.add_mod, hodd (K (n + 1)), hodd (K n)] at hmod_eq
+        exact absurd hmod_eq (by decide)
+      · exact hlt2
+    have h_iter : ∀ n : ℕ, W (K n) + 2 * n ≤ W (K 0) := by
+      intro n
+      induction n with
+      | zero => simp
+      | succ n ih =>
+          have hs := hstep2 n
+          omega
+    have h_at := h_iter (W (K 0) + 1)
+    omega
+
 end Mahler.DubickasExtension
 
 
