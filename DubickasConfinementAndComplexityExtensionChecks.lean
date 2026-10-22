@@ -353,6 +353,10 @@ example (m : ℕ) :
 #print axioms Mahler.DubickasExtension.dense_core_macro_run_mod_16_128_1024_bijections_and_step_8_descent
 #print axioms Mahler.DubickasExtension.dense_core_singleton_bridge_wave_identities_and_cross_wave_power_balance
 
+-- 38. Verify Section 47: Pure power-of-3 macro-run sieves (W_2 mod 128 in {113, 9}, W_3 mod 1024 in {143, 141}), 1/6377292 macro-wave corridor, and macro-wave constant of motion W_2 - 1
+#print axioms Mahler.DubickasExtension.dense_core_macro_run_pure_power_three_sieves_and_exact_residues
+#print axioms Mahler.DubickasExtension.dense_core_macro_wave_archimedean_floor_invariant_and_corridor
+
 #print axioms Mahler.DubickasExtension.dubBaseCarry_eq_fract_linear
 #print axioms Mahler.DubickasExtension.dubBaseY_multi_step_carry_identity
 #print axioms Mahler.DubickasExtension.dubBaseCarry_mem_two_letters

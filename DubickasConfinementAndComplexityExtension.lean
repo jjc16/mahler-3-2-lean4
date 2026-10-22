@@ -16207,6 +16207,245 @@ theorem dense_core_singleton_bridge_wave_identities_and_cross_wave_power_balance
         _ = 3 ^ 17 * (U_3A * W_1 + U_3B * W_2) := by ring
     exact ⟨hbal, hdvd2, hdvd3⟩
 
+/-!
+## Section 47: Pure Power-of-3 Macro-Run Sieves ($W_2 \bmod 128 \in \{113, 9\}$ and
+## $W_3 \bmod 1024 \in \{143, 141\}$), the $1 / 6{,}377{,}292$ Macro-Wave Corridor, and the
+## Macro-Wave Constant of Motion $\lfloor 2^{7 L_3 + 10 L_4} W_4 / 3^{10 L_2 + 7 L_3} \rfloor = W_2 - 1$
+
+In this section, we establish two further structural properties of the macro-run system:
+
+1. **Pure Power-of-3 Macro-Run Sieves & Exact Mod-128 / Mod-1024 Residues
+   (`dense_core_macro_run_pure_power_three_sieves_and_exact_residues`)**:
+   Because $2059 = 3^7 - 128$ and $58025 = 3^{10} - 1024$:
+   - Reducing $58025 \cdot 2^{7 L_3} W_3 + 19 = 2059 \cdot 3^{10 L_2} W_2$ modulo $128$ absorbs
+     $2059$ into $3^7$, yielding the **pure power-of-3 congruence**
+     $$\big(3^{10 L_2 + 7} W_2\big) \bmod 128 \;=\; 19,$$
+     which forces $W_2 \bmod 128 = 113$ when $L_2 = 1$ and $W_2 \bmod 128 = 9$ when $L_2 = 2$.
+   - Reducing $58025 \cdot 3^{7 L_3} W_3 + 19 = 2^{10 L_4} \cdot 2059 \cdot W_4$ modulo $1024$
+     absorbs $58025$ into $3^{10}$, yielding the **pure power-of-3 congruence**
+     $$\big(3^{7 L_3 + 10} W_3 + 19\big) \bmod 1024 \;=\; 0,$$
+     which forces $W_3 \bmod 1024 = 143$ when $L_3 = 1$ and $W_3 \bmod 1024 = 141$ when $L_3 = 2$.
+
+2. **The $1 / 6{,}377{,}292$ Macro-Wave Corridor & Macro-Wave Constant of Motion
+   (`dense_core_macro_wave_archimedean_floor_invariant_and_corridor`)**:
+   In the $2 \to 1 \to 2$ wave equation $2^{7 L_3 + 10 L_4} W_4 + 19 \cdot Q_{L_3} = 3^{10 L_2 + 7 L_3} W_2$,
+   because $108 \times 19 = 2052 < 2059$, the inhomogeneous drift $19 \cdot Q_{L_3}$ satisfies
+   $108 \cdot (19 \cdot Q_{L_3}) + 2^{7 L_3} < 3^{7 L_3}$. Multiplying by $3^{10 L_2} \ge 59{,}049$
+   proves that $2^{7 L_3 + 10 L_4} W_4$ is trapped inside a **$1 / 6{,}377{,}292$ archimedean
+   corridor** below $3^{10 L_2 + 7 L_3} W_2$:
+   $$6377292 \cdot \big(3^{10 L_2 + 7 L_3} W_2 - 2^{7 L_3 + 10 L_4} W_4\big) \;<\; 3^{10 L_2 + 7 L_3},$$
+   and establishes the **Macro-Wave Constant of Motion**:
+   $$\left\lfloor \frac{2^{7 L_3 + 10 L_4} W_4}{3^{10 L_2 + 7 L_3}} \right\rfloor \;=\; W_2 - 1.$$
+-/
+
+/-- **Pure Power-of-3 Macro-Run Sieves and Exact Mod-128 / Mod-1024 Residues
+(`dense_core_macro_run_pure_power_three_sieves_and_exact_residues`)**:
+1. **$2$-Run Pure Power-of-3 Mod-128 Sieve**:
+   Whenever $58025 \cdot 2^{7 L_3} W_3 + 19 = 2059 \cdot 3^{10 L_2} W_2$ with $1 \le L_3$:
+   - $(3^{10 L_2 + 7} W_2) \bmod 128 = 19$,
+   - $(L_2 = 1 \to W_2 \bmod 128 = 113) \land (L_2 = 2 \to W_2 \bmod 128 = 9)$.
+2. **$1$-Run Pure Power-of-3 Mod-1024 Sieve**:
+   Whenever $58025 \cdot 3^{7 L_3} W_3 + 19 = 2^{10 L_4} \cdot 2059 \cdot W_4$ with $1 \le L_4$:
+   - $(3^{7 L_3 + 10} W_3 + 19) \bmod 1024 = 0$,
+   - $(L_3 = 1 \to W_3 \bmod 1024 = 143) \land (L_3 = 2 \to W_3 \bmod 1024 = 141)$. -/
+theorem dense_core_macro_run_pure_power_three_sieves_and_exact_residues :
+    (∀ (W_2 W_3 L_2 L_3 : ℕ), 1 ≤ L_3 →
+      58025 * 2 ^ (7 * L_3) * W_3 + 19 = 2059 * 3 ^ (10 * L_2) * W_2 →
+      (3 ^ (10 * L_2 + 7) * W_2) % 128 = 19 ∧
+      (L_2 = 1 → W_2 % 128 = 113) ∧
+      (L_2 = 2 → W_2 % 128 = 9)) ∧
+    (∀ (W_3 W_4 L_3 L_4 : ℕ), 1 ≤ L_4 →
+      58025 * 3 ^ (7 * L_3) * W_3 + 19 = 2 ^ (10 * L_4) * 2059 * W_4 →
+      (3 ^ (7 * L_3 + 10) * W_3 + 19) % 1024 = 0 ∧
+      (L_3 = 1 → W_3 % 1024 = 143) ∧
+      (L_3 = 2 → W_3 % 1024 = 141)) := by
+  refine ⟨?_, ?_⟩
+  · intro W_2 W_3 L_2 L_3 hL3 hsyz
+    have h7_le : 7 ≤ 7 * L_3 := by omega
+    rcases Nat.pow_dvd_pow 2 h7_le with ⟨U_7, hU7⟩
+    have hp7 : (2 : ℕ) ^ 7 = 128 := rfl
+    rw [hp7] at hU7
+    have hpow3 : 3 ^ (10 * L_2 + 7) = 2187 * 3 ^ (10 * L_2) := by
+      rw [Nat.add_comm (10 * L_2) 7, Nat.pow_add]
+    have hrew128 :
+        3 ^ (10 * L_2 + 7) * W_2 =
+          19 + 128 * (3 ^ (10 * L_2) * W_2 + 58025 * U_7 * W_3) := by
+      have hsplit : 2187 * 3 ^ (10 * L_2) * W_2 =
+          2059 * 3 ^ (10 * L_2) * W_2 + 128 * (3 ^ (10 * L_2) * W_2) := by ring
+      have hsub : 2059 * 3 ^ (10 * L_2) * W_2 = 58025 * (128 * U_7) * W_3 + 19 := by
+        rw [← hU7, hsyz]
+      rw [hpow3, hsplit, hsub]
+      ring
+    have hmod128 : (3 ^ (10 * L_2 + 7) * W_2) % 128 = 19 := by
+      rw [hrew128, Nat.add_mul_mod_self_left]
+    refine ⟨hmod128, ?_, ?_⟩
+    · intro hL2_1
+      subst hL2_1
+      have hlin : 3 ^ 17 * W_2 = 19 + 128 * (3 ^ 10 * W_2 + 58025 * U_7 * W_3) := hrew128
+      set K := 3 ^ 10 * W_2 + 58025 * U_7 * W_3
+      have hbez :
+          W_2 + 128 * (107953105 * W_2) =
+            128 * (107 * K + 15) + 113 := by
+        have h17 : (3 : ℕ) ^ 17 = 129140163 := by decide
+        rw [h17] at hlin
+        linarith only [hlin]
+      exact (mod_and_div_of_bezout (V := W_2) (M := 128) (a := 107953105 * W_2)
+        (b := 107 * K + 15) (r := 113) hbez (by decide)).1
+    · intro hL2_2
+      subst hL2_2
+      have hlin : 3 ^ 27 * W_2 = 19 + 128 * (3 ^ 20 * W_2 + 58025 * U_7 * W_3) := hrew128
+      set K := 3 ^ 20 * W_2 + 58025 * U_7 * W_3
+      have hbez :
+          W_2 + 128 * (6851122740418 * W_2) =
+            128 * (115 * K + 17) + 9 := by
+        have h27 : (3 : ℕ) ^ 27 = 7625597484987 := by decide
+        rw [h27] at hlin
+        linarith only [hlin]
+      exact (mod_and_div_of_bezout (V := W_2) (M := 128) (a := 6851122740418 * W_2)
+        (b := 115 * K + 17) (r := 9) hbez (by decide)).1
+  · intro W_3 W_4 L_3 L_4 hL4 hsyz
+    have h10_le : 10 ≤ 10 * L_4 := by omega
+    rcases Nat.pow_dvd_pow 2 h10_le with ⟨U_10, hU10⟩
+    have hp10 : (2 : ℕ) ^ 10 = 1024 := rfl
+    rw [hp10] at hU10
+    have hpow3 : 3 ^ (7 * L_3 + 10) = 59049 * 3 ^ (7 * L_3) := by
+      rw [Nat.add_comm (7 * L_3) 10, Nat.pow_add]
+    have hrew1024 :
+        3 ^ (7 * L_3 + 10) * W_3 + 19 =
+          1024 * (3 ^ (7 * L_3) * W_3 + U_10 * 2059 * W_4) := by
+      have hsplit : 59049 * 3 ^ (7 * L_3) * W_3 + 19 =
+          (58025 * 3 ^ (7 * L_3) * W_3 + 19) + 1024 * (3 ^ (7 * L_3) * W_3) := by ring
+      have hsub : 58025 * 3 ^ (7 * L_3) * W_3 + 19 = (1024 * U_10) * 2059 * W_4 := by
+        rw [← hU10, hsyz]
+      rw [hpow3, hsplit, hsub]
+      ring
+    have hmod1024 : (3 ^ (7 * L_3 + 10) * W_3 + 19) % 1024 = 0 := by
+      rw [hrew1024, Nat.mul_comm 1024, Nat.mul_mod_left]
+    refine ⟨hmod1024, ?_, ?_⟩
+    · intro hL3_1
+      subst hL3_1
+      have hlin : 3 ^ 17 * W_3 + 19 = 1024 * (3 ^ 7 * W_3 + U_10 * 2059 * W_4) := hrew1024
+      set K := 3 ^ 7 * W_3 + U_10 * 2059 * W_4
+      have hbez :
+          W_3 + 1024 * (94206740 * W_3 + 14) =
+            1024 * (747 * K) + 143 := by
+        have h17 : (3 : ℕ) ^ 17 = 129140163 := by decide
+        rw [h17] at hlin
+        linarith only [hlin]
+      exact (mod_and_div_of_bezout (V := W_3) (M := 1024) (a := 94206740 * W_3 + 14)
+        (b := 747 * K) (r := 143) hbez (by decide)).1
+    · intro hL3_2
+      subst hL3_2
+      have hlin : 3 ^ 24 * W_3 + 19 = 1024 * (3 ^ 14 * W_3 + U_10 * 2059 * W_4) := hrew1024
+      set K := 3 ^ 14 * W_3 + U_10 * 2059 * W_4
+      have hbez :
+          W_3 + 1024 * (220923885470 * W_3 + 15) =
+            1024 * (801 * K) + 141 := by
+        have h24 : (3 : ℕ) ^ 24 = 282429536481 := by decide
+        rw [h24] at hlin
+        linarith only [hlin]
+      exact (mod_and_div_of_bezout (V := W_3) (M := 1024) (a := 220923885470 * W_3 + 15)
+        (b := 801 * K) (r := 141) hbez (by decide)).1
+
+/-- **The $1 / 6{,}377{,}292$ Macro-Wave Corridor and Macro-Wave Constant of Motion
+$\lfloor 2^{7 L_3 + 10 L_4} W_4 / 3^{10 L_2 + 7 L_3} \rfloor = W_2 - 1$
+(`dense_core_macro_wave_archimedean_floor_invariant_and_corridor`)**:
+Suppose $W_2, W_4, L_2, L_3, L_4 \in \mathbb{N}$ satisfy $1 \le W_2$, $1 \le L_2$, $1 \le L_3$,
+and with $Q_{L_3} = (3^{7 L_3} - 2^{7 L_3}) / 2059$:
+$$2059 \cdot Q_{L_3} = 3^{7 L_3} - 2^{7 L_3} \quad \text{and} \quad
+  2^{7 L_3 + 10 L_4} W_4 + 19 \cdot Q_{L_3} = 3^{10 L_2 + 7 L_3} W_2.$$
+Then:
+1. **Sharp Drift Bound**: $1 \le Q_{L_3}$ and $108 \cdot (19 \cdot Q_{L_3}) + 2^{7 L_3} < 3^{7 L_3}$.
+2. **Ultra-Narrow $1 / 6{,}377{,}292$ Corridor**:
+   $$108 \cdot 3^{10 L_2} \cdot \big(3^{10 L_2 + 7 L_3} W_2 - 2^{7 L_3 + 10 L_4} W_4\big) < 3^{10 L_2 + 7 L_3},$$
+   $$6377292 \cdot \big(3^{10 L_2 + 7 L_3} W_2 - 2^{7 L_3 + 10 L_4} W_4\big) < 3^{10 L_2 + 7 L_3}.$$
+3. **Macro-Wave Constant of Motion**:
+   $$3^{10 L_2 + 7 L_3} (W_2 - 1) < 2^{7 L_3 + 10 L_4} W_4 < 3^{10 L_2 + 7 L_3} W_2,$$
+   $$\frac{2^{7 L_3 + 10 L_4} W_4}{3^{10 L_2 + 7 L_3}} = W_2 - 1.$$ -/
+theorem dense_core_macro_wave_archimedean_floor_invariant_and_corridor
+    {W_2 W_4 L_2 L_3 L_4 Q_L3 : ℕ}
+    (hW2_pos : 1 ≤ W_2) (hL2_pos : 1 ≤ L_2) (hL3_pos : 1 ≤ L_3)
+    (hQ_eq : 2059 * Q_L3 = 3 ^ (7 * L_3) - 2 ^ (7 * L_3))
+    (hwave : 2 ^ (7 * L_3 + 10 * L_4) * W_4 + 19 * Q_L3 = 3 ^ (10 * L_2 + 7 * L_3) * W_2) :
+    (1 ≤ Q_L3 ∧ 108 * (19 * Q_L3) + 2 ^ (7 * L_3) < 3 ^ (7 * L_3)) ∧
+    ((108 * 3 ^ (10 * L_2)) * (3 ^ (10 * L_2 + 7 * L_3) * W_2 - 2 ^ (7 * L_3 + 10 * L_4) * W_4) <
+       3 ^ (10 * L_2 + 7 * L_3) ∧
+     6377292 * (3 ^ (10 * L_2 + 7 * L_3) * W_2 - 2 ^ (7 * L_3 + 10 * L_4) * W_4) <
+       3 ^ (10 * L_2 + 7 * L_3)) ∧
+    (3 ^ (10 * L_2 + 7 * L_3) * (W_2 - 1) < 2 ^ (7 * L_3 + 10 * L_4) * W_4 ∧
+     2 ^ (7 * L_3 + 10 * L_4) * W_4 < 3 ^ (10 * L_2 + 7 * L_3) * W_2 ∧
+     (2 ^ (7 * L_3 + 10 * L_4) * W_4) / 3 ^ (10 * L_2 + 7 * L_3) = W_2 - 1) := by
+  have h2_lt_3 : 2 ^ (7 * L_3) < 3 ^ (7 * L_3) := by
+    have h_all : ∀ n : ℕ, 1 ≤ n → 2 ^ n < 3 ^ n := by
+      intro n hn
+      obtain ⟨k, rfl⟩ : ∃ k : ℕ, n = k + 1 := ⟨n - 1, by omega⟩
+      clear hn
+      induction k with
+      | zero => decide
+      | succ k ih =>
+          rw [Nat.pow_succ 2 (k + 1), Nat.pow_succ 3 (k + 1)]
+          omega
+    exact h_all (7 * L_3) (by omega)
+  have hQ_pos : 1 ≤ Q_L3 := by
+    rcases Nat.eq_zero_or_pos Q_L3 with h0 | hpos
+    · rw [h0, Nat.mul_zero] at hQ_eq; omega
+    · exact hpos
+  have h3_split : 3 ^ (7 * L_3) = 2059 * Q_L3 + 2 ^ (7 * L_3) := by
+    have hd := Nat.sub_add_cancel (le_of_lt h2_lt_3)
+    linarith only [hQ_eq, hd]
+  have h108_lt : 108 * (19 * Q_L3) + 2 ^ (7 * L_3) < 3 ^ (7 * L_3) := by
+    linarith only [h3_split, hQ_pos]
+  set S3 := 3 ^ (10 * L_2 + 7 * L_3)
+  set E2 := 2 ^ (7 * L_3 + 10 * L_4)
+  have hS3_split : S3 = 3 ^ (10 * L_2) * 3 ^ (7 * L_3) :=
+    Nat.pow_add 3 (10 * L_2) (7 * L_3)
+  have hdiff_eq : S3 * W_2 - E2 * W_4 = 19 * Q_L3 := by omega
+  have hcor1 : (108 * 3 ^ (10 * L_2)) * (S3 * W_2 - E2 * W_4) < S3 := by
+    have hlt_Q : 108 * (19 * Q_L3) < 3 ^ (7 * L_3) := by
+      have hp : 1 ≤ 2 ^ (7 * L_3) := Nat.pow_pos (by decide)
+      omega
+    have hmul :
+        3 ^ (10 * L_2) * (108 * (19 * Q_L3)) < 3 ^ (10 * L_2) * 3 ^ (7 * L_3) :=
+      Nat.mul_lt_mul_of_pos_left hlt_Q (Nat.pow_pos (by decide))
+    rw [hdiff_eq, hS3_split]
+    linarith only [hmul]
+  have h3_10_ge : 59049 ≤ 3 ^ (10 * L_2) := by
+    have hle : 3 ^ 10 ≤ 3 ^ (10 * L_2) :=
+      Nat.pow_le_pow_right (by decide) (by omega : 10 ≤ 10 * L_2)
+    exact le_trans (by decide : 59049 ≤ 3 ^ 10) hle
+  have hcor2 : 6377292 * (S3 * W_2 - E2 * W_4) < S3 := by
+    have hle : 6377292 * (S3 * W_2 - E2 * W_4) ≤
+        (108 * 3 ^ (10 * L_2)) * (S3 * W_2 - E2 * W_4) := by
+      have hm : 6377292 ≤ 108 * 3 ^ (10 * L_2) := by linarith only [h3_10_ge]
+      exact Nat.mul_le_mul_right _ hm
+    exact lt_of_le_of_lt hle hcor1
+  have hupper : E2 * W_4 < S3 * W_2 := by omega
+  have h19Q_lt_S3 : 19 * Q_L3 < S3 := by
+    have hle : 19 * Q_L3 ≤ 6377292 * (S3 * W_2 - E2 * W_4) := by
+      rw [hdiff_eq]
+      omega
+    exact lt_of_le_of_lt hle hcor2
+  have hlower : S3 * (W_2 - 1) < E2 * W_4 := by
+    have hdist : S3 * (W_2 - 1) + S3 = S3 * W_2 := by
+      have hw : (W_2 - 1) + 1 = W_2 := by omega
+      calc S3 * (W_2 - 1) + S3 = S3 * ((W_2 - 1) + 1) := by ring
+        _ = S3 * W_2 := by rw [hw]
+    omega
+  set rem := E2 * W_4 - S3 * (W_2 - 1)
+  have hrem_lt : rem < S3 := by
+    have hdist : S3 * (W_2 - 1) + S3 = S3 * W_2 := by
+      have hw : (W_2 - 1) + 1 = W_2 := by omega
+      calc S3 * (W_2 - 1) + S3 = S3 * ((W_2 - 1) + 1) := by ring
+        _ = S3 * W_2 := by rw [hw]
+    omega
+  have hbez := mod_and_div_of_bezout (V := E2 * W_4) (M := S3) (a := 0) (b := W_2 - 1)
+    (r := rem) (by omega) hrem_lt
+  have hS3_pos : 0 < S3 := Nat.pow_pos (by decide)
+  have hmul_S3 : S3 * ((E2 * W_4) / S3) = S3 * (W_2 - 1) := by omega
+  have hfloor : (E2 * W_4) / S3 = W_2 - 1 :=
+    Nat.eq_of_mul_eq_mul_left hS3_pos hmul_S3
+  exact ⟨⟨hQ_pos, h108_lt⟩, ⟨hcor1, hcor2⟩, ⟨hlower, hupper, hfloor⟩⟩
+
 end Mahler.DubickasExtension
 
 
