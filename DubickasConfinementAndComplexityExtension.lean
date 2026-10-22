@@ -15867,6 +15867,346 @@ theorem dense_core_non_descent_run_growth_speed_limit_and_212_dichotomy :
     have hr2 : 10 * L_2 0 * q + (p + q) * S_N = 10 * q * L_2 0 + p * S_N + q * S_N := by ring
     linarith only [hexp_lt, hr1, hr2]
 
+/-!
+## Section 45: Universal Macro-Run Mod-16 / Mod-128 / Mod-1024 Bijections, Disjoint Mod-8
+## Sectors ($W_{\text{two}} \bmod 8 = 1$ vs. $W_{\text{one}} \bmod 8 \in \{5, 7\}$), and 4x Accelerated Wave Descent ($W_4 + 8 \le W_2$)
+
+In Sections 39 and 40, we established the two macro-run interface equations:
+$$\begin{aligned}
+58025 \cdot 2^{7 L_3} W_3 + 19 \;&=\; 2059 \cdot 3^{10 L_2} W_2 \qquad (2\text{-Run} \to 1\text{-Run}), \\
+58025 \cdot 3^{7 L_3} W_3 + 19 \;&=\; 2^{10 L_4} \cdot 2059 \cdot W_4 \qquad (1\text{-Run} \to 2\text{-Run}).
+\end{aligned}$$
+In this section, we reduce those two equations modulo $8$, $16$, $128$, and $1024$ and discover:
+
+1. **Universal Mod-8 Lock $W_2 \bmod 8 = 1$ and Mod-16 Run-Parity Bijection on $2$-Run Quotients
+   (`dense_core_macro_run_mod_16_128_1024_bijections_and_step_8_descent`)**:
+   - Because $7 L_3 \ge 7$, reducing $58025 \cdot 2^{7 L_3} W_3 + 19 = 2059 \cdot 3^{10 L_2} W_2$
+     modulo $128$ proves $(2059 \cdot 3^{10 L_2} W_2) \bmod 128 = 19$.
+   - Modulo $8$, since $10 L_2$ is even, $3^{10 L_2} \equiv 1 \pmod 8$ and $2059 \equiv 19 \equiv 3 \pmod 8$,
+     forcing **$W_2 \bmod 8 = 1$ universally** across all $L_2, L_3 \ge 1$!
+   - Modulo $16$, $3^{10 L_2} \bmod 16 \in \{9, 1\}$ depends on $L_2 \bmod 2$, so $W_2 \bmod 16 \in \{1, 9\}$
+     **bijectively determines the parity of the $2$-run length $L_2$**:
+     $$(L_2 \bmod 2 = 1 \leftrightarrow W_2 \bmod 16 = 1) \;\land\;
+       (L_2 \bmod 2 = 0 \leftrightarrow W_2 \bmod 16 = 9).$$
+
+2. **Disjoint Mod-8 Sector $W_3 \bmod 8 \in \{5, 7\}$ and Mod-16 Bijection on $1$-Run Quotients**:
+   - Because $10 L_4 \ge 10$, reducing $58025 \cdot 3^{7 L_3} W_3 + 19 = 2^{10 L_4} \cdot 2059 \cdot W_4$
+     modulo $1024$ proves $(58025 \cdot 3^{7 L_3} W_3 + 19) \bmod 1024 = 0$.
+   - Modulo $16$, $58025 \equiv 9 \pmod{16}$ and $-19 \equiv 13 \pmod{16}$ give
+     $(3^{7 L_3} W_3) \bmod 16 = 5$, restricting $W_3 \bmod 16 \in \{5, 7, 13, 15\}$ (so
+     **$W_3 \bmod 8 \in \{5, 7\}$, completely disjoint from $W_2 \bmod 8 = 1$, hence $W_2 \ne W_3$ always!**)
+     and **bijectively determining $L_3 \bmod 4$**:
+     $$(L_3 \bmod 4 = 0 \leftrightarrow W_3 \bmod 16 = 5) \;\land\;
+       (L_3 \bmod 4 = 1 \leftrightarrow W_3 \bmod 16 = 15) \;\land$$
+     $$(L_3 \bmod 4 = 2 \leftrightarrow W_3 \bmod 16 = 13) \;\land\;
+       (L_3 \bmod 4 = 3 \leftrightarrow W_3 \bmod 16 = 7).$$
+
+3. **4x Accelerated Wave Descent ($W_4 + 8 \le W_2$, and $W_4 + 16 \le W_2$ for Equal Run Parities)**:
+   Because every $2$-run quotient satisfies $W_{2k} \bmod 8 = 1$, any descending wave
+   $W_4 < W_2$ drops by **at least $8$** ($W_4 + 8 \le W_2$), and when $L_2 \bmod 2 = L_4 \bmod 2$
+   ($W_2 \bmod 16 = W_4 \bmod 16$), it drops by **at least $16$** ($W_4 + 16 \le W_2$)!
+-/
+
+/-- **Universal Macro-Run Mod-16 / Mod-128 / Mod-1024 Bijections, Disjoint Mod-8 Sectors,
+and 4x Accelerated Wave Descent (`dense_core_macro_run_mod_16_128_1024_bijections_and_step_8_descent`)**:
+1. **$2$-Run Quotient Sector ($W_2 \bmod 8 = 1,\; W_2 \bmod 16 \in \{1, 9\}$)**:
+   Whenever $58025 \cdot 2^{7 L_3} W_3 + 19 = 2059 \cdot 3^{10 L_2} W_2$ with $1 \le L_3$:
+   - $(2059 \cdot 3^{10 L_2} W_2) \bmod 128 = 19$,
+   - $W_2 \bmod 8 = 1$ and $(W_2 \bmod 16 = 1 \lor W_2 \bmod 16 = 9)$,
+   - $(L_2 \bmod 2 = 1 \leftrightarrow W_2 \bmod 16 = 1) \land
+     (L_2 \bmod 2 = 0 \leftrightarrow W_2 \bmod 16 = 9)$.
+2. **$1$-Run Quotient Sector ($W_3 \bmod 8 \in \{5, 7\},\; W_3 \bmod 16 \in \{5, 7, 13, 15\}$)**:
+   Whenever $58025 \cdot 3^{7 L_3} W_3 + 19 = 2^{10 L_4} \cdot 2059 \cdot W_4$ with $1 \le L_4$:
+   - $(58025 \cdot 3^{7 L_3} W_3 + 19) \bmod 1024 = 0$,
+   - $(W_3 \bmod 8 = 5 \lor W_3 \bmod 8 = 7)$ and
+     $(W_3 \bmod 16 = 5 \lor W_3 \bmod 16 = 7 \lor W_3 \bmod 16 = 13 \lor W_3 \bmod 16 = 15)$,
+   - $(L_3 \bmod 4 = 0 \leftrightarrow W_3 \bmod 16 = 5) \land
+     (L_3 \bmod 4 = 1 \leftrightarrow W_3 \bmod 16 = 15) \land
+     (L_3 \bmod 4 = 2 \leftrightarrow W_3 \bmod 16 = 13) \land
+     (L_3 \bmod 4 = 3 \leftrightarrow W_3 \bmod 16 = 7)$.
+3. **Disjointness & 4x / 8x Accelerated Wave Descent**:
+   - If $W_2 \bmod 8 = 1$ and $(W_3 \bmod 8 = 5 \lor W_3 \bmod 8 = 7)$, then $W_2 \ne W_3$.
+   - If $W_2 \bmod 8 = 1$, $W_4 \bmod 8 = 1$, and $W_4 < W_2$, then $W_4 + 8 \le W_2$.
+   - If $W_2 \bmod 16 = W_4 \bmod 16$ and $W_4 < W_2$, then $W_4 + 16 \le W_2$. -/
+theorem dense_core_macro_run_mod_16_128_1024_bijections_and_step_8_descent :
+    (∀ (W_2 W_3 L_2 L_3 : ℕ), 1 ≤ L_3 →
+      58025 * 2 ^ (7 * L_3) * W_3 + 19 = 2059 * 3 ^ (10 * L_2) * W_2 →
+      (2059 * 3 ^ (10 * L_2) * W_2) % 128 = 19 ∧
+      W_2 % 8 = 1 ∧
+      (W_2 % 16 = 1 ∨ W_2 % 16 = 9) ∧
+      ((L_2 % 2 = 1 ↔ W_2 % 16 = 1) ∧ (L_2 % 2 = 0 ↔ W_2 % 16 = 9))) ∧
+    (∀ (W_3 W_4 L_3 L_4 : ℕ), 1 ≤ L_4 →
+      58025 * 3 ^ (7 * L_3) * W_3 + 19 = 2 ^ (10 * L_4) * 2059 * W_4 →
+      (58025 * 3 ^ (7 * L_3) * W_3 + 19) % 1024 = 0 ∧
+      (W_3 % 8 = 5 ∨ W_3 % 8 = 7) ∧
+      (W_3 % 16 = 5 ∨ W_3 % 16 = 7 ∨ W_3 % 16 = 13 ∨ W_3 % 16 = 15) ∧
+      ((L_3 % 4 = 0 ↔ W_3 % 16 = 5) ∧
+       (L_3 % 4 = 1 ↔ W_3 % 16 = 15) ∧
+       (L_3 % 4 = 2 ↔ W_3 % 16 = 13) ∧
+       (L_3 % 4 = 3 ↔ W_3 % 16 = 7))) ∧
+    ((∀ W_2 W_3 : ℕ, W_2 % 8 = 1 → (W_3 % 8 = 5 ∨ W_3 % 8 = 7) → W_2 ≠ W_3) ∧
+     (∀ W_2 W_4 : ℕ, W_2 % 8 = 1 → W_4 % 8 = 1 → W_4 < W_2 → W_4 + 8 ≤ W_2) ∧
+     (∀ W_2 W_4 : ℕ, W_2 % 16 = W_4 % 16 → W_4 < W_2 → W_4 + 16 ≤ W_2)) := by
+  have hpow3_4 : ∀ q : ℕ, (3 ^ (4 * q)) % 16 = 1 := by
+    intro q
+    induction q with
+    | zero => decide
+    | succ q ih =>
+        have hexp : 4 * (q + 1) = 4 * q + 4 := by omega
+        rw [hexp, Nat.pow_add, Nat.mul_mod, ih]
+  refine ⟨?_, ?_, ?_⟩
+  · intro W_2 W_3 L_2 L_3 hL3 hsyz
+    have h7_le : 7 ≤ 7 * L_3 := by omega
+    rcases Nat.pow_dvd_pow 2 h7_le with ⟨U_7, hU7⟩
+    have hrew128 : 2059 * 3 ^ (10 * L_2) * W_2 = 19 + 128 * (58025 * U_7 * W_3) := by
+      have hp7 : (2 : ℕ) ^ 7 = 128 := rfl
+      rw [hp7] at hU7
+      calc 2059 * 3 ^ (10 * L_2) * W_2
+          = 58025 * 2 ^ (7 * L_3) * W_3 + 19 := hsyz.symm
+        _ = 58025 * (128 * U_7) * W_3 + 19 := by rw [hU7]
+        _ = 19 + 128 * (58025 * U_7 * W_3) := by ring
+    have hmod128 : (2059 * 3 ^ (10 * L_2) * W_2) % 128 = 19 := by
+      rw [hrew128, Nat.add_mul_mod_self_left]
+    have hmod16_raw : (2059 * 3 ^ (10 * L_2) * W_2) % 16 = 3 := by
+      have hrew16 : 2059 * 3 ^ (10 * L_2) * W_2 = 19 + 16 * (8 * 58025 * U_7 * W_3) := by
+        linarith only [hrew128]
+      rw [hrew16, Nat.add_mul_mod_self_left]
+    have h10L2_mod16 :
+        (L_2 % 2 = 0 → (3 ^ (10 * L_2)) % 16 = 1) ∧
+        (L_2 % 2 = 1 → (3 ^ (10 * L_2)) % 16 = 9) := by
+      have hdiv : 10 * L_2 = 4 * (5 * (L_2 / 2)) + 10 * (L_2 % 2) := by omega
+      constructor
+      · intro h0
+        have he : 10 * L_2 = 4 * (5 * (L_2 / 2)) := by omega
+        rw [he, hpow3_4]
+      · intro h1
+        have he : 10 * L_2 = 4 * (5 * (L_2 / 2) + 2) + 2 := by omega
+        rw [he, Nat.pow_add, Nat.mul_mod, hpow3_4]
+    have hmul16 : (((2059 % 16) * ((3 ^ (10 * L_2)) % 16)) % 16 * (W_2 % 16)) % 16 = 3 := by
+      rw [Nat.mul_mod (2059 * 3 ^ (10 * L_2)) W_2 16,
+        Nat.mul_mod 2059 (3 ^ (10 * L_2)) 16] at hmod16_raw
+      exact hmod16_raw
+    have hL2_par : L_2 % 2 = 0 ∨ L_2 % 2 = 1 := by omega
+    rcases hL2_par with h0 | h1
+    · have hp3 := h10L2_mod16.1 h0
+      rw [hp3] at hmul16
+      change (11 * (W_2 % 16)) % 16 = 3 at hmul16
+      have hW2_9 : W_2 % 16 = 9 := by omega
+      refine ⟨hmod128, by omega, Or.inr hW2_9, ?_⟩
+      omega
+    · have hp3 := h10L2_mod16.2 h1
+      rw [hp3] at hmul16
+      change (3 * (W_2 % 16)) % 16 = 3 at hmul16
+      have hW2_1 : W_2 % 16 = 1 := by omega
+      refine ⟨hmod128, by omega, Or.inl hW2_1, ?_⟩
+      omega
+  · intro W_3 W_4 L_3 L_4 hL4 hsyz
+    have h10_le : 10 ≤ 10 * L_4 := by omega
+    rcases Nat.pow_dvd_pow 2 h10_le with ⟨U_10, hU10⟩
+    have hrew1024 : 58025 * 3 ^ (7 * L_3) * W_3 + 19 = 1024 * (U_10 * 2059 * W_4) := by
+      have hp10 : (2 : ℕ) ^ 10 = 1024 := rfl
+      rw [hp10] at hU10
+      calc 58025 * 3 ^ (7 * L_3) * W_3 + 19
+          = 2 ^ (10 * L_4) * 2059 * W_4 := hsyz
+        _ = (1024 * U_10) * 2059 * W_4 := by rw [hU10]
+        _ = 1024 * (U_10 * 2059 * W_4) := by ring
+    have hmod1024 : (58025 * 3 ^ (7 * L_3) * W_3 + 19) % 1024 = 0 := by
+      rw [hrew1024, Nat.mul_comm 1024, Nat.mul_mod_left]
+    have hmod16_raw : (58025 * 3 ^ (7 * L_3) * W_3 + 19) % 16 = 0 := by
+      have hrew16 : 58025 * 3 ^ (7 * L_3) * W_3 + 19 = (64 * U_10 * 2059 * W_4) * 16 := by
+        linarith only [hrew1024]
+      rw [hrew16, Nat.mul_mod_left]
+    have h7L3_mod16 : (3 ^ (7 * L_3)) % 16 = (3 ^ (7 * (L_3 % 4))) % 16 := by
+      have hdiv : 7 * L_3 = 4 * (7 * (L_3 / 4)) + 7 * (L_3 % 4) := by omega
+      rw [hdiv, Nat.pow_add, Nat.mul_mod, hpow3_4]
+      omega
+    have hmul16 :
+        (((((58025 % 16) * ((3 ^ (7 * (L_3 % 4))) % 16)) % 16 * (W_3 % 16)) % 16) + 19 % 16) % 16 = 0 := by
+      rw [Nat.add_mod, Nat.mul_mod (58025 * 3 ^ (7 * L_3)) W_3 16,
+        Nat.mul_mod 58025 (3 ^ (7 * L_3)) 16, h7L3_mod16] at hmod16_raw
+      exact hmod16_raw
+    have hL3_4 : L_3 % 4 = 0 ∨ L_3 % 4 = 1 ∨ L_3 % 4 = 2 ∨ L_3 % 4 = 3 := by omega
+    rcases hL3_4 with h0 | h1 | h2 | h3
+    · rw [h0] at hmul16
+      change ((9 * (W_3 % 16)) % 16 + 3) % 16 = 0 at hmul16
+      have hW3 : W_3 % 16 = 5 := by omega
+      refine ⟨hmod1024, by omega, Or.inl hW3, ?_⟩
+      omega
+    · rw [h1] at hmul16
+      change ((3 * (W_3 % 16)) % 16 + 3) % 16 = 0 at hmul16
+      have hW3 : W_3 % 16 = 15 := by omega
+      refine ⟨hmod1024, by omega, Or.inr (Or.inr (Or.inr hW3)), ?_⟩
+      omega
+    · rw [h2] at hmul16
+      change ((1 * (W_3 % 16)) % 16 + 3) % 16 = 0 at hmul16
+      have hW3 : W_3 % 16 = 13 := by omega
+      refine ⟨hmod1024, by omega, Or.inr (Or.inr (Or.inl hW3)), ?_⟩
+      omega
+    · rw [h3] at hmul16
+      change ((11 * (W_3 % 16)) % 16 + 3) % 16 = 0 at hmul16
+      have hW3 : W_3 % 16 = 7 := by omega
+      refine ⟨hmod1024, by omega, Or.inr (Or.inl hW3), ?_⟩
+      omega
+  · refine ⟨?_, ?_, ?_⟩
+    · intro W_2 W_3 hW2 hW3 heq
+      omega
+    · intro W_2 W_4 hW2 hW4 hlt
+      omega
+    · intro W_2 W_4 hmod16 hlt
+      omega
+
+/-!
+## Section 46: Singleton-Bridge Wave Identities ($+19$ Universality) and Cross-Wave Pure
+## $(2, 3)$-Power Balance ($2^{7 L_3 + 10} W_3 + 2^{10 L_4 + 7} W_4 = 3^{7 L_1 + 10} W_1 + 3^{10 L_2 + 7} W_2$)
+
+In Sections 40 and 41, we proved the general three-run wave equations:
+$$\begin{aligned}
+3^{10 L_2 + 7 m_1} U_1 + 19 \cdot \left(\frac{3^{10 L_2} - 2^{10 L_2}}{58025}\right) \;&=\; 2^{10 L_2 + 7 L_3} W_3 \qquad (1 \to 2 \to 1), \\
+2^{7 L_3 + 10 L_4} W_4 + 19 \cdot \left(\frac{3^{7 L_3} - 2^{7 L_3}}{2059}\right) \;&=\; 3^{10 L_2 + 7 L_3} W_2 \qquad (2 \to 1 \to 2).
+\end{aligned}$$
+In this section, we evaluate both wave equations when their middle bridge is a **singleton run**
+($L_2 = 1$ in a $1 \to 2 \to 1$ wave, or $L_3 = 1$ in a $2 \to 1 \to 2$ wave) and discover that
+both inhomogeneous quotients equal $1$—reducing **both** wave equations to the **exact same
+inhomogeneous constant $+19$**:
+$$\begin{aligned}
+3^{7 L_1 + 10} W_1 + 19 \;&=\; 2^{7 L_3 + 10} W_3 \qquad (\text{singleton } 2\text{-bridge } 1^{L_1} \to 2^1 \to 1^{L_3}), \\
+2^{10 L_4 + 7} W_4 + 19 \;&=\; 3^{10 L_2 + 7} W_2 \qquad (\text{singleton } 1\text{-bridge } 2^{L_2} \to 1^1 \to 2^{L_4}).
+\end{aligned}$$
+Adding the two equations and canceling $+19$ separates **all powers of $2$ onto the left** and
+**all powers of $3$ onto the right**:
+$$2^{7 L_3 + 10} W_3 \;+\; 2^{10 L_4 + 7} W_4 \;=\; 3^{7 L_1 + 10} W_1 \;+\; 3^{10 L_2 + 7} W_2,$$
+forcing $2^{17} \mid (3^{7 L_1 + 10} W_1 + 3^{10 L_2 + 7} W_2)$ and
+$3^{17} \mid (2^{7 L_3 + 10} W_3 + 2^{10 L_4 + 7} W_4)$ across every pair of singleton-bridge waves!
+-/
+
+/-- **Singleton-Bridge Wave Identities ($+19$ Universality) and Cross-Wave Pure $(2, 3)$-Power Balance
+(`dense_core_singleton_bridge_wave_identities_and_cross_wave_power_balance`)**:
+Suppose $1 \le V(0)$, $j(r) \in \{1, 2\}$, and
+$2^{3 j(r + 1) + 4} V(r + 1) + 1 = 3^{3 j(r) + 4} V(r)$ for all $r \in \mathbb{N}$.
+1. **Singleton $2$-Bridge Wave ($1^{m_1 + 1} \to 2^1 \to 1^{m_3 + 1}$)**:
+   Whenever $\forall t \le m_1,\; j(r_1 + t) = 1$, $j(r_1 + m_1 + 1) = 2$,
+   $\forall t \le m_3,\; j(r_1 + (m_1 + 1) + 1 + t) = 1$, and
+   $j(r_1 + (m_1 + 1) + 1 + m_3 + 1) = 2$, with $L_1 = m_1 + 1$, $L_3 = m_3 + 1$,
+   $U_1 = (2059 \cdot V(r_1) - 1) / 2^{7 L_1}$, $W_1 = U_1 / 2187$, and
+   $W_3 = ((2059 \cdot V(r_1 + L_1 + 1) - 1) / 2^{7 L_3}) / 2187$:
+   - $3^{7 m_1 + 10} U_1 + 19 = 2^{7 L_3 + 10} W_3$, and
+   - if $2187 \mid U_1$, then $3^{7 L_1 + 10} W_1 + 19 = 2^{7 L_3 + 10} W_3$.
+2. **Singleton $1$-Bridge Wave ($2^{m_2 + 1} \to 1^1 \to 2^{m_4 + 1}$)**:
+   Whenever $\forall t \le m_2,\; j(r_2 + t) = 2$, $j(r_2 + m_2 + 1) = 1$,
+   $\forall t \le m_4,\; j(r_2 + (m_2 + 1) + 1 + t) = 2$, and
+   $j(r_2 + (m_2 + 1) + 1 + m_4 + 1) = 1$, with $L_2 = m_2 + 1$, $L_4 = m_4 + 1$,
+   $U_2 = (58025 \cdot V(r_2) - 1) / 2^{10 m_2 + 7}$, $W_2 = U_2 / 2187$, and
+   $W_4 = ((58025 \cdot V(r_2 + L_2 + 1) - 1) / 2^{10 m_4 + 7}) / 2187$:
+   - if $2187 \mid U_2$, then $2^{10 L_4 + 7} W_4 + 19 = 3^{10 L_2 + 7} W_2$.
+3. **Cross-Wave Pure $(2, 3)$-Power Balance**:
+   For any $W_1, W_2, W_3, W_4, L_1, L_2, L_3, L_4 \in \mathbb{N}$ with
+   $1 \le L_1, 1 \le L_2, 1 \le L_3, 1 \le L_4$, if
+   $3^{7 L_1 + 10} W_1 + 19 = 2^{7 L_3 + 10} W_3$ and
+   $2^{10 L_4 + 7} W_4 + 19 = 3^{10 L_2 + 7} W_2$, then:
+   - $2^{7 L_3 + 10} W_3 + 2^{10 L_4 + 7} W_4 = 3^{7 L_1 + 10} W_1 + 3^{10 L_2 + 7} W_2$,
+   - $2^{17} \mid (3^{7 L_1 + 10} W_1 + 3^{10 L_2 + 7} W_2)$, and
+   - $3^{17} \mid (2^{7 L_3 + 10} W_3 + 2^{10 L_4 + 7} W_4)$. -/
+theorem dense_core_singleton_bridge_wave_identities_and_cross_wave_power_balance
+    {V j : ℕ → ℕ}
+    (hV0_pos : 1 ≤ V 0)
+    (hj : ∀ r : ℕ, j r = 1 ∨ j r = 2)
+    (hrec : ∀ r : ℕ, 2 ^ (3 * j (r + 1) + 4) * V (r + 1) + 1 = 3 ^ (3 * j r + 4) * V r) :
+    (∀ r_1 m_1 m_3 : ℕ,
+      (∀ t ≤ m_1, j (r_1 + t) = 1) →
+      j (r_1 + m_1 + 1) = 2 →
+      (∀ t ≤ m_3, j (r_1 + (m_1 + 1) + 1 + t) = 1) →
+      j (r_1 + (m_1 + 1) + 1 + m_3 + 1) = 2 →
+      let L_1 := m_1 + 1
+      let L_3 := m_3 + 1
+      let U_1 := (2059 * V r_1 - 1) / 2 ^ (7 * L_1)
+      let W_1 := U_1 / 2187
+      let W_3 := ((2059 * V (r_1 + L_1 + 1) - 1) / 2 ^ (7 * L_3)) / 2187
+      3 ^ (7 * m_1 + 10) * U_1 + 19 = 2 ^ (7 * L_3 + 10) * W_3 ∧
+      ((2187 ∣ U_1) → 3 ^ (7 * L_1 + 10) * W_1 + 19 = 2 ^ (7 * L_3 + 10) * W_3)) ∧
+    (∀ r_2 m_2 m_4 : ℕ,
+      (∀ t ≤ m_2, j (r_2 + t) = 2) →
+      j (r_2 + m_2 + 1) = 1 →
+      (∀ t ≤ m_4, j (r_2 + (m_2 + 1) + 1 + t) = 2) →
+      j (r_2 + (m_2 + 1) + 1 + m_4 + 1) = 1 →
+      let L_2 := m_2 + 1
+      let L_4 := m_4 + 1
+      let U_2 := (58025 * V r_2 - 1) / 2 ^ (10 * m_2 + 7)
+      let W_2 := U_2 / 2187
+      let W_4 := ((58025 * V (r_2 + L_2 + 1) - 1) / 2 ^ (10 * m_4 + 7)) / 2187
+      (2187 ∣ U_2) → 2 ^ (10 * L_4 + 7) * W_4 + 19 = 3 ^ (10 * L_2 + 7) * W_2) ∧
+    (∀ (W_1 W_2 W_3 W_4 L_1 L_2 L_3 L_4 : ℕ),
+      1 ≤ L_1 → 1 ≤ L_2 → 1 ≤ L_3 → 1 ≤ L_4 →
+      3 ^ (7 * L_1 + 10) * W_1 + 19 = 2 ^ (7 * L_3 + 10) * W_3 →
+      2 ^ (10 * L_4 + 7) * W_4 + 19 = 3 ^ (10 * L_2 + 7) * W_2 →
+      2 ^ (7 * L_3 + 10) * W_3 + 2 ^ (10 * L_4 + 7) * W_4 =
+        3 ^ (7 * L_1 + 10) * W_1 + 3 ^ (10 * L_2 + 7) * W_2 ∧
+      (2 ^ 17 ∣ (3 ^ (7 * L_1 + 10) * W_1 + 3 ^ (10 * L_2 + 7) * W_2)) ∧
+      (3 ^ 17 ∣ (2 ^ (7 * L_3 + 10) * W_3 + 2 ^ (10 * L_4 + 7) * W_4))) := by
+  refine ⟨?_, ?_, ?_⟩
+  · intro r_1 m_1 m_3 hrun1 hj_sw1 hrun3 hsw3 L_1 L_3 U_1 W_1 W_3
+    have hrun2 : ∀ t ≤ 0, j (r_1 + (m_1 + 1) + t) = 2 := by
+      intro t ht
+      have ht0 : t = 0 := by omega
+      subst ht0
+      have hidx : r_1 + (m_1 + 1) + 0 = r_1 + m_1 + 1 := by omega
+      rw [hidx]; exact hj_sw1
+    have hwave := ((dense_core_two_to_one_run_interface_and_wave_elimination
+      hV0_pos hj hrec).2 r_1 m_1 0 m_3 hrun1 hrun2 hrun3 hsw3).2.2.2.1
+    change 3 ^ (10 * 1 + 7 * m_1) * U_1 + 19 * ((3 ^ (10 * 1) - 2 ^ (10 * 1)) / 58025) =
+      2 ^ (10 * 1 + 7 * L_3) * W_3 at hwave
+    have hQ1 : (3 ^ (10 * 1) - 2 ^ (10 * 1)) / 58025 = 1 := by decide
+    have hexp1 : 10 * 1 + 7 * m_1 = 7 * m_1 + 10 := by omega
+    have hexp2 : 10 * 1 + 7 * L_3 = 7 * L_3 + 10 := by omega
+    rw [hQ1, hexp1, hexp2, Nat.mul_one] at hwave
+    refine ⟨hwave, ?_⟩
+    intro hdvd_U1
+    have hW1_eq : U_1 = 2187 * W_1 := (Nat.mul_div_cancel' hdvd_U1).symm
+    have hpow3_L1 : 3 ^ (7 * L_1 + 10) = 3 ^ (7 * m_1 + 10) * 2187 := by
+      have hexp : 7 * L_1 + 10 = (7 * m_1 + 10) + 7 := by omega
+      rw [hexp, Nat.pow_add]
+    calc 3 ^ (7 * L_1 + 10) * W_1 + 19
+        = (3 ^ (7 * m_1 + 10) * 2187) * W_1 + 19 := by rw [hpow3_L1]
+      _ = 3 ^ (7 * m_1 + 10) * (2187 * W_1) + 19 := by ring
+      _ = 3 ^ (7 * m_1 + 10) * U_1 + 19 := by rw [← hW1_eq]
+      _ = 2 ^ (7 * L_3 + 10) * W_3 := hwave
+  · intro r_2 m_2 m_4 hrun2 hj_sw2 hrun4 hsw4 L_2 L_4 U_2 W_2 W_4 hdvd_U2
+    have hrun3 : ∀ t ≤ 0, j (r_2 + (m_2 + 1) + t) = 1 := by
+      intro t ht
+      have ht0 : t = 0 := by omega
+      subst ht0
+      have hidx : r_2 + (m_2 + 1) + 0 = r_2 + m_2 + 1 := by omega
+      rw [hidx]; exact hj_sw2
+    have hwave := ((dense_core_two_one_two_wave_elimination_and_strict_W_descent
+      hV0_pos hj hrec hrun2 hrun3 hrun4 hsw4).2.2 hdvd_U2).1
+    change 2 ^ (7 * 1 + 10 * L_4) * W_4 + 19 * ((3 ^ (7 * 1) - 2 ^ (7 * 1)) / 2059) =
+      3 ^ (10 * L_2 + 7 * 1) * W_2 at hwave
+    have hQ1 : (3 ^ (7 * 1) - 2 ^ (7 * 1)) / 2059 = 1 := by decide
+    have hexp1 : 7 * 1 + 10 * L_4 = 10 * L_4 + 7 := by omega
+    rw [hQ1, hexp1, Nat.mul_one] at hwave
+    exact hwave
+  · intro W_1 W_2 W_3 W_4 L_1 L_2 L_3 L_4 hL1 hL2 hL3 hL4 hw1 hw2
+    have hbal :
+        2 ^ (7 * L_3 + 10) * W_3 + 2 ^ (10 * L_4 + 7) * W_4 =
+          3 ^ (7 * L_1 + 10) * W_1 + 3 ^ (10 * L_2 + 7) * W_2 := by
+      linarith only [hw1, hw2]
+    rcases Nat.pow_dvd_pow 2 (by omega : 17 ≤ 7 * L_3 + 10) with ⟨U_2A, hU2A⟩
+    rcases Nat.pow_dvd_pow 2 (by omega : 17 ≤ 10 * L_4 + 7) with ⟨U_2B, hU2B⟩
+    rcases Nat.pow_dvd_pow 3 (by omega : 17 ≤ 7 * L_1 + 10) with ⟨U_3A, hU3A⟩
+    rcases Nat.pow_dvd_pow 3 (by omega : 17 ≤ 10 * L_2 + 7) with ⟨U_3B, hU3B⟩
+    have hdvd2 : 2 ^ 17 ∣ (3 ^ (7 * L_1 + 10) * W_1 + 3 ^ (10 * L_2 + 7) * W_2) := by
+      refine ⟨U_2A * W_3 + U_2B * W_4, ?_⟩
+      calc 3 ^ (7 * L_1 + 10) * W_1 + 3 ^ (10 * L_2 + 7) * W_2
+          = 2 ^ (7 * L_3 + 10) * W_3 + 2 ^ (10 * L_4 + 7) * W_4 := hbal.symm
+        _ = (2 ^ 17 * U_2A) * W_3 + (2 ^ 17 * U_2B) * W_4 := by rw [hU2A, hU2B]
+        _ = 2 ^ 17 * (U_2A * W_3 + U_2B * W_4) := by ring
+    have hdvd3 : 3 ^ 17 ∣ (2 ^ (7 * L_3 + 10) * W_3 + 2 ^ (10 * L_4 + 7) * W_4) := by
+      refine ⟨U_3A * W_1 + U_3B * W_2, ?_⟩
+      calc 2 ^ (7 * L_3 + 10) * W_3 + 2 ^ (10 * L_4 + 7) * W_4
+          = 3 ^ (7 * L_1 + 10) * W_1 + 3 ^ (10 * L_2 + 7) * W_2 := hbal
+        _ = (3 ^ 17 * U_3A) * W_1 + (3 ^ 17 * U_3B) * W_2 := by rw [hU3A, hU3B]
+        _ = 3 ^ 17 * (U_3A * W_1 + U_3B * W_2) := by ring
+    exact ⟨hbal, hdvd2, hdvd3⟩
+
 end Mahler.DubickasExtension
 
 

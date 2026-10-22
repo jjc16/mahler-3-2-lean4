@@ -349,6 +349,10 @@ example (m : ℕ) :
 #print axioms Mahler.DubickasExtension.dense_core_same_middle_run_wave_cancellation_and_divisibility
 #print axioms Mahler.DubickasExtension.dense_core_non_descent_run_growth_speed_limit_and_212_dichotomy
 
+-- 37. Verify Section 45 & 46: Macro-run mod-16/128/1024 bijections, disjoint mod-8 sectors, 4x/8x accelerated wave descent, and singleton-bridge cross-wave pure (2, 3)-power balance
+#print axioms Mahler.DubickasExtension.dense_core_macro_run_mod_16_128_1024_bijections_and_step_8_descent
+#print axioms Mahler.DubickasExtension.dense_core_singleton_bridge_wave_identities_and_cross_wave_power_balance
+
 #print axioms Mahler.DubickasExtension.dubBaseCarry_eq_fract_linear
 #print axioms Mahler.DubickasExtension.dubBaseY_multi_step_carry_identity
 #print axioms Mahler.DubickasExtension.dubBaseCarry_mem_two_letters
