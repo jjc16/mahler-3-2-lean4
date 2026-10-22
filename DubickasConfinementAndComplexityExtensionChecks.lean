@@ -345,6 +345,10 @@ example (m : ℕ) :
 -- 35. Verify Section 42: Multi-wave telescoping cancellation, terminal run-spike descent, and unconditional exclusion of infinite wave-descent epochs
 #print axioms Mahler.DubickasExtension.dense_core_multi_wave_telescoping_and_epoch_W_descent
 
+-- 36. Verify Section 43 & 44: Same-middle-run wave cancellation, non-descent run-growth speed limit (17*L_4 < 27*L_2 + 7*L_3), and (L_2=1, L_3=1) alternation-vs.-descent dichotomy
+#print axioms Mahler.DubickasExtension.dense_core_same_middle_run_wave_cancellation_and_divisibility
+#print axioms Mahler.DubickasExtension.dense_core_non_descent_run_growth_speed_limit_and_212_dichotomy
+
 #print axioms Mahler.DubickasExtension.dubBaseCarry_eq_fract_linear
 #print axioms Mahler.DubickasExtension.dubBaseY_multi_step_carry_identity
 #print axioms Mahler.DubickasExtension.dubBaseCarry_mem_two_letters

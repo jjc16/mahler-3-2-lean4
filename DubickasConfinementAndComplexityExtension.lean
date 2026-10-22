@@ -15508,6 +15508,365 @@ theorem dense_core_multi_wave_telescoping_and_epoch_W_descent :
     have h_at := h_iter (W (K 0) + 1)
     omega
 
+/-!
+## Section 43: Same-Middle-Run Wave Cancellation — Eliminating the $+19 Q$ Drift Between
+## Any Two Waves Sharing a Single Middle Run Length ($L_3 = L_3'$ or $L_2 = L_2'$)
+
+In Sections 40 and 41, we proved that across a $1 \to 2 \to 1$ wave, the inhomogeneous term
+$19 \cdot (3^{10 L_2} - 2^{10 L_2}) / 58025$ depends **only on the middle $2$-run length $L_2$**,
+and across a $2 \to 1 \to 2$ wave, the inhomogeneous term $19 \cdot (3^{7 L_3} - 2^{7 L_3}) / 2059$
+depends **only on the middle $1$-run length $L_3$**. Consequently, whenever two waves anywhere in
+the trajectory share that **single** middle run length, subtracting their wave equations cancels
+the inhomogeneous drift completely:
+
+1. **Two $2 \to 1 \to 2$ Waves Sharing the Same Middle $1$-Run Length $L_3$
+   (`dense_core_same_middle_run_wave_cancellation_and_divisibility`)**:
+   For any two waves $2^{L_2} \to 1^{L_3} \to 2^{L_4}$ (quotients $W_2, W_4$) and
+   $2^{L_2'} \to 1^{L_3} \to 2^{L_4'}$ (quotients $W_2', W_4'$) sharing the middle $1$-run length $L_3$:
+   $$3^{7 L_3} \cdot (3^{10 L_2} W_2) + 2^{7 L_3} \cdot (2^{10 L_4'} W_4') \;=\;
+     3^{7 L_3} \cdot (3^{10 L_2'} W_2') + 2^{7 L_3} \cdot (2^{10 L_4} W_4).$$
+   When $L_2 = L_2'$ and $W_2 \le W_2'$:
+   $$3^{10 L_2 + 7 L_3} (W_2' - W_2) \;=\; 2^{7 L_3} \big(2^{10 L_4'} W_4' - 2^{10 L_4} W_4\big),$$
+   forcing $2^{7 L_3} \mid (W_2' - W_2)$ and $3^{10 L_2 + 7 L_3} \mid (2^{10 L_4'} W_4' - 2^{10 L_4} W_4)$;
+   and when $L_4 = L_4'$ as well:
+   $$3^{10 L_2 + 7 L_3} (W_2' - W_2) \;=\; 2^{7 L_3 + 10 L_4} (W_4' - W_4),$$
+   forcing $2^{7 L_3 + 10 L_4} \mid (W_2' - W_2)$ and $3^{10 L_2 + 7 L_3} \mid (W_4' - W_4)$.
+
+2. **Two $1 \to 2 \to 1$ Waves Sharing the Same Middle $2$-Run Length $L_2$**:
+   For any two waves $1^{m_1+1} \to 2^{L_2} \to 1^{L_3}$ ($U_1, W_3$) and
+   $1^{m_1'+1} \to 2^{L_2} \to 1^{L_3'}$ ($U_1', W_3'$) sharing the middle $2$-run length $L_2$:
+   $$2^{10 L_2} \cdot (2^{7 L_3} W_3) + 3^{10 L_2} \cdot (3^{7 m_1'} U_1') \;=\;
+     2^{10 L_2} \cdot (2^{7 L_3'} W_3') + 3^{10 L_2} \cdot (3^{7 m_1} U_1).$$
+-/
+
+/-- **Same-Middle-Run Wave Cancellation and Dual $(2^{7 L_3 + 10 L_4}, 3^{10 L_2 + 7 L_3})$
+Divisibility on Wave Quotients (`dense_core_same_middle_run_wave_cancellation_and_divisibility`)**:
+1. **Cancellation Between Any Two $2 \to 1 \to 2$ Waves with Common Middle $1$-Run Length $L_3$**:
+   Suppose $W_2, W_4, W_2', W_4', L_2, L_3, L_4, L_2', L_4', Q_{L_3} \in \mathbb{N}$ satisfy
+   $$2^{7 L_3 + 10 L_4} W_4 + 19 \cdot Q_{L_3} = 3^{10 L_2 + 7 L_3} W_2 \quad \text{and} \quad
+     2^{7 L_3 + 10 L_4'} W_4' + 19 \cdot Q_{L_3} = 3^{10 L_2' + 7 L_3} W_2'.$$
+   Then:
+   - $3^{7 L_3} \cdot (3^{10 L_2} W_2) + 2^{7 L_3} \cdot (2^{10 L_4'} W_4') =
+     3^{7 L_3} \cdot (3^{10 L_2'} W_2') + 2^{7 L_3} \cdot (2^{10 L_4} W_4)$.
+   - If $L_2 = L_2'$ and $W_2 \le W_2'$, then $2^{10 L_4} W_4 \le 2^{10 L_4'} W_4'$,
+     $3^{10 L_2 + 7 L_3} (W_2' - W_2) = 2^{7 L_3} (2^{10 L_4'} W_4' - 2^{10 L_4} W_4)$,
+     $2^{7 L_3} \mid (W_2' - W_2)$, and $3^{10 L_2 + 7 L_3} \mid (2^{10 L_4'} W_4' - 2^{10 L_4} W_4)$.
+   - If $L_2 = L_2'$, $L_4 = L_4'$, and $W_2 \le W_2'$, then $W_4 \le W_4'$,
+     $3^{10 L_2 + 7 L_3} (W_2' - W_2) = 2^{7 L_3 + 10 L_4} (W_4' - W_4)$,
+     $2^{7 L_3 + 10 L_4} \mid (W_2' - W_2)$, and $3^{10 L_2 + 7 L_3} \mid (W_4' - W_4)$.
+2. **Cancellation Between Any Two $1 \to 2 \to 1$ Waves with Common Middle $2$-Run Length $L_2$**:
+   Suppose $U_1, W_3, U_1', W_3', m_1, L_2, L_3, m_1', L_3', Q_{L_2} \in \mathbb{N}$ satisfy
+   $$3^{10 L_2 + 7 m_1} U_1 + 19 \cdot Q_{L_2} = 2^{10 L_2 + 7 L_3} W_3 \quad \text{and} \quad
+     3^{10 L_2 + 7 m_1'} U_1' + 19 \cdot Q_{L_2} = 2^{10 L_2 + 7 L_3'} W_3'.$$
+   Then:
+   $$2^{10 L_2} \cdot (2^{7 L_3} W_3) + 3^{10 L_2} \cdot (3^{7 m_1'} U_1') =
+     2^{10 L_2} \cdot (2^{7 L_3'} W_3') + 3^{10 L_2} \cdot (3^{7 m_1} U_1).$$ -/
+theorem dense_core_same_middle_run_wave_cancellation_and_divisibility :
+    (∀ (W_2 W_4 W_2' W_4' L_2 L_3 L_4 L_2' L_4' Q_L3 : ℕ),
+      2 ^ (7 * L_3 + 10 * L_4) * W_4 + 19 * Q_L3 = 3 ^ (10 * L_2 + 7 * L_3) * W_2 →
+      2 ^ (7 * L_3 + 10 * L_4') * W_4' + 19 * Q_L3 = 3 ^ (10 * L_2' + 7 * L_3) * W_2' →
+      3 ^ (7 * L_3) * (3 ^ (10 * L_2) * W_2) + 2 ^ (7 * L_3) * (2 ^ (10 * L_4') * W_4') =
+        3 ^ (7 * L_3) * (3 ^ (10 * L_2') * W_2') + 2 ^ (7 * L_3) * (2 ^ (10 * L_4) * W_4) ∧
+      (L_2 = L_2' → W_2 ≤ W_2' →
+        2 ^ (10 * L_4) * W_4 ≤ 2 ^ (10 * L_4') * W_4' ∧
+        3 ^ (10 * L_2 + 7 * L_3) * (W_2' - W_2) =
+          2 ^ (7 * L_3) * (2 ^ (10 * L_4') * W_4' - 2 ^ (10 * L_4) * W_4) ∧
+        (2 ^ (7 * L_3) ∣ (W_2' - W_2)) ∧
+        (3 ^ (10 * L_2 + 7 * L_3) ∣ (2 ^ (10 * L_4') * W_4' - 2 ^ (10 * L_4) * W_4))) ∧
+      (L_2 = L_2' → L_4 = L_4' → W_2 ≤ W_2' →
+        W_4 ≤ W_4' ∧
+        3 ^ (10 * L_2 + 7 * L_3) * (W_2' - W_2) =
+          2 ^ (7 * L_3 + 10 * L_4) * (W_4' - W_4) ∧
+        (2 ^ (7 * L_3 + 10 * L_4) ∣ (W_2' - W_2)) ∧
+        (3 ^ (10 * L_2 + 7 * L_3) ∣ (W_4' - W_4)))) ∧
+    (∀ (U_1 W_3 U_1' W_3' m_1 L_2 L_3 m_1' L_3' Q_L2 : ℕ),
+      3 ^ (10 * L_2 + 7 * m_1) * U_1 + 19 * Q_L2 = 2 ^ (10 * L_2 + 7 * L_3) * W_3 →
+      3 ^ (10 * L_2 + 7 * m_1') * U_1' + 19 * Q_L2 = 2 ^ (10 * L_2 + 7 * L_3') * W_3' →
+      2 ^ (10 * L_2) * (2 ^ (7 * L_3) * W_3) + 3 ^ (10 * L_2) * (3 ^ (7 * m_1') * U_1') =
+        2 ^ (10 * L_2) * (2 ^ (7 * L_3') * W_3') + 3 ^ (10 * L_2) * (3 ^ (7 * m_1) * U_1)) := by
+  refine ⟨?_, ?_⟩
+  · intro W_2 W_4 W_2' W_4' L_2 L_3 L_4 L_2' L_4' Q_L3 hwA hwB
+    have hp2A : 2 ^ (7 * L_3 + 10 * L_4) = 2 ^ (7 * L_3) * 2 ^ (10 * L_4) :=
+      Nat.pow_add 2 (7 * L_3) (10 * L_4)
+    have hp2B : 2 ^ (7 * L_3 + 10 * L_4') = 2 ^ (7 * L_3) * 2 ^ (10 * L_4') :=
+      Nat.pow_add 2 (7 * L_3) (10 * L_4')
+    have hp3A : 3 ^ (10 * L_2 + 7 * L_3) = 3 ^ (7 * L_3) * 3 ^ (10 * L_2) := by
+      rw [Nat.add_comm (10 * L_2) (7 * L_3), Nat.pow_add]
+    have hp3B : 3 ^ (10 * L_2' + 7 * L_3) = 3 ^ (7 * L_3) * 3 ^ (10 * L_2') := by
+      rw [Nat.add_comm (10 * L_2') (7 * L_3), Nat.pow_add]
+    have hbal :
+        3 ^ (7 * L_3) * (3 ^ (10 * L_2) * W_2) + 2 ^ (7 * L_3) * (2 ^ (10 * L_4') * W_4') =
+          3 ^ (7 * L_3) * (3 ^ (10 * L_2') * W_2') + 2 ^ (7 * L_3) * (2 ^ (10 * L_4) * W_4) := by
+      have ha1 : 2 ^ (7 * L_3 + 10 * L_4) * W_4 = 2 ^ (7 * L_3) * (2 ^ (10 * L_4) * W_4) := by
+        rw [hp2A]; ring
+      have hb1 : 2 ^ (7 * L_3 + 10 * L_4') * W_4' = 2 ^ (7 * L_3) * (2 ^ (10 * L_4') * W_4') := by
+        rw [hp2B]; ring
+      have ha2 : 3 ^ (10 * L_2 + 7 * L_3) * W_2 = 3 ^ (7 * L_3) * (3 ^ (10 * L_2) * W_2) := by
+        rw [hp3A]; ring
+      have hb2 : 3 ^ (10 * L_2' + 7 * L_3) * W_2' = 3 ^ (7 * L_3) * (3 ^ (10 * L_2') * W_2') := by
+        rw [hp3B]; ring
+      linarith only [hwA, hwB, ha1, hb1, ha2, hb2]
+    refine ⟨hbal, ?_, ?_⟩
+    · intro hL2_eq hW2_le
+      subst hL2_eq
+      have h3W_le : 3 ^ (10 * L_2 + 7 * L_3) * W_2 ≤ 3 ^ (10 * L_2 + 7 * L_3) * W_2' :=
+        Nat.mul_le_mul_left _ hW2_le
+      have h2W_le : 2 ^ (10 * L_4) * W_4 ≤ 2 ^ (10 * L_4') * W_4' := by
+        have hmul_le :
+            2 ^ (7 * L_3) * (2 ^ (10 * L_4) * W_4) ≤
+              2 ^ (7 * L_3) * (2 ^ (10 * L_4') * W_4') := by
+          have ha1 : 2 ^ (7 * L_3 + 10 * L_4) * W_4 = 2 ^ (7 * L_3) * (2 ^ (10 * L_4) * W_4) := by
+            rw [hp2A]; ring
+          have hb1 : 2 ^ (7 * L_3 + 10 * L_4') * W_4' = 2 ^ (7 * L_3) * (2 ^ (10 * L_4') * W_4') := by
+            rw [hp2B]; ring
+          linarith only [hwA, hwB, h3W_le, ha1, hb1]
+        exact Nat.le_of_mul_le_mul_left hmul_le (Nat.pow_pos (by decide))
+      have hsub_eq :
+          3 ^ (10 * L_2 + 7 * L_3) * (W_2' - W_2) =
+            2 ^ (7 * L_3) * (2 ^ (10 * L_4') * W_4' - 2 ^ (10 * L_4) * W_4) := by
+        have hd1 :
+            3 ^ (10 * L_2 + 7 * L_3) * (W_2' - W_2) + 3 ^ (10 * L_2 + 7 * L_3) * W_2 =
+              3 ^ (10 * L_2 + 7 * L_3) * W_2' := by
+          rw [← Nat.mul_add, Nat.sub_add_cancel hW2_le]
+        have hd2 :
+            2 ^ (7 * L_3) * (2 ^ (10 * L_4') * W_4' - 2 ^ (10 * L_4) * W_4) +
+              2 ^ (7 * L_3 + 10 * L_4) * W_4 =
+              2 ^ (7 * L_3 + 10 * L_4') * W_4' := by
+          have ha1 : 2 ^ (7 * L_3 + 10 * L_4) * W_4 = 2 ^ (7 * L_3) * (2 ^ (10 * L_4) * W_4) := by
+            rw [hp2A]; ring
+          have hb1 : 2 ^ (7 * L_3 + 10 * L_4') * W_4' = 2 ^ (7 * L_3) * (2 ^ (10 * L_4') * W_4') := by
+            rw [hp2B]; ring
+          rw [ha1, hb1, ← Nat.mul_add, Nat.sub_add_cancel h2W_le]
+        linarith only [hwA, hwB, hd1, hd2]
+      have hcop : Nat.Coprime (2 ^ (7 * L_3)) (3 ^ (10 * L_2 + 7 * L_3)) :=
+        Nat.Coprime.pow (7 * L_3) (10 * L_2 + 7 * L_3) (by decide : Nat.Coprime 2 3)
+      have hdvd2 : 2 ^ (7 * L_3) ∣ (W_2' - W_2) := by
+        have hdvd_prod : 2 ^ (7 * L_3) ∣ 3 ^ (10 * L_2 + 7 * L_3) * (W_2' - W_2) :=
+          ⟨2 ^ (10 * L_4') * W_4' - 2 ^ (10 * L_4) * W_4, hsub_eq⟩
+        exact hcop.dvd_of_dvd_mul_left hdvd_prod
+      have hdvd3 : 3 ^ (10 * L_2 + 7 * L_3) ∣ (2 ^ (10 * L_4') * W_4' - 2 ^ (10 * L_4) * W_4) := by
+        have hdvd_prod :
+            3 ^ (10 * L_2 + 7 * L_3) ∣
+              2 ^ (7 * L_3) * (2 ^ (10 * L_4') * W_4' - 2 ^ (10 * L_4) * W_4) :=
+          ⟨W_2' - W_2, hsub_eq.symm⟩
+        exact hcop.symm.dvd_of_dvd_mul_left hdvd_prod
+      exact ⟨h2W_le, hsub_eq, hdvd2, hdvd3⟩
+    · intro hL2_eq hL4_eq hW2_le
+      subst hL2_eq; subst hL4_eq
+      have h3W_le : 3 ^ (10 * L_2 + 7 * L_3) * W_2 ≤ 3 ^ (10 * L_2 + 7 * L_3) * W_2' :=
+        Nat.mul_le_mul_left _ hW2_le
+      have h2W_le : 2 ^ (7 * L_3 + 10 * L_4) * W_4 ≤ 2 ^ (7 * L_3 + 10 * L_4) * W_4' := by
+        linarith only [hwA, hwB, h3W_le]
+      have hW4_le : W_4 ≤ W_4' :=
+        Nat.le_of_mul_le_mul_left h2W_le (Nat.pow_pos (by decide))
+      have hsub_eq :
+          3 ^ (10 * L_2 + 7 * L_3) * (W_2' - W_2) =
+            2 ^ (7 * L_3 + 10 * L_4) * (W_4' - W_4) := by
+        have hd1 :
+            3 ^ (10 * L_2 + 7 * L_3) * (W_2' - W_2) + 3 ^ (10 * L_2 + 7 * L_3) * W_2 =
+              3 ^ (10 * L_2 + 7 * L_3) * W_2' := by
+          rw [← Nat.mul_add, Nat.sub_add_cancel hW2_le]
+        have hd2 :
+            2 ^ (7 * L_3 + 10 * L_4) * (W_4' - W_4) + 2 ^ (7 * L_3 + 10 * L_4) * W_4 =
+              2 ^ (7 * L_3 + 10 * L_4) * W_4' := by
+          rw [← Nat.mul_add, Nat.sub_add_cancel hW4_le]
+        linarith only [hwA, hwB, hd1, hd2]
+      have hcop : Nat.Coprime (2 ^ (7 * L_3 + 10 * L_4)) (3 ^ (10 * L_2 + 7 * L_3)) :=
+        Nat.Coprime.pow (7 * L_3 + 10 * L_4) (10 * L_2 + 7 * L_3) (by decide : Nat.Coprime 2 3)
+      have hdvd2 : 2 ^ (7 * L_3 + 10 * L_4) ∣ (W_2' - W_2) := by
+        have hdvd_prod : 2 ^ (7 * L_3 + 10 * L_4) ∣ 3 ^ (10 * L_2 + 7 * L_3) * (W_2' - W_2) :=
+          ⟨W_4' - W_4, hsub_eq⟩
+        exact hcop.dvd_of_dvd_mul_left hdvd_prod
+      have hdvd3 : 3 ^ (10 * L_2 + 7 * L_3) ∣ (W_4' - W_4) := by
+        have hdvd_prod : 3 ^ (10 * L_2 + 7 * L_3) ∣ 2 ^ (7 * L_3 + 10 * L_4) * (W_4' - W_4) :=
+          ⟨W_2' - W_2, hsub_eq.symm⟩
+        exact hcop.symm.dvd_of_dvd_mul_left hdvd_prod
+      exact ⟨hW4_le, hsub_eq, hdvd2, hdvd3⟩
+  · intro U_1 W_3 U_1' W_3' m_1 L_2 L_3 m_1' L_3' Q_L2 hwA hwB
+    have hp3A : 3 ^ (10 * L_2 + 7 * m_1) = 3 ^ (10 * L_2) * 3 ^ (7 * m_1) :=
+      Nat.pow_add 3 (10 * L_2) (7 * m_1)
+    have hp3B : 3 ^ (10 * L_2 + 7 * m_1') = 3 ^ (10 * L_2) * 3 ^ (7 * m_1') :=
+      Nat.pow_add 3 (10 * L_2) (7 * m_1')
+    have hp2A : 2 ^ (10 * L_2 + 7 * L_3) = 2 ^ (10 * L_2) * 2 ^ (7 * L_3) :=
+      Nat.pow_add 2 (10 * L_2) (7 * L_3)
+    have hp2B : 2 ^ (10 * L_2 + 7 * L_3') = 2 ^ (10 * L_2) * 2 ^ (7 * L_3') :=
+      Nat.pow_add 2 (10 * L_2) (7 * L_3')
+    have ha1 : 3 ^ (10 * L_2 + 7 * m_1) * U_1 = 3 ^ (10 * L_2) * (3 ^ (7 * m_1) * U_1) := by
+      rw [hp3A]; ring
+    have hb1 : 3 ^ (10 * L_2 + 7 * m_1') * U_1' = 3 ^ (10 * L_2) * (3 ^ (7 * m_1') * U_1') := by
+      rw [hp3B]; ring
+    have ha2 : 2 ^ (10 * L_2 + 7 * L_3) * W_3 = 2 ^ (10 * L_2) * (2 ^ (7 * L_3) * W_3) := by
+      rw [hp2A]; ring
+    have hb2 : 2 ^ (10 * L_2 + 7 * L_3') * W_3' = 2 ^ (10 * L_2) * (2 ^ (7 * L_3') * W_3') := by
+      rw [hp2B]; ring
+    linarith only [hwA, hwB, ha1, hb1, ha2, hb2]
+
+/-!
+## Section 44: Non-Descent Run-Growth Speed Limit ($10 q L_4 < 10 (p + q) L_2 + 7 p L_3$) and
+## the $(L_2 = 1, L_3 = 1)$ Alternation-vs.-Descent Dichotomy
+
+In Section 41, we proved that across a $2\text{-Run}(L_2) \to 1\text{-Run}(L_3) \to 2\text{-Run}(L_4)$
+wave, if $3^{10 L_2 + 7 L_3} \le 2^{7 L_3 + 10 L_4}$, then $W_4 + 2 \le W_2$ (strict descent).
+In this section, we take the contrapositive—analyzing what a wave **must** obey whenever it
+**avoids** strict descent ($W_2 \le W_4$):
+
+1. **Parameterized $(p, q)$ Non-Descent Run-Growth Speed Limit
+   (`dense_core_non_descent_run_growth_speed_limit_and_212_dichotomy`)**:
+   Whenever $W_2 \le W_4$ on a $2 \to 1 \to 2$ wave (with $1 \le W_2$), we must have
+   $2^{7 L_3 + 10 L_4} < 3^{10 L_2 + 7 L_3}$. Raising both sides to the $q$-th power for any
+   rational power bound $3^q \le 2^{p + q}$ ($q \ge 1$) and canceling $7 q L_3$ yields:
+   $$10 q L_4 \;<\; 10 (p + q) L_2 + 7 p L_3 \qquad \text{and} \qquad
+     17 L_4 \;<\; 27 L_2 + 7 L_3 \quad \big(\text{at } (p, q) = (10, 17)\big).$$
+
+2. **The $(L_2 = 1, L_3 = 1)$ Alternation-vs.-Descent Dichotomy**:
+   When a wave starts with $L_2 = 1$ and $L_3 = 1$ ($m_2 = 0, m_3 = 0$), the speed limit
+   $17 L_4 < 27(1) + 7(1) = 34$ forces $L_4 = 1$ ($m_4 = 0$) whenever $W_2 \le W_4$!
+   Thus **every** $(L_2 = 1, L_3 = 1)$ wave satisfies the strict dichotomy:
+   $$m_4 = 0 \quad \big(L_4 = 1,\text{ extending the alternating } 2, 1, 2 \text{ run}\big)
+     \;\;\lor\;\; W_4 + 2 \le W_2 \quad \big(\text{strict descent of } W\big).$$
+
+3. **Multi-Wave Non-Descent Terminal Run Speed Limit**:
+   Across $N \ge 1$ consecutive waves in Section 42, if $W(0) \le W(N)$ (no net descent across
+   the $N$ waves), then for every $1 \le q$ with $3^q \le 2^{p + q}$:
+   $$10 q L_2(N) \;<\; 10 q L_2(0) + p \cdot \text{waveStepSum}(L_2, L_1, N).$$
+-/
+
+/-- **Non-Descent Run-Growth Speed Limit ($10 q L_4 < 10 (p + q) L_2 + 7 p L_3$), the
+$(L_2 = 1, L_3 = 1)$ Alternation-vs.-Descent Dichotomy, and Multi-Wave Non-Descent Bound
+(`dense_core_non_descent_run_growth_speed_limit_and_212_dichotomy`)**:
+1. **Single-Wave Non-Descent Speed Limit**:
+   Suppose $W_2, W_4, L_2, L_3, L_4 \in \mathbb{N}$ satisfy $1 \le W_2 \le W_4$ and
+   $2^{7 L_3 + 10 L_4} W_4 < 3^{10 L_2 + 7 L_3} W_2$. Then $2^{7 L_3 + 10 L_4} < 3^{10 L_2 + 7 L_3}$,
+   and for every $p, q \in \mathbb{N}$ with $1 \le q$ and $3^q \le 2^{p + q}$:
+   $$10 q L_4 \;<\; 10 (p + q) L_2 + 7 p L_3 \qquad \text{and} \qquad
+     17 L_4 \;<\; 27 L_2 + 7 L_3.$$
+2. **The $(L_2 = 1, L_3 = 1)$ Alternation-vs.-Descent Dichotomy**:
+   Under the hypotheses of `dense_core_two_one_two_wave_elimination_and_strict_W_descent` with
+   $2187 \mid U_2$, if $m_2 = 0$ and $m_3 = 0$ ($L_2 = 1, L_3 = 1$), then:
+   $$m_4 = 0 \;\;\lor\;\; W_4 + 2 \le W_2.$$
+3. **Multi-Wave Non-Descent Terminal Run Bound**:
+   For any odd sequence $W : \mathbb{N} \to \mathbb{N}$ ($W(i) \bmod 2 = 1$) satisfying
+   $2^{7 L_1(i) + 10 L_2(i + 1)} W(i + 1) < 3^{10 L_2(i) + 7 L_1(i)} W(i)$ for all $i \in \mathbb{N}$,
+   and any $N \ge 1$ with $W(0) \le W(N)$, every $1 \le q$ with $3^q \le 2^{p + q}$ satisfies:
+   $$10 q L_2(N) \;<\; 10 q L_2(0) + p \cdot \text{waveStepSum}(L_2, L_1, N).$$ -/
+theorem dense_core_non_descent_run_growth_speed_limit_and_212_dichotomy :
+    (∀ (W_2 W_4 L_2 L_3 L_4 : ℕ),
+      1 ≤ W_2 → W_2 ≤ W_4 →
+      2 ^ (7 * L_3 + 10 * L_4) * W_4 < 3 ^ (10 * L_2 + 7 * L_3) * W_2 →
+      2 ^ (7 * L_3 + 10 * L_4) < 3 ^ (10 * L_2 + 7 * L_3) ∧
+      (∀ p q : ℕ, 1 ≤ q → 3 ^ q ≤ 2 ^ (p + q) →
+        10 * q * L_4 < 10 * (p + q) * L_2 + 7 * p * L_3) ∧
+      17 * L_4 < 27 * L_2 + 7 * L_3) ∧
+    (∀ (V j : ℕ → ℕ) (r_2 m_2 m_3 m_4 : ℕ),
+      1 ≤ V 0 →
+      (∀ r : ℕ, j r = 1 ∨ j r = 2) →
+      (∀ r : ℕ, 2 ^ (3 * j (r + 1) + 4) * V (r + 1) + 1 = 3 ^ (3 * j r + 4) * V r) →
+      (∀ t ≤ m_2, j (r_2 + t) = 2) →
+      (∀ t ≤ m_3, j (r_2 + (m_2 + 1) + t) = 1) →
+      (∀ t ≤ m_4, j (r_2 + (m_2 + 1) + (m_3 + 1) + t) = 2) →
+      j (r_2 + (m_2 + 1) + (m_3 + 1) + m_4 + 1) = 1 →
+      let U_2 := (58025 * V r_2 - 1) / 2 ^ (10 * m_2 + 7)
+      let W_2 := U_2 / 2187
+      let r_4 := r_2 + (m_2 + 1) + (m_3 + 1)
+      let U_4 := (58025 * V r_4 - 1) / 2 ^ (10 * m_4 + 7)
+      let W_4 := U_4 / 2187
+      (2187 ∣ U_2) → m_2 = 0 → m_3 = 0 →
+      m_4 = 0 ∨ W_4 + 2 ≤ W_2) ∧
+    (∀ (W L_2 L_1 : ℕ → ℕ),
+      (∀ i : ℕ, W i % 2 = 1) →
+      (∀ i : ℕ, 2 ^ (7 * L_1 i + 10 * L_2 (i + 1)) * W (i + 1) <
+        3 ^ (10 * L_2 i + 7 * L_1 i) * W i) →
+      ∀ N : ℕ, 1 ≤ N → W 0 ≤ W N →
+        ∀ p q : ℕ, 1 ≤ q → 3 ^ q ≤ 2 ^ (p + q) →
+          10 * q * L_2 N < 10 * q * L_2 0 + p * waveStepSum L_2 L_1 N) := by
+  have hpart1 :
+      ∀ (W_2 W_4 L_2 L_3 L_4 : ℕ),
+        1 ≤ W_2 → W_2 ≤ W_4 →
+        2 ^ (7 * L_3 + 10 * L_4) * W_4 < 3 ^ (10 * L_2 + 7 * L_3) * W_2 →
+        2 ^ (7 * L_3 + 10 * L_4) < 3 ^ (10 * L_2 + 7 * L_3) ∧
+        (∀ p q : ℕ, 1 ≤ q → 3 ^ q ≤ 2 ^ (p + q) →
+          10 * q * L_4 < 10 * (p + q) * L_2 + 7 * p * L_3) ∧
+        17 * L_4 < 27 * L_2 + 7 * L_3 := by
+    intro W_2 W_4 L_2 L_3 L_4 _ hW_le hlt_prod
+    have hmul_le :
+        2 ^ (7 * L_3 + 10 * L_4) * W_2 ≤ 2 ^ (7 * L_3 + 10 * L_4) * W_4 :=
+      Nat.mul_le_mul_left _ hW_le
+    have hmul_lt :
+        2 ^ (7 * L_3 + 10 * L_4) * W_2 < 3 ^ (10 * L_2 + 7 * L_3) * W_2 :=
+      lt_of_le_of_lt hmul_le hlt_prod
+    have hpow_lt : 2 ^ (7 * L_3 + 10 * L_4) < 3 ^ (10 * L_2 + 7 * L_3) :=
+      Nat.lt_of_mul_lt_mul_right hmul_lt
+    have hpq_all :
+        ∀ p q : ℕ, 1 ≤ q → 3 ^ q ≤ 2 ^ (p + q) →
+          10 * q * L_4 < 10 * (p + q) * L_2 + 7 * p * L_3 := by
+      intro p q hq hpq
+      have hpow_q :
+          (2 ^ (7 * L_3 + 10 * L_4)) ^ q < (3 ^ (10 * L_2 + 7 * L_3)) ^ q :=
+        Nat.pow_lt_pow_left hpow_lt (by omega)
+      have h3q :
+          (3 ^ (10 * L_2 + 7 * L_3)) ^ q ≤ 2 ^ ((p + q) * (10 * L_2 + 7 * L_3)) := by
+        calc (3 ^ (10 * L_2 + 7 * L_3)) ^ q
+            = (3 ^ q) ^ (10 * L_2 + 7 * L_3) := by
+              rw [← Nat.pow_mul, ← Nat.pow_mul, Nat.mul_comm]
+          _ ≤ (2 ^ (p + q)) ^ (10 * L_2 + 7 * L_3) :=
+            Nat.pow_le_pow_left hpq (10 * L_2 + 7 * L_3)
+          _ = 2 ^ ((p + q) * (10 * L_2 + 7 * L_3)) :=
+            (Nat.pow_mul 2 (p + q) (10 * L_2 + 7 * L_3)).symm
+      have hlt2 :
+          2 ^ ((7 * L_3 + 10 * L_4) * q) < 2 ^ ((p + q) * (10 * L_2 + 7 * L_3)) := by
+        rw [← Nat.pow_mul] at hpow_q
+        exact lt_of_lt_of_le hpow_q h3q
+      have hexp_lt : (7 * L_3 + 10 * L_4) * q < (p + q) * (10 * L_2 + 7 * L_3) :=
+        (Nat.pow_lt_pow_iff_right (by decide : 1 < 2)).mp hlt2
+      have hr1 : (7 * L_3 + 10 * L_4) * q = 10 * q * L_4 + 7 * q * L_3 := by ring
+      have hr2 : (p + q) * (10 * L_2 + 7 * L_3) =
+          10 * (p + q) * L_2 + 7 * p * L_3 + 7 * q * L_3 := by ring
+      linarith only [hexp_lt, hr1, hr2]
+    have h10_17 := hpq_all 10 17 (by decide) (by decide : 3 ^ 17 ≤ 2 ^ (10 + 17))
+    exact ⟨hpow_lt, hpq_all, by omega⟩
+  refine ⟨hpart1, ?_, ?_⟩
+  · intro V j r_2 m_2 m_3 m_4 hV0_pos hj hrec hrun2 hrun3 hrun4 hsw4
+      U_2 W_2 r_4 U_4 W_4 hdvd_U2 hm2_0 hm3_0
+    rcases Nat.eq_zero_or_pos m_4 with rfl | hm4_pos
+    · exact Or.inl rfl
+    · have hwave := (dense_core_two_one_two_wave_elimination_and_strict_W_descent
+        hV0_pos hj hrec hrun2 hrun3 hrun4 hsw4).2.2 hdvd_U2
+      exact Or.inr ((hwave.2.2.2.2 hm2_0 hm3_0 hm4_pos).2)
+  · intro W L_2 L_1 hodd hstep N hN1 hW0_le p q hq hpq
+    have htel := (dense_core_multi_wave_telescoping_and_epoch_W_descent.2.1
+      W L_2 L_1 hodd hstep N hN1).2.1
+    set S_N := waveStepSum L_2 L_1 N
+    have hmul_le :
+        2 ^ (S_N + 10 * L_2 N) * W 0 ≤ 2 ^ (S_N + 10 * L_2 N) * W N :=
+      Nat.mul_le_mul_left _ hW0_le
+    have hmul_lt :
+        2 ^ (S_N + 10 * L_2 N) * W 0 < (2 ^ (10 * L_2 0) * 3 ^ S_N) * W 0 :=
+      lt_of_le_of_lt hmul_le htel
+    have hpow_lt : 2 ^ (S_N + 10 * L_2 N) < 2 ^ (10 * L_2 0) * 3 ^ S_N :=
+      Nat.lt_of_mul_lt_mul_right hmul_lt
+    have hpow_q : (2 ^ (S_N + 10 * L_2 N)) ^ q < (2 ^ (10 * L_2 0) * 3 ^ S_N) ^ q :=
+      Nat.pow_lt_pow_left hpow_lt (by omega)
+    have h3q : (3 ^ S_N) ^ q ≤ (2 ^ (p + q)) ^ S_N := by
+      have hcomm : (3 ^ S_N) ^ q = (3 ^ q) ^ S_N := by
+        rw [← Nat.pow_mul, ← Nat.pow_mul, Nat.mul_comm]
+      rw [hcomm]
+      exact Nat.pow_le_pow_left hpq S_N
+    have hrhs :
+        (2 ^ (10 * L_2 0) * 3 ^ S_N) ^ q ≤ 2 ^ (10 * L_2 0 * q + (p + q) * S_N) := by
+      calc (2 ^ (10 * L_2 0) * 3 ^ S_N) ^ q
+          = (2 ^ (10 * L_2 0)) ^ q * (3 ^ S_N) ^ q := Nat.mul_pow _ _ _
+        _ ≤ (2 ^ (10 * L_2 0)) ^ q * (2 ^ (p + q)) ^ S_N := Nat.mul_le_mul_left _ h3q
+        _ = 2 ^ (10 * L_2 0 * q + (p + q) * S_N) := by
+          rw [← Nat.pow_mul, ← Nat.pow_mul, ← Nat.pow_add]
+    have hlt2 : 2 ^ ((S_N + 10 * L_2 N) * q) < 2 ^ (10 * L_2 0 * q + (p + q) * S_N) := by
+      rw [← Nat.pow_mul] at hpow_q
+      exact lt_of_lt_of_le hpow_q hrhs
+    have hexp_lt : (S_N + 10 * L_2 N) * q < 10 * L_2 0 * q + (p + q) * S_N :=
+      (Nat.pow_lt_pow_iff_right (by decide : 1 < 2)).mp hlt2
+    have hr1 : (S_N + 10 * L_2 N) * q = 10 * q * L_2 N + q * S_N := by ring
+    have hr2 : 10 * L_2 0 * q + (p + q) * S_N = 10 * q * L_2 0 + p * S_N + q * S_N := by ring
+    linarith only [hexp_lt, hr1, hr2]
+
 end Mahler.DubickasExtension
 
 
