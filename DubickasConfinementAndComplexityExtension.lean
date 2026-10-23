@@ -28341,6 +28341,626 @@ theorem dense_core_boundary_free_dual_repeat_and_single_two_run_collision_sieve
     omega
   exact ⟨hY_lt, h2_11_X, h2_11_Y⟩
 
+/-!
+## Section 110: Four-Window Middle-Defect Cancellation Across Distinct Prefix/Suffix Frames & Full `(2^E_mid, 3^E_mid)` Exponent Restoration
+
+In Section 106, we proved that any macro-wave anagram pair with shared prefix `S_K`, middle step-sum
+`E_mid`, and shared suffix `E_suf` satisfies the reduced syzygy:
+  `2^(E_mid + E_suf) * q_Y + 41553 * q_A = 3^(S_K + E_mid) * q_X`,
+where `q_A` depends **only on the middle non-matching section of step-sum `E_mid`** (independent of
+`S_K` and `E_suf`).
+What happens if **two anagram pairs**—even inside **completely different prefix/suffix frames**
+`(S_K1, E_suf1)` and `(S_K2, E_suf2)`—undergo the **same middle swap** (having the same `E_mid` and `q_A`)?
+1. **Homogeneous Four-Window Syzygy (`41,553 * q_A` Canceled!):**
+   Subtracting the two reduced syzygies eliminates `41553 * q_A` identically:
+     `2^E_mid * (2^E_suf2 * q_Y2 - 2^E_suf1 * q_Y1) = 3^E_mid * (3^S_K2 * q_X2 - 3^S_K1 * q_X1)`!
+2. **Full `(2^E_mid, 3^E_mid)` Exponent Restoration:**
+   Since `gcd(2^E_mid, 3^E_mid) = 1`, we recover the **entire middle exponent `E_mid`** on both sides:
+     `2^E_mid ∣ (3^S_K2 * q_X2 - 3^S_K1 * q_X1)`  and
+     `3^E_mid ∣ (2^E_suf2 * q_Y2 - 2^E_suf1 * q_Y1)`!
+   Moreover, when `S_K1 ≤ S_K2` and `E_suf1 ≤ E_suf2`, factoring out `3^S_K1` and `2^E_suf1` yields:
+     `2^(E_mid + E_suf1) ∣ (3^(S_K2 - S_K1) * q_X2 - q_X1)`  and
+     `3^(S_K1 + E_mid) ∣ (2^(E_suf2 - E_suf1) * q_Y2 - q_Y1)`,
+   so whenever `3^S_K1 * q_X1 < 3^S_K2 * q_X2`, `3^(S_K1 + E_mid) ≤ 2^(E_suf2 - E_suf1) * q_Y2 - q_Y1`!
+-/
+
+/-- **Four-Window Middle-Defect Cancellation Across Distinct Prefix/Suffix Frames & Full `(2^E_mid, 3^E_mid)` Exponent Restoration:**
+Whenever two anagram pairs in frames `(S_K1, E_suf1)` and `(S_K2, E_suf2)` share the same middle
+defect `41553 * q_A` at middle step-sum `E_mid`, subtracting their reduced syzygies cancels
+`41553 * q_A` and restores the full middle divisors `2^E_mid` and `3^E_mid`. -/
+theorem dense_core_four_window_middle_defect_cancellation_and_full_exponent_restoration
+    {S_K1 S_K2 E_mid E_suf1 E_suf2 q_X1 q_X2 q_Y1 q_Y2 q_A : ℕ}
+    (hsyz1 : 2 ^ (E_mid + E_suf1) * q_Y1 + 41553 * q_A = 3 ^ (S_K1 + E_mid) * q_X1)
+    (hsyz2 : 2 ^ (E_mid + E_suf2) * q_Y2 + 41553 * q_A = 3 ^ (S_K2 + E_mid) * q_X2)
+    (hle : 3 ^ S_K1 * q_X1 ≤ 3 ^ S_K2 * q_X2) :
+    -- 1. Automatic Y-ordering and exact homogeneous 4-window syzygy (41553 * q_A eliminated):
+    2 ^ E_suf1 * q_Y1 ≤ 2 ^ E_suf2 * q_Y2 ∧
+    2 ^ E_mid * (2 ^ E_suf2 * q_Y2 - 2 ^ E_suf1 * q_Y1) =
+      3 ^ E_mid * (3 ^ S_K2 * q_X2 - 3 ^ S_K1 * q_X1) ∧
+    -- 2. Full 2^E_mid and 3^E_mid divisibility restoration:
+    2 ^ E_mid ∣ (3 ^ S_K2 * q_X2 - 3 ^ S_K1 * q_X1) ∧
+    3 ^ E_mid ∣ (2 ^ E_suf2 * q_Y2 - 2 ^ E_suf1 * q_Y1) ∧
+    -- 3. Combined (E_mid + E_suf1) and (S_K1 + E_mid) divisibility and strict lower bounds when S_K1 ≤ S_K2, E_suf1 ≤ E_suf2:
+    (S_K1 ≤ S_K2 → E_suf1 ≤ E_suf2 →
+      2 ^ (E_mid + E_suf1) ∣ (3 ^ (S_K2 - S_K1) * q_X2 - q_X1) ∧
+      3 ^ (S_K1 + E_mid) ∣ (2 ^ (E_suf2 - E_suf1) * q_Y2 - q_Y1) ∧
+      (1 ≤ q_X1 → 1 ≤ q_Y1 → 3 ^ S_K1 * q_X1 < 3 ^ S_K2 * q_X2 →
+        2 ^ (E_mid + E_suf1) < 3 ^ (S_K2 - S_K1) * q_X2 ∧
+        3 ^ (S_K1 + E_mid) < 2 ^ (E_suf2 - E_suf1) * q_Y2)) := by
+  have hp2_1 : 2 ^ (E_mid + E_suf1) * q_Y1 = 2 ^ E_mid * (2 ^ E_suf1 * q_Y1) := by
+    rw [Nat.pow_add]; ring
+  have hp2_2 : 2 ^ (E_mid + E_suf2) * q_Y2 = 2 ^ E_mid * (2 ^ E_suf2 * q_Y2) := by
+    rw [Nat.pow_add]; ring
+  have hp3_1 : 3 ^ (S_K1 + E_mid) * q_X1 = 3 ^ E_mid * (3 ^ S_K1 * q_X1) := by
+    rw [Nat.pow_add]; ring
+  have hp3_2 : 3 ^ (S_K2 + E_mid) * q_X2 = 3 ^ E_mid * (3 ^ S_K2 * q_X2) := by
+    rw [Nat.pow_add]; ring
+  rw [hp2_1, hp3_1] at hsyz1
+  rw [hp2_2, hp3_2] at hsyz2
+  have hY_le : 2 ^ E_suf1 * q_Y1 ≤ 2 ^ E_suf2 * q_Y2 := by
+    refine Nat.le_of_not_lt (fun hgt => ?_)
+    have hm_gt :
+        2 ^ E_mid * (2 ^ E_suf2 * q_Y2) < 2 ^ E_mid * (2 ^ E_suf1 * q_Y1) :=
+      Nat.mul_lt_mul_of_pos_left hgt (Nat.pow_pos (by decide))
+    have hm_le :
+        3 ^ E_mid * (3 ^ S_K1 * q_X1) ≤ 3 ^ E_mid * (3 ^ S_K2 * q_X2) :=
+      Nat.mul_le_mul_left _ hle
+    linarith only [hsyz1, hsyz2, hm_gt, hm_le]
+  have hhom :
+      2 ^ E_mid * (2 ^ E_suf2 * q_Y2 - 2 ^ E_suf1 * q_Y1) =
+        3 ^ E_mid * (3 ^ S_K2 * q_X2 - 3 ^ S_K1 * q_X1) := by
+    have haY := Nat.sub_add_cancel hY_le
+    have haX := Nat.sub_add_cancel hle
+    have hdY :
+        2 ^ E_mid * (2 ^ E_suf2 * q_Y2 - 2 ^ E_suf1 * q_Y1) +
+          2 ^ E_mid * (2 ^ E_suf1 * q_Y1) =
+          2 ^ E_mid * (2 ^ E_suf2 * q_Y2) := by
+      rw [← Nat.mul_add, haY]
+    have hdX :
+        3 ^ E_mid * (3 ^ S_K2 * q_X2 - 3 ^ S_K1 * q_X1) +
+          3 ^ E_mid * (3 ^ S_K1 * q_X1) =
+          3 ^ E_mid * (3 ^ S_K2 * q_X2) := by
+      rw [← Nat.mul_add, haX]
+    linarith only [hsyz1, hsyz2, hdY, hdX]
+  have hcop : Nat.Coprime (2 ^ E_mid) (3 ^ E_mid) :=
+    Nat.Coprime.pow _ _ (by decide : Nat.Coprime 2 3)
+  have hd2 : 2 ^ E_mid ∣ (3 ^ S_K2 * q_X2 - 3 ^ S_K1 * q_X1) :=
+    hcop.dvd_of_dvd_mul_left ⟨2 ^ E_suf2 * q_Y2 - 2 ^ E_suf1 * q_Y1, hhom.symm⟩
+  have hd3 : 3 ^ E_mid ∣ (2 ^ E_suf2 * q_Y2 - 2 ^ E_suf1 * q_Y1) :=
+    hcop.symm.dvd_of_dvd_mul_left ⟨3 ^ S_K2 * q_X2 - 3 ^ S_K1 * q_X1, hhom⟩
+  refine ⟨hY_le, hhom, hd2, hd3, ?_⟩
+  intro hSK_le hEsuf_le
+  have hp3_diff :
+      3 ^ S_K2 * q_X2 - 3 ^ S_K1 * q_X1 =
+        3 ^ S_K1 * (3 ^ (S_K2 - S_K1) * q_X2 - q_X1) := by
+    have hexp : S_K2 = S_K1 + (S_K2 - S_K1) := by omega
+    have hsplit : 3 ^ S_K2 * q_X2 = 3 ^ S_K1 * (3 ^ (S_K2 - S_K1) * q_X2) := by
+      calc 3 ^ S_K2 * q_X2
+          = (3 ^ S_K1 * 3 ^ (S_K2 - S_K1)) * q_X2 := by rw [← Nat.pow_add, ← hexp]
+        _ = 3 ^ S_K1 * (3 ^ (S_K2 - S_K1) * q_X2) := by ring
+    rw [hsplit, ← Nat.mul_sub_left_distrib]
+  have hp2_diff :
+      2 ^ E_suf2 * q_Y2 - 2 ^ E_suf1 * q_Y1 =
+        2 ^ E_suf1 * (2 ^ (E_suf2 - E_suf1) * q_Y2 - q_Y1) := by
+    have hexp : E_suf2 = E_suf1 + (E_suf2 - E_suf1) := by omega
+    have hsplit : 2 ^ E_suf2 * q_Y2 = 2 ^ E_suf1 * (2 ^ (E_suf2 - E_suf1) * q_Y2) := by
+      calc 2 ^ E_suf2 * q_Y2
+          = (2 ^ E_suf1 * 2 ^ (E_suf2 - E_suf1)) * q_Y2 := by rw [← Nat.pow_add, ← hexp]
+        _ = 2 ^ E_suf1 * (2 ^ (E_suf2 - E_suf1) * q_Y2) := by ring
+    rw [hsplit, ← Nat.mul_sub_left_distrib]
+  have hhom_factored :
+      2 ^ (E_mid + E_suf1) * (2 ^ (E_suf2 - E_suf1) * q_Y2 - q_Y1) =
+        3 ^ (S_K1 + E_mid) * (3 ^ (S_K2 - S_K1) * q_X2 - q_X1) := by
+    rw [Nat.pow_add 2 E_mid E_suf1, Nat.pow_add 3 S_K1 E_mid]
+    have h := hhom
+    rw [hp2_diff, hp3_diff] at h
+    linarith only [h]
+  have hcop_full : Nat.Coprime (2 ^ (E_mid + E_suf1)) (3 ^ (S_K1 + E_mid)) :=
+    Nat.Coprime.pow _ _ (by decide : Nat.Coprime 2 3)
+  have hd2_full : 2 ^ (E_mid + E_suf1) ∣ (3 ^ (S_K2 - S_K1) * q_X2 - q_X1) :=
+    hcop_full.dvd_of_dvd_mul_left ⟨2 ^ (E_suf2 - E_suf1) * q_Y2 - q_Y1, hhom_factored.symm⟩
+  have hd3_full : 3 ^ (S_K1 + E_mid) ∣ (2 ^ (E_suf2 - E_suf1) * q_Y2 - q_Y1) :=
+    hcop_full.symm.dvd_of_dvd_mul_left ⟨3 ^ (S_K2 - S_K1) * q_X2 - q_X1, hhom_factored⟩
+  refine ⟨hd2_full, hd3_full, ?_⟩
+  intro hqX1_pos hqY1_pos hlt
+  have hX_sub_pos : 1 ≤ 3 ^ (S_K2 - S_K1) * q_X2 - q_X1 := by
+    refine Nat.sub_pos_of_lt (Nat.lt_of_not_le (fun hge => ?_))
+    have hm := Nat.mul_le_mul_left (3 ^ S_K1) hge
+    have hexp : S_K1 + (S_K2 - S_K1) = S_K2 := by omega
+    have hsplit : 3 ^ S_K1 * (3 ^ (S_K2 - S_K1) * q_X2) = 3 ^ S_K2 * q_X2 := by
+      calc 3 ^ S_K1 * (3 ^ (S_K2 - S_K1) * q_X2)
+          = (3 ^ S_K1 * 3 ^ (S_K2 - S_K1)) * q_X2 := by ring
+        _ = 3 ^ S_K2 * q_X2 := by rw [← Nat.pow_add, hexp]
+    rw [hsplit] at hm
+    linarith only [hlt, hm]
+  have hY_sub_pos : 1 ≤ 2 ^ (E_suf2 - E_suf1) * q_Y2 - q_Y1 := by
+    refine Nat.pos_of_ne_zero (fun h0 => ?_)
+    rw [h0, Nat.mul_zero] at hhom_factored
+    have hp3_pos : 1 ≤ 3 ^ (S_K1 + E_mid) := Nat.pow_pos (by decide)
+    have hm_pos : 1 ≤ 3 ^ (S_K1 + E_mid) * (3 ^ (S_K2 - S_K1) * q_X2 - q_X1) :=
+      Nat.mul_pos hp3_pos hX_sub_pos
+    linarith only [hhom_factored, hm_pos]
+  rcases hd2_full with ⟨KX, hKX⟩
+  have hKX_pos : 1 ≤ KX := by
+    rcases Nat.eq_zero_or_pos KX with rfl | hp
+    · rw [Nat.mul_zero] at hKX; linarith only [hKX, hX_sub_pos]
+    · exact hp
+  have h2_le_sub : 2 ^ (E_mid + E_suf1) ≤ 3 ^ (S_K2 - S_K1) * q_X2 - q_X1 := by
+    rw [hKX]; exact Nat.le_mul_of_pos_right _ hKX_pos
+  have h2_lt_X : 2 ^ (E_mid + E_suf1) < 3 ^ (S_K2 - S_K1) * q_X2 := by
+    have hle_qX1 : q_X1 ≤ 3 ^ (S_K2 - S_K1) * q_X2 := by omega
+    have hadd := Nat.sub_add_cancel hle_qX1
+    linarith only [h2_le_sub, hadd, hqX1_pos]
+  rcases hd3_full with ⟨KY, hKY⟩
+  have hKY_pos : 1 ≤ KY := by
+    rcases Nat.eq_zero_or_pos KY with rfl | hp
+    · rw [Nat.mul_zero] at hKY; linarith only [hKY, hY_sub_pos]
+    · exact hp
+  have h3_le_sub : 3 ^ (S_K1 + E_mid) ≤ 2 ^ (E_suf2 - E_suf1) * q_Y2 - q_Y1 := by
+    rw [hKY]; exact Nat.le_mul_of_pos_right _ hKY_pos
+  have h3_lt_Y : 3 ^ (S_K1 + E_mid) < 2 ^ (E_suf2 - E_suf1) * q_Y2 := by
+    have hle_qY1 : q_Y1 ≤ 2 ^ (E_suf2 - E_suf1) * q_Y2 := by omega
+    have hadd := Nat.sub_add_cancel hle_qY1
+    linarith only [h3_le_sub, hadd, hqY1_pos]
+  exact ⟨h2_lt_X, h3_lt_Y⟩
+
+/-!
+## Section 111: Archimedean Cutoff from Four-Window Middle-Defect Cancellation (`(p + q) * (S_K1 + E_mid) + p * E_suf2 + q * E_suf1 + 15 * q < p * S_M + ...`)
+
+When the second anagram pair in Section 110 ends at horizon `M + 1` along an orbit starting from
+`W(0) < 2^W_0`:
+1. Since `Y(M + 1) > Y(M + 1) - Y_a = 58025 * 3^E_suf2 * q_Y2` and Section 110 gives
+   `3^(S_K1 + E_mid) < 2^(E_suf2 - E_suf1) * q_Y2`, multiplying by `58025 * 3^E_suf2` yields:
+     `2^15 * 3^(S_K1 + E_mid + E_suf2) < 2^(E_suf2 - E_suf1) * Y(M + 1)`!
+2. Combining this with `2^S_M * Y(M + 1) < 3^(S_M + 10*L_2(0)) * 2^W_0` and canceling
+   `3^(S_K1 + E_mid + E_suf2)` against `3^(S_M + 10*L_2(0))` proves:
+     `2^(S_M + 15) < 3^(S_M + 10*L_2(0) - (S_K1 + E_mid + E_suf2)) * 2^(E_suf2 - E_suf1 + W_0)`,
+   which for every `3^q ≤ 2^(p + q)` (`q ≥ 1`) forces:
+     `(p + q) * (S_K1 + E_mid) + p * E_suf2 + q * E_suf1 + 15 * q < p * S_M + 10 * (p + q) * L_2(0) + q * W_0`!
+   Crucially, **`E_mid` now appears on the LEFT-HAND SIDE with full weight `(p + q) = 27`** (against
+   `p = 10` on `S_M`), instead of appearing on the right-hand side as a penalty!
+-/
+
+/-- **Archimedean Cutoff from Four-Window Middle-Defect Cancellation:**
+Whenever `3^(S_K1 + E_mid) < 2^(E_suf2 - E_suf1) * q_Y2` and `58,025 * 3^E_suf2 * q_Y2 ≤ Y(M + 1)`
+along an orbit starting from `W(0) < 2^W_0` (`E_suf1 ≤ E_suf2`, `S_K1 + E_mid + E_suf2 ≤ S_M + 10*L_2(0)`),
+`(p + q) * (S_K1 + E_mid) + p * E_suf2 + q * E_suf1 + 15 * q < p * S_M + 10 * (p + q) * L_2(0) + q * W_0`
+for every `3^q ≤ 2^(p + q)` (`q ≥ 1`). -/
+theorem dense_core_four_window_middle_cancellation_archimedean_cutoff
+    {W L_2 L_1 : ℕ → ℕ} {M W_0 S_K1 E_mid E_suf1 E_suf2 q_Y2 : ℕ}
+    (hW0_lt : W 0 < 2 ^ W_0)
+    (hL1_0 : 1 ≤ L_1 0)
+    (hrec : ∀ n ≤ M,
+      2 ^ (7 * L_1 n + 10 * L_2 (n + 1)) * W (n + 1) +
+        19 * ((3 ^ (7 * L_1 n) - 2 ^ (7 * L_1 n)) / 2059) =
+        3 ^ (10 * L_2 n + 7 * L_1 n) * W n)
+    (hEsuf_le : E_suf1 ≤ E_suf2)
+    (hsum_le : S_K1 + E_mid + E_suf2 ≤ waveInteriorExp L_2 L_1 M + 10 * L_2 0)
+    (h3_lt_Y2 : 3 ^ (S_K1 + E_mid) < 2 ^ (E_suf2 - E_suf1) * q_Y2)
+    (hY_ge : 58025 * 3 ^ E_suf2 * q_Y2 ≤ scaledWaveY W L_2 (M + 1)) :
+    let S_M := waveInteriorExp L_2 L_1 M
+    2 ^ 15 * 3 ^ (S_K1 + E_mid + E_suf2) <
+      2 ^ (E_suf2 - E_suf1) * scaledWaveY W L_2 (M + 1) ∧
+    2 ^ (S_M + 15) <
+      3 ^ (S_M + 10 * L_2 0 - (S_K1 + E_mid + E_suf2)) * 2 ^ (E_suf2 - E_suf1 + W_0) ∧
+    (∀ p q : ℕ, 1 ≤ q → 3 ^ q ≤ 2 ^ (p + q) →
+      (p + q) * (S_K1 + E_mid) + p * E_suf2 + q * E_suf1 + 15 * q <
+        p * S_M + 10 * (p + q) * L_2 0 + q * W_0) ∧
+    27 * (S_K1 + E_mid) + 10 * E_suf2 + 17 * E_suf1 + 255 <
+      10 * S_M + 270 * L_2 0 + 17 * W_0 := by
+  intro S_M
+  set E_tot := S_K1 + E_mid + E_suf2
+  set dE := E_suf2 - E_suf1
+  have h2_15_lt : 2 ^ 15 * 3 ^ E_tot < 2 ^ dE * scaledWaveY W L_2 (M + 1) := by
+    have h15 : (2 : ℕ) ^ 15 < 58025 := by decide
+    have hp3_split : 3 ^ E_tot = 3 ^ E_suf2 * 3 ^ (S_K1 + E_mid) := by
+      dsimp [E_tot]; rw [Nat.pow_add 3 (S_K1 + E_mid) E_suf2]; ring
+    have hm1 :
+        2 ^ 15 * (3 ^ E_suf2 * 3 ^ (S_K1 + E_mid)) <
+          58025 * (3 ^ E_suf2 * (2 ^ dE * q_Y2)) := by
+      have ha : 2 ^ 15 * 3 ^ E_suf2 < 58025 * 3 ^ E_suf2 :=
+        Nat.mul_lt_mul_of_pos_right h15 (Nat.pow_pos (by decide))
+      have hb :
+          (58025 * 3 ^ E_suf2) * 3 ^ (S_K1 + E_mid) <
+            (58025 * 3 ^ E_suf2) * (2 ^ dE * q_Y2) :=
+        Nat.mul_lt_mul_of_pos_left h3_lt_Y2
+          (Nat.mul_pos (by decide : 0 < 58025) (Nat.pow_pos (by decide : 0 < 3)))
+      have hc : (2 ^ 15 * 3 ^ E_suf2) * 3 ^ (S_K1 + E_mid) ≤
+          (58025 * 3 ^ E_suf2) * 3 ^ (S_K1 + E_mid) :=
+        Nat.mul_le_mul_right _ (le_of_lt ha)
+      calc 2 ^ 15 * (3 ^ E_suf2 * 3 ^ (S_K1 + E_mid))
+          = (2 ^ 15 * 3 ^ E_suf2) * 3 ^ (S_K1 + E_mid) := by ring
+        _ ≤ (58025 * 3 ^ E_suf2) * 3 ^ (S_K1 + E_mid) := hc
+        _ < (58025 * 3 ^ E_suf2) * (2 ^ dE * q_Y2) := hb
+        _ = 58025 * (3 ^ E_suf2 * (2 ^ dE * q_Y2)) := by ring
+    have hm2 :
+        58025 * (3 ^ E_suf2 * (2 ^ dE * q_Y2)) ≤ 2 ^ dE * scaledWaveY W L_2 (M + 1) := by
+      calc 58025 * (3 ^ E_suf2 * (2 ^ dE * q_Y2))
+          = 2 ^ dE * (58025 * 3 ^ E_suf2 * q_Y2) := by ring
+        _ ≤ 2 ^ dE * scaledWaveY W L_2 (M + 1) := Nat.mul_le_mul_left _ hY_ge
+    rw [hp3_split]
+    exact lt_of_lt_of_le hm1 hm2
+  have hAcc_pos : 1 ≤ waveInteriorAcc L_2 L_1 M := waveInteriorAcc_pos L_2 L_1 hL1_0 M
+  have hm :=
+    (dense_core_symmetric_multi_wave_master_identity_and_boundary_independence.2
+      W L_2 L_1 M hrec).1
+  change 2 ^ S_M * scaledWaveY W L_2 (M + 1) + 19 * waveInteriorAcc L_2 L_1 M =
+      3 ^ S_M * (3 ^ (10 * L_2 0) * W 0) at hm
+  have hp3_M : 3 ^ (S_M + 10 * L_2 0) * W 0 = 3 ^ S_M * (3 ^ (10 * L_2 0) * W 0) := by
+    rw [Nat.pow_add]; ring
+  have hup_W0 : 2 ^ S_M * scaledWaveY W L_2 (M + 1) < 3 ^ (S_M + 10 * L_2 0) * W 0 := by
+    linarith only [hm, hp3_M, hAcc_pos]
+  have hup_2W0 : 2 ^ S_M * scaledWaveY W L_2 (M + 1) < 3 ^ (S_M + 10 * L_2 0) * 2 ^ W_0 :=
+    lt_trans hup_W0 (Nat.mul_lt_mul_of_pos_left hW0_lt (Nat.pow_pos (by decide)))
+  have hcomb_lt :
+      3 ^ E_tot * 2 ^ (S_M + 15) <
+        3 ^ E_tot * (3 ^ (S_M + 10 * L_2 0 - E_tot) * 2 ^ (dE + W_0)) := by
+    have hp_lhs : 3 ^ E_tot * 2 ^ (S_M + 15) = 2 ^ S_M * (2 ^ 15 * 3 ^ E_tot) := by
+      rw [Nat.pow_add 2 S_M 15]; ring
+    set E_rem := S_M + 10 * L_2 0 - E_tot
+    have hexp : S_M + 10 * L_2 0 = E_tot + E_rem := by dsimp [E_rem, E_tot]; omega
+    have hp_rhs :
+        2 ^ dE * (3 ^ (S_M + 10 * L_2 0) * 2 ^ W_0) =
+          3 ^ E_tot * (3 ^ E_rem * 2 ^ (dE + W_0)) := by
+      calc 2 ^ dE * (3 ^ (S_M + 10 * L_2 0) * 2 ^ W_0)
+          = 2 ^ dE * ((3 ^ E_tot * 3 ^ E_rem) * 2 ^ W_0) := by rw [hexp, Nat.pow_add]
+        _ = 3 ^ E_tot * (3 ^ E_rem * (2 ^ dE * 2 ^ W_0)) := by ring
+        _ = 3 ^ E_tot * (3 ^ E_rem * 2 ^ (dE + W_0)) := by rw [← Nat.pow_add 2 dE W_0]
+    have hm_mid :
+        2 ^ S_M * (2 ^ dE * scaledWaveY W L_2 (M + 1)) <
+          2 ^ dE * (3 ^ (S_M + 10 * L_2 0) * 2 ^ W_0) := by
+      have heq :
+          2 ^ S_M * (2 ^ dE * scaledWaveY W L_2 (M + 1)) =
+            2 ^ dE * (2 ^ S_M * scaledWaveY W L_2 (M + 1)) := by ring
+      rw [heq]
+      exact Nat.mul_lt_mul_of_pos_left hup_2W0 (Nat.pow_pos (by decide))
+    rw [hp_lhs, ← hp_rhs]
+    exact lt_trans (Nat.mul_lt_mul_of_pos_left h2_15_lt (Nat.pow_pos (by decide))) hm_mid
+  have hcancel_lt :
+      2 ^ (S_M + 15) < 3 ^ (S_M + 10 * L_2 0 - E_tot) * 2 ^ (dE + W_0) := by
+    refine Nat.lt_of_not_le (fun hge => ?_)
+    have hm_ge := Nat.mul_le_mul_left (3 ^ E_tot) hge
+    linarith only [hcomb_lt, hm_ge]
+  have hpq :
+      ∀ p q : ℕ, 1 ≤ q → 3 ^ q ≤ 2 ^ (p + q) →
+        (p + q) * (S_K1 + E_mid) + p * E_suf2 + q * E_suf1 + 15 * q <
+          p * S_M + 10 * (p + q) * L_2 0 + q * W_0 := by
+    intro p q hq hpq_le
+    set E_lhs := S_M + 15
+    set E_3 := S_M + 10 * L_2 0 - E_tot
+    set E_2 := dE + W_0
+    have hpow_q : (2 ^ E_lhs) ^ q < (3 ^ E_3 * 2 ^ E_2) ^ q :=
+      pow_lt_pow_of_lt hcancel_lt hq
+    have h3_le : (3 ^ E_3) ^ q ≤ 2 ^ ((p + q) * E_3) := by
+      calc (3 ^ E_3) ^ q
+          = 3 ^ (E_3 * q) := (Nat.pow_mul 3 E_3 q).symm
+        _ = 3 ^ (q * E_3) := by rw [Nat.mul_comm E_3 q]
+        _ = (3 ^ q) ^ E_3 := Nat.pow_mul 3 q E_3
+        _ ≤ (2 ^ (p + q)) ^ E_3 := Nat.pow_le_pow_left hpq_le E_3
+        _ = 2 ^ ((p + q) * E_3) := (Nat.pow_mul 2 (p + q) E_3).symm
+    have hrhs_le : (3 ^ E_3 * 2 ^ E_2) ^ q ≤ 2 ^ ((p + q) * E_3 + q * E_2) := by
+      calc (3 ^ E_3 * 2 ^ E_2) ^ q
+          = (3 ^ E_3) ^ q * (2 ^ E_2) ^ q := Nat.mul_pow (3 ^ E_3) (2 ^ E_2) q
+        _ ≤ 2 ^ ((p + q) * E_3) * (2 ^ E_2) ^ q := Nat.mul_le_mul_right _ h3_le
+        _ = 2 ^ ((p + q) * E_3) * 2 ^ (E_2 * q) := by rw [← Nat.pow_mul 2 E_2 q]
+        _ = 2 ^ ((p + q) * E_3) * 2 ^ (q * E_2) := by rw [Nat.mul_comm E_2 q]
+        _ = 2 ^ ((p + q) * E_3 + q * E_2) := (Nat.pow_add 2 _ _).symm
+    have hlhs_eq : (2 ^ E_lhs) ^ q = 2 ^ (q * E_lhs) := by
+      rw [← Nat.pow_mul 2 E_lhs q, Nat.mul_comm E_lhs q]
+    have hpow2_lt : 2 ^ (q * E_lhs) < 2 ^ ((p + q) * E_3 + q * E_2) := by
+      rw [← hlhs_eq]; exact lt_of_lt_of_le hpow_q hrhs_le
+    have hexp_lt : q * E_lhs < (p + q) * E_3 + q * E_2 := by
+      refine Nat.lt_of_not_le (fun hge => ?_)
+      have hpow_ge : 2 ^ ((p + q) * E_3 + q * E_2) ≤ 2 ^ (q * E_lhs) :=
+        Nat.pow_le_pow_right (by decide) hge
+      omega
+    have hE3_add : E_3 + E_tot = S_M + 10 * L_2 0 := by dsimp [E_3, E_tot]; omega
+    have hdE_add : dE + E_suf1 = E_suf2 := Nat.sub_add_cancel hEsuf_le
+    have hexp_rhs :
+        ((p + q) * E_3 + q * E_2) + (p + q) * E_tot + q * E_suf1 =
+          q * S_M + q * E_suf2 + (p * S_M + 10 * (p + q) * L_2 0 + q * W_0) := by
+      calc ((p + q) * E_3 + q * E_2) + (p + q) * E_tot + q * E_suf1
+          = (p + q) * (E_3 + E_tot) + q * (dE + E_suf1) + q * W_0 := by
+              dsimp [E_2]; ring
+        _ = (p + q) * (S_M + 10 * L_2 0) + q * E_suf2 + q * W_0 := by
+              rw [hE3_add, hdE_add]
+        _ = q * S_M + q * E_suf2 + (p * S_M + 10 * (p + q) * L_2 0 + q * W_0) := by ring
+    have hexp_lhs :
+        q * E_lhs + (p + q) * E_tot + q * E_suf1 =
+          q * S_M + q * E_suf2 +
+            ((p + q) * (S_K1 + E_mid) + p * E_suf2 + q * E_suf1 + 15 * q) := by
+      dsimp [E_lhs, E_tot]; ring
+    omega
+  have h10_17 := hpq 10 17 (by decide) (by decide : 3 ^ 17 ≤ 2 ^ (10 + 17))
+  exact ⟨h2_15_lt, hcancel_lt, hpq, by linarith only [h10_17]⟩
+
+/-!
+## Section 112: General Two-Window `+19`-Elimination Wronskian Syzygy, Coprime `(2, 3)`-Adic Valuation Transfer & the `2059 : 2187` Ratio Band Across Arbitrary Windows
+
+What relates **any two windows** `(X_1, Y_1, S_1, Acc_1)` and `(X_2, Y_2, S_2, Acc_2)` of arbitrary
+lengths `N, M ∈ ℕ` along an orbit—even when they share **zero** runs and are **not** anagrams (`S_1 ≠ S_2`)?
+From `2^S_1 * Y_1 + 19 * Acc_1 = 3^S_1 * X_1` and `2^S_2 * Y_2 + 19 * Acc_2 = 3^S_2 * X_2`:
+1. **Exact `+19`-Free Cross-Multiplied Wronskian Syzygy:**
+     `Acc_2 * (3^S_1 * X_1 - 2^S_1 * Y_1) = Acc_1 * (3^S_2 * X_2 - 2^S_2 * Y_2)`,
+   and in positive-term form:
+     `3^S_1 * Acc_2 * X_1 + 2^S_2 * Acc_1 * Y_2 = 3^S_2 * Acc_1 * X_2 + 2^S_1 * Acc_2 * Y_1`!
+2. **Exact Coprime `(2, 3)`-Adic Valuation Transfer:**
+   Since `gcd(Acc_i, 6) = 1` (Section 57), for **every** `a, b ∈ ℕ`:
+     `2^a ∣ (3^S_1 * X_1 - 2^S_1 * Y_1) ↔ 2^a ∣ (3^S_2 * X_2 - 2^S_2 * Y_2)`  and
+     `3^b ∣ (3^S_1 * X_1 - 2^S_1 * Y_1) ↔ 3^b ∣ (3^S_2 * X_2 - 2^S_2 * Y_2)`!
+3. **Universal `2059 : 2187` Archimedean Ratio Band (`1 ≤ X_2`):**
+   Eliminating `Acc_1` and `Acc_2` via Section 79 (`2059 * 3^(S_i - 7) ≤ 2059 * Acc_i < 2187 * 3^(S_i - 7)`)
+   and canceling `3^(S_1 - 7) * 3^(S_2 - 7)` proves:
+     `2059 * (3^S_1 * X_1 - 2^S_1 * Y_1) < 2187 * (3^S_2 * X_2 - 2^S_2 * Y_2)`  (normalized by `3^(S_2 - 7)` vs `3^(S_1 - 7)`)!
+-/
+
+/-- **General Two-Window `+19`-Elimination Wronskian Syzygy, Coprime `(2, 3)`-Adic Valuation Transfer & `2059 : 2187` Ratio Band:**
+Across any two windows `(W, L_2, L_1, N)` and `(W', L'_2, L'_1, M)`, eliminating `+ 19` yields the
+exact Wronskian syzygy `Acc'_M * (3^S_N * X_0 - 2^S_N * Y_end) = Acc_N * (3^S'_M * X'_0 - 2^S'_M * Y'_end)`,
+bi-directional `(2^a, 3^b)` divisibility equivalence, and the `2059 : 2187` archimedean ratio bound. -/
+theorem dense_core_general_two_window_wronskian_elimination_and_coprime_transfer
+    {W L_2 L_1 W' L_2' L_1' : ℕ → ℕ} {N M : ℕ}
+    (hL1 : ∀ t ≤ N, 1 ≤ L_1 t)
+    (hL1' : ∀ t ≤ M, 1 ≤ L_1' t)
+    (hrec : ∀ n ≤ N,
+      2 ^ (7 * L_1 n + 10 * L_2 (n + 1)) * W (n + 1) +
+        19 * ((3 ^ (7 * L_1 n) - 2 ^ (7 * L_1 n)) / 2059) =
+        3 ^ (10 * L_2 n + 7 * L_1 n) * W n)
+    (hrec' : ∀ n ≤ M,
+      2 ^ (7 * L_1' n + 10 * L_2' (n + 1)) * W' (n + 1) +
+        19 * ((3 ^ (7 * L_1' n) - 2 ^ (7 * L_1' n)) / 2059) =
+        3 ^ (10 * L_2' n + 7 * L_1' n) * W' n) :
+    let S_1 := waveInteriorExp L_2 L_1 N
+    let S_2 := waveInteriorExp L_2' L_1' M
+    let Acc_1 := waveInteriorAcc L_2 L_1 N
+    let Acc_2 := waveInteriorAcc L_2' L_1' M
+    let X_1 := scaledWaveX W L_2 0
+    let Y_1 := scaledWaveY W L_2 (N + 1)
+    let X_2 := scaledWaveX W' L_2' 0
+    let Y_2 := scaledWaveY W' L_2' (M + 1)
+    -- 1. Exact +19-free cross-multiplied Wronskian syzygy:
+    Acc_2 * (3 ^ S_1 * X_1 - 2 ^ S_1 * Y_1) = Acc_1 * (3 ^ S_2 * X_2 - 2 ^ S_2 * Y_2) ∧
+    3 ^ S_1 * Acc_2 * X_1 + 2 ^ S_2 * Acc_1 * Y_2 =
+      3 ^ S_2 * Acc_1 * X_2 + 2 ^ S_1 * Acc_2 * Y_1 ∧
+    -- 2. Bi-directional coprime (2^a, 3^b) valuation transfer:
+    (∀ a : ℕ, 2 ^ a ∣ (3 ^ S_1 * X_1 - 2 ^ S_1 * Y_1) ↔ 2 ^ a ∣ (3 ^ S_2 * X_2 - 2 ^ S_2 * Y_2)) ∧
+    (∀ b : ℕ, 3 ^ b ∣ (3 ^ S_1 * X_1 - 2 ^ S_1 * Y_1) ↔ 3 ^ b ∣ (3 ^ S_2 * X_2 - 2 ^ S_2 * Y_2)) ∧
+    -- 3. Universal 2059 : 2187 archimedean ratio band:
+    2059 * 3 ^ (S_2 - 7) * (3 ^ S_1 * X_1 - 2 ^ S_1 * Y_1) <
+      2187 * 3 ^ (S_1 - 7) * (3 ^ S_2 * X_2 - 2 ^ S_2 * Y_2) := by
+  intro S_1 S_2 Acc_1 Acc_2 X_1 Y_1 X_2 Y_2
+  have hm1 :=
+    (dense_core_symmetric_multi_wave_master_identity_and_boundary_independence.2
+      W L_2 L_1 N hrec).1
+  have hm2 :=
+    (dense_core_symmetric_multi_wave_master_identity_and_boundary_independence.2
+      W' L_2' L_1' M hrec').1
+  change 2 ^ S_1 * Y_1 + 19 * Acc_1 = 3 ^ S_1 * X_1 at hm1
+  change 2 ^ S_2 * Y_2 + 19 * Acc_2 = 3 ^ S_2 * X_2 at hm2
+  have hsub1 : 3 ^ S_1 * X_1 - 2 ^ S_1 * Y_1 = 19 * Acc_1 := by omega
+  have hsub2 : 3 ^ S_2 * X_2 - 2 ^ S_2 * Y_2 = 19 * Acc_2 := by omega
+  have hsyz1 :
+      Acc_2 * (3 ^ S_1 * X_1 - 2 ^ S_1 * Y_1) = Acc_1 * (3 ^ S_2 * X_2 - 2 ^ S_2 * Y_2) := by
+    rw [hsub1, hsub2]; ring
+  have hsyz2 :
+      3 ^ S_1 * Acc_2 * X_1 + 2 ^ S_2 * Acc_1 * Y_2 =
+        3 ^ S_2 * Acc_1 * X_2 + 2 ^ S_1 * Acc_2 * Y_1 := by
+    have hc1 := congrArg (fun x => Acc_2 * x) hm1
+    have hc2 := congrArg (fun x => Acc_1 * x) hm2
+    have hd1 :
+        Acc_2 * (2 ^ S_1 * Y_1 + 19 * Acc_1) =
+          2 ^ S_1 * Acc_2 * Y_1 + 19 * Acc_1 * Acc_2 := by ring
+    have hd2 : Acc_2 * (3 ^ S_1 * X_1) = 3 ^ S_1 * Acc_2 * X_1 := by ring
+    have hd3 :
+        Acc_1 * (2 ^ S_2 * Y_2 + 19 * Acc_2) =
+          2 ^ S_2 * Acc_1 * Y_2 + 19 * Acc_1 * Acc_2 := by ring
+    have hd4 : Acc_1 * (3 ^ S_2 * X_2) = 3 ^ S_2 * Acc_1 * X_2 := by ring
+    linarith only [hc1, hc2, hd1, hd2, hd3, hd4]
+  -- Coprimality of Acc_1 and Acc_2 with 2 and 3 (Section 57):
+  have h57_1 :=
+    dense_core_waveInteriorAcc_telescopic_cross_defect_and_mirror_collapses.1 L_2 L_1 N hL1
+  have h57_2 :=
+    dense_core_waveInteriorAcc_telescopic_cross_defect_and_mirror_collapses.1 L_2' L_1' M hL1'
+  have hAcc1_odd : Acc_1 % 2 = 1 := h57_1.2.2.2.2.2.1
+  have hAcc2_odd : Acc_2 % 2 = 1 := h57_2.2.2.2.2.2.1
+  have hAcc1_ndvd3 : ¬(3 ∣ Acc_1) := h57_1.2.2.2.2.2.2.2
+  have hAcc2_ndvd3 : ¬(3 ∣ Acc_2) := h57_2.2.2.2.2.2.2.2
+  have hcop2_1 : ∀ a : ℕ, Nat.Coprime (2 ^ a) Acc_1 := fun a =>
+    Nat.Coprime.pow_left a ((Nat.Prime.coprime_iff_not_dvd (by decide : Nat.Prime 2)).mpr
+      (by intro hd; have := Nat.mod_eq_zero_of_dvd hd; omega))
+  have hcop2_2 : ∀ a : ℕ, Nat.Coprime (2 ^ a) Acc_2 := fun a =>
+    Nat.Coprime.pow_left a ((Nat.Prime.coprime_iff_not_dvd (by decide : Nat.Prime 2)).mpr
+      (by intro hd; have := Nat.mod_eq_zero_of_dvd hd; omega))
+  have hcop3_1 : ∀ b : ℕ, Nat.Coprime (3 ^ b) Acc_1 := fun b =>
+    Nat.Coprime.pow_left b ((Nat.Prime.coprime_iff_not_dvd (by decide : Nat.Prime 3)).mpr hAcc1_ndvd3)
+  have hcop3_2 : ∀ b : ℕ, Nat.Coprime (3 ^ b) Acc_2 := fun b =>
+    Nat.Coprime.pow_left b ((Nat.Prime.coprime_iff_not_dvd (by decide : Nat.Prime 3)).mpr hAcc2_ndvd3)
+  have hdvd2_iff :
+      ∀ a : ℕ, 2 ^ a ∣ (3 ^ S_1 * X_1 - 2 ^ S_1 * Y_1) ↔ 2 ^ a ∣ (3 ^ S_2 * X_2 - 2 ^ S_2 * Y_2) := by
+    intro a
+    constructor
+    · intro hd
+      have hm_dvd : 2 ^ a ∣ Acc_2 * (3 ^ S_1 * X_1 - 2 ^ S_1 * Y_1) := dvd_mul_of_dvd_right hd Acc_2
+      rw [hsyz1] at hm_dvd
+      exact (hcop2_1 a).dvd_of_dvd_mul_left hm_dvd
+    · intro hd
+      have hm_dvd : 2 ^ a ∣ Acc_1 * (3 ^ S_2 * X_2 - 2 ^ S_2 * Y_2) := dvd_mul_of_dvd_right hd Acc_1
+      rw [← hsyz1] at hm_dvd
+      exact (hcop2_2 a).dvd_of_dvd_mul_left hm_dvd
+  have hdvd3_iff :
+      ∀ b : ℕ, 3 ^ b ∣ (3 ^ S_1 * X_1 - 2 ^ S_1 * Y_1) ↔ 3 ^ b ∣ (3 ^ S_2 * X_2 - 2 ^ S_2 * Y_2) := by
+    intro b
+    constructor
+    · intro hd
+      have hm_dvd : 3 ^ b ∣ Acc_2 * (3 ^ S_1 * X_1 - 2 ^ S_1 * Y_1) := dvd_mul_of_dvd_right hd Acc_2
+      rw [hsyz1] at hm_dvd
+      exact (hcop3_1 b).dvd_of_dvd_mul_left hm_dvd
+    · intro hd
+      have hm_dvd : 3 ^ b ∣ Acc_1 * (3 ^ S_2 * X_2 - 2 ^ S_2 * Y_2) := dvd_mul_of_dvd_right hd Acc_1
+      rw [← hsyz1] at hm_dvd
+      exact (hcop3_2 b).dvd_of_dvd_mul_left hm_dvd
+  -- Proof of 2059 : 2187 ratio bound:
+  have hband1 := dense_core_accumulator_exponential_bands_and_cauchy_pinch.1 L_2 L_1 N hL1
+  have hband2 := dense_core_accumulator_exponential_bands_and_cauchy_pinch.1 L_2' L_1' M hL1'
+  have hS1_ge7 : 7 ≤ S_1 :=
+    waveInteriorExp_ge_seven_of_L1_zero_pos L_2 L_1 (hL1 0 (Nat.zero_le N)) N
+  have hp3_S1 : 3 ^ S_1 = 2187 * 3 ^ (S_1 - 7) := three_pow_eq_2187_mul_sub hS1_ge7
+  have hup1 : 2059 * Acc_1 < 2187 * 3 ^ (S_1 - 7) := by
+    have h := hband1.2.2; rw [hp3_S1] at h; exact h
+  have hlow2 : 3 ^ (S_2 - 7) ≤ Acc_2 := hband2.1
+  have hAcc2_pos : 1 ≤ Acc_2 := waveInteriorAcc_pos L_2' L_1' (hL1' 0 (Nat.zero_le M)) M
+  have hratio :
+      2059 * 3 ^ (S_2 - 7) * (3 ^ S_1 * X_1 - 2 ^ S_1 * Y_1) <
+        2187 * 3 ^ (S_1 - 7) * (3 ^ S_2 * X_2 - 2 ^ S_2 * Y_2) := by
+    rw [hsub1, hsub2]
+    have hm_low :
+        (2059 * Acc_1) * (19 * 3 ^ (S_2 - 7)) ≤ (2059 * Acc_1) * (19 * Acc_2) :=
+      Nat.mul_le_mul_left (2059 * Acc_1) (Nat.mul_le_mul_left 19 hlow2)
+    have hm_high :
+        (2059 * Acc_1) * (19 * Acc_2) < (2187 * 3 ^ (S_1 - 7)) * (19 * Acc_2) :=
+      Nat.mul_lt_mul_of_pos_right hup1 (by omega)
+    have hlt_comb := lt_of_le_of_lt hm_low hm_high
+    linarith only [hlt_comb]
+  exact ⟨hsyz1, hsyz2, hdvd2_iff, hdvd3_iff, hratio⟩
+
+/-!
+## Section 113: Dual Single-`2`-Run Collision (`L_2(r_1) = L_2(r_2)` Independent of `L_1`) Archimedean Cutoff (`10 * (p + q) * L_2(r_1) + 11 * q < p * S̃_{r_2} + ...`)
+
+Completing the exact dual of Section 104 for `U`-waves:
+In Section 109, we proved that whenever two `U`-waves `r_1 < r_2` have the same `2`-run length
+`L_2(r_1) = L_2(r_2)` (with **zero** restriction on any `1`-run `L_1`),
+`(2,059 * 3^(10 * L_2(r_1))) ∣ (Ỹ(r_2 + 1) - Ỹ(r_1 + 1))` and `2^11 * 3^(10 * L_2(r_1)) < Ỹ(r_2 + 1)`.
+Combining this lower bound at `M = r_2` with Section 60's dual master identity
+`3^(S̃_M + 7*L_1(0)) * U(0) + 19 * Acc̃_M = 2^(S̃_M) * Ỹ(M + 1)` and Section 68's bound
+`19 * Acc̃_M < 3^(S̃_M + 7*L_1(0))`:
+1. Whenever `U(0) + 1 ≤ 2^U_0`, we have `2^(S̃_M) * Ỹ(M + 1) < 3^(S̃_M + 7*L_1(0)) * 2^U_0`.
+2. Canceling `3^(10 * L_2(r_1))` directly against `3^(S̃_M + 7*L_1(0))` yields:
+     `2^(S̃_M + 11) < 3^(S̃_M + 7*L_1(0) - 10*L_2(r_1)) * 2^U_0`,
+   forcing for every `3^q ≤ 2^(p + q)` (`q ≥ 1`):
+     `10 * (p + q) * L_2(r_1) + 11 * q < p * S̃_{r_2} + 7 * (p + q) * L_1(0) + q * U_0`
+   (`270 * L_2(r_1) + 187 < 10 * S̃_{r_2} + 189 * L_1(0) + 17 * U_0` at `(p, q) = (10, 17)`)!
+-/
+
+/-- **Dual Single-`2`-Run Collision (`L_2(r_1) = L_2(r_2)` Independent of `L_1`) Archimedean Cutoff:**
+Whenever `(2,059 * 3^E_2) ∣ (Ỹ(M+1) - Ỹ_a)` (`1 ≤ Ỹ_a < Ỹ(M+1)`, `E_2 ≤ S̃_M + 7*L_1(0)`) along a
+dual `U`-wave orbit with `U(0) + 1 ≤ 2^U_0`, we have `2^(S̃_M + 11) < 3^(S̃_M + 7*L_1(0) - E_2) * 2^U_0`
+and `(p + q) * E_2 + 11 * q < p * S̃_M + 7 * (p + q) * L_1(0) + q * U_0` for all `3^q ≤ 2^(p+q)`. -/
+theorem dense_core_dual_single_two_run_collision_archimedean_cutoff
+    {U L_1 L_2 : ℕ → ℕ} {M U_0 Y_a E_2 : ℕ}
+    (hU0_lt : U 0 + 1 ≤ 2 ^ U_0)
+    (hYa_pos : 1 ≤ Y_a) (hYa_lt : Y_a < scaledDualWaveY U L_1 (M + 1))
+    (hL1_0 : 1 ≤ L_1 0)
+    (hL2 : ∀ t ≤ M, 1 ≤ L_2 t)
+    (hrec : ∀ n ≤ M,
+      3 ^ (10 * L_2 n + 7 * L_1 n) * U n +
+        19 * ((3 ^ (10 * L_2 n) - 2 ^ (10 * L_2 n)) / 58025) =
+        2 ^ (10 * L_2 n + 7 * L_1 (n + 1)) * U (n + 1))
+    (hE2_le : E_2 ≤ dualWaveInteriorExp L_1 L_2 M + 7 * L_1 0)
+    (hdvd_Y : (2059 * 3 ^ E_2) ∣ (scaledDualWaveY U L_1 (M + 1) - Y_a)) :
+    let S_M := dualWaveInteriorExp L_1 L_2 M
+    2 ^ 11 * 3 ^ E_2 < scaledDualWaveY U L_1 (M + 1) ∧
+    2 ^ (S_M + 11) < 3 ^ (S_M + 7 * L_1 0 - E_2) * 2 ^ U_0 ∧
+    (∀ p q : ℕ, 1 ≤ q → 3 ^ q ≤ 2 ^ (p + q) →
+      (p + q) * E_2 + 11 * q < p * S_M + 7 * (p + q) * L_1 0 + q * U_0) ∧
+    27 * E_2 + 187 < 10 * S_M + 189 * L_1 0 + 17 * U_0 := by
+  intro S_M
+  have hm :=
+    (dense_core_dual_one_run_multi_wave_master_identity_and_2059_super_divisibility.2.1
+      U L_1 L_2 M hrec).1
+  change 3 ^ S_M * (3 ^ (7 * L_1 0) * U 0) + 19 * dualWaveInteriorAcc L_1 L_2 M =
+      2 ^ S_M * scaledDualWaveY U L_1 (M + 1) at hm
+  have h68 :=
+    (dense_core_universal_multi_wave_constant_of_motion_and_three_adic_remainders.2
+      U L_1 L_2 M hL1_0 hL2 hrec).2.2.1
+  change 6676911 * (19 * dualWaveInteriorAcc L_1 L_2 M) < 3 ^ (S_M + 7 * L_1 0) at h68
+  have hp3_M : 3 ^ (S_M + 7 * L_1 0) * U 0 = 3 ^ S_M * (3 ^ (7 * L_1 0) * U 0) := by
+    rw [Nat.pow_add]; ring
+  have hup_U0 : 2 ^ S_M * scaledDualWaveY U L_1 (M + 1) < 3 ^ (S_M + 7 * L_1 0) * (U 0 + 1) := by
+    have hd :
+        3 ^ (S_M + 7 * L_1 0) * (U 0 + 1) =
+          3 ^ (S_M + 7 * L_1 0) * U 0 + 3 ^ (S_M + 7 * L_1 0) := by ring
+    linarith only [hm, h68, hp3_M, hd]
+  have hup_2U0 : 2 ^ S_M * scaledDualWaveY U L_1 (M + 1) < 3 ^ (S_M + 7 * L_1 0) * 2 ^ U_0 :=
+    lt_of_lt_of_le hup_U0 (Nat.mul_le_mul_left _ hU0_lt)
+  rcases hdvd_Y with ⟨K, hK⟩
+  have hK_pos : 1 ≤ K := by
+    rcases Nat.eq_zero_or_pos K with rfl | hp
+    · rw [Nat.mul_zero] at hK; omega
+    · exact hp
+  have hYM_ge : 2059 * 3 ^ E_2 + Y_a ≤ scaledDualWaveY U L_1 (M + 1) := by
+    have h1 : 2059 * 3 ^ E_2 ≤ scaledDualWaveY U L_1 (M + 1) - Y_a := by
+      rw [hK]; exact Nat.le_mul_of_pos_right _ hK_pos
+    omega
+  have h2_11_lt : 2 ^ 11 * 3 ^ E_2 < scaledDualWaveY U L_1 (M + 1) := by
+    have h11 : (2 : ℕ) ^ 11 = 2048 := by decide
+    rw [h11]
+    have hp3_pos : 1 ≤ 3 ^ E_2 := Nat.pow_pos (by decide)
+    omega
+  have hcomb_lt :
+      3 ^ E_2 * 2 ^ (S_M + 11) <
+        3 ^ E_2 * (3 ^ (S_M + 7 * L_1 0 - E_2) * 2 ^ U_0) := by
+    have hp_lhs : 3 ^ E_2 * 2 ^ (S_M + 11) = 2 ^ S_M * (2 ^ 11 * 3 ^ E_2) := by
+      rw [Nat.pow_add 2 S_M 11]; ring
+    set E_rem := S_M + 7 * L_1 0 - E_2
+    have hexp : S_M + 7 * L_1 0 = E_2 + E_rem := by dsimp [E_rem]; omega
+    have hp_rhs :
+        3 ^ (S_M + 7 * L_1 0) * 2 ^ U_0 = 3 ^ E_2 * (3 ^ E_rem * 2 ^ U_0) := by
+      calc 3 ^ (S_M + 7 * L_1 0) * 2 ^ U_0
+          = (3 ^ E_2 * 3 ^ E_rem) * 2 ^ U_0 := by rw [hexp, Nat.pow_add]
+        _ = 3 ^ E_2 * (3 ^ E_rem * 2 ^ U_0) := by ring
+    rw [hp_lhs, ← hp_rhs]
+    exact lt_trans (Nat.mul_lt_mul_of_pos_left h2_11_lt (Nat.pow_pos (by decide))) hup_2U0
+  have hcancel_lt : 2 ^ (S_M + 11) < 3 ^ (S_M + 7 * L_1 0 - E_2) * 2 ^ U_0 := by
+    refine Nat.lt_of_not_le (fun hge => ?_)
+    have hm_ge := Nat.mul_le_mul_left (3 ^ E_2) hge
+    linarith only [hcomb_lt, hm_ge]
+  have hpq :
+      ∀ p q : ℕ, 1 ≤ q → 3 ^ q ≤ 2 ^ (p + q) →
+        (p + q) * E_2 + 11 * q < p * S_M + 7 * (p + q) * L_1 0 + q * U_0 := by
+    intro p q hq hpq_le
+    set E_lhs := S_M + 11
+    set E_3 := S_M + 7 * L_1 0 - E_2
+    have hpow_q : (2 ^ E_lhs) ^ q < (3 ^ E_3 * 2 ^ U_0) ^ q :=
+      pow_lt_pow_of_lt hcancel_lt hq
+    have h3_le : (3 ^ E_3) ^ q ≤ 2 ^ ((p + q) * E_3) := by
+      calc (3 ^ E_3) ^ q
+          = 3 ^ (E_3 * q) := (Nat.pow_mul 3 E_3 q).symm
+        _ = 3 ^ (q * E_3) := by rw [Nat.mul_comm E_3 q]
+        _ = (3 ^ q) ^ E_3 := Nat.pow_mul 3 q E_3
+        _ ≤ (2 ^ (p + q)) ^ E_3 := Nat.pow_le_pow_left hpq_le E_3
+        _ = 2 ^ ((p + q) * E_3) := (Nat.pow_mul 2 (p + q) E_3).symm
+    have hrhs_le : (3 ^ E_3 * 2 ^ U_0) ^ q ≤ 2 ^ ((p + q) * E_3 + q * U_0) := by
+      calc (3 ^ E_3 * 2 ^ U_0) ^ q
+          = (3 ^ E_3) ^ q * (2 ^ U_0) ^ q := Nat.mul_pow (3 ^ E_3) (2 ^ U_0) q
+        _ ≤ 2 ^ ((p + q) * E_3) * (2 ^ U_0) ^ q := Nat.mul_le_mul_right _ h3_le
+        _ = 2 ^ ((p + q) * E_3) * 2 ^ (U_0 * q) := by rw [← Nat.pow_mul 2 U_0 q]
+        _ = 2 ^ ((p + q) * E_3) * 2 ^ (q * U_0) := by rw [Nat.mul_comm U_0 q]
+        _ = 2 ^ ((p + q) * E_3 + q * U_0) := (Nat.pow_add 2 _ _).symm
+    have hlhs_eq : (2 ^ E_lhs) ^ q = 2 ^ (q * E_lhs) := by
+      rw [← Nat.pow_mul 2 E_lhs q, Nat.mul_comm E_lhs q]
+    have hpow2_lt : 2 ^ (q * E_lhs) < 2 ^ ((p + q) * E_3 + q * U_0) := by
+      rw [← hlhs_eq]; exact lt_of_lt_of_le hpow_q hrhs_le
+    have hexp_lt : q * E_lhs < (p + q) * E_3 + q * U_0 := by
+      refine Nat.lt_of_not_le (fun hge => ?_)
+      have hpow_ge : 2 ^ ((p + q) * E_3 + q * U_0) ≤ 2 ^ (q * E_lhs) :=
+        Nat.pow_le_pow_right (by decide) hge
+      omega
+    have hE3_add : E_3 + E_2 = S_M + 7 * L_1 0 := by dsimp [E_3]; omega
+    have hexp_rhs :
+        (p + q) * E_3 + q * U_0 + (p + q) * E_2 =
+          q * S_M + (p * S_M + 7 * (p + q) * L_1 0 + q * U_0) := by
+      calc (p + q) * E_3 + q * U_0 + (p + q) * E_2
+          = (p + q) * (E_3 + E_2) + q * U_0 := by ring
+        _ = (p + q) * (S_M + 7 * L_1 0) + q * U_0 := by rw [hE3_add]
+        _ = q * S_M + (p * S_M + 7 * (p + q) * L_1 0 + q * U_0) := by ring
+    have hexp_lhs :
+        q * E_lhs + (p + q) * E_2 =
+          q * S_M + ((p + q) * E_2 + 11 * q) := by
+      dsimp [E_lhs]; ring
+    omega
+  have h10_17 := hpq 10 17 (by decide) (by decide : 3 ^ 17 ≤ 2 ^ (10 + 17))
+  exact ⟨h2_11_lt, hcancel_lt, hpq, by linarith only [h10_17]⟩
+
 end Mahler.DubickasExtension
 
 
