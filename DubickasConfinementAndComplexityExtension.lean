@@ -23914,6 +23914,768 @@ theorem dense_core_balanced_macro_wave_subcritical_complexity_cutoff
   have h10_17 := hpq 10 17 (by decide) (by decide : 3 ^ 17 ≤ 2 ^ (10 + 17))
   exact ⟨hpq, by linarith only [h10_17]⟩
 
+/-!
+## Section 86: Macro-Wave Pair Encoding (`macroWaveCode L_2 L_1`), Automatic Same-Start Strict Growth `W(r_1) < W(r_2)` & the Pigeonhole `prefixFactorCount` Cutoff
+
+To connect our multi-wave super-divisibility cutoffs (Sections 59 and 66) to the Finite Pigeonhole
+Principle (`prefixFactorCount_le_iff_exists_repeated_subword`) without assuming global monotonicity
+of `W(n)`, we encode each macro-wave's run-length pair `(L_2(n), L_1(n))` as a single natural number:
+  `macroWaveCode L_2 L_1 n := Nat.pair (L_2 n) (L_1 n)`.
+
+Remarkably, whenever an `(N + 2)`-wave subword of `macroWaveCode L_2 L_1` repeats at `r_1 < r_2 ≤ C`:
+1. **Bijective Run-Pair Decoding:**
+   `L_2(r_1 + i) = L_2(r_2 + i)` and `L_1(r_1 + i) = L_1(r_2 + i)` for all `i < N + 2`.
+2. **Automatic Strict Growth `W(r_1) < W(r_2)` Without Any Monotonicity Assumption on `W`:**
+   Because `i = 0` gives `L_2(r_1) = L_2(r_2)`, applying Section 72 (`dense_core_all_horizon_same_run_strict_growth_and_mandatory_expansion`)
+   across the `r_2 - r_1` waves separating `r_1` and `r_2` proves **`W(r_1) < W(r_2)` automatically**!
+3. **Automatic `58025 * 2^(S^{(r_1)}_N + 10*L_2(r_1+N+1) + 7)` Super-Divisibility & Pigeonhole Cutoff:**
+   Applying Section 59 at `M = r_2 - 1 < C` yields for every `3^q ≤ 2^(p + q)` (`q ≥ 1`):
+     `q * (S^{(r_1)}_N + 42) < p * waveInteriorExp L_2 L_1 C + 10 * (p + q) * L_2 0 + q * W_0`
+   and `q * (17 * N + 49) < p * waveInteriorExp L_2 L_1 C + 10 * (p + q) * L_2 0 + q * W_0`!
+-/
+
+/-- Cantor-pair encoding of the `n`-th macro-wave run-length pair `(L_2(n), L_1(n))`. -/
+def macroWaveCode (L_2 L_1 : ℕ → ℕ) (n : ℕ) : ℕ :=
+  Nat.pair (L_2 n) (L_1 n)
+
+private lemma macroWaveCode_eq_iff {L_2 L_1 L_2' L_1' : ℕ → ℕ} {a b : ℕ} :
+    macroWaveCode L_2 L_1 a = macroWaveCode L_2' L_1' b ↔
+      L_2 a = L_2' b ∧ L_1 a = L_1' b := by
+  constructor
+  · intro h
+    have hu := congrArg Nat.unpair h
+    dsimp [macroWaveCode] at hu
+    rw [Nat.unpair_pair, Nat.unpair_pair] at hu
+    exact Prod.ext_iff.mp hu
+  · rintro ⟨h1, h2⟩
+    dsimp [macroWaveCode]
+    rw [h1, h2]
+
+/-- **Macro-Wave Pair Encoding (`macroWaveCode`), Automatic Strict Growth `W(r_1) < W(r_2)` & the Pigeonhole `prefixFactorCount` Cutoff:**
+Along any Dense Core macro-wave orbit `(W, U, L_2, L_1)`, any repeated `(N + 2)`-wave subword of
+`macroWaveCode L_2 L_1` at `r_1 < r_2 ≤ C` automatically forces `W(r_1) < W(r_2)` and
+`(58025 * 2^(S^{(r_1)}_N + 10*L_2(r_1+N+1) + 7)) ∣ (W(r_2) - W(r_1))`, and whenever
+`prefixFactorCount (macroWaveCode L_2 L_1) (N + 2) C ≤ C`, forces
+`q * (17 * N + 49) < p * waveInteriorExp L_2 L_1 C + 10 * (p + q) * L_2 0 + q * W_0` for all `3^q ≤ 2^(p + q)`. -/
+theorem dense_core_macroWaveCode_pigeonhole_and_automatic_growth_cutoff
+    {W U L_2 L_1 : ℕ → ℕ} {W_0 : ℕ}
+    (hW_pos : ∀ n : ℕ, 1 ≤ W n)
+    (hU_pos : ∀ n : ℕ, 1 ≤ U n)
+    (hL2_pos : ∀ n : ℕ, 1 ≤ L_2 n)
+    (hL1_pos : ∀ n : ℕ, 1 ≤ L_1 n)
+    (hW0_lt : W 0 < 2 ^ W_0)
+    (h21 : ∀ n : ℕ, 58025 * 2 ^ (7 * L_1 n) * U n + 19 = 2059 * 3 ^ (10 * L_2 n) * W n)
+    (h12 : ∀ n : ℕ, 58025 * 3 ^ (7 * L_1 n) * U n + 19 = 2059 * 2 ^ (10 * L_2 (n + 1)) * W (n + 1))
+    (hrec : ∀ n : ℕ,
+      2 ^ (7 * L_1 n + 10 * L_2 (n + 1)) * W (n + 1) +
+        19 * ((3 ^ (7 * L_1 n) - 2 ^ (7 * L_1 n)) / 2059) =
+        3 ^ (10 * L_2 n + 7 * L_1 n) * W n) :
+    -- 1. Automatic strict growth W(r_1) < W(r_2), 58025 super-divisibility, and (p, q) cutoff on any repeated (N + 2)-wave subword:
+    (∀ (r_1 r_2 N C : ℕ), r_1 < r_2 → r_2 ≤ C →
+      (∀ i < N + 2, macroWaveCode L_2 L_1 (r_1 + i) = macroWaveCode L_2 L_1 (r_2 + i)) →
+      let S_sub := waveInteriorExp (fun t => L_2 (r_1 + t)) (fun t => L_1 (r_1 + t)) N
+      W r_1 < W r_2 ∧
+      (58025 * 2 ^ (S_sub + 10 * L_2 (r_1 + N + 1) + 7)) ∣ (W r_2 - W r_1) ∧
+      2 ^ (S_sub + 10 * L_2 (r_1 + N + 1) + 22) < W r_2 ∧
+      (∀ p q : ℕ, 1 ≤ q → 3 ^ q ≤ 2 ^ (p + q) →
+        q * (S_sub + 42) < p * waveInteriorExp L_2 L_1 C + 10 * (p + q) * L_2 0 + q * W_0 ∧
+        q * (17 * N + 49) < p * waveInteriorExp L_2 L_1 C + 10 * (p + q) * L_2 0 + q * W_0)) ∧
+    -- 2. Pigeonhole prefixFactorCount cutoff for any horizon C ≥ 1:
+    (∀ (N C : ℕ),
+      prefixFactorCount (macroWaveCode L_2 L_1) (N + 2) C ≤ C →
+      ∀ p q : ℕ, 1 ≤ q → 3 ^ q ≤ 2 ^ (p + q) →
+        q * (17 * N + 49) < p * waveInteriorExp L_2 L_1 C + 10 * (p + q) * L_2 0 + q * W_0) := by
+  have hrep :
+      ∀ (r_1 r_2 N C : ℕ), r_1 < r_2 → r_2 ≤ C →
+        (∀ i < N + 2, macroWaveCode L_2 L_1 (r_1 + i) = macroWaveCode L_2 L_1 (r_2 + i)) →
+        let S_sub := waveInteriorExp (fun t => L_2 (r_1 + t)) (fun t => L_1 (r_1 + t)) N
+        W r_1 < W r_2 ∧
+        (58025 * 2 ^ (S_sub + 10 * L_2 (r_1 + N + 1) + 7)) ∣ (W r_2 - W r_1) ∧
+        2 ^ (S_sub + 10 * L_2 (r_1 + N + 1) + 22) < W r_2 ∧
+        (∀ p q : ℕ, 1 ≤ q → 3 ^ q ≤ 2 ^ (p + q) →
+          q * (S_sub + 42) < p * waveInteriorExp L_2 L_1 C + 10 * (p + q) * L_2 0 + q * W_0 ∧
+          q * (17 * N + 49) < p * waveInteriorExp L_2 L_1 C + 10 * (p + q) * L_2 0 + q * W_0) := by
+    intro r_1 r_2 N C hr12 hr2C hmatch S_sub
+    have hmatch0 := (macroWaveCode_eq_iff.mp (hmatch 0 (by omega))).1
+    rw [Nat.add_zero, Nat.add_zero] at hmatch0
+    -- Prove W r_1 < W r_2 via Section 72 across the (r_2 - r_1) waves from r_1 to r_2:
+    set m_gap := r_2 - r_1 - 1
+    have hgap_eq : r_1 + (m_gap + 1) = r_2 := by omega
+    set W_g := fun t => W (r_1 + t)
+    set L_2_g := fun t => L_2 (r_1 + t)
+    set L_1_g := fun t => L_1 (r_1 + t)
+    have hrec_g :
+        ∀ n ≤ m_gap,
+          2 ^ (7 * L_1_g n + 10 * L_2_g (n + 1)) * W_g (n + 1) +
+            19 * ((3 ^ (7 * L_1_g n) - 2 ^ (7 * L_1_g n)) / 2059) =
+            3 ^ (10 * L_2_g n + 7 * L_1_g n) * W_g n := by
+      intro n _
+      dsimp [W_g, L_2_g, L_1_g]
+      have hidx : r_1 + (n + 1) = (r_1 + n) + 1 := by omega
+      rw [hidx]
+      exact hrec (r_1 + n)
+    have hin0_g :
+        58025 * 2 ^ (7 * L_1_g 0) * U r_1 + 19 = 2059 * 3 ^ (10 * L_2_g 0) * W_g 0 := by
+      dsimp [W_g, L_2_g, L_1_g]
+      rw [Nat.add_zero]
+      exact h21 r_1
+    have hinN_g :
+        58025 * 3 ^ (7 * L_1_g m_gap) * U (r_1 + m_gap) + 19 =
+          2059 * 2 ^ (10 * L_2_g (m_gap + 1)) * W_g (m_gap + 1) := by
+      dsimp [W_g, L_2_g, L_1_g]
+      have hidx : r_1 + (m_gap + 1) = (r_1 + m_gap) + 1 := by omega
+      rw [hidx]
+      exact h12 (r_1 + m_gap)
+    have h72 :=
+      (dense_core_all_horizon_same_run_strict_growth_and_mandatory_expansion
+        (U_start := 0) (U_end := 0) (L_1_start := 0) (L_1_end := 0)
+        (hU_pos r_1) (fun t _ => hL1_pos (r_1 + t)) hrec_g hin0_g hinN_g).2.1
+    have hL2_g_le : L_2_g (m_gap + 1) ≤ L_2_g 0 := by
+      dsimp [L_2_g]
+      rw [hgap_eq, hmatch0]
+    have hWr1_lt_Wr2 : W r_1 < W r_2 := by
+      have hlt := h72 hL2_g_le
+      dsimp [W_g] at hlt
+      rw [hgap_eq] at hlt
+      exact hlt
+    -- Apply Section 59 Part 1 to the two (N + 1)-wave blocks starting at r_1 and r_2:
+    set W_1 := fun t => W (r_1 + t)
+    set L_2_1 := fun t => L_2 (r_1 + t)
+    set L_1_1 := fun t => L_1 (r_1 + t)
+    set W_2 := fun t => W (r_2 + t)
+    set L_2_2 := fun t => L_2 (r_2 + t)
+    set L_1_2 := fun t => L_1 (r_2 + t)
+    have hrec_1 :
+        ∀ n ≤ N,
+          2 ^ (7 * L_1_1 n + 10 * L_2_1 (n + 1)) * W_1 (n + 1) +
+            19 * ((3 ^ (7 * L_1_1 n) - 2 ^ (7 * L_1_1 n)) / 2059) =
+            3 ^ (10 * L_2_1 n + 7 * L_1_1 n) * W_1 n := by
+      intro n _
+      dsimp [W_1, L_2_1, L_1_1]
+      have hidx : r_1 + (n + 1) = (r_1 + n) + 1 := by omega
+      rw [hidx]
+      exact hrec (r_1 + n)
+    have hrec_2 :
+        ∀ n ≤ N,
+          2 ^ (7 * L_1_2 n + 10 * L_2_2 (n + 1)) * W_2 (n + 1) +
+            19 * ((3 ^ (7 * L_1_2 n) - 2 ^ (7 * L_1_2 n)) / 2059) =
+            3 ^ (10 * L_2_2 n + 7 * L_1_2 n) * W_2 n := by
+      intro n _
+      dsimp [W_2, L_2_2, L_1_2]
+      have hidx : r_2 + (n + 1) = (r_2 + n) + 1 := by omega
+      rw [hidx]
+      exact hrec (r_2 + n)
+    have hL1_eq : ∀ t ≤ N, L_1_1 t = L_1_2 t := by
+      intro t ht
+      exact (macroWaveCode_eq_iff.mp (hmatch t (by omega))).2
+    have hL2_int : ∀ t < N, L_2_1 (t + 1) = L_2_2 (t + 1) := by
+      intro t ht
+      exact (macroWaveCode_eq_iff.mp (hmatch (t + 1) (by omega))).1
+    have hL2_0_eq : L_2_1 0 = L_2_2 0 := hmatch0
+    have hL2_end_eq : L_2_1 (N + 1) = L_2_2 (N + 1) :=
+      (macroWaveCode_eq_iff.mp (hmatch (N + 1) (by omega))).1
+    have hW0_le : W_1 0 ≤ W_2 0 := le_of_lt hWr1_lt_Wr2
+    have hout_1 :
+        58025 * 2 ^ (7 * L_1 (r_1 + N + 1)) * U (r_1 + N + 1) + 19 =
+          2059 * 3 ^ (10 * L_2_1 (N + 1)) * W_1 (N + 1) := by
+      dsimp [L_2_1, W_1]
+      have hidx : r_1 + (N + 1) = r_1 + N + 1 := by omega
+      rw [hidx]
+      exact h21 (r_1 + N + 1)
+    have hout_2 :
+        58025 * 2 ^ (7 * L_1 (r_2 + N + 1)) * U (r_2 + N + 1) + 19 =
+          2059 * 3 ^ (10 * L_2_1 (N + 1)) * W_2 (N + 1) := by
+      rw [hL2_end_eq]
+      dsimp [L_2_2, W_2]
+      have hidx : r_2 + (N + 1) = r_2 + N + 1 := by omega
+      rw [hidx]
+      exact h21 (r_2 + N + 1)
+    have h59_1 :=
+      dense_core_multi_wave_58025_super_divisibility_and_22_bit_repetition_cutoff.1
+        W_1 L_2_1 L_1_1 W_2 L_2_2 L_1_2 N (U (r_1 + N + 1)) (U (r_2 + N + 1))
+        (L_1 (r_1 + N + 1)) (L_1 (r_2 + N + 1))
+        hrec_1 hrec_2 hL1_eq hL2_int hL2_0_eq hL2_end_eq hW0_le
+        (hL1_pos (r_1 + N + 1)) (hL1_pos (r_2 + N + 1)) hout_1 hout_2
+    have hdvd_super :
+        (58025 * 2 ^ (S_sub + 10 * L_2 (r_1 + N + 1) + 7)) ∣ (W r_2 - W r_1) := by
+      have hd := h59_1.2.1
+      dsimp [W_1, W_2, L_2_1] at hd
+      have hidx : r_1 + (N + 1) = r_1 + N + 1 := by omega
+      rw [hidx] at hd
+      exact hd
+    have hW1_0_pos : 1 ≤ W_1 0 := hW_pos r_1
+    have hW1_lt_W2 : W_1 0 < W_2 0 := hWr1_lt_Wr2
+    have h2_22_lt : 2 ^ (S_sub + 10 * L_2 (r_1 + N + 1) + 22) < W r_2 := by
+      have h := (h59_1.2.2 hW1_0_pos hW1_lt_W2).1
+      dsimp [W_2, L_2_1] at h
+      have hidx : r_1 + (N + 1) = r_1 + N + 1 := by omega
+      rw [hidx] at h
+      exact h
+    -- Apply Section 59 Part 2 at M = r_2 - 1 ≤ C:
+    set M := r_2 - 1
+    have hM_succ : M + 1 = r_2 := by omega
+    have hMC : M ≤ C := by omega
+    have hWr1_lt_WM1 : W r_1 < W (M + 1) := by rw [hM_succ]; exact hWr1_lt_Wr2
+    have hdvd_M1 :
+        (58025 * 2 ^ (S_sub + 10 * L_2 (r_1 + N + 1) + 7)) ∣ (W (M + 1) - W r_1) := by
+      rw [hM_succ]; exact hdvd_super
+    have h59_2 :=
+      (dense_core_multi_wave_58025_super_divisibility_and_22_bit_repetition_cutoff.2
+        W L_2 L_1 L_2_1 L_1_1 M N W_0 (W r_1) (L_2 (r_1 + N + 1))
+        hW0_lt (hW_pos r_1) hWr1_lt_WM1 (fun n _ => hrec n) (hL1_pos 0)
+        (fun t _ => hL1_pos (r_1 + t)) (fun t _ => hL2_pos (r_1 + (t + 1))) hdvd_M1).2.1
+    have hSM_le_SC : waveInteriorExp L_2 L_1 M ≤ waveInteriorExp L_2 L_1 C :=
+      waveInteriorExp_mono L_2 L_1 hMC
+    refine ⟨hWr1_lt_Wr2, hdvd_super, h2_22_lt, ?_⟩
+    intro p q hq hpq_le
+    have hcut := h59_2 p q hq hpq_le
+    have hL_end_pos : 1 ≤ L_2 (r_1 + N + 1) := hL2_pos (r_1 + N + 1)
+    have hL_M1_pos : 1 ≤ L_2 (M + 1) := hL2_pos (M + 1)
+    have hle1 : S_sub + 42 ≤ S_sub + 10 * L_2 (r_1 + N + 1) + 10 * L_2 (M + 1) + 22 := by omega
+    have hle2 : 17 * N + 49 ≤ 17 * N + 29 + 10 * L_2 (r_1 + N + 1) + 10 * L_2 (M + 1) := by omega
+    have hm1 : q * (S_sub + 42) ≤ q * (S_sub + 10 * L_2 (r_1 + N + 1) + 10 * L_2 (M + 1) + 22) :=
+      Nat.mul_le_mul_left q hle1
+    have hm2 :
+        q * (17 * N + 49) ≤ q * (17 * N + 29 + 10 * L_2 (r_1 + N + 1) + 10 * L_2 (M + 1)) :=
+      Nat.mul_le_mul_left q hle2
+    have hm_SM : p * waveInteriorExp L_2 L_1 M ≤ p * waveInteriorExp L_2 L_1 C :=
+      Nat.mul_le_mul_left p hSM_le_SC
+    exact ⟨by linarith only [hcut.1, hm1, hm_SM], by linarith only [hcut.2, hm2, hm_SM]⟩
+  refine ⟨hrep, ?_⟩
+  intro N C hcard p q hq hpq_le
+  obtain ⟨r_1, r_2, hr12, hr2C, hmatch⟩ :=
+    exists_repeated_subword_of_prefixFactorCount_le (macroWaveCode L_2 L_1) (N + 2) C hcard
+  exact ((hrep r_1 r_2 N C hr12 hr2C hmatch).2.2.2 p q hq hpq_le).2
+
+/-!
+## Section 87: Unconditional Exclusion of Subcritical Macro-Wave Orbits Up to the Full Critical Threshold `κ < log 2 / log(3/2) ≈ 1.709511`
+
+Combining Section 86's Pigeonhole `prefixFactorCount` cutoff with `exists_pq_of_lt_log_threshold`
+eliminates **two entire infinite-horizon families of macro-wave orbits** in the Dense Core:
+
+1. **Density-Weighted Macro-Wave Exclusion (`μ * κ * log(3/2) < 17 * log 2`):**
+   For any average macro-wave step weight `μ > 0` and complexity slope `κ` satisfying
+   `μ * κ * Real.log (3 / 2) < 17 * Real.log 2`, no infinite Dense Core macro-wave orbit can satisfy
+   at arbitrarily large block lengths `N`:
+     `prefixFactorCount (macroWaveCode L_2 L_1) (N + 2) (C N) ≤ C N`,
+     `(waveInteriorExp L_2 L_1 (C N) : ℝ) ≤ μ * (C N : ℝ) + D_0`,  and  `(C N : ℝ) ≤ κ * (N : ℝ) + C_0`.
+2. **Full Critical Threshold `κ < log 2 / log(3/2) ≈ 1.709511` Exclusion Under Balanced Macro-Wave Step Rate `μ > 0`:**
+   Because Section 86's first inequality bounds `q * (S^{(r_1)}_N + 42)` directly against
+   `p * waveInteriorExp L_2 L_1 C`, whenever a macro-wave sequence has **balanced step-sum rate `μ > 0`**
+   (`μ * (N : ℝ) - D_low ≤ (waveInteriorExp (fun t => L_2 (r + t)) (fun t => L_1 (r + t)) N : ℝ)` for
+   `r ≤ C N`, and `(waveInteriorExp L_2 L_1 (C N) : ℝ) ≤ μ * (C N : ℝ) + D_high`), the factor `μ`
+   **cancels out completely**, excluding **every subcritical complexity slope `κ < log 2 / log(3/2) ≈ 1.709511`**!
+-/
+
+/-- **Unconditional Exclusion of Subcritical Macro-Wave Orbits Up to the Full Critical Threshold `κ < log 2 / log(3/2) ≈ 1.709511`:**
+No infinite Dense Core macro-wave orbit `(W, U, L_2, L_1)` can have density-weighted subcritical
+macro-wave complexity `μ * κ * log(3/2) < 17 * log 2`, or balanced macro-wave complexity below the
+full critical threshold `κ * log(3/2) < log 2` (`κ < log 2 / log(3/2) ≈ 1.709511`). -/
+theorem no_subcritical_macroWaveCode_dense_core
+    {W U L_2 L_1 : ℕ → ℕ}
+    (hW_pos : ∀ n : ℕ, 1 ≤ W n)
+    (hU_pos : ∀ n : ℕ, 1 ≤ U n)
+    (hL2_pos : ∀ n : ℕ, 1 ≤ L_2 n)
+    (hL1_pos : ∀ n : ℕ, 1 ≤ L_1 n)
+    (h21 : ∀ n : ℕ, 58025 * 2 ^ (7 * L_1 n) * U n + 19 = 2059 * 3 ^ (10 * L_2 n) * W n)
+    (h12 : ∀ n : ℕ, 58025 * 3 ^ (7 * L_1 n) * U n + 19 = 2059 * 2 ^ (10 * L_2 (n + 1)) * W (n + 1))
+    (hrec : ∀ n : ℕ,
+      2 ^ (7 * L_1 n + 10 * L_2 (n + 1)) * W (n + 1) +
+        19 * ((3 ^ (7 * L_1 n) - 2 ^ (7 * L_1 n)) / 2059) =
+        3 ^ (10 * L_2 n + 7 * L_1 n) * W n) :
+    -- 1. Density-weighted macro-wave exclusion (μ * κ * log(3/2) < 17 * log 2):
+    (∀ (μ kappa C_0 D_0 : ℝ) (C : ℕ → ℕ),
+      0 < μ → 0 ≤ C_0 → 0 ≤ D_0 →
+      μ * kappa * Real.log (3 / 2 : ℝ) < 17 * Real.log (2 : ℝ) →
+      ¬ (∀ N_min : ℕ, ∃ N ≥ N_min,
+        prefixFactorCount (macroWaveCode L_2 L_1) (N + 2) (C N) ≤ C N ∧
+        (waveInteriorExp L_2 L_1 (C N) : ℝ) ≤ μ * (C N : ℝ) + D_0 ∧
+        (C N : ℝ) ≤ kappa * (N : ℝ) + C_0)) ∧
+    -- 2. Full critical threshold exclusion (κ * log(3/2) < log 2, i.e. κ < 1.709511) for balanced macro-waves:
+    (∀ (μ kappa C_0 D_low D_high : ℝ) (C : ℕ → ℕ),
+      0 < μ → 0 ≤ C_0 → 0 ≤ D_low → 0 ≤ D_high →
+      kappa * Real.log (3 / 2 : ℝ) < Real.log (2 : ℝ) →
+      ¬ (∀ N_min : ℕ, ∃ N ≥ N_min,
+        prefixFactorCount (macroWaveCode L_2 L_1) (N + 2) (C N) ≤ C N ∧
+        (∀ r ≤ C N,
+          μ * (N : ℝ) - D_low ≤
+            (waveInteriorExp (fun t => L_2 (r + t)) (fun t => L_1 (r + t)) N : ℝ)) ∧
+        (waveInteriorExp L_2 L_1 (C N) : ℝ) ≤ μ * (C N : ℝ) + D_high ∧
+        (C N : ℝ) ≤ kappa * (N : ℝ) + C_0)) := by
+  have hpow_self : ∀ n : ℕ, n < 2 ^ n := by
+    intro n
+    induction n with
+    | zero => decide
+    | succ n ih =>
+        have hpos : 1 ≤ 2 ^ n := Nat.pow_pos (by decide)
+        rw [Nat.pow_succ]
+        omega
+  set W_0 := W 0
+  have hW0_lt : W 0 < 2 ^ W_0 := hpow_self (W 0)
+  have h86 :=
+    dense_core_macroWaveCode_pigeonhole_and_automatic_growth_cutoff
+      hW_pos hU_pos hL2_pos hL1_pos hW0_lt h21 h12 hrec
+  refine ⟨?_, ?_⟩
+  · intro μ kappa C_0 D_0 C hμ hC0 hD0 hlog hliminf
+    have hlog_scaled : ((μ / 17 : ℝ) * kappa) * Real.log (3 / 2 : ℝ) < Real.log (2 : ℝ) := by
+      linarith
+    obtain ⟨p, q, hq, hpq_lt, hsub⟩ := exists_pq_of_lt_log_threshold hlog_scaled
+    have hpq : 3 ^ q ≤ 2 ^ (p + q) := le_of_lt hpq_lt
+    set gap : ℝ := 17 * (q : ℝ) - (p : ℝ) * μ * kappa
+    have hgap_pos : 0 < gap := by unfold gap; linarith
+    set RHS : ℝ :=
+      (p : ℝ) * (μ * C_0 + D_0) + 10 * ((p : ℝ) + (q : ℝ)) * (L_2 0 : ℝ) + (q : ℝ) * (W_0 : ℝ)
+    have hRHS_nonneg : 0 ≤ RHS := by unfold RHS; positivity
+    obtain ⟨N_min, hN_min⟩ := exists_nat_gt (RHS / gap + 1)
+    obtain ⟨N, hN_ge, hcard, hS_bound, hC_bound⟩ := hliminf N_min
+    have hcut_nat := h86.2 N (C N) hcard p q hq hpq
+    have hq_dist : 17 * q * N + 49 * q = q * (17 * N + 49) := by ring
+    have hcut_le :
+        17 * q * N + 1 ≤
+          p * waveInteriorExp L_2 L_1 (C N) + 10 * (p + q) * L_2 0 + q * W_0 := by omega
+    have hcut_real :
+        17 * (q : ℝ) * (N : ℝ) + 1 ≤
+          (p : ℝ) * (waveInteriorExp L_2 L_1 (C N) : ℝ) +
+            10 * ((p : ℝ) + (q : ℝ)) * (L_2 0 : ℝ) + (q : ℝ) * (W_0 : ℝ) := by
+      exact_mod_cast hcut_le
+    have hμ_mul : μ * (C N : ℝ) ≤ μ * (kappa * (N : ℝ) + C_0) :=
+      mul_le_mul_of_nonneg_left hC_bound (le_of_lt hμ)
+    have hS_upper :
+        (waveInteriorExp L_2 L_1 (C N) : ℝ) ≤ μ * kappa * (N : ℝ) + (μ * C_0 + D_0) := by
+      linarith
+    have hp_nonneg : (0 : ℝ) ≤ (p : ℝ) := Nat.cast_nonneg p
+    have hp_mul :
+        (p : ℝ) * (waveInteriorExp L_2 L_1 (C N) : ℝ) ≤
+          (p : ℝ) * (μ * kappa * (N : ℝ) + (μ * C_0 + D_0)) :=
+      mul_le_mul_of_nonneg_left hS_upper hp_nonneg
+    have hgap_le : gap * (N : ℝ) + 1 ≤ RHS := by
+      unfold gap RHS
+      linarith
+    have hN_real : (N_min : ℝ) ≤ (N : ℝ) := by exact_mod_cast hN_ge
+    have h1 : RHS / gap < (N : ℝ) := by linarith
+    have h2 : RHS < (N : ℝ) * gap := (div_lt_iff₀ hgap_pos).mp h1
+    linarith
+  · intro μ kappa C_0 D_low D_high C hμ hC0 hDlow hDhigh hlog hliminf
+    obtain ⟨p, q, hq, hpq_lt, hsub⟩ := exists_pq_of_lt_log_threshold hlog
+    have hpq : 3 ^ q ≤ 2 ^ (p + q) := le_of_lt hpq_lt
+    set gap : ℝ := ((q : ℝ) - (p : ℝ) * kappa) * μ
+    have hgap_pos : 0 < gap := by
+      unfold gap
+      exact mul_pos (by linarith) hμ
+    set RHS : ℝ :=
+      (p : ℝ) * (μ * C_0 + D_high) + (q : ℝ) * D_low +
+        10 * ((p : ℝ) + (q : ℝ)) * (L_2 0 : ℝ) + (q : ℝ) * (W_0 : ℝ)
+    have hRHS_nonneg : 0 ≤ RHS := by unfold RHS; positivity
+    obtain ⟨N_min, hN_min⟩ := exists_nat_gt (RHS / gap + 1)
+    obtain ⟨N, hN_ge, hcard, hS_low, hS_high, hC_bound⟩ := hliminf N_min
+    obtain ⟨r_1, r_2, hr12, hr2C, hmatch⟩ :=
+      exists_repeated_subword_of_prefixFactorCount_le (macroWaveCode L_2 L_1) (N + 2) (C N) hcard
+    have hcut_nat := ((h86.1 r_1 r_2 N (C N) hr12 hr2C hmatch).2.2.2 p q hq hpq).1
+    set S_sub := waveInteriorExp (fun t => L_2 (r_1 + t)) (fun t => L_1 (r_1 + t)) N
+    have hq_dist2 : q * S_sub + 42 * q = q * (S_sub + 42) := by ring
+    have hcut_le :
+        q * S_sub + 1 ≤
+          p * waveInteriorExp L_2 L_1 (C N) + 10 * (p + q) * L_2 0 + q * W_0 := by omega
+    have hcut_real :
+        (q : ℝ) * (S_sub : ℝ) + 1 ≤
+          (p : ℝ) * (waveInteriorExp L_2 L_1 (C N) : ℝ) +
+            10 * ((p : ℝ) + (q : ℝ)) * (L_2 0 : ℝ) + (q : ℝ) * (W_0 : ℝ) := by
+      exact_mod_cast hcut_le
+    have hr1C : r_1 ≤ C N := by omega
+    have hlow_r1 := hS_low r_1 hr1C
+    have hq_nonneg : (0 : ℝ) ≤ (q : ℝ) := Nat.cast_nonneg q
+    have hq_mul : (q : ℝ) * (μ * (N : ℝ) - D_low) ≤ (q : ℝ) * (S_sub : ℝ) :=
+      mul_le_mul_of_nonneg_left hlow_r1 hq_nonneg
+    have hμ_mul : μ * (C N : ℝ) ≤ μ * (kappa * (N : ℝ) + C_0) :=
+      mul_le_mul_of_nonneg_left hC_bound (le_of_lt hμ)
+    have hS_upper :
+        (waveInteriorExp L_2 L_1 (C N) : ℝ) ≤ μ * kappa * (N : ℝ) + (μ * C_0 + D_high) := by
+      linarith
+    have hp_nonneg : (0 : ℝ) ≤ (p : ℝ) := Nat.cast_nonneg p
+    have hp_mul :
+        (p : ℝ) * (waveInteriorExp L_2 L_1 (C N) : ℝ) ≤
+          (p : ℝ) * (μ * kappa * (N : ℝ) + (μ * C_0 + D_high)) :=
+      mul_le_mul_of_nonneg_left hS_upper hp_nonneg
+    have hgap_le : gap * (N : ℝ) + 1 ≤ RHS := by
+      unfold gap RHS
+      linarith
+    have hN_real : (N_min : ℝ) ≤ (N : ℝ) := by exact_mod_cast hN_ge
+    have h1 : RHS / gap < (N : ℝ) := by linarith
+    have h2 : RHS < (N : ℝ) * gap := (div_lt_iff₀ hgap_pos).mp h1
+    linarith
+
+/-!
+## Section 88: Two-Way Anagram Prefix-to-Start (`58,025 * 2^(S_K)`) and Suffix-to-End (`7,427,200 * 3^(S_end - S_J + 7)`) State-Difference Super-Divisibility
+
+What happens when two `(J + D + 1)`-wave blocks (`N = J + D`) do **not** repeat the exact same
+interior run sequence, but instead form an **interior macro-wave anagram** (`S_{J+D} = S'_{J'+D}`)
+with matching boundary `2`-run lengths `L_2(0) = L_2'(0)` and `L_2(J+D+1) = L_2'(J'+D+1)`?
+
+Subtracting their symmetric master identities gives:
+  `2^(S_end + 10*L_end) * (W'(J'+D+1) - W(J+D+1)) + 19 * (Acc'_{J'+D} - Acc_{J+D}) = 3^(S_end + 10*L_2(0)) * (W'(0) - W(0))`.
+
+1. **Prefix-to-Start `58,025 * 2^(S_K)` (`126,900,675 * 2^(S_K)`) State-Difference Super-Divisibility:**
+   When the two anagrams share their **first `K` interior waves** (`K ≤ J`, `K ≤ J'`), Section 64
+   proves `(126,900,675 * 2^(S_K)) ∣ (Acc'_{J'+D} - Acc_{J+D})`, while Section 58 proves
+   `7,427,200 = 58,025 * 2^7 ∣ (W'(J'+D+1) - W(J+D+1))`.
+   Since `S_K ≤ S_end ≤ S_end + 10*L_end + 7`, `(58,025 * 2^(S_K))` divides **both** terms on the
+   left-hand side, and by coprimality with `3^(S_end + 10*L_2(0))` (and `2187 ∣ (W'(0) - W(0))` from
+   the incoming interface!), we obtain:
+     `(58,025 * 2^(S_K)) ∣ (W'(0) - W(0))`  and  `(126,900,675 * 2^(S_K)) ∣ (W'(0) - W(0))`!
+2. **Suffix-to-End `3^(S_end - S_J)` (`7,427,200 * 3^(S_end - S_J)`) State-Difference Super-Divisibility:**
+   Dually, when the two anagrams share their **last `D` interior waves**, Section 70 proves
+   `3^(S_end - S_J) ∣ (Acc'_{J'+D} - Acc_{J+D})`. Since `3^(S_end - S_J)` also divides
+   `3^(S_end + 10*L_2(0)) * (W'(0) - W(0))` and is coprime to `2^(S_end + 10*L_end)`, it transfers
+   forward to the **terminal state difference**:
+     `3^(S_end - S_J) ∣ (W'(J'+D+1) - W(J+D+1))`  and
+     `(7,427,200 * 3^(S_end - S_J)) ∣ (W'(J'+D+1) - W(J+D+1))`!
+-/
+
+/-- **Two-Way Anagram Prefix-to-Start (`58,025 * 2^(S_K)`) & Suffix-to-End (`7,427,200 * 3^(S_end - S_J)`) State-Difference Super-Divisibility:**
+Across any two interior macro-wave anagrams (`S_{J+D} = S'_{J'+D}`) with matching boundary `2`-runs,
+sharing `K` prefix waves forces `(58025 * 2^(S_K)) ∣ (W'(0) - W(0))`, while sharing `D` suffix waves
+forces `(7427200 * 3^(S_{J+D} - S_J)) ∣ (W'(J'+D+1) - W(J+D+1))`. -/
+theorem dense_core_anagram_prefix_start_and_suffix_end_state_super_divisibility
+    {W L_2 L_1 W' L_2' L_1' : ℕ → ℕ}
+    {K J J' D W_3_end W_3_end' L_3_end L_3_end' : ℕ}
+    (hKJ : K ≤ J) (hKJ' : K ≤ J')
+    (hL1 : ∀ t ≤ J + D, 1 ≤ L_1 t)
+    (hL1' : ∀ t ≤ J' + D, 1 ≤ L_1' t)
+    (hrec : ∀ n ≤ J + D,
+      2 ^ (7 * L_1 n + 10 * L_2 (n + 1)) * W (n + 1) +
+        19 * ((3 ^ (7 * L_1 n) - 2 ^ (7 * L_1 n)) / 2059) =
+        3 ^ (10 * L_2 n + 7 * L_1 n) * W n)
+    (hrec' : ∀ n ≤ J' + D,
+      2 ^ (7 * L_1' n + 10 * L_2' (n + 1)) * W' (n + 1) +
+        19 * ((3 ^ (7 * L_1' n) - 2 ^ (7 * L_1' n)) / 2059) =
+        3 ^ (10 * L_2' n + 7 * L_1' n) * W' n)
+    (hL2_0 : L_2 0 = L_2' 0)
+    (hL2_end : L_2 (J + D + 1) = L_2' (J' + D + 1))
+    (hS_end : waveInteriorExp L_2 L_1 (J + D) = waveInteriorExp L_2' L_1' (J' + D))
+    (hAcc_le : waveInteriorAcc L_2 L_1 (J + D) ≤ waveInteriorAcc L_2' L_1' (J' + D))
+    (hW0_le : W 0 ≤ W' 0)
+    (hWend_le : W (J + D + 1) ≤ W' (J' + D + 1))
+    (hL3_end : 1 ≤ L_3_end) (hL3_end' : 1 ≤ L_3_end')
+    (hout : 58025 * 2 ^ (7 * L_3_end) * W_3_end + 19 =
+      2059 * 3 ^ (10 * L_2 (J + D + 1)) * W (J + D + 1))
+    (hout' : 58025 * 2 ^ (7 * L_3_end') * W_3_end' + 19 =
+      2059 * 3 ^ (10 * L_2 (J + D + 1)) * W' (J' + D + 1)) :
+    let S_K := waveInteriorExp L_2 L_1 K
+    let S_J := waveInteriorExp L_2 L_1 J
+    let S_end := waveInteriorExp L_2 L_1 (J + D)
+    -- 1. Prefix-to-start (58,025 * 2^(S_K)) super-divisibility on W'(0) - W(0):
+    ((∀ t ≤ K, L_1 t = L_1' t) →
+     (∀ t < K, L_2 (t + 1) = L_2' (t + 1)) →
+      (58025 * 2 ^ S_K) ∣ (W' 0 - W 0) ∧
+      (1 ≤ W 0 → W 0 < W' 0 → 2 ^ (S_K + 15) < W' 0 ∧ W 0 + 58025 * 2 ^ S_K ≤ W' 0)) ∧
+    -- 2. Suffix-to-end (7,427,200 * 3^(S_end - S_J)) super-divisibility on W'(J'+D+1) - W(J+D+1):
+    ((∀ d < D, L_1 (J + 1 + d) = L_1' (J' + 1 + d)) →
+     (∀ d < D, L_2 (J + 1 + d) = L_2' (J' + 1 + d)) →
+      3 ^ (S_end - S_J) ∣ (W' (J' + D + 1) - W (J + D + 1)) ∧
+      (7427200 * 3 ^ (S_end - S_J)) ∣ (W' (J' + D + 1) - W (J + D + 1)) ∧
+      (W (J + D + 1) < W' (J' + D + 1) →
+        W (J + D + 1) + 7427200 * 3 ^ (S_end - S_J) ≤ W' (J' + D + 1))) := by
+  intro S_K S_J S_end
+  set Acc_end := waveInteriorAcc L_2 L_1 (J + D)
+  set Acc_end' := waveInteriorAcc L_2' L_1' (J' + D)
+  have hm :=
+    (dense_core_symmetric_multi_wave_master_identity_and_boundary_independence.2
+      W L_2 L_1 (J + D) hrec).1
+  have hm' :=
+    (dense_core_symmetric_multi_wave_master_identity_and_boundary_independence.2
+      W' L_2' L_1' (J' + D) hrec').1
+  rw [← hS_end, ← hL2_0, ← hL2_end] at hm'
+  change 2 ^ S_end * (2 ^ (10 * L_2 (J + D + 1)) * W (J + D + 1)) + 19 * Acc_end =
+      3 ^ S_end * (3 ^ (10 * L_2 0) * W 0) at hm
+  change 2 ^ S_end * (2 ^ (10 * L_2 (J + D + 1)) * W' (J' + D + 1)) + 19 * Acc_end' =
+      3 ^ S_end * (3 ^ (10 * L_2 0) * W' 0) at hm'
+  have hp2 :
+      2 ^ S_end * (2 ^ (10 * L_2 (J + D + 1)) * W (J + D + 1)) =
+        2 ^ (S_end + 10 * L_2 (J + D + 1)) * W (J + D + 1) := by
+    rw [Nat.pow_add]; ring
+  have hp2' :
+      2 ^ S_end * (2 ^ (10 * L_2 (J + D + 1)) * W' (J' + D + 1)) =
+        2 ^ (S_end + 10 * L_2 (J + D + 1)) * W' (J' + D + 1) := by
+    rw [Nat.pow_add]; ring
+  have hp3 :
+      3 ^ S_end * (3 ^ (10 * L_2 0) * W 0) = 3 ^ (S_end + 10 * L_2 0) * W 0 := by
+    rw [Nat.pow_add]; ring
+  have hp3' :
+      3 ^ S_end * (3 ^ (10 * L_2 0) * W' 0) = 3 ^ (S_end + 10 * L_2 0) * W' 0 := by
+    rw [Nat.pow_add]; ring
+  rw [hp2, hp3] at hm
+  rw [hp2', hp3'] at hm'
+  have hdiff_master :
+      2 ^ (S_end + 10 * L_2 (J + D + 1)) * (W' (J' + D + 1) - W (J + D + 1)) +
+        19 * (Acc_end' - Acc_end) =
+        3 ^ (S_end + 10 * L_2 0) * (W' 0 - W 0) := by
+    have hadd_W0 := Nat.sub_add_cancel hW0_le
+    have hadd_Wend := Nat.sub_add_cancel hWend_le
+    have hadd_Acc := Nat.sub_add_cancel hAcc_le
+    have hd1 :
+        2 ^ (S_end + 10 * L_2 (J + D + 1)) * (W' (J' + D + 1) - W (J + D + 1)) +
+          2 ^ (S_end + 10 * L_2 (J + D + 1)) * W (J + D + 1) =
+          2 ^ (S_end + 10 * L_2 (J + D + 1)) * W' (J' + D + 1) := by
+      rw [← Nat.mul_add, hadd_Wend]
+    have hd2 :
+        19 * (Acc_end' - Acc_end) + 19 * Acc_end = 19 * Acc_end' := by
+      rw [← Nat.mul_add, hadd_Acc]
+    have hd3 :
+        3 ^ (S_end + 10 * L_2 0) * (W' 0 - W 0) + 3 ^ (S_end + 10 * L_2 0) * W 0 =
+          3 ^ (S_end + 10 * L_2 0) * W' 0 := by
+      rw [← Nat.mul_add, hadd_W0]
+    linarith only [hm, hm', hd1, hd2, hd3]
+  have hd74 : 7427200 ∣ (W' (J' + D + 1) - W (J + D + 1)) :=
+    w2_same_run_outgoing_7427200_dvd hL3_end hL3_end' hWend_le hout hout'
+  refine ⟨?_, ?_⟩
+  · intro hK1 hK2
+    have h64 :=
+      (dense_core_waveCrossDefect_prefix_filtration_and_anagram_divisibility.2
+        L_2 L_1 L_2' L_1' K (J + D) (J' + D) (by omega) (by omega)
+        hL1 hL1' hK1 hK2 hS_end hAcc_le).2
+    rcases h64 with ⟨QA, hQA⟩
+    rcases hd74 with ⟨QW, hQW⟩
+    have hSK_le_Send : S_K ≤ S_end := waveInteriorExp_mono L_2 L_1 (by omega)
+    have hpow2_dvd : 2 ^ S_K ∣ 2 ^ (S_end + 10 * L_2 (J + D + 1)) :=
+      Nat.pow_dvd_pow 2 (by omega)
+    rcases hpow2_dvd with ⟨P2, hP2⟩
+    have hfactor :
+        (58025 * 2 ^ S_K) * (128 * P2 * QW + 19 * 2187 * QA) =
+          3 ^ (S_end + 10 * L_2 0) * (W' 0 - W 0) := by
+      rw [hQW, hQA, hP2] at hdiff_master
+      dsimp [S_K] at hdiff_master ⊢
+      linarith only [hdiff_master]
+    have hcop : Nat.Coprime (58025 * 2 ^ S_K) (3 ^ (S_end + 10 * L_2 0)) := by
+      have hc1 : Nat.Coprime 58025 (3 ^ (S_end + 10 * L_2 0)) :=
+        Nat.Coprime.pow_right _ (by decide : Nat.Coprime 58025 3)
+      have hc2 : Nat.Coprime (2 ^ S_K) (3 ^ (S_end + 10 * L_2 0)) :=
+        Nat.Coprime.pow _ _ (by decide : Nat.Coprime 2 3)
+      exact Nat.Coprime.mul hc1 hc2
+    have hdvd_start : (58025 * 2 ^ S_K) ∣ (W' 0 - W 0) :=
+      hcop.dvd_of_dvd_mul_left ⟨128 * P2 * QW + 19 * 2187 * QA, hfactor.symm⟩
+    refine ⟨hdvd_start, ?_⟩
+    intro hW0_pos hW0_lt
+    rcases hdvd_start with ⟨K0, hK0⟩
+    have hK0_pos : 1 ≤ K0 := by
+      rcases Nat.eq_zero_or_pos K0 with rfl | hp
+      · rw [Nat.mul_zero] at hK0; omega
+      · exact hp
+    have hge : 58025 * 2 ^ S_K ≤ W' 0 - W 0 := by
+      rw [hK0]; exact Nat.le_mul_of_pos_right _ hK0_pos
+    have h2_15_lt : 2 ^ (S_K + 15) < W' 0 := by
+      have hp15 : 2 ^ (S_K + 15) = 32768 * 2 ^ S_K := by
+        rw [Nat.pow_add 2 S_K 15]; ring
+      have hp_pos : 1 ≤ 2 ^ S_K := Nat.pow_pos (by decide)
+      omega
+    exact ⟨h2_15_lt, by omega⟩
+  · intro hL1_suf hL2_suf
+    have hsuf :=
+      (waveInteriorAcc_suffix_anagram_cancellation
+        L_2 L_1 L_2' L_1' J J' D hS_end hL1_suf hL2_suf).2 hAcc_le
+    have hSJ_le_Send : S_J ≤ S_end := waveInteriorExp_mono L_2 L_1 (by omega)
+    have hpow3_dvd : 3 ^ (S_end - S_J) ∣ 3 ^ (S_end + 10 * L_2 0) :=
+      Nat.pow_dvd_pow 3 (by omega)
+    rcases hpow3_dvd with ⟨P3, hP3⟩
+    set dAcc := waveInteriorAcc L_2' L_1' J' - waveInteriorAcc L_2 L_1 J
+    have hAcc_eq : Acc_end' - Acc_end = 3 ^ (S_end - S_J) * dAcc := hsuf.2
+    have hle_rhs :
+        19 * dAcc ≤ P3 * (W' 0 - W 0) := by
+      refine Nat.le_of_not_lt (fun hlt => ?_)
+      have hm_lt :
+          3 ^ (S_end - S_J) * (P3 * (W' 0 - W 0)) < 3 ^ (S_end - S_J) * (19 * dAcc) :=
+        Nat.mul_lt_mul_of_pos_left hlt (Nat.pow_pos (by decide))
+      rw [hAcc_eq, hP3] at hdiff_master
+      have ha1 : 3 ^ (S_end - S_J) * (19 * dAcc) = 19 * (3 ^ (S_end - S_J) * dAcc) := by ring
+      have ha2 :
+          3 ^ (S_end - S_J) * (P3 * (W' 0 - W 0)) =
+            3 ^ (S_end - S_J) * P3 * (W' 0 - W 0) := by ring
+      rw [ha1, ha2] at hm_lt
+      omega
+    have hfactor_end :
+        2 ^ (S_end + 10 * L_2 (J + D + 1)) * (W' (J' + D + 1) - W (J + D + 1)) =
+          3 ^ (S_end - S_J) * (P3 * (W' 0 - W 0) - 19 * dAcc) := by
+      have hadd := Nat.sub_add_cancel hle_rhs
+      have hd :
+          3 ^ (S_end - S_J) * (P3 * (W' 0 - W 0) - 19 * dAcc) +
+            19 * (3 ^ (S_end - S_J) * dAcc) =
+            3 ^ (S_end - S_J) * P3 * (W' 0 - W 0) := by
+        calc 3 ^ (S_end - S_J) * (P3 * (W' 0 - W 0) - 19 * dAcc) +
+            19 * (3 ^ (S_end - S_J) * dAcc)
+            = 3 ^ (S_end - S_J) * ((P3 * (W' 0 - W 0) - 19 * dAcc) + 19 * dAcc) := by ring
+          _ = 3 ^ (S_end - S_J) * (P3 * (W' 0 - W 0)) := by rw [hadd]
+          _ = 3 ^ (S_end - S_J) * P3 * (W' 0 - W 0) := by ring
+      rw [hAcc_eq, hP3] at hdiff_master
+      linarith only [hdiff_master, hd]
+    have hcop_end : Nat.Coprime (3 ^ (S_end - S_J)) (2 ^ (S_end + 10 * L_2 (J + D + 1))) :=
+      Nat.Coprime.pow _ _ (by decide : Nat.Coprime 3 2)
+    have hdvd3_end : 3 ^ (S_end - S_J) ∣ (W' (J' + D + 1) - W (J + D + 1)) :=
+      hcop_end.dvd_of_dvd_mul_left ⟨P3 * (W' 0 - W 0) - 19 * dAcc, hfactor_end⟩
+    have hcop74 : Nat.Coprime 7427200 (3 ^ (S_end - S_J)) :=
+      Nat.Coprime.pow_right _ (by decide : Nat.Coprime 7427200 3)
+    have hdvd_prod := hcop74.mul_dvd_of_dvd_of_dvd hd74 hdvd3_end
+    refine ⟨hdvd3_end, hdvd_prod, ?_⟩
+    intro hlt_end
+    rcases hdvd_prod with ⟨Ke, hKe⟩
+    have hKe_pos : 1 ≤ Ke := by
+      rcases Nat.eq_zero_or_pos Ke with rfl | hp
+      · rw [Nat.mul_zero] at hKe; omega
+      · exact hp
+    have hge : 7427200 * 3 ^ (S_end - S_J) ≤ W' (J' + D + 1) - W (J + D + 1) := by
+      rw [hKe]; exact Nat.le_mul_of_pos_right _ hKe_pos
+    omega
+
+/-!
+## Section 89: Suffix-Sharing Macro-Wave Anagram `3`-Adic Archimedean Cutoff (`(p + q) * E_suf` vs. `p * S_M`)
+
+What happens when a macro-wave anagram pair (`S_{J+D} = S'_{J'+D}`) shares its **last `D` interior
+waves** (`E_suf = S_end - S_J ≤ S_M + 10*L_2(0)`) and finishes at horizon `M + 1` along an orbit
+starting from `W(0) < 2^W_0`?
+By Section 88 Part 2, `(7,427,200 * 3^E_suf) ∣ (W(M + 1) - W_a)` (`1 ≤ W_a < W(M + 1)`).
+Since `7,427,200 > 4,194,304 = 2^22`:
+  `2^22 * 3^E_suf < 7427200 * 3^E_suf + W_a ≤ W(M + 1)`!
+Combining this `3`-adic lower bound on `W(M + 1)` with the `(M + 1)`-wave origin upper bound
+`2^(S_M + 10*L_2(M+1)) * W(M+1) < 3^(S_M + 10*L_2(0)) * 2^W_0` and **canceling `3^E_suf` directly
+against `3^(S_M + 10*L_2(0))`** yields:
+  `2^(S_M + 10*L_2(M+1) + 22) < 3^(S_M + 10*L_2(0) - E_suf) * 2^W_0`!
+Raising to `q ≥ 1` with `3^q ≤ 2^(p + q)` and canceling `q * S_M` from both sides proves:
+  `(p + q) * E_suf + q * (10 * L_2(M+1) + 22) < p * S_M + 10 * (p + q) * L_2(0) + q * W_0`!
+Notice that the coefficient of `E_suf` is **`p + q` (e.g. `27` at `(p, q) = (10, 17)`) rather than `q = 17`**—a
+`27 / 17 ≈ 1.588×` (`log_2 3×`) stronger weight than a `2`-adic prefix bit!
+-/
+
+/-- **Suffix-Sharing Macro-Wave Anagram `3`-Adic Archimedean Cutoff:**
+Whenever `(7,427,200 * 3^E_suf) ∣ (W(M+1) - W_a)` (`1 ≤ W_a < W(M+1)`, `E_suf ≤ S_M + 10*L_2(0)`),
+canceling `3^E_suf` against `3^(S_M + 10*L_2(0))` forces
+`(p + q) * E_suf + q * (10 * L_2(M+1) + 22) < p * S_M + 10 * (p + q) * L_2(0) + q * W_0`
+for every `3^q ≤ 2^(p + q)` (`q ≥ 1`), and at `(p, q) = (10, 17)`:
+`27 * E_suf + 17 * (10 * L_2(M+1) + 22) < 10 * S_M + 270 * L_2(0) + 17 * W_0`. -/
+theorem dense_core_suffix_sharing_anagram_three_adic_cutoff
+    {W L_2 L_1 : ℕ → ℕ} {M W_0 W_a E_suf : ℕ}
+    (hW0_lt : W 0 < 2 ^ W_0)
+    (hWa_pos : 1 ≤ W_a) (hWa_lt : W_a < W (M + 1))
+    (hrec_M : ∀ n ≤ M,
+      2 ^ (7 * L_1 n + 10 * L_2 (n + 1)) * W (n + 1) +
+        19 * ((3 ^ (7 * L_1 n) - 2 ^ (7 * L_1 n)) / 2059) =
+        3 ^ (10 * L_2 n + 7 * L_1 n) * W n)
+    (hL1_M0 : 1 ≤ L_1 0)
+    (hEsuf_le : E_suf ≤ waveInteriorExp L_2 L_1 M + 10 * L_2 0)
+    (hdvd_suf : (7427200 * 3 ^ E_suf) ∣ (W (M + 1) - W_a)) :
+    let S_M := waveInteriorExp L_2 L_1 M
+    -- 1. 2^22 * 3^E_suf lower bound on W(M + 1) and 3^E_suf-canceled inequality:
+    2 ^ 22 * 3 ^ E_suf < W (M + 1) ∧
+    2 ^ (S_M + 10 * L_2 (M + 1) + 22) < 3 ^ (S_M + 10 * L_2 0 - E_suf) * 2 ^ W_0 ∧
+    -- 2. Parameterized (p, q) 3-adic suffix cutoff with (p + q) weight and concrete (10, 17) cutoff:
+    (∀ p q : ℕ, 1 ≤ q → 3 ^ q ≤ 2 ^ (p + q) →
+      (p + q) * E_suf + q * (10 * L_2 (M + 1) + 22) <
+        p * S_M + 10 * (p + q) * L_2 0 + q * W_0) ∧
+    27 * E_suf + 17 * (10 * L_2 (M + 1) + 22) <
+      10 * S_M + 270 * L_2 0 + 17 * W_0 := by
+  intro S_M
+  have hAcc_pos : 1 ≤ waveInteriorAcc L_2 L_1 M :=
+    waveInteriorAcc_pos L_2 L_1 hL1_M0 M
+  have hm :=
+    (dense_core_symmetric_multi_wave_master_identity_and_boundary_independence.2
+      W L_2 L_1 M hrec_M).1
+  change 2 ^ S_M * (2 ^ (10 * L_2 (M + 1)) * W (M + 1)) + 19 * waveInteriorAcc L_2 L_1 M =
+      3 ^ S_M * (3 ^ (10 * L_2 0) * W 0) at hm
+  have hp2_M :
+      2 ^ (S_M + 10 * L_2 (M + 1)) * W (M + 1) =
+        2 ^ S_M * (2 ^ (10 * L_2 (M + 1)) * W (M + 1)) := by
+    rw [Nat.pow_add]; ring
+  have hp3_M :
+      3 ^ (S_M + 10 * L_2 0) * W 0 = 3 ^ S_M * (3 ^ (10 * L_2 0) * W 0) := by
+    rw [Nat.pow_add]; ring
+  have hup_W0 :
+      2 ^ (S_M + 10 * L_2 (M + 1)) * W (M + 1) < 3 ^ (S_M + 10 * L_2 0) * W 0 := by
+    linarith only [hm, hp2_M, hp3_M, hAcc_pos]
+  have hup_2W0 :
+      2 ^ (S_M + 10 * L_2 (M + 1)) * W (M + 1) < 3 ^ (S_M + 10 * L_2 0) * 2 ^ W_0 :=
+    lt_trans hup_W0 (Nat.mul_lt_mul_of_pos_left hW0_lt (Nat.pow_pos (by decide)))
+  rcases hdvd_suf with ⟨K, hK⟩
+  have hK_pos : 1 ≤ K := by
+    rcases Nat.eq_zero_or_pos K with rfl | hp
+    · rw [Nat.mul_zero] at hK; omega
+    · exact hp
+  have hWM_ge : 7427200 * 3 ^ E_suf + W_a ≤ W (M + 1) := by
+    have h1 : 7427200 * 3 ^ E_suf ≤ W (M + 1) - W_a := by
+      rw [hK]; exact Nat.le_mul_of_pos_right _ hK_pos
+    omega
+  have h2_22_lt : 2 ^ 22 * 3 ^ E_suf < W (M + 1) := by
+    have hp3_pos : 1 ≤ 3 ^ E_suf := Nat.pow_pos (by decide)
+    have h22 : (2 : ℕ) ^ 22 = 4194304 := by decide
+    rw [h22]
+    omega
+  have hcomb_lt :
+      3 ^ E_suf * 2 ^ (S_M + 10 * L_2 (M + 1) + 22) <
+        3 ^ E_suf * (3 ^ (S_M + 10 * L_2 0 - E_suf) * 2 ^ W_0) := by
+    have hp_lhs :
+        3 ^ E_suf * 2 ^ (S_M + 10 * L_2 (M + 1) + 22) =
+          2 ^ (S_M + 10 * L_2 (M + 1)) * (2 ^ 22 * 3 ^ E_suf) := by
+      rw [Nat.pow_add 2 (S_M + 10 * L_2 (M + 1)) 22]; ring
+    have hp_rhs :
+        3 ^ (S_M + 10 * L_2 0) * 2 ^ W_0 =
+          3 ^ E_suf * (3 ^ (S_M + 10 * L_2 0 - E_suf) * 2 ^ W_0) := by
+      have hexp : S_M + 10 * L_2 0 = E_suf + (S_M + 10 * L_2 0 - E_suf) := by omega
+      calc 3 ^ (S_M + 10 * L_2 0) * 2 ^ W_0
+          = (3 ^ E_suf * 3 ^ (S_M + 10 * L_2 0 - E_suf)) * 2 ^ W_0 := by
+              rw [← Nat.pow_add, ← hexp]
+        _ = 3 ^ E_suf * (3 ^ (S_M + 10 * L_2 0 - E_suf) * 2 ^ W_0) := by ring
+    rw [hp_lhs, ← hp_rhs]
+    exact lt_trans (Nat.mul_lt_mul_of_pos_left h2_22_lt (Nat.pow_pos (by decide))) hup_2W0
+  have hcancel_lt :
+      2 ^ (S_M + 10 * L_2 (M + 1) + 22) < 3 ^ (S_M + 10 * L_2 0 - E_suf) * 2 ^ W_0 := by
+    refine Nat.lt_of_not_le (fun hge => ?_)
+    have hm_ge := Nat.mul_le_mul_left (3 ^ E_suf) hge
+    omega
+  have hpq :
+      ∀ p q : ℕ, 1 ≤ q → 3 ^ q ≤ 2 ^ (p + q) →
+        (p + q) * E_suf + q * (10 * L_2 (M + 1) + 22) <
+          p * S_M + 10 * (p + q) * L_2 0 + q * W_0 := by
+    intro p q hq hpq_le
+    set E_lhs := S_M + 10 * L_2 (M + 1) + 22
+    set E_3 := S_M + 10 * L_2 0 - E_suf
+    have hpow_q : (2 ^ E_lhs) ^ q < (3 ^ E_3 * 2 ^ W_0) ^ q :=
+      pow_lt_pow_of_lt hcancel_lt hq
+    have h3_le : (3 ^ E_3) ^ q ≤ 2 ^ ((p + q) * E_3) := by
+      calc (3 ^ E_3) ^ q
+          = 3 ^ (E_3 * q) := (Nat.pow_mul 3 E_3 q).symm
+        _ = 3 ^ (q * E_3) := by rw [Nat.mul_comm E_3 q]
+        _ = (3 ^ q) ^ E_3 := Nat.pow_mul 3 q E_3
+        _ ≤ (2 ^ (p + q)) ^ E_3 := Nat.pow_le_pow_left hpq_le E_3
+        _ = 2 ^ ((p + q) * E_3) := (Nat.pow_mul 2 (p + q) E_3).symm
+    have hrhs_le : (3 ^ E_3 * 2 ^ W_0) ^ q ≤ 2 ^ ((p + q) * E_3 + q * W_0) := by
+      calc (3 ^ E_3 * 2 ^ W_0) ^ q
+          = (3 ^ E_3) ^ q * (2 ^ W_0) ^ q := Nat.mul_pow (3 ^ E_3) (2 ^ W_0) q
+        _ ≤ 2 ^ ((p + q) * E_3) * (2 ^ W_0) ^ q := Nat.mul_le_mul_right _ h3_le
+        _ = 2 ^ ((p + q) * E_3) * 2 ^ (W_0 * q) := by rw [← Nat.pow_mul 2 W_0 q]
+        _ = 2 ^ ((p + q) * E_3) * 2 ^ (q * W_0) := by rw [Nat.mul_comm W_0 q]
+        _ = 2 ^ ((p + q) * E_3 + q * W_0) := (Nat.pow_add 2 _ _).symm
+    have hlhs_eq : (2 ^ E_lhs) ^ q = 2 ^ (q * E_lhs) := by
+      rw [← Nat.pow_mul 2 E_lhs q, Nat.mul_comm E_lhs q]
+    have hpow2_lt : 2 ^ (q * E_lhs) < 2 ^ ((p + q) * E_3 + q * W_0) := by
+      rw [← hlhs_eq]
+      exact lt_of_lt_of_le hpow_q hrhs_le
+    have hexp_lt : q * E_lhs < (p + q) * E_3 + q * W_0 := by
+      refine Nat.lt_of_not_le (fun hge => ?_)
+      have hpow_ge : 2 ^ ((p + q) * E_3 + q * W_0) ≤ 2 ^ (q * E_lhs) :=
+        Nat.pow_le_pow_right (by decide) hge
+      omega
+    have hE3_add : E_3 + E_suf = S_M + 10 * L_2 0 := by dsimp [E_3]; omega
+    have hexp_rhs :
+        (p + q) * E_3 + q * W_0 + (p + q) * E_suf =
+          q * S_M + (p * S_M + 10 * (p + q) * L_2 0 + q * W_0) := by
+      calc (p + q) * E_3 + q * W_0 + (p + q) * E_suf
+          = (p + q) * (E_3 + E_suf) + q * W_0 := by ring
+        _ = (p + q) * (S_M + 10 * L_2 0) + q * W_0 := by rw [hE3_add]
+        _ = q * S_M + (p * S_M + 10 * (p + q) * L_2 0 + q * W_0) := by ring
+    have hexp_lhs :
+        q * E_lhs + (p + q) * E_suf =
+          q * S_M + ((p + q) * E_suf + q * (10 * L_2 (M + 1) + 22)) := by
+      dsimp [E_lhs]; ring
+    omega
+  have h10_17 := hpq 10 17 (by decide) (by decide : 3 ^ 17 ≤ 2 ^ (10 + 17))
+  exact ⟨h2_22_lt, hcancel_lt, hpq, by linarith only [h10_17]⟩
+
 end Mahler.DubickasExtension
 
 
