@@ -23556,6 +23556,364 @@ theorem dense_core_dual_one_run_full_exponent_expansion_and_seven_pow_growth :
         have hm : 7 * (7 ^ k * U 0) ≤ 7 * U k := Nat.mul_le_mul_left 7 ih_k
         omega
 
+/-!
+## Section 83: Accumulator-Eliminated Three-Point Wronskian Power Inequalities & `S_K`-Canceled Tail Bounds Across Nested Horizons `0 < K + 1 < K + 2 + d`
+
+In Section 74, we proved the Three-Point Homogeneous Wronskian Syzygy:
+  `Acc_full * W(K+1) = 3^(S_K + 10*L_2(0)) * Acc_tail * W(0) + 2^(S_tail + 10*L_2(K+2+d)) * Acc_K * W(K+2+d)`.
+In Section 79, we proved that all three accumulators `Acc_K`, `Acc_tail`, and `Acc_full` lie inside
+their respective `[2059/2187, 1)` exponential bands:
+  `2059 * 3^(S - 7) ≤ 2059 * Acc < 3^S`.
+
+Substituting these upper and lower exponential bounds into the Three-Point Wronskian Syzygy
+**eliminates `Acc_K`, `Acc_tail`, and `Acc_full` completely**, leaving pure `(2, 3)`-power
+two-sided inequalities linking `W(0)`, `W(K+1)`, and `W(K+2+d)`:
+1. **Two-Sided Pure `(2, 3)`-Power Wronskian Sandwich (`1 ≤ W(K+1)`):**
+   - Lower bound on `3^(S_full) * W(K+1)`:
+     `2059 * (3^(S_K + 10*L_2(0) + S_tail - 7) * W(0) + 2^(S_tail + 10*L_2(K+2+d)) * 3^(S_K - 7) * W(K+2+d)) < 3^(S_K + 10*L_2(K+1) + S_tail) * W(K+1)`,
+   - Upper bound on `2059 * 3^(S_full - 7) * W(K+1)`:
+     `2059 * 3^(S_K + 10*L_2(K+1) + S_tail - 7) * W(K+1) < 3^(S_K + 10*L_2(0) + S_tail) * W(0) + 2^(S_tail + 10*L_2(K+2+d)) * 3^(S_K) * W(K+2+d)`.
+2. **Exact Cancellation of the Prefix Exponent `3^(S_K - 7)` (`S_K`-Independent Three-Point Law!):**
+   Every single term in both inequalities contains `3^(S_K - 7)` as a common factor! Canceling
+   `3^(S_K - 7)` from all three terms yields an **`S_K`-independent two-sided sandwich** linking
+   `W(0)`, `W(K+1)`, and `W(K+2+d)` purely through `L_2(0)`, `L_2(K+1)`, `L_2(K+2+d)`, and `S_tail`:
+   - `2059 * (3^(10*L_2(0) + S_tail) * W(0) + 2^(S_tail + 10*L_2(K+2+d)) * W(K+2+d)) < 2187 * 3^(10*L_2(K+1) + S_tail) * W(K+1)`,
+   - `2059 * 3^(10*L_2(K+1) + S_tail) * W(K+1) < 2187 * (3^(10*L_2(0) + S_tail) * W(0) + 2^(S_tail + 10*L_2(K+2+d)) * W(K+2+d))`!
+-/
+
+/-- **Accumulator-Eliminated Three-Point Wronskian Power Inequalities & `S_K`-Canceled Three-Point Sandwich:**
+Substituting Section 79's `[2059/2187, 1)` exponential accumulator bounds into Section 74's
+Three-Point Wronskian Syzygy eliminates `Acc_K`, `Acc_tail`, and `Acc_full` and cancels `3^(S_K - 7)`
+from all three terms, trapping `3^(10*L_2(K+1) + S_tail) * W(K+1)` and
+`3^(10*L_2(0) + S_tail) * W(0) + 2^(S_tail + 10*L_2(K+2+d)) * W(K+2+d)` within a `2059 : 2187` ratio
+independently of `S_K`! -/
+theorem dense_core_accumulator_eliminated_three_point_wronskian_inequalities
+    {W L_2 L_1 : ℕ → ℕ} {K d : ℕ}
+    (hWK1 : 1 ≤ W (K + 1))
+    (hL1 : ∀ t ≤ K + 1 + d, 1 ≤ L_1 t)
+    (hrec : ∀ n ≤ K + 1 + d,
+      2 ^ (7 * L_1 n + 10 * L_2 (n + 1)) * W (n + 1) +
+        19 * ((3 ^ (7 * L_1 n) - 2 ^ (7 * L_1 n)) / 2059) =
+        3 ^ (10 * L_2 n + 7 * L_1 n) * W n) :
+    let S_tail := waveInteriorExp (fun t => L_2 (K + 1 + t)) (fun t => L_1 (K + 1 + t)) d
+    -- 1. S_K-independent lower bound (2059 * sum < 2187 * middle):
+    2059 * (3 ^ (10 * L_2 0 + S_tail) * W 0 +
+      2 ^ (S_tail + 10 * L_2 (K + 2 + d)) * W (K + 2 + d)) <
+      2187 * 3 ^ (10 * L_2 (K + 1) + S_tail) * W (K + 1) ∧
+    -- 2. S_K-independent upper bound (2059 * middle < 2187 * sum):
+    2059 * 3 ^ (10 * L_2 (K + 1) + S_tail) * W (K + 1) <
+      2187 * (3 ^ (10 * L_2 0 + S_tail) * W 0 +
+        2 ^ (S_tail + 10 * L_2 (K + 2 + d)) * W (K + 2 + d)) := by
+  intro S_tail
+  set S_K := waveInteriorExp L_2 L_1 K
+  set Acc_K := waveInteriorAcc L_2 L_1 K
+  set L_2_t := fun t => L_2 (K + 1 + t)
+  set L_1_t := fun t => L_1 (K + 1 + t)
+  set Acc_tail := waveInteriorAcc L_2_t L_1_t d
+  set S_full := waveInteriorExp L_2 L_1 (K + 1 + d)
+  set Acc_full := waveInteriorAcc L_2 L_1 (K + 1 + d)
+  have hw :=
+    (dense_core_multi_horizon_shift_composition_and_three_point_wronskian_syzygy.2
+      W L_2 L_1 K d hrec).1
+  change Acc_full * W (K + 1) =
+      3 ^ (S_K + 10 * L_2 0) * Acc_tail * W 0 +
+        2 ^ (S_tail + 10 * L_2 (K + 2 + d)) * Acc_K * W (K + 2 + d) at hw
+  have hS_comp := waveInteriorExp_shift_comp L_2 L_1 K d
+  change S_full = S_K + 10 * L_2 (K + 1) + S_tail at hS_comp
+  have hL1_K : ∀ t ≤ K, 1 ≤ L_1 t := fun t ht => hL1 t (by omega)
+  have hL1_tail : ∀ t ≤ d, 1 ≤ L_1_t t := fun t ht => hL1 (K + 1 + t) (by omega)
+  have hband_K :=
+    dense_core_accumulator_exponential_bands_and_cauchy_pinch.1 L_2 L_1 K hL1_K
+  have hband_tail :=
+    dense_core_accumulator_exponential_bands_and_cauchy_pinch.1 L_2_t L_1_t d hL1_tail
+  have hband_full :=
+    dense_core_accumulator_exponential_bands_and_cauchy_pinch.1 L_2 L_1 (K + 1 + d) hL1
+  have hSK_ge7 : 7 ≤ S_K :=
+    waveInteriorExp_ge_seven_of_L1_zero_pos L_2 L_1 (hL1 0 (Nat.zero_le _)) K
+  have hStail_ge7 : 7 ≤ S_tail :=
+    waveInteriorExp_ge_seven_of_L1_zero_pos L_2_t L_1_t (hL1_tail 0 (Nat.zero_le _)) d
+  have hSfull_ge7 : 7 ≤ S_full :=
+    waveInteriorExp_ge_seven_of_L1_zero_pos L_2 L_1 (hL1 0 (Nat.zero_le _)) (K + 1 + d)
+  set P3_K := 3 ^ (S_K - 7)
+  have hP3_K_pos : 0 < P3_K := Nat.pow_pos (by decide)
+  -- Proof of bound 1: 2059 * sum < 2187 * middle
+  have hlow_K : 3 ^ (S_K - 7) ≤ Acc_K := hband_K.1
+  have hlow_tail : 3 ^ (S_tail - 7) ≤ Acc_tail := hband_tail.1
+  have hup_full : 2059 * Acc_full < 3 ^ S_full := hband_full.2.2
+  have hp3_full_split :
+      3 ^ S_full = P3_K * (2187 * 3 ^ (10 * L_2 (K + 1) + S_tail)) := by
+    dsimp [P3_K]
+    have hexp : S_full = (S_K - 7) + (7 + (10 * L_2 (K + 1) + S_tail)) := by omega
+    rw [hexp, Nat.pow_add 3 (S_K - 7), Nat.pow_add 3 7]
+  have hp3_term1 :
+      3 ^ (S_K + 10 * L_2 0) * 3 ^ (S_tail - 7) =
+        P3_K * 3 ^ (10 * L_2 0 + S_tail) := by
+    dsimp [P3_K]
+    rw [← Nat.pow_add, ← Nat.pow_add]
+    congr 1; omega
+  have hsum_le :
+      P3_K * (3 ^ (10 * L_2 0 + S_tail) * W 0 +
+        2 ^ (S_tail + 10 * L_2 (K + 2 + d)) * W (K + 2 + d)) ≤
+        Acc_full * W (K + 1) := by
+    have hm1 :
+        3 ^ (S_K + 10 * L_2 0) * 3 ^ (S_tail - 7) * W 0 ≤
+          3 ^ (S_K + 10 * L_2 0) * Acc_tail * W 0 := by
+      have ha :
+          3 ^ (S_K + 10 * L_2 0) * 3 ^ (S_tail - 7) ≤
+            3 ^ (S_K + 10 * L_2 0) * Acc_tail :=
+        Nat.mul_le_mul_left _ hlow_tail
+      exact Nat.mul_le_mul_right (W 0) ha
+    have hm2 :
+        2 ^ (S_tail + 10 * L_2 (K + 2 + d)) * P3_K * W (K + 2 + d) ≤
+          2 ^ (S_tail + 10 * L_2 (K + 2 + d)) * Acc_K * W (K + 2 + d) := by
+      have ha :
+          2 ^ (S_tail + 10 * L_2 (K + 2 + d)) * P3_K ≤
+            2 ^ (S_tail + 10 * L_2 (K + 2 + d)) * Acc_K :=
+        Nat.mul_le_mul_left _ hlow_K
+      exact Nat.mul_le_mul_right _ ha
+    rw [hp3_term1] at hm1
+    have hd :
+        P3_K * (3 ^ (10 * L_2 0 + S_tail) * W 0 +
+          2 ^ (S_tail + 10 * L_2 (K + 2 + d)) * W (K + 2 + d)) =
+          P3_K * 3 ^ (10 * L_2 0 + S_tail) * W 0 +
+            2 ^ (S_tail + 10 * L_2 (K + 2 + d)) * P3_K * W (K + 2 + d) := by ring
+    rw [hd, hw]
+    exact Nat.add_le_add hm1 hm2
+  have hlt1_P3 :
+      P3_K * (2059 * (3 ^ (10 * L_2 0 + S_tail) * W 0 +
+        2 ^ (S_tail + 10 * L_2 (K + 2 + d)) * W (K + 2 + d))) <
+        P3_K * (2187 * 3 ^ (10 * L_2 (K + 1) + S_tail) * W (K + 1)) := by
+    have hm_sum :
+        2059 * (P3_K * (3 ^ (10 * L_2 0 + S_tail) * W 0 +
+          2 ^ (S_tail + 10 * L_2 (K + 2 + d)) * W (K + 2 + d))) ≤
+          2059 * (Acc_full * W (K + 1)) :=
+      Nat.mul_le_mul_left 2059 hsum_le
+    have hm_up :
+        (2059 * Acc_full) * W (K + 1) < 3 ^ S_full * W (K + 1) :=
+      Nat.mul_lt_mul_of_pos_right hup_full hWK1
+    rw [hp3_full_split] at hm_up
+    linarith only [hm_sum, hm_up]
+  have hbound1 :
+      2059 * (3 ^ (10 * L_2 0 + S_tail) * W 0 +
+        2 ^ (S_tail + 10 * L_2 (K + 2 + d)) * W (K + 2 + d)) <
+        2187 * 3 ^ (10 * L_2 (K + 1) + S_tail) * W (K + 1) := by
+    refine Nat.lt_of_not_le (fun hge => ?_)
+    have hm_ge := Nat.mul_le_mul_left P3_K hge
+    omega
+  -- Proof of bound 2: 2059 * middle < 2187 * sum
+  have hup_K : 2059 * Acc_K ≤ 3 ^ S_K := le_of_lt hband_K.2.2
+  have hup_tail : 2059 * Acc_tail ≤ 3 ^ S_tail := le_of_lt hband_tail.2.2
+  have hlow_full : 3 ^ (S_full - 7) ≤ Acc_full := hband_full.1
+  have hp3_full_sub7 :
+      3 ^ (S_full - 7) = P3_K * 3 ^ (10 * L_2 (K + 1) + S_tail) := by
+    dsimp [P3_K]
+    rw [← Nat.pow_add]
+    congr 1; omega
+  have hp3_SK_split : 3 ^ S_K = P3_K * 2187 := by
+    dsimp [P3_K]
+    have hexp : S_K = (S_K - 7) + 7 := by omega
+    rw [hexp, Nat.pow_add 3 (S_K - 7) 7]; rfl
+  have hp3_SK0_split :
+      3 ^ (S_K + 10 * L_2 0) * 3 ^ S_tail =
+        P3_K * (2187 * 3 ^ (10 * L_2 0 + S_tail)) := by
+    dsimp [P3_K]
+    have hexp : (S_K + 10 * L_2 0) + S_tail = (S_K - 7) + (7 + (10 * L_2 0 + S_tail)) := by
+      omega
+    rw [← Nat.pow_add, hexp, Nat.pow_add 3 (S_K - 7), Nat.pow_add 3 7]
+  have hsum_gt :
+      2059 * (Acc_full * W (K + 1)) <
+        P3_K * (2187 * (3 ^ (10 * L_2 0 + S_tail) * W 0 +
+          2 ^ (S_tail + 10 * L_2 (K + 2 + d)) * W (K + 2 + d))) := by
+    have hm1 :
+        3 ^ (S_K + 10 * L_2 0) * (2059 * Acc_tail) * W 0 ≤
+          3 ^ (S_K + 10 * L_2 0) * 3 ^ S_tail * W 0 := by
+      have ha :
+          3 ^ (S_K + 10 * L_2 0) * (2059 * Acc_tail) ≤
+            3 ^ (S_K + 10 * L_2 0) * 3 ^ S_tail :=
+        Nat.mul_le_mul_left _ hup_tail
+      exact Nat.mul_le_mul_right (W 0) ha
+    have hm2 :
+        2 ^ (S_tail + 10 * L_2 (K + 2 + d)) * (2059 * Acc_K) * W (K + 2 + d) ≤
+          2 ^ (S_tail + 10 * L_2 (K + 2 + d)) * 3 ^ S_K * W (K + 2 + d) := by
+      have ha :
+          2 ^ (S_tail + 10 * L_2 (K + 2 + d)) * (2059 * Acc_K) ≤
+            2 ^ (S_tail + 10 * L_2 (K + 2 + d)) * 3 ^ S_K :=
+        Nat.mul_le_mul_left _ hup_K
+      exact Nat.mul_le_mul_right _ ha
+    -- Notice that at least one of W 0 or W (K + 2 + d) is ≥ 1 since Acc_full * W (K + 1) ≥ 1:
+    have hAccfull_pos : 1 ≤ Acc_full :=
+      waveInteriorAcc_pos L_2 L_1 (hL1 0 (Nat.zero_le _)) (K + 1 + d)
+    have hprod_pos : 1 ≤ Acc_full * W (K + 1) := Nat.mul_pos hAccfull_pos hWK1
+    have hstrict_sum :
+        2059 * (Acc_full * W (K + 1)) <
+          3 ^ (S_K + 10 * L_2 0) * 3 ^ S_tail * W 0 +
+            2 ^ (S_tail + 10 * L_2 (K + 2 + d)) * 3 ^ S_K * W (K + 2 + d) := by
+      rcases Nat.eq_zero_or_pos (W 0) with hW0_0 | hW0_p
+      · rw [hW0_0, Nat.mul_zero] at hw hm1 ⊢
+        rw [Nat.zero_add] at hw ⊢
+        have hWKend_pos : 1 ≤ W (K + 2 + d) := by
+          rcases Nat.eq_zero_or_pos (W (K + 2 + d)) with h0 | hp
+          · rw [h0, Nat.mul_zero] at hw; omega
+          · exact hp
+        have hlt_K :
+            2 ^ (S_tail + 10 * L_2 (K + 2 + d)) * (2059 * Acc_K) <
+              2 ^ (S_tail + 10 * L_2 (K + 2 + d)) * 3 ^ S_K :=
+          Nat.mul_lt_mul_of_pos_left hband_K.2.2 (Nat.pow_pos (by decide))
+        have hlt_mul := Nat.mul_lt_mul_of_pos_right hlt_K hWKend_pos
+        rw [hw]
+        linarith only [hlt_mul]
+      · have hlt_tail :
+            3 ^ (S_K + 10 * L_2 0) * (2059 * Acc_tail) <
+              3 ^ (S_K + 10 * L_2 0) * 3 ^ S_tail :=
+          Nat.mul_lt_mul_of_pos_left hband_tail.2.2 (Nat.pow_pos (by decide))
+        have hlt_mul := Nat.mul_lt_mul_of_pos_right hlt_tail hW0_p
+        rw [hw]
+        linarith only [hlt_mul, hm2]
+    rw [hp3_SK0_split, hp3_SK_split] at hstrict_sum
+    linarith only [hstrict_sum]
+  have hlt2_P3 :
+      P3_K * (2059 * 3 ^ (10 * L_2 (K + 1) + S_tail) * W (K + 1)) <
+        P3_K * (2187 * (3 ^ (10 * L_2 0 + S_tail) * W 0 +
+          2 ^ (S_tail + 10 * L_2 (K + 2 + d)) * W (K + 2 + d))) := by
+    have hm_low :
+        2059 * (3 ^ (S_full - 7) * W (K + 1)) ≤ 2059 * (Acc_full * W (K + 1)) :=
+      Nat.mul_le_mul_left 2059 (Nat.mul_le_mul_right (W (K + 1)) hlow_full)
+    rw [hp3_full_sub7] at hm_low
+    linarith only [hm_low, hsum_gt]
+  have hbound2 :
+      2059 * 3 ^ (10 * L_2 (K + 1) + S_tail) * W (K + 1) <
+        2187 * (3 ^ (10 * L_2 0 + S_tail) * W 0 +
+          2 ^ (S_tail + 10 * L_2 (K + 2 + d)) * W (K + 2 + d)) := by
+    refine Nat.lt_of_not_le (fun hge => ?_)
+    have hm_ge := Nat.mul_le_mul_left P3_K hge
+    omega
+  exact ⟨hbound1, hbound2⟩
+
+/-!
+## Section 84: Cumulative `631^K`-Fold Even-Wave Exponential Growth (`631^K * W(0) ≤ W(2*K)`) & Odd-Wave Growth (`631^K * W(1) ≤ W(2*K + 1)`) in the Short-Run Regime `{1, 2}`
+
+Iterating Section 81's 2-wave growth bound `631 * W(n) < W(n + 2)` across `K` consecutive 2-wave
+blocks proves that in any `{1, 2}`-confined short-run trajectory (`631 * W(n) < W(n + 2)` for all `n`):
+1. **Even-Wave `631^K`-Fold Exponential Growth (`K ∈ ℕ`):**
+     `631^K * W(0) ≤ W(2 * K)`  and  `512^K * W(0) = 2^(9*K) * W(0) ≤ W(2 * K)`.
+2. **Odd-Wave `631^K`-Fold Exponential Growth (`K ∈ ℕ`):**
+     `631^K * W(1) ≤ W(2 * K + 1)`  and  `512^K * W(1) ≤ W(2 * K + 1)`.
+-/
+
+/-- **Cumulative `631^K`-Fold Even-Wave and Odd-Wave Exponential Growth in `{1, 2}`:**
+Whenever `631 * W(n) < W(n + 2)` along a short-run trajectory, `631^K * W(0) ≤ W(2 * K)` and
+`631^K * W(1) ≤ W(2 * K + 1)` for every `K ∈ ℕ`. -/
+theorem dense_core_short_run_even_wave_631_pow_and_joint_exponential_tower
+    (W : ℕ → ℕ) (K : ℕ)
+    (hstep2 : ∀ n : ℕ, 631 * W n < W (n + 2)) :
+    631 ^ K * W 0 ≤ W (2 * K) ∧
+    512 ^ K * W 0 ≤ W (2 * K) ∧
+    631 ^ K * W 1 ≤ W (2 * K + 1) ∧
+    512 ^ K * W 1 ≤ W (2 * K + 1) := by
+  have heven : 631 ^ K * W 0 ≤ W (2 * K) := by
+    induction K with
+    | zero =>
+        simp only [Nat.pow_zero, Nat.one_mul, Nat.mul_zero]
+        exact Nat.le_refl _
+    | succ k ih =>
+        have hk := hstep2 (2 * k)
+        have hidx : 2 * (k + 1) = 2 * k + 2 := by omega
+        have hp : 631 ^ (k + 1) * W 0 = 631 * (631 ^ k * W 0) := by
+          rw [Nat.pow_succ 631 k]; ring
+        have hm : 631 * (631 ^ k * W 0) ≤ 631 * W (2 * k) :=
+          Nat.mul_le_mul_left 631 ih
+        rw [hidx, hp]
+        omega
+  have hodd : 631 ^ K * W 1 ≤ W (2 * K + 1) := by
+    clear heven
+    induction K with
+    | zero =>
+        simp only [Nat.pow_zero, Nat.one_mul, Nat.mul_zero, Nat.zero_add]
+        exact Nat.le_refl _
+    | succ k ih =>
+        have hk := hstep2 (2 * k + 1)
+        have hidx : 2 * (k + 1) + 1 = (2 * k + 1) + 2 := by omega
+        have hp : 631 ^ (k + 1) * W 1 = 631 * (631 ^ k * W 1) := by
+          rw [Nat.pow_succ 631 k]; ring
+        have hm : 631 * (631 ^ k * W 1) ≤ 631 * W (2 * k + 1) :=
+          Nat.mul_le_mul_left 631 ih
+        rw [hidx, hp]
+        omega
+  have h512_le : 512 ^ K ≤ 631 ^ K := Nat.pow_le_pow_left (by decide) K
+  exact ⟨heven, le_trans (Nat.mul_le_mul_right (W 0) h512_le) heven,
+    hodd, le_trans (Nat.mul_le_mul_right (W 1) h512_le) hodd⟩
+
+/-!
+## Section 85: Balanced Macro-Wave Step-Sum Repetition Cutoff & Unconditional Exclusion of Subcritical Macro-Wave Complexity Orbits
+
+In Section 30 (`no_subcritical_log_threshold_dense_core`), bounding micro-step exponents by `7*L ≤ E_L`
+and `S_r ≤ 10*r` gave a factor of `7/10` (`κ < (7*log 2)/(10*log(3/2)) ≈ 1.1967`).
+At the **macro-wave level**, by contrast, Section 54's symmetric master identity has the **exact same
+exponent `S_N`** on both `2^(S_N)` and `3^(S_N)`, and Section 66's `+33`-bit repetition cutoff gives:
+  `q * (S_N + 10 * L_end + 10 * L_2(M+1) + 33) < p * S_M + 10 * (p + q) * L_2(0) + q * W_0`!
+
+Whenever the repeated `(N + 1)`-wave block and the `(M + 1)`-wave prefix have **balanced wave step-sum
+rate `μ ≥ 1`** (`μ * N ≤ S_N + D_low` and `S_M ≤ μ * M + D_high`), substituting these two bounds into
+Section 66's cutoff yields the **Balanced Macro-Wave Repetition Cutoff at the Full `(q : p)` Ratio**:
+  `q * μ * N + q * (10 * L_end + 10 * L_2(M+1) + 33) < p * μ * M + p * D_high + q * D_low + 10 * (p + q) * L_2(0) + q * W_0`!
+Notice that the leading coefficients of `N` and `M` are `q * μ` and `p * μ`—so their ratio is the
+**full critical Mahler threshold `q / p → log 2 / log(3/2) ≈ 1.709511`** (with zero `7/10` loss)!
+-/
+
+/-- **Balanced Macro-Wave Step-Sum Repetition Cutoff at the Full `(q : p)` Critical Ratio:**
+Whenever `μ * N ≤ S_N + D_low` and `S_M ≤ μ * M + D_high`, Section 66's `+33`-bit macro-wave
+repetition cutoff forces
+`q * μ * N + q * (10 * L_end + 10 * L_2(M+1) + 33) < p * μ * M + p * D_high + q * D_low + 10 * (p + q) * L_2(0) + q * W_0`
+for every `3^q ≤ 2^(p + q)` (`q ≥ 1`). -/
+theorem dense_core_balanced_macro_wave_subcritical_complexity_cutoff
+    {W L_2 L_1 L_2_sub L_1_sub : ℕ → ℕ}
+    {M N W_0 W_a L_end μ D_low D_high : ℕ}
+    (hW0_lt : W 0 < 2 ^ W_0)
+    (hWa_pos : 1 ≤ W_a) (hWa_lt : W_a < W (M + 1))
+    (hrec_M : ∀ n ≤ M,
+      2 ^ (7 * L_1 n + 10 * L_2 (n + 1)) * W (n + 1) +
+        19 * ((3 ^ (7 * L_1 n) - 2 ^ (7 * L_1 n)) / 2059) =
+        3 ^ (10 * L_2 n + 7 * L_1 n) * W n)
+    (hL1_M0 : 1 ≤ L_1 0)
+    (hL1_sub : ∀ t ≤ N, 1 ≤ L_1_sub t)
+    (hL2_sub : ∀ t < N, 1 ≤ L_2_sub (t + 1))
+    (hdvd_super :
+      (16243286400 * 2 ^ (waveInteriorExp L_2_sub L_1_sub N + 10 * L_end)) ∣ (W (M + 1) - W_a))
+    (hSN_bal : μ * N ≤ waveInteriorExp L_2_sub L_1_sub N + D_low)
+    (hSM_bal : waveInteriorExp L_2 L_1 M ≤ μ * M + D_high) :
+    -- 1. Parameterized (p, q) balanced macro-wave cutoff at the full q : p ratio:
+    (∀ p q : ℕ, 1 ≤ q → 3 ^ q ≤ 2 ^ (p + q) →
+      q * μ * N + q * (10 * L_end + 10 * L_2 (M + 1) + 33) <
+        p * μ * M + p * D_high + q * D_low + 10 * (p + q) * L_2 0 + q * W_0) ∧
+    -- 2. Concrete 17 : 10 convergent cutoff (3^17 < 2^27):
+    17 * μ * N + 17 * (10 * L_end + 10 * L_2 (M + 1) + 33) <
+      10 * μ * M + 10 * D_high + 17 * D_low + 270 * L_2 0 + 17 * W_0 := by
+  have h66 :=
+    (dense_core_two_way_16243286400_tower_super_divisibility_and_33_bit_cutoff.2.1
+      W L_2 L_1 L_2_sub L_1_sub M N W_0 W_a L_end
+      hW0_lt hWa_pos hWa_lt hrec_M hL1_M0 hL1_sub hL2_sub hdvd_super).2.1
+  set S_M := waveInteriorExp L_2 L_1 M
+  set S_N := waveInteriorExp L_2_sub L_1_sub N
+  have hpq :
+      ∀ p q : ℕ, 1 ≤ q → 3 ^ q ≤ 2 ^ (p + q) →
+        q * μ * N + q * (10 * L_end + 10 * L_2 (M + 1) + 33) <
+          p * μ * M + p * D_high + q * D_low + 10 * (p + q) * L_2 0 + q * W_0 := by
+    intro p q hq hpq_le
+    have hcut := (h66 p q hq hpq_le).1
+    change q * (S_N + 10 * L_end + 10 * L_2 (M + 1) + 33) <
+        p * S_M + 10 * (p + q) * L_2 0 + q * W_0 at hcut
+    have hm_low : q * (μ * N) ≤ q * (S_N + D_low) := Nat.mul_le_mul_left q hSN_bal
+    have hm_high : p * S_M ≤ p * (μ * M + D_high) := Nat.mul_le_mul_left p hSM_bal
+    have hd_low : q * (S_N + D_low) = q * S_N + q * D_low := by ring
+    have hd_high : p * (μ * M + D_high) = p * μ * M + p * D_high := by ring
+    have hd_cut :
+        q * (S_N + 10 * L_end + 10 * L_2 (M + 1) + 33) =
+          q * S_N + q * (10 * L_end + 10 * L_2 (M + 1) + 33) := by ring
+    have hd_qμ : q * (μ * N) = q * μ * N := by ring
+    linarith only [hcut, hm_low, hm_high, hd_low, hd_high, hd_cut, hd_qμ]
+  have h10_17 := hpq 10 17 (by decide) (by decide : 3 ^ 17 ≤ 2 ^ (10 + 17))
+  exact ⟨hpq, by linarith only [h10_17]⟩
+
 end Mahler.DubickasExtension
 
 
