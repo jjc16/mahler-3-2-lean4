@@ -26413,6 +26413,387 @@ theorem dense_core_bounded_run_mandatory_mod88_growth_and_unconditional_divergen
   have hpos := hW_pos 0
   omega
 
+/-!
+## Section 98: General Sublevel Step-Sum Run-Expansion Law (`W(M+1) ≤ 2^B * W(0)`) & Explicit Finite-Horizon Sublevel Cutoff
+
+In Section 80, we established the step-sum run-expansion law when `W(M+1) ≤ W(0)` (`B = 0`).
+What if an orbit instead dips into an arbitrary bounded sublevel set `W(M + 1) ≤ 2^B * W(0)` (for
+example, `W(M + 1) ≤ M_max ≤ 2^B * W(0)` for any fixed ceiling `M_max`)?
+
+1. **General Sublevel Step-Sum Run-Expansion Law (`W(M+1) ≤ 2^B * W(0)`):**
+   By Section 80 Part 1, `2 * 3^(S_M + 10*L_2(0) - 1) * W(0) < 2^(S_M + 10*L_2(M+1)) * W(M+1)`.
+   When `W(M + 1) ≤ 2^B * W(0)`, canceling `2 * W(0) ≥ 2` gives:
+     `3^(S_M + 10*L_2(0) - 1) < 2^(S_M + 10*L_2(M+1) + B - 1)`.
+   Raising to `q' ≥ 1` (`2^(p' + q') ≤ 3^(q')`) and canceling `q' * S_M` proves:
+     `p' * S_M + 10 * (p' + q') * L_2(0) < 10 * q' * L_2(M + 1) + q' * B + p'`
+   (at `(1, 2)`: `S_M + 30 * L_2(0) < 20 * L_2(M+1) + 2 * B + 1`;
+    at `(7, 12)`: `7 * S_M + 190 * L_2(0) < 120 * L_2(M+1) + 12 * B + 7`).
+2. **Explicit Finite-Horizon Sublevel Cutoff (`119 * M + 190 * L_2(0) + 42 < 120 * L_2(M+1) + 12 * B`):**
+   Whenever all interior runs are positive (`17 * M + 7 ≤ S_M`), any visit to `W(M + 1) ≤ 2^B * W(0)`
+   forces `119 * M + 190 * L_2(0) + 42 < 120 * L_2(M+1) + 12 * B`, so for any run-length ceiling
+   `L_2(M + 1) ≤ L_max`, **`2^B * W(0) < W(M + 1)` holds strictly for every `M ≥ 2 * L_max + B`**!
+-/
+
+/-- **General Sublevel Step-Sum Run-Expansion Law (`W(M+1) ≤ 2^B * W(0)`) & Finite-Horizon Sublevel Cutoff:**
+Whenever `W(M + 1) ≤ 2^B * W(0)`, `3^(S_M + 10*L_2(0) - 1) < 2^(S_M + 10*L_2(M+1) + B - 1)`,
+`p' * S_M + 10 * (p' + q') * L_2(0) < 10 * q' * L_2(M+1) + q' * B + p'` for every `2^(p'+q') ≤ 3^q'`,
+and `2^B * W(0) < W(M + 1)` whenever `L_2(M + 1) ≤ L_max` and `2 * L_max + B ≤ M`. -/
+theorem dense_core_general_sublevel_step_sum_expansion_and_finite_horizon_cutoff
+    {W L_2 L_1 : ℕ → ℕ} {M B : ℕ}
+    (hW0 : 1 ≤ W 0) (hL2_0 : 1 ≤ L_2 0)
+    (hL1 : ∀ t ≤ M, 1 ≤ L_1 t)
+    (hrec : ∀ n ≤ M,
+      2 ^ (7 * L_1 n + 10 * L_2 (n + 1)) * W (n + 1) +
+        19 * ((3 ^ (7 * L_1 n) - 2 ^ (7 * L_1 n)) / 2059) =
+        3 ^ (10 * L_2 n + 7 * L_1 n) * W n) :
+    let S_M := waveInteriorExp L_2 L_1 M
+    -- 1. Sublevel run-expansion inequalities when W(M + 1) ≤ 2^B * W(0):
+    (W (M + 1) ≤ 2 ^ B * W 0 →
+      3 ^ (S_M + 10 * L_2 0 - 1) < 2 ^ (S_M + 10 * L_2 (M + 1) + B - 1) ∧
+      (∀ p' q' : ℕ, 1 ≤ q' → 2 ^ (p' + q') ≤ 3 ^ q' →
+        p' * S_M + 10 * (p' + q') * L_2 0 < 10 * q' * L_2 (M + 1) + q' * B + p') ∧
+      S_M + 30 * L_2 0 < 20 * L_2 (M + 1) + 2 * B + 1 ∧
+      7 * S_M + 190 * L_2 0 < 120 * L_2 (M + 1) + 12 * B + 7 ∧
+      ((∀ t < M, 1 ≤ L_2 (t + 1)) →
+        119 * M + 190 * L_2 0 + 42 < 120 * L_2 (M + 1) + 12 * B)) ∧
+    -- 2. Explicit finite-horizon sublevel escape (2 * L_max + B ≤ M):
+    (∀ L_max : ℕ, (∀ t < M, 1 ≤ L_2 (t + 1)) →
+      L_2 (M + 1) ≤ L_max → 2 * L_max + B ≤ M → 2 ^ B * W 0 < W (M + 1)) := by
+  intro S_M
+  have h80_full :=
+    (dense_core_full_exponent_archimedean_wave_bound_and_step_sum_expansion
+      hW0 hL2_0 hL1 hrec).1
+  change 2 * 3 ^ (S_M + 10 * L_2 0 - 1) * W 0 < 2 ^ (S_M + 10 * L_2 (M + 1)) * W (M + 1) at h80_full
+  have hSM_ge7 : 7 ≤ S_M :=
+    waveInteriorExp_ge_seven_of_L1_zero_pos L_2 L_1 (hL1 0 (Nat.zero_le M)) M
+  have hsub :
+      W (M + 1) ≤ 2 ^ B * W 0 →
+        3 ^ (S_M + 10 * L_2 0 - 1) < 2 ^ (S_M + 10 * L_2 (M + 1) + B - 1) ∧
+        (∀ p' q' : ℕ, 1 ≤ q' → 2 ^ (p' + q') ≤ 3 ^ q' →
+          p' * S_M + 10 * (p' + q') * L_2 0 < 10 * q' * L_2 (M + 1) + q' * B + p') ∧
+        S_M + 30 * L_2 0 < 20 * L_2 (M + 1) + 2 * B + 1 ∧
+        7 * S_M + 190 * L_2 0 < 120 * L_2 (M + 1) + 12 * B + 7 ∧
+        ((∀ t < M, 1 ≤ L_2 (t + 1)) →
+          119 * M + 190 * L_2 0 + 42 < 120 * L_2 (M + 1) + 12 * B) := by
+    intro hW_le
+    have hpow_lt : 3 ^ (S_M + 10 * L_2 0 - 1) < 2 ^ (S_M + 10 * L_2 (M + 1) + B - 1) := by
+      refine Nat.lt_of_not_le (fun hge => ?_)
+      have hm1 :
+          2 ^ (S_M + 10 * L_2 (M + 1)) * W (M + 1) ≤
+            2 * 2 ^ (S_M + 10 * L_2 (M + 1) + B - 1) * W 0 := by
+        set E_sub := S_M + 10 * L_2 (M + 1) + B - 1
+        have hp2 :
+            2 ^ (S_M + 10 * L_2 (M + 1)) * 2 ^ B = 2 * 2 ^ E_sub := by
+          have hexp : S_M + 10 * L_2 (M + 1) + B = 1 + E_sub := by dsimp [E_sub]; omega
+          rw [← Nat.pow_add, hexp, Nat.pow_add 2 1 E_sub]
+        have hm := Nat.mul_le_mul_left (2 ^ (S_M + 10 * L_2 (M + 1))) hW_le
+        calc 2 ^ (S_M + 10 * L_2 (M + 1)) * W (M + 1)
+            ≤ 2 ^ (S_M + 10 * L_2 (M + 1)) * (2 ^ B * W 0) := hm
+          _ = (2 ^ (S_M + 10 * L_2 (M + 1)) * 2 ^ B) * W 0 := by ring
+          _ = 2 * 2 ^ E_sub * W 0 := by rw [hp2]
+      have hm2 :
+          2 * 2 ^ (S_M + 10 * L_2 (M + 1) + B - 1) * W 0 ≤
+            2 * 3 ^ (S_M + 10 * L_2 0 - 1) * W 0 :=
+        Nat.mul_le_mul_right (W 0) (Nat.mul_le_mul_left 2 hge)
+      linarith only [h80_full, hm1, hm2]
+    have hpq :
+        ∀ p' q' : ℕ, 1 ≤ q' → 2 ^ (p' + q') ≤ 3 ^ q' →
+          p' * S_M + 10 * (p' + q') * L_2 0 < 10 * q' * L_2 (M + 1) + q' * B + p' := by
+      intro p' q' hq' hpq_le
+      set E3 := S_M + 10 * L_2 0 - 1
+      set E2 := S_M + 10 * L_2 (M + 1) + B - 1
+      have hpow_q : (3 ^ E3) ^ q' < (2 ^ E2) ^ q' := pow_lt_pow_of_lt hpow_lt hq'
+      have h2_le : 2 ^ ((p' + q') * E3) ≤ (3 ^ E3) ^ q' := by
+        calc 2 ^ ((p' + q') * E3)
+            = (2 ^ (p' + q')) ^ E3 := Nat.pow_mul 2 (p' + q') E3
+          _ ≤ (3 ^ q') ^ E3 := Nat.pow_le_pow_left hpq_le E3
+          _ = 3 ^ (q' * E3) := (Nat.pow_mul 3 q' E3).symm
+          _ = 3 ^ (E3 * q') := by rw [Nat.mul_comm q' E3]
+          _ = (3 ^ E3) ^ q' := Nat.pow_mul 3 E3 q'
+      have hrhs_eq : (2 ^ E2) ^ q' = 2 ^ (q' * E2) := by
+        rw [← Nat.pow_mul 2 E2 q', Nat.mul_comm E2 q']
+      have h2_lt : 2 ^ ((p' + q') * E3) < 2 ^ (q' * E2) := by
+        rw [← hrhs_eq]; exact lt_of_le_of_lt h2_le hpow_q
+      have hexp : (p' + q') * E3 < q' * E2 := by
+        refine Nat.lt_of_not_le (fun hge => ?_)
+        have hp_ge : 2 ^ (q' * E2) ≤ 2 ^ ((p' + q') * E3) :=
+          Nat.pow_le_pow_right (by decide) hge
+        omega
+      have hE3_add : E3 + 1 = S_M + 10 * L_2 0 := by dsimp [E3]; omega
+      have hE2_add : E2 + 1 = S_M + 10 * L_2 (M + 1) + B := by dsimp [E2]; omega
+      have hexp1 :
+          (p' + q') * E3 + (p' + q') =
+            q' * S_M + (p' * S_M + 10 * (p' + q') * L_2 0) := by
+        calc (p' + q') * E3 + (p' + q')
+            = (p' + q') * (E3 + 1) := by ring
+          _ = (p' + q') * (S_M + 10 * L_2 0) := by rw [hE3_add]
+          _ = q' * S_M + (p' * S_M + 10 * (p' + q') * L_2 0) := by ring
+      have hexp2 :
+          q' * E2 + (p' + q') =
+            q' * S_M + (10 * q' * L_2 (M + 1) + q' * B + p') := by
+        calc q' * E2 + (p' + q')
+            = q' * (E2 + 1) + p' := by ring
+          _ = q' * (S_M + 10 * L_2 (M + 1) + B) + p' := by rw [hE2_add]
+          _ = q' * S_M + (10 * q' * L_2 (M + 1) + q' * B + p') := by ring
+      omega
+    have h12 := hpq 1 2 (by decide) (by decide)
+    have h712 := hpq 7 12 (by decide) (by decide)
+    refine ⟨hpow_lt, hpq, by linarith only [h12], by linarith only [h712], ?_⟩
+    intro hL2_int
+    have hSM_ge : 17 * M + 7 ≤ S_M :=
+      waveInteriorExp_ge_seventeen_mul_add_seven L_2 L_1 M hL1 hL2_int
+    omega
+  refine ⟨hsub, ?_⟩
+  intro L_max hL2_int hL2_max hM_ge
+  refine Nat.lt_of_not_le (fun hW_le => ?_)
+  have h12 := (hsub hW_le).2.2.1
+  have hSM_ge : 17 * M + 7 ≤ S_M :=
+    waveInteriorExp_ge_seventeen_mul_add_seven L_2 L_1 M hL1 hL2_int
+  omega
+
+/-!
+## Section 99: The `63 : 40` (`1,890 : 1,200`) All-Prefix Run-Dominance Law for Non-Monotone Sawtooth Visits (`W(N+2+d) ≤ 2^B * W(0)`)
+
+Suppose an orbit starting from `W(0) < 2^W_0` visits the sublevel set `W(N + 2 + d) ≤ 2^B * W(0)`
+at horizon `M + 1 = N + 2 + d` (`M = N + 1 + d`).
+Previously (in Section 75), to compare `L_2(N + 1)` and `L_2(N + 2 + d)`, we had to assume
+`W(N + 2 + d) ≤ W(N + 1)` (monotone non-increasing `W`).
+Remarkably, we need **no assumption whatsoever on `W(N + 1)`** (other than `1 ≤ W(N + 1)`):
+1. At the earlier horizon `N + 1`, Section 92 gives the universal upper bound:
+     `170 * L_2(N + 1) < 10 * S_N + 270 * L_2(0) + 17 * W_0`.
+2. By Section 74's shift-composition law, the cumulative step-sum `S_{N+1+d}` from `0` to `N + 1 + d`
+   absorbs **both** `S_N` and the entire earlier `2`-run `10 * L_2(N + 1)`:
+     `S_{N+1+d} = S_N + 10 * L_2(N + 1) + S_tail`.
+3. At the later horizon `N + 2 + d`, Section 98 gives:
+     `7 * S_{N+1+d} + 190 * L_2(0) < 120 * L_2(N + 2 + d) + 12 * B + 7`.
+4. Multiplying (3) by `10` and eliminating `10 * S_N` via (1) yields the **All-Prefix `1,890 : 1,200`
+   (`63 : 40 = 1.575×`) Run-Dominance Law**:
+     `1890 * L_2(N + 1) + 70 * S_tail + 10 * L_2(0) < 1200 * L_2(N + 2 + d) + 120 * B + 119 * W_0 + 70`!
+   Consequently, whenever `W(N + 2 + d) ≤ 2^B * W(0)`, the dipping run length `L_2(N + 2 + d)`
+   dominates **every earlier `2`-run `L_2(N + 1)` in the entire history of the orbit** by a factor of
+   `63 / 40 = 1.575×`!
+-/
+
+/-- **The `63 : 40` (`1,890 : 1,200`) All-Prefix Run-Dominance Law for Non-Monotone Sawtooth Visits:**
+Whenever `W(N + 2 + d) ≤ 2^B * W(0)` along an orbit starting from `W(0) < 2^W_0`, for every earlier
+wave `N + 1` (`1 ≤ W(N + 1)`),
+`1890 * L_2(N + 1) + 70 * S_tail + 10 * L_2(0) < 1200 * L_2(N + 2 + d) + 120 * B + 119 * W_0 + 70`,
+and `63 * L_2(N + 1) + 18 ≤ 40 * L_2(N + 2 + d) + 4 * B + 4 * W_0 + 2`. -/
+theorem dense_core_non_monotone_sawtooth_all_prefix_run_dominance
+    {W L_2 L_1 : ℕ → ℕ} {N d W_0 B : ℕ}
+    (hW0_pos : 1 ≤ W 0) (hW0_lt : W 0 < 2 ^ W_0)
+    (hWN1_pos : 1 ≤ W (N + 1)) (hL2_0 : 1 ≤ L_2 0)
+    (hL1 : ∀ t ≤ N + 1 + d, 1 ≤ L_1 t)
+    (hrec : ∀ n ≤ N + 1 + d,
+      2 ^ (7 * L_1 n + 10 * L_2 (n + 1)) * W (n + 1) +
+        19 * ((3 ^ (7 * L_1 n) - 2 ^ (7 * L_1 n)) / 2059) =
+        3 ^ (10 * L_2 n + 7 * L_1 n) * W n)
+    (hsub : W (N + 2 + d) ≤ 2 ^ B * W 0) :
+    let S_tail := waveInteriorExp (fun t => L_2 (N + 1 + t)) (fun t => L_1 (N + 1 + t)) d
+    -- 1. Exact 1,890 : 1,200 all-prefix run-dominance inequality (with S_tail and L_2(0)):
+    1890 * L_2 (N + 1) + 70 * S_tail + 10 * L_2 0 <
+      1200 * L_2 (N + 2 + d) + 120 * B + 119 * W_0 + 70 ∧
+    63 * L_2 (N + 1) + 15 ≤ 40 * L_2 (N + 2 + d) + 4 * B + 4 * W_0 ∧
+    -- 2. Strict run growth L_2(N+1) < L_2(N+2+d) and 3 : 2 expansion above the initial threshold:
+    (4 * B + 4 * W_0 ≤ 23 * L_2 (N + 1) + 14 → L_2 (N + 1) < L_2 (N + 2 + d)) ∧
+    (4 * B + 4 * W_0 ≤ 3 * L_2 (N + 1) + 14 → 3 * L_2 (N + 1) < 2 * L_2 (N + 2 + d)) := by
+  intro S_tail
+  have h92 :=
+    (dense_core_universal_two_run_spike_upper_bound_and_dip_corridor
+      hW0_pos hW0_lt hWN1_pos hL2_0
+      (fun t ht => hL1 t (by omega))
+      (fun n hn => hrec n (by omega))).2.2.1
+  set S_N := waveInteriorExp L_2 L_1 N
+  change 170 * L_2 (N + 1) < 10 * S_N + 270 * L_2 0 + 17 * W_0 at h92
+  have hidx_end : (N + 1 + d) + 1 = N + 2 + d := by omega
+  have hsub' : W ((N + 1 + d) + 1) ≤ 2 ^ B * W 0 := by rw [hidx_end]; exact hsub
+  have h98 :=
+    ((dense_core_general_sublevel_step_sum_expansion_and_finite_horizon_cutoff
+      hW0_pos hL2_0 hL1 hrec).1 hsub').2.2.2.1
+  rw [hidx_end] at h98
+  set S_full := waveInteriorExp L_2 L_1 (N + 1 + d)
+  change 7 * S_full + 190 * L_2 0 < 120 * L_2 (N + 2 + d) + 12 * B + 7 at h98
+  have hS_split : S_full = S_N + 10 * L_2 (N + 1) + S_tail :=
+    waveInteriorExp_shift_comp L_2 L_1 N d
+  have hL1_tail0 : 1 ≤ (fun t => L_1 (N + 1 + t)) 0 := by
+    dsimp; exact hL1 (N + 1 + 0) (by omega)
+  have hStail_ge7 : 7 ≤ S_tail :=
+    waveInteriorExp_ge_seven_of_L1_zero_pos
+      (fun t => L_2 (N + 1 + t)) (fun t => L_1 (N + 1 + t)) hL1_tail0 d
+  have h1890 :
+      1890 * L_2 (N + 1) + 70 * S_tail + 10 * L_2 0 <
+        1200 * L_2 (N + 2 + d) + 120 * B + 119 * W_0 + 70 := by
+    omega
+  have h63_40 : 63 * L_2 (N + 1) + 15 ≤ 40 * L_2 (N + 2 + d) + 4 * B + 4 * W_0 := by
+    omega
+  refine ⟨h1890, h63_40, ?_, ?_⟩
+  · intro hthresh; linarith only [h63_40, hthresh]
+  · intro hthresh; linarith only [h63_40, hthresh]
+
+/-!
+## Section 100: Cumulative `63 : 40` Sawtooth Run Explosion & Unconditional Exclusion of Bounded-Run Recurrent Sublevel Trajectories (`no_recurrent_sawtooth_sublevel_dense_core`)
+
+Combining Sections 98 and 99 eliminates the entire **Recurrent Sawtooth Sublevel Family**
+(orbits that return infinitely often—or after horizon `2 * L_max + B`—to any bounded sublevel set
+`W(n) ≤ 2^B * W(0)` with `L_2 ≤ L_max`, without any monotonicity assumption on `W`):
+1. **Iterated `63 : 40` Sawtooth Run Growth:**
+   Along any chain of sublevel visits `L_seq(0), L_seq(1), ..., L_seq(K)` satisfying Section 99's
+   step inequality `63 * L_seq(k) + 15 ≤ 40 * L_seq(k + 1) + C_0` (`C_0 = 4 * B + 4 * W_0`),
+   once `C_0 ≤ 23 * L_seq(0) + 14`, we have `L_seq(k) < L_seq(k + 1)` at every step and
+   `L_seq(0) + K ≤ L_seq(K)`.
+2. **Unconditional Exclusion of Bounded-Run Recurrent Sublevel Visits (`no_recurrent_sawtooth_sublevel_dense_core`):**
+   Even without any threshold on `L_2`, for any ceiling `B, L_max ∈ ℕ`, no orbit can visit
+   `W(M + 1) ≤ 2^B * W(0)` with `L_2(M + 1) ≤ L_max` at any horizon `M ≥ 2 * L_max + B`; in
+   particular, **no infinite sequence of sublevel visits `m_0 < m_1 < m_2 < ...` (`W(m_k + 1) ≤ 2^B * W(0)`)
+   can have bounded `2`-run lengths `L_2(m_k + 1) ≤ L_max`!**
+-/
+
+/-- **Cumulative `63 : 40` Sawtooth Run Growth & Unconditional Exclusion of Bounded-Run Recurrent Sublevel Trajectories:**
+1. Any sequence `L_seq` satisfying `63 * L_seq k + 15 ≤ 40 * L_seq (k + 1) + C_0` with
+   `C_0 ≤ 23 * L_seq 0 + 14` grows strictly (`L_seq 0 + K ≤ L_seq K`).
+2. Along any Dense Core orbit, no infinite strictly increasing sequence of horizons `m_0 < m_1 < ...`
+   can satisfy both `W(m_k + 1) ≤ 2^B * W(0)` and `L_2(m_k + 1) ≤ L_max`. -/
+theorem dense_core_non_monotone_sawtooth_exponential_explosion_and_exclusion :
+    -- 1. Cumulative growth along any 63 : 40 Sawtooth chain above the initial threshold:
+    (∀ (L_seq : ℕ → ℕ) (C_0 K : ℕ),
+      C_0 ≤ 23 * L_seq 0 + 14 →
+      (∀ k < K, 63 * L_seq k + 15 ≤ 40 * L_seq (k + 1) + C_0) →
+      L_seq 0 + K ≤ L_seq K) ∧
+    -- 2. Unconditional exclusion of infinite bounded-run recurrent sublevel visits:
+    (∀ (W L_2 L_1 : ℕ → ℕ) (B L_max : ℕ),
+      1 ≤ W 0 →
+      (∀ n : ℕ, 1 ≤ L_1 n) →
+      (∀ n : ℕ, 1 ≤ L_2 n) →
+      (∀ n : ℕ,
+        2 ^ (7 * L_1 n + 10 * L_2 (n + 1)) * W (n + 1) +
+          19 * ((3 ^ (7 * L_1 n) - 2 ^ (7 * L_1 n)) / 2059) =
+          3 ^ (10 * L_2 n + 7 * L_1 n) * W n) →
+      ¬(∃ m_seq : ℕ → ℕ,
+          (∀ k : ℕ, m_seq k < m_seq (k + 1)) ∧
+          (∀ k : ℕ, W (m_seq k + 1) ≤ 2 ^ B * W 0) ∧
+          (∀ k : ℕ, L_2 (m_seq k + 1) ≤ L_max))) := by
+  refine ⟨?_, ?_⟩
+  · intro L_seq C_0 K hC0 hstep
+    induction K with
+    | zero => omega
+    | succ k ih =>
+        have ih_k := ih (fun j hj => hstep j (Nat.lt_succ_of_lt hj))
+        have hk := hstep k (Nat.lt_succ_self k)
+        omega
+  · intro W L_2 L_1 B L_max hW0 hL1 hL2 hrec ⟨m_seq, hmono, hsub, hLmax⟩
+    have hm_ge : ∀ k : ℕ, k ≤ m_seq k := by
+      intro k
+      induction k with
+      | zero => exact Nat.zero_le _
+      | succ j ih =>
+          have hj := hmono j
+          omega
+    set K := 2 * L_max + B
+    have h98 :=
+      (dense_core_general_sublevel_step_sum_expansion_and_finite_horizon_cutoff
+        (M := m_seq K) (B := B)
+        hW0 (hL2 0) (fun t _ => hL1 t) (fun n _ => hrec n)).2
+        L_max (fun t _ => hL2 (t + 1)) (hLmax K) (hm_ge K)
+    have hle := hsub K
+    omega
+
+/-!
+## Section 101: Immediate Post-Spike Next-Wave Exponential Rebound (`W(N+2) > 3^(10*(L_2(N+1) - L_2(N+2))) * W(N+1)`)
+
+What happens at wave `N + 1` (from `W(N+1)` to `W(N+2)`) immediately after an orbit takes a large
+`2`-run spike `L_2(N + 1)`?
+In wave `N + 1`, the large `2`-run `L_2(N + 1)` moves from the base-`2` side (`2^(10*L_2(N+1))`) to
+the **base-`3` side** (`3^(10*L_2(N+1))`):
+  `2^(7*L_1(N+1) + 10*L_2(N+2)) * W(N + 2) + 19 * Q_{L_1(N+1)} = 3^(10*L_2(N+1) + 7*L_1(N+1)) * W(N + 1)`.
+Applying Section 80 to this single wave (`M = 0` shifted to `N + 1`) proves:
+1. **Single-Wave Post-Spike Archimedean Lower Bound:**
+     `2 * 3^(7*L_1(N+1) + 10*L_2(N+1) - 1) * W(N + 1) < 2^(7*L_1(N+1) + 10*L_2(N+2)) * W(N + 2)`.
+2. **Immediate `59,049^(L_2(N+1) - L_2(N+2))`-Fold Exponential Rebound Whenever `L_2(N+2) ≤ L_2(N+1)`:**
+   Since `2^(7*L_1(N+1)) ≤ 2 * 3^(7*L_1(N+1) - 1)` and `2^(10*L_2(N+2)) ≤ 3^(10*L_2(N+2))`,
+   whenever `L_2(N + 2) ≤ L_2(N + 1)` we obtain:
+     `3^(10 * (L_2(N + 1) - L_2(N + 2))) * W(N + 1) < W(N + 2)`
+     (`59049 ^ (L_2(N + 1) - L_2(N + 2)) * W(N + 1) < W(N + 2)`)!
+   Thus, if an orbit takes a spike `L_2(N + 1)` and then drops back to a shorter run `L_2(N + 2)`,
+   **`W(N + 2)` rebounds exponentially by a factor of `59,049^(L_2(N+1) - L_2(N+2))` in a single wave!**
+3. **Mandatory Second Consecutive Jump If `W(N + 2) ≤ W(N + 1)`:**
+   Conversely, if `W(N + 2) ≤ W(N + 1)`, then `L_2(N + 2)` must jump again:
+     `49 * L_1(N + 1) + 190 * L_2(N + 1) < 120 * L_2(N + 2) + 7`!
+-/
+
+/-- **Immediate Post-Spike Next-Wave Exponential Rebound (`59,049^(L_2(N+1) - L_2(N+2)) * W(N+1) < W(N+2)`):**
+Across wave `N + 1`, `2 * 3^(7*L_1(N+1) + 10*L_2(N+1) - 1) * W(N+1) < 2^(7*L_1(N+1) + 10*L_2(N+2)) * W(N+2)`;
+whenever `L_2(N + 2) ≤ L_2(N + 1)`, `3^(10*(L_2(N+1) - L_2(N+2))) * W(N+1) < W(N+2)` (`59,049^(dL) * W(N+1) < W(N+2)`);
+and whenever `W(N + 2) ≤ W(N + 1)`, `49 * L_1(N+1) + 190 * L_2(N+1) < 120 * L_2(N+2) + 7`. -/
+theorem dense_core_post_spike_next_wave_exponential_rebound
+    {W_1 W_2 L_2_1 L_1_1 L_2_2 : ℕ}
+    (hW1 : 1 ≤ W_1) (hL2_1 : 1 ≤ L_2_1) (hL1_1 : 1 ≤ L_1_1)
+    (hw : 2 ^ (7 * L_1_1 + 10 * L_2_2) * W_2 +
+      19 * ((3 ^ (7 * L_1_1) - 2 ^ (7 * L_1_1)) / 2059) =
+      3 ^ (10 * L_2_1 + 7 * L_1_1) * W_1) :
+    -- 1. Single-wave full-exponent post-spike lower bound:
+    2 * 3 ^ (7 * L_1_1 + 10 * L_2_1 - 1) * W_1 < 2 ^ (7 * L_1_1 + 10 * L_2_2) * W_2 ∧
+    -- 2. Immediate 3^(10*(L_2_1 - L_2_2)) = 59,049^(L_2_1 - L_2_2) exponential rebound when L_2_2 ≤ L_2_1:
+    (L_2_2 ≤ L_2_1 →
+      3 ^ (10 * (L_2_1 - L_2_2)) * W_1 < W_2 ∧
+      59049 ^ (L_2_1 - L_2_2) * W_1 < W_2) ∧
+    -- 3. Mandatory second jump if W_2 ≤ W_1:
+    (W_2 ≤ W_1 → 49 * L_1_1 + 190 * L_2_1 < 120 * L_2_2 + 7) := by
+  set W_s : ℕ → ℕ := fun n => if n = 0 then W_1 else W_2
+  set L_2_s : ℕ → ℕ := fun n => if n = 0 then L_2_1 else L_2_2
+  set L_1_s : ℕ → ℕ := fun _ => L_1_1
+  have hrec_s :
+      ∀ n ≤ 0,
+        2 ^ (7 * L_1_s n + 10 * L_2_s (n + 1)) * W_s (n + 1) +
+          19 * ((3 ^ (7 * L_1_s n) - 2 ^ (7 * L_1_s n)) / 2059) =
+          3 ^ (10 * L_2_s n + 7 * L_1_s n) * W_s n := by
+    intro n hn
+    have hn0 : n = 0 := Nat.le_zero.mp hn
+    subst hn0
+    simpa [W_s, L_2_s, L_1_s] using hw
+  have h80 :=
+    dense_core_full_exponent_archimedean_wave_bound_and_step_sum_expansion
+      (W := W_s) (L_2 := L_2_s) (L_1 := L_1_s) (N := 0)
+      hW1 hL2_1 (fun _ _ => hL1_1) hrec_s
+  have hfull : 2 * 3 ^ (7 * L_1_1 + 10 * L_2_1 - 1) * W_1 < 2 ^ (7 * L_1_1 + 10 * L_2_2) * W_2 := by
+    simpa [W_s, L_2_s, L_1_s, waveInteriorExp] using h80.1
+  refine ⟨hfull, ?_, ?_⟩
+  · intro hle
+    have hpow_bound :
+        2 ^ (7 * L_1_1 + 10 * L_2_2) * (3 ^ (10 * (L_2_1 - L_2_2)) * W_1) ≤
+          2 * 3 ^ (7 * L_1_1 + 10 * L_2_1 - 1) * W_1 := by
+      have hexp2 : 7 * L_1_1 + 10 * L_2_2 = 1 + (7 * L_1_1 - 1 + 10 * L_2_2) := by omega
+      have hexp3 :
+          7 * L_1_1 + 10 * L_2_1 - 1 =
+            (7 * L_1_1 - 1 + 10 * L_2_2) + 10 * (L_2_1 - L_2_2) := by omega
+      have h23 :
+          2 ^ (7 * L_1_1 - 1 + 10 * L_2_2) ≤ 3 ^ (7 * L_1_1 - 1 + 10 * L_2_2) :=
+        Nat.pow_le_pow_left (by decide) _
+      set E_common := 7 * L_1_1 - 1 + 10 * L_2_2
+      set E_diff := 10 * (L_2_1 - L_2_2)
+      have hp2 : 2 ^ (7 * L_1_1 + 10 * L_2_2) = 2 * 2 ^ E_common := by
+        rw [hexp2, Nat.pow_add 2 1 E_common]
+      have hp3 : 3 ^ (7 * L_1_1 + 10 * L_2_1 - 1) = 3 ^ E_common * 3 ^ E_diff := by
+        rw [hexp3, Nat.pow_add 3 E_common E_diff]
+      rw [hp2, hp3]
+      calc 2 * 2 ^ E_common * (3 ^ E_diff * W_1)
+          = (2 * 3 ^ E_diff * W_1) * 2 ^ E_common := by ring
+        _ ≤ (2 * 3 ^ E_diff * W_1) * 3 ^ E_common := Nat.mul_le_mul_left _ h23
+        _ = 2 * (3 ^ E_common * 3 ^ E_diff) * W_1 := by ring
+    have hlt_mul := lt_of_le_of_lt hpow_bound hfull
+    have hreb : 3 ^ (10 * (L_2_1 - L_2_2)) * W_1 < W_2 := by
+      refine Nat.lt_of_not_le (fun hge => ?_)
+      have hm := Nat.mul_le_mul_left (2 ^ (7 * L_1_1 + 10 * L_2_2)) hge
+      linarith only [hlt_mul, hm]
+    have h59 : 3 ^ (10 * (L_2_1 - L_2_2)) = 59049 ^ (L_2_1 - L_2_2) := by
+      rw [Nat.pow_mul 3 10 (L_2_1 - L_2_2)]
+    refine ⟨hreb, ?_⟩
+    rw [← h59]
+    exact hreb
+  · intro hW2_le
+    have hdip := (h80.2.2 hW2_le).2.2.2.1
+    change 7 * (7 * L_1_1) + 190 * L_2_1 < 120 * L_2_2 + 7 at hdip
+    linarith only [hdip]
+
 end Mahler.DubickasExtension
 
 
