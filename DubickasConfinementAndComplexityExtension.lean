@@ -19947,6 +19947,919 @@ theorem dense_core_dualWaveInteriorAcc_telescopic_cross_defect_and_mirror_collap
     rw [← hS_eq] at hid_M
     exact dualWaveInteriorAcc_anagram_dvd_of_ident hAcc_le hid_N hid_M
 
+/-!
+## Section 63: Exact Boundary `(2, 3)`-Adic Valuation Locks on `waveCrossDefect` (`ν_2(CD_N) = 7*L_1(0) - 7`, `ν_3(CD_N) = 7*L_1(N) - 7`)
+
+In Section 57, we proved the telescopic cross-defect identity:
+  `2059 * Acc_N + 2^(S_N) + 16243286400 * CD_N = 3^(S_N)`.
+What are the exact `2`-adic and `3`-adic valuations of `CD_N = waveCrossDefect L_2 L_1 N` when `N ≥ 1`
+(`N = m + 1`) and all interior runs are positive (`∀ t ≤ m + 1, 1 ≤ L_1 t` and `∀ t < m + 1, 1 ≤ L_2 (t + 1)`)?
+
+1. **Universal Coprimality of `R_k = (3^(10*k) - 2^(10*k)) / 58025` to `6` (`k ≥ 1`):**
+   For every `k ≥ 1`, `R_k % 2 = 1` and `¬(3 ∣ R_k)`.
+2. **Exact Left-Boundary `2`-Adic Valuation (`ν_2(CD_{m+1}) = 7 * L_1(0) - 7`):**
+   At `k = 0`, `CD_1 = 2^(7*L_1(0) - 7) * (3^(7*L_1(1) - 7) * R_{L_2(1)})`, where the cofactor is odd.
+   At every subsequent step `k ≥ 1`, the added term carries `2^(S_k - 7)` with
+   `S_k - 7 ≥ 7*L_1(0) + 10*L_2(1) + 7*L_1(1) - 7 ≥ (7*L_1(0) - 7) + 17`.
+   Therefore, for **every** `m ∈ ℕ` (`N = m + 1 ≥ 1`), the `k = 0` term uniquely locks the `2`-adic
+   valuation of `CD_{m+1}`:
+     `2^(7*L_1(0) - 7) ∣ CD_{m+1}`  and  `¬(2^(7*L_1(0) - 7 + 1) ∣ CD_{m+1})`!
+3. **Exact Right-Boundary `3`-Adic Valuation (`ν_3(CD_{m+1}) = 7 * L_1(m+1) - 7`):**
+   Unfolding `CD_{m+1}` at the terminal step `m + 1` reveals that the `CD_m` term carries
+   `3^(10*L_2(m+1) + 7*L_1(m+1))` (`≥ 17` extra powers of `3`), whereas the terminal term carries
+   `3^(7*L_1(m+1) - 7) * (2^(S_m - 7) * R_{L_2(m+1)})` with cofactor coprime to `3`.
+   Therefore, for **every** `m ∈ ℕ` (`N = m + 1 ≥ 1`), the terminal `1`-run `L_1(m+1)` uniquely locks
+   the `3`-adic valuation of `CD_{m+1}`:
+     `3^(7*L_1(m+1) - 7) ∣ CD_{m+1}`  and  `¬(3^(7*L_1(m+1) - 7 + 1) ∣ CD_{m+1})`!
+-/
+
+private lemma div_58025_mod_two_eq_one {k : ℕ} (hk : 1 ≤ k) :
+    ((3 ^ (10 * k) - 2 ^ (10 * k)) / 58025) % 2 = 1 := by
+  have hR_eq := mul_58025_div_add_two_pow_ten k
+  set R_k := (3 ^ (10 * k) - 2 ^ (10 * k)) / 58025
+  have hp2 : 2 ^ (10 * k) = 1024 * 2 ^ (10 * k - 10) := two_pow_eq_1024_mul_sub (by omega)
+  have h3_odd : 3 ^ (10 * k) % 2 = 1 := three_pow_mod_two_eq_one (10 * k)
+  have h1 :
+      R_k + 2 * (29012 * R_k + 512 * 2 ^ (10 * k - 10)) = 3 ^ (10 * k) := by
+    linarith only [hR_eq, hp2]
+  have hm :
+      (R_k + 2 * (29012 * R_k + 512 * 2 ^ (10 * k - 10))) % 2 = 3 ^ (10 * k) % 2 := by
+    rw [h1]
+  rw [Nat.add_mul_mod_self_left, h3_odd] at hm
+  exact hm
+
+private lemma not_three_dvd_div_58025 {k : ℕ} (hk : 1 ≤ k) :
+    ¬(3 ∣ ((3 ^ (10 * k) - 2 ^ (10 * k)) / 58025)) := by
+  have hR_eq := mul_58025_div_add_two_pow_ten k
+  set R_k := (3 ^ (10 * k) - 2 ^ (10 * k)) / 58025
+  have hp3 : 3 ^ (10 * k) = 59049 * 3 ^ (10 * k - 10) := three_pow_eq_59049_mul_sub (by omega)
+  rintro ⟨K, hK⟩
+  have h1 :
+      2 ^ (10 * k) + 3 * (58025 * K) = 3 * (19683 * 3 ^ (10 * k - 10)) := by
+    linarith only [hR_eq, hp3, hK]
+  have hm :
+      (2 ^ (10 * k) + 3 * (58025 * K)) % 3 = (3 * (19683 * 3 ^ (10 * k - 10))) % 3 := by
+    rw [h1]
+  rw [Nat.add_mul_mod_self_left, Nat.mul_mod_right] at hm
+  exact two_pow_mod_three_ne_zero (10 * k) hm
+
+private lemma waveInteriorExp_ge_S0_add_seventeen
+    (L_2 L_1 : ℕ → ℕ) (hL2_1 : 1 ≤ L_2 1) (hL1_1 : 1 ≤ L_1 1) (j : ℕ) :
+    7 * L_1 0 + 17 ≤ waveInteriorExp L_2 L_1 (j + 1) := by
+  induction j with
+  | zero =>
+      change 7 * L_1 0 + 17 ≤ 7 * L_1 0 + (10 * L_2 1 + 7 * L_1 1)
+      omega
+  | succ m ih =>
+      change 7 * L_1 0 + 17 ≤
+        waveInteriorExp L_2 L_1 (m + 1) + (10 * L_2 (m + 2) + 7 * L_1 (m + 2))
+      omega
+
+private lemma waveCrossDefect_two_adic_odd_cofactor
+    (L_2 L_1 : ℕ → ℕ) (m : ℕ)
+    (hL1 : ∀ t ≤ m + 1, 1 ≤ L_1 t)
+    (hL2 : ∀ t < m + 1, 1 ≤ L_2 (t + 1)) :
+    ∃ OddCD : ℕ,
+      OddCD % 2 = 1 ∧
+      waveCrossDefect L_2 L_1 (m + 1) = 2 ^ (7 * L_1 0 - 7) * OddCD := by
+  induction m with
+  | zero =>
+      have hL2_1 : 1 ≤ L_2 1 := hL2 0 (Nat.lt_succ_self 0)
+      have hR_odd : ((3 ^ (10 * L_2 1) - 2 ^ (10 * L_2 1)) / 58025) % 2 = 1 :=
+        div_58025_mod_two_eq_one hL2_1
+      set R_1 := (3 ^ (10 * L_2 1) - 2 ^ (10 * L_2 1)) / 58025
+      refine ⟨3 ^ (7 * L_1 1 - 7) * R_1, ?_, ?_⟩
+      · have h3_odd : 3 ^ (7 * L_1 1 - 7) % 2 = 1 := three_pow_mod_two_eq_one _
+        rw [Nat.mul_mod, h3_odd, hR_odd]
+      · simp only [waveCrossDefect, waveInteriorExp, Nat.mul_zero, Nat.zero_add]
+        ring
+  | succ j ih =>
+      have ih_j := ih (fun t ht => hL1 t (Nat.le_succ_of_le ht))
+        (fun t ht => hL2 t (Nat.lt_succ_of_lt ht))
+      rcases ih_j with ⟨Odd_j, hOdd_j, hCD_j⟩
+      have hL1_0 : 1 ≤ L_1 0 := hL1 0 (Nat.zero_le _)
+      have hL1_1 : 1 ≤ L_1 1 := hL1 1 (by omega)
+      have hL2_1 : 1 ≤ L_2 1 := hL2 0 (by omega)
+      have hSj1_ge : 7 * L_1 0 + 17 ≤ waveInteriorExp L_2 L_1 (j + 1) :=
+        waveInteriorExp_ge_S0_add_seventeen L_2 L_1 hL2_1 hL1_1 j
+      set S_j1 := waveInteriorExp L_2 L_1 (j + 1)
+      set step_j2 := 10 * L_2 (j + 2) + 7 * L_1 (j + 2)
+      set R_j2 := (3 ^ (10 * L_2 (j + 2)) - 2 ^ (10 * L_2 (j + 2))) / 58025
+      have hp2_split :
+          2 ^ (S_j1 - 7) = 2 ^ (7 * L_1 0 - 7) * (2 * 2 ^ (S_j1 - 7 * L_1 0 - 1)) := by
+        have hexp : S_j1 - 7 = (7 * L_1 0 - 7) + (1 + (S_j1 - 7 * L_1 0 - 1)) := by omega
+        calc 2 ^ (S_j1 - 7)
+            = 2 ^ ((7 * L_1 0 - 7) + (1 + (S_j1 - 7 * L_1 0 - 1))) := by rw [hexp]
+          _ = 2 ^ (7 * L_1 0 - 7) * 2 ^ (1 + (S_j1 - 7 * L_1 0 - 1)) := Nat.pow_add 2 _ _
+          _ = 2 ^ (7 * L_1 0 - 7) * (2 ^ 1 * 2 ^ (S_j1 - 7 * L_1 0 - 1)) := by
+                rw [Nat.pow_add 2 1]
+          _ = 2 ^ (7 * L_1 0 - 7) * (2 * 2 ^ (S_j1 - 7 * L_1 0 - 1)) := rfl
+      set Tail_j := 2 ^ (S_j1 - 7 * L_1 0 - 1) * 3 ^ (7 * L_1 (j + 2) - 7) * R_j2
+      refine ⟨3 ^ step_j2 * Odd_j + 2 * Tail_j, ?_, ?_⟩
+      · have h3_odd : 3 ^ step_j2 % 2 = 1 := three_pow_mod_two_eq_one step_j2
+        have hm_odd : (3 ^ step_j2 * Odd_j) % 2 = 1 := by
+          rw [Nat.mul_mod, h3_odd, hOdd_j]
+        rw [Nat.add_mul_mod_self_left, hm_odd]
+      · simp only [waveCrossDefect]
+        change 3 ^ step_j2 * waveCrossDefect L_2 L_1 (j + 1) +
+            2 ^ (S_j1 - 7) * 3 ^ (7 * L_1 (j + 2) - 7) * R_j2 =
+            2 ^ (7 * L_1 0 - 7) * (3 ^ step_j2 * Odd_j + 2 * Tail_j)
+        rw [hCD_j, hp2_split]
+        dsimp [Tail_j]
+        ring
+
+/-- **Exact Boundary `(2, 3)`-Adic Valuation Locks on `waveCrossDefect` (`ν_2(CD_{m+1}) = 7*L_1(0) - 7`, `ν_3(CD_{m+1}) = 7*L_1(m+1) - 7`):**
+For every `m ∈ ℕ` (`N = m + 1 ≥ 1`) with positive interior runs, `waveCrossDefect L_2 L_1 (m + 1)`
+has exact `2`-adic valuation `7 * L_1 0 - 7` (determined solely by the initial `1`-run `L_1 0`) and
+exact `3`-adic valuation `7 * L_1 (m + 1) - 7` (determined solely by the terminal `1`-run `L_1 (m + 1)`). -/
+theorem dense_core_waveCrossDefect_boundary_valuations_and_anagram_locks
+    (L_2 L_1 : ℕ → ℕ) (m : ℕ)
+    (hL1 : ∀ t ≤ m + 1, 1 ≤ L_1 t)
+    (hL2 : ∀ t < m + 1, 1 ≤ L_2 (t + 1)) :
+    let CD := waveCrossDefect L_2 L_1 (m + 1)
+    -- 1. Exact left-boundary 2-adic valuation (7 * L_1 0 - 7):
+    (2 ^ (7 * L_1 0 - 7) ∣ CD ∧ ¬(2 ^ (7 * L_1 0 - 7 + 1) ∣ CD)) ∧
+    -- 2. Exact right-boundary 3-adic valuation (7 * L_1 (m + 1) - 7):
+    (3 ^ (7 * L_1 (m + 1) - 7) ∣ CD ∧ ¬(3 ^ (7 * L_1 (m + 1) - 7 + 1) ∣ CD)) ∧
+    -- 3. Combined 2-adic and 3-adic boundary divisibility of CD:
+    (2 ^ (7 * L_1 0 - 7) * 3 ^ (7 * L_1 (m + 1) - 7)) ∣ CD := by
+  intro CD
+  rcases waveCrossDefect_two_adic_odd_cofactor L_2 L_1 m hL1 hL2 with ⟨OddCD, hOddCD, hCD2⟩
+  change CD = 2 ^ (7 * L_1 0 - 7) * OddCD at hCD2
+  have hdvd2 : 2 ^ (7 * L_1 0 - 7) ∣ CD := ⟨OddCD, hCD2⟩
+  have hndvd2 : ¬(2 ^ (7 * L_1 0 - 7 + 1) ∣ CD) := by
+    rintro ⟨K, hK⟩
+    have hp_succ : 2 ^ (7 * L_1 0 - 7 + 1) = 2 ^ (7 * L_1 0 - 7) * 2 := Nat.pow_succ 2 _
+    rw [hp_succ, Nat.mul_assoc] at hK
+    have hmul_eq : 2 ^ (7 * L_1 0 - 7) * OddCD = 2 ^ (7 * L_1 0 - 7) * (2 * K) :=
+      hCD2.symm.trans hK
+    have hOdd_eq : OddCD = 2 * K :=
+      Nat.eq_of_mul_eq_mul_left (Nat.pow_pos (by decide)) hmul_eq
+    have hmod0 : OddCD % 2 = 0 := by rw [hOdd_eq, Nat.mul_mod_right]
+    exact absurd (hOddCD.symm.trans hmod0) (by decide)
+  -- Right-boundary 3-adic valuation:
+  have hL1_m1 : 1 ≤ L_1 (m + 1) := hL1 (m + 1) (Nat.le_refl _)
+  have hL2_m1 : 1 ≤ L_2 (m + 1) := hL2 m (Nat.lt_succ_self m)
+  set S_m := waveInteriorExp L_2 L_1 m
+  set CD_m := waveCrossDefect L_2 L_1 m
+  set R_m1 := (3 ^ (10 * L_2 (m + 1)) - 2 ^ (10 * L_2 (m + 1))) / 58025
+  have hp3_step :
+      3 ^ (10 * L_2 (m + 1) + 7 * L_1 (m + 1)) =
+        3 ^ (7 * L_1 (m + 1) - 7) * (3 * 3 ^ (10 * L_2 (m + 1) + 6)) := by
+    have hexp :
+        10 * L_2 (m + 1) + 7 * L_1 (m + 1) =
+          (7 * L_1 (m + 1) - 7) + (1 + (10 * L_2 (m + 1) + 6)) := by omega
+    calc 3 ^ (10 * L_2 (m + 1) + 7 * L_1 (m + 1))
+        = 3 ^ ((7 * L_1 (m + 1) - 7) + (1 + (10 * L_2 (m + 1) + 6))) := by rw [hexp]
+      _ = 3 ^ (7 * L_1 (m + 1) - 7) * 3 ^ (1 + (10 * L_2 (m + 1) + 6)) := Nat.pow_add 3 _ _
+      _ = 3 ^ (7 * L_1 (m + 1) - 7) * (3 ^ 1 * 3 ^ (10 * L_2 (m + 1) + 6)) := by
+            rw [Nat.pow_add 3 1]
+      _ = 3 ^ (7 * L_1 (m + 1) - 7) * (3 * 3 ^ (10 * L_2 (m + 1) + 6)) := rfl
+  set C3 := 3 * (3 ^ (10 * L_2 (m + 1) + 6) * CD_m) + 2 ^ (S_m - 7) * R_m1
+  have hCD3 : CD = 3 ^ (7 * L_1 (m + 1) - 7) * C3 := by
+    change 3 ^ (10 * L_2 (m + 1) + 7 * L_1 (m + 1)) * CD_m +
+        2 ^ (S_m - 7) * 3 ^ (7 * L_1 (m + 1) - 7) * R_m1 =
+        3 ^ (7 * L_1 (m + 1) - 7) * C3
+    rw [hp3_step]
+    dsimp [C3]
+    ring
+  have hdvd3 : 3 ^ (7 * L_1 (m + 1) - 7) ∣ CD := ⟨C3, hCD3⟩
+  have hndvd3 : ¬(3 ^ (7 * L_1 (m + 1) - 7 + 1) ∣ CD) := by
+    rintro ⟨K, hK⟩
+    have hp_succ : 3 ^ (7 * L_1 (m + 1) - 7 + 1) = 3 ^ (7 * L_1 (m + 1) - 7) * 3 :=
+      Nat.pow_succ 3 _
+    rw [hp_succ, Nat.mul_assoc] at hK
+    have hmul_eq : 3 ^ (7 * L_1 (m + 1) - 7) * C3 = 3 ^ (7 * L_1 (m + 1) - 7) * (3 * K) :=
+      hCD3.symm.trans hK
+    have hC3_eq : C3 = 3 * K :=
+      Nat.eq_of_mul_eq_mul_left (Nat.pow_pos (by decide)) hmul_eq
+    have hm :
+        (2 ^ (S_m - 7) * R_m1 + 3 * (3 ^ (10 * L_2 (m + 1) + 6) * CD_m)) % 3 =
+          (3 * K) % 3 := by
+      have hcomm :
+          2 ^ (S_m - 7) * R_m1 + 3 * (3 ^ (10 * L_2 (m + 1) + 6) * CD_m) = C3 := by
+        dsimp [C3]; ring
+      rw [hcomm, hC3_eq]
+    rw [Nat.add_mul_mod_self_left, Nat.mul_mod_right] at hm
+    have hdvd_prod : 3 ∣ 2 ^ (S_m - 7) * R_m1 := Nat.dvd_of_mod_eq_zero hm
+    have hcop32 : Nat.Coprime 3 (2 ^ (S_m - 7)) :=
+      Nat.Coprime.pow_right _ (by decide : Nat.Coprime 3 2)
+    have hdvd_R : 3 ∣ R_m1 := hcop32.dvd_of_dvd_mul_left hdvd_prod
+    exact not_three_dvd_div_58025 hL2_m1 hdvd_R
+  have hcop23 : Nat.Coprime (2 ^ (7 * L_1 0 - 7)) (3 ^ (7 * L_1 (m + 1) - 7)) :=
+    Nat.Coprime.pow _ _ (by decide : Nat.Coprime 2 3)
+  exact ⟨⟨hdvd2, hndvd2⟩, ⟨hdvd3, hndvd3⟩, hcop23.mul_dvd_of_dvd_of_dvd hdvd2 hdvd3⟩
+
+/-!
+## Section 64: Prefix-Sharing Cross-Defect Filtration & Higher-Power `126,900,675 * 2^(S_K)` Anagram Divisibility
+
+What happens when two multi-wave blocks share their first `K` interior waves (`0 .. K`), so that
+`L_1(t) = L_1'(t)` for all `t ≤ K` and `L_2(t + 1) = L_2'(t + 1)` for all `t < K`?
+
+1. **The `2^(S_K - 7)` Cross-Defect Tail Filtration Law:**
+   For any `K ≤ N` (with `∀ t ≤ N, 1 ≤ L_1 t`), every step `k ≥ K` of `waveCrossDefect` adds a term
+   with factor `2^(S_k - 7)`, which is a multiple of `2^(S_K - 7)` since `S_K ≤ S_k`.
+   Consequently:
+     `3^(S_N - S_K) * CD_K ≤ CD_N`  and  `2^(S_K - 7) ∣ (CD_N - 3^(S_N - S_K) * CD_K)`!
+2. **Higher-Power `126,900,675 * 2^(S_K)` Anagram Divisibility Law:**
+   Suppose two macro-wave anagrams (`S_N = S'_M`) also agree on their first `K` interior waves
+   (`K ≤ N`, `K ≤ M`). Then `S_K = S'_K` and `CD_K = CD'_K`, so the prefix contribution
+   `3^(S_N - S_K) * CD_K = 3^(S'_M - S'_K) * CD'_K` **cancels identically** from `CD_N - CD'_M`!
+   Thus `2^(S_K - 7) ∣ (CD_N - CD'_M)`, and since
+   `2059 * (Acc'_M - Acc_N) = 16243286400 * (CD_N - CD'_M) = (126900675 * 2^7) * (CD_N - CD'_M)`
+   with `gcd(126900675 * 2^(S_K), 2059) = 1`:
+     `(126,900,675 * 2^(S_K)) ∣ (Acc'_M - Acc_N)`!
+   (Here `126,900,675 = 2187 × 58,025`, and `S_K ≥ 17 * K + 7` grows linearly with the shared prefix `K`!)
+-/
+
+private lemma waveInteriorExp_mono
+    (L_2 L_1 : ℕ → ℕ) {K N : ℕ} (hKN : K ≤ N) :
+    waveInteriorExp L_2 L_1 K ≤ waveInteriorExp L_2 L_1 N := by
+  induction N with
+  | zero =>
+      have hK0 : K = 0 := by omega
+      subst hK0; exact Nat.le_refl _
+  | succ k ih =>
+      rcases Nat.of_le_succ hKN with hle | rfl
+      · have ih_k := ih hle
+        simp only [waveInteriorExp]
+        omega
+      · exact Nat.le_refl _
+
+private lemma waveCrossDefect_prefix_filtration
+    (L_2 L_1 : ℕ → ℕ) {K N : ℕ} (hKN : K ≤ N) :
+    let S_K := waveInteriorExp L_2 L_1 K
+    let S_N := waveInteriorExp L_2 L_1 N
+    let CD_K := waveCrossDefect L_2 L_1 K
+    let CD_N := waveCrossDefect L_2 L_1 N
+    3 ^ (S_N - S_K) * CD_K ≤ CD_N ∧
+    2 ^ (S_K - 7) ∣ (CD_N - 3 ^ (S_N - S_K) * CD_K) := by
+  intro S_K S_N CD_K CD_N
+  induction N with
+  | zero =>
+      have hK0 : K = 0 := by omega
+      subst hK0
+      dsimp [S_K, S_N, CD_K, CD_N]
+      rw [Nat.sub_self, Nat.pow_zero, Nat.one_mul, Nat.sub_self]
+      exact ⟨Nat.le_refl _, ⟨0, by ring⟩⟩
+  | succ k ih =>
+      rcases Nat.of_le_succ hKN with hle | rfl
+      · have ih_k := ih hle
+        have hSK_le_Sk : S_K ≤ waveInteriorExp L_2 L_1 k :=
+          waveInteriorExp_mono L_2 L_1 hle
+        set S_k := waveInteriorExp L_2 L_1 k
+        set CD_k := waveCrossDefect L_2 L_1 k
+        set step_k := 10 * L_2 (k + 1) + 7 * L_1 (k + 1)
+        set Term_k := 3 ^ (7 * L_1 (k + 1) - 7) *
+          ((3 ^ (10 * L_2 (k + 1)) - 2 ^ (10 * L_2 (k + 1))) / 58025)
+        have hpow_3 :
+            3 ^ (S_N - S_K) = 3 ^ step_k * 3 ^ (S_k - S_K) := by
+          have hexp : S_N - S_K = step_k + (S_k - S_K) := by
+            change (S_k + step_k) - S_K = step_k + (S_k - S_K)
+            omega
+          rw [hexp, Nat.pow_add]
+        have hCD_succ : CD_N = 3 ^ step_k * CD_k + 2 ^ (S_k - 7) * Term_k := by
+          dsimp [CD_N, waveCrossDefect, S_k, CD_k, step_k, Term_k]
+          ring
+        have hle_succ : 3 ^ (S_N - S_K) * CD_K ≤ CD_N := by
+          rw [hpow_3, Nat.mul_assoc, hCD_succ]
+          have hm : 3 ^ step_k * (3 ^ (S_k - S_K) * CD_K) ≤ 3 ^ step_k * CD_k :=
+            Nat.mul_le_mul_left _ ih_k.1
+          omega
+        rcases ih_k.2 with ⟨T_k, hT_k⟩
+        have hpow2_dvd : 2 ^ (S_K - 7) ∣ 2 ^ (S_k - 7) :=
+          Nat.pow_dvd_pow 2 (by omega)
+        rcases hpow2_dvd with ⟨P2, hP2⟩
+        refine ⟨hle_succ, ⟨3 ^ step_k * T_k + P2 * Term_k, ?_⟩⟩
+        have hCDk_eq : CD_k = 3 ^ (S_k - S_K) * CD_K + 2 ^ (S_K - 7) * T_k := by
+          have hd := Nat.sub_add_cancel ih_k.1
+          linarith only [hT_k, hd]
+        have hlin :
+            CD_N =
+              3 ^ (S_N - S_K) * CD_K +
+                2 ^ (S_K - 7) * (3 ^ step_k * T_k + P2 * Term_k) := by
+          rw [hCD_succ, hCDk_eq, hpow_3, hP2]
+          ring
+        rw [hlin, Nat.add_sub_cancel_left]
+      · dsimp [S_K, S_N, CD_K, CD_N]
+        rw [Nat.sub_self, Nat.pow_zero, Nat.one_mul, Nat.sub_self]
+        exact ⟨Nat.le_refl _, ⟨0, by ring⟩⟩
+
+private lemma waveCrossDefect_eq_of_prefix_eq
+    (L_2 L_1 L_2' L_1' : ℕ → ℕ) (K : ℕ)
+    (hL1 : ∀ t ≤ K, L_1 t = L_1' t)
+    (hL2 : ∀ t < K, L_2 (t + 1) = L_2' (t + 1)) :
+    waveCrossDefect L_2 L_1 K = waveCrossDefect L_2' L_1' K := by
+  induction K with
+  | zero => rfl
+  | succ k ih =>
+      have ih_k := ih (fun t ht => hL1 t (Nat.le_succ_of_le ht))
+        (fun t ht => hL2 t (Nat.lt_succ_of_lt ht))
+      have hind_k :=
+        (dense_core_symmetric_multi_wave_master_identity_and_boundary_independence.1
+          L_2 L_1 L_2' L_1' k
+          (fun t ht => hL1 t (Nat.le_succ_of_le ht))
+          (fun t ht => hL2 t (Nat.lt_succ_of_lt ht))).1
+      have hk1 := hL1 (k + 1) (Nat.le_refl _)
+      have hk2 := hL2 k (Nat.lt_succ_self k)
+      simp only [waveCrossDefect, ih_k, hind_k, hk1, hk2]
+
+/-- **Prefix-Sharing Cross-Defect Filtration & Higher-Power `126,900,675 * 2^(S_K)` Anagram Divisibility:**
+For any `K ≤ N`, `2^(S_K - 7) ∣ (CD_N - 3^(S_N - S_K) * CD_K)`; consequently, if two macro-wave
+anagrams (`S_N = S'_M`) share their first `K` interior waves, then `2^(S_K - 7) ∣ (CD_N - CD'_M)`
+and `(126900675 * 2^(S_K)) ∣ (Acc'_M - Acc_N)`. -/
+theorem dense_core_waveCrossDefect_prefix_filtration_and_anagram_divisibility :
+    -- 1. Universal 2^(S_K - 7) tail filtration on waveCrossDefect:
+    (∀ (L_2 L_1 : ℕ → ℕ) (K N : ℕ), K ≤ N →
+      let S_K := waveInteriorExp L_2 L_1 K
+      let S_N := waveInteriorExp L_2 L_1 N
+      let CD_K := waveCrossDefect L_2 L_1 K
+      let CD_N := waveCrossDefect L_2 L_1 N
+      3 ^ (S_N - S_K) * CD_K ≤ CD_N ∧
+      2 ^ (S_K - 7) ∣ (CD_N - 3 ^ (S_N - S_K) * CD_K)) ∧
+    -- 2. Higher-power (126,900,675 * 2^(S_K)) anagram divisibility under K shared interior waves:
+    (∀ (L_2 L_1 L_2' L_1' : ℕ → ℕ) (K N M : ℕ),
+      K ≤ N → K ≤ M →
+      (∀ t ≤ N, 1 ≤ L_1 t) →
+      (∀ t ≤ M, 1 ≤ L_1' t) →
+      (∀ t ≤ K, L_1 t = L_1' t) →
+      (∀ t < K, L_2 (t + 1) = L_2' (t + 1)) →
+      waveInteriorExp L_2 L_1 N = waveInteriorExp L_2' L_1' M →
+      waveInteriorAcc L_2 L_1 N ≤ waveInteriorAcc L_2' L_1' M →
+      let S_K := waveInteriorExp L_2 L_1 K
+      2 ^ (S_K - 7) ∣ (waveCrossDefect L_2 L_1 N - waveCrossDefect L_2' L_1' M) ∧
+      (126900675 * 2 ^ S_K) ∣ (waveInteriorAcc L_2' L_1' M - waveInteriorAcc L_2 L_1 N)) := by
+  refine ⟨fun L_2 L_1 K N hKN => waveCrossDefect_prefix_filtration L_2 L_1 hKN, ?_⟩
+  intro L_2 L_1 L_2' L_1' K N M hKN hKM hL1 hL1' hK1 hK2 hS_eq hAcc_le S_K
+  have hSK_eq :
+      waveInteriorExp L_2 L_1 K = waveInteriorExp L_2' L_1' K :=
+    (dense_core_symmetric_multi_wave_master_identity_and_boundary_independence.1
+      L_2 L_1 L_2' L_1' K hK1 hK2).1
+  have hCDK_eq :
+      waveCrossDefect L_2 L_1 K = waveCrossDefect L_2' L_1' K :=
+    waveCrossDefect_eq_of_prefix_eq L_2 L_1 L_2' L_1' K hK1 hK2
+  have hfil_N := waveCrossDefect_prefix_filtration L_2 L_1 hKN
+  have hfil_M := waveCrossDefect_prefix_filtration L_2' L_1' hKM
+  set S_N := waveInteriorExp L_2 L_1 N
+  set CD_K := waveCrossDefect L_2 L_1 K
+  set CD_N := waveCrossDefect L_2 L_1 N
+  set CD_M := waveCrossDefect L_2' L_1' M
+  set Acc_N := waveInteriorAcc L_2 L_1 N
+  set Acc_M := waveInteriorAcc L_2' L_1' M
+  have hfil_M' :
+      3 ^ (S_N - S_K) * CD_K ≤ CD_M ∧
+      2 ^ (S_K - 7) ∣ (CD_M - 3 ^ (S_N - S_K) * CD_K) := by
+    have h1 := hfil_M.1
+    have h2 := hfil_M.2
+    rw [← hS_eq, ← hSK_eq, ← hCDK_eq] at h1 h2
+    exact ⟨h1, h2⟩
+  have hid_N :=
+    (dense_core_waveInteriorAcc_telescopic_cross_defect_and_mirror_collapses.1 L_2 L_1 N hL1).1
+  have hid_M :=
+    (dense_core_waveInteriorAcc_telescopic_cross_defect_and_mirror_collapses.1 L_2' L_1' M hL1').1
+  change 2059 * Acc_N + 2 ^ S_N + 16243286400 * CD_N = 3 ^ S_N at hid_N
+  change 2059 * Acc_M + 2 ^ (waveInteriorExp L_2' L_1' M) + 16243286400 * CD_M =
+      3 ^ (waveInteriorExp L_2' L_1' M) at hid_M
+  rw [← hS_eq] at hid_M
+  have heq : 2059 * Acc_N + 16243286400 * CD_N = 2059 * Acc_M + 16243286400 * CD_M := by
+    linarith only [hid_N, hid_M]
+  have hCD_le : CD_M ≤ CD_N := by
+    refine Nat.le_of_not_lt (fun hlt => ?_)
+    have hm1 : 2059 * Acc_N ≤ 2059 * Acc_M := Nat.mul_le_mul_left 2059 hAcc_le
+    have hm2 : 16243286400 * CD_N < 16243286400 * CD_M :=
+      Nat.mul_lt_mul_of_pos_left hlt (by decide)
+    linarith only [heq, hm1, hm2]
+  rcases hfil_N.2 with ⟨TN, hTN⟩
+  rcases hfil_M'.2 with ⟨TM, hTM⟩
+  have hCDN_eq : CD_N = 3 ^ (S_N - S_K) * CD_K + 2 ^ (S_K - 7) * TN := by
+    have hd := Nat.sub_add_cancel hfil_N.1
+    linarith only [hTN, hd]
+  have hCDM_eq : CD_M = 3 ^ (S_N - S_K) * CD_K + 2 ^ (S_K - 7) * TM := by
+    have hd := Nat.sub_add_cancel hfil_M'.1
+    linarith only [hTM, hd]
+  have hTM_le_TN : TM ≤ TN := by
+    refine Nat.le_of_not_lt (fun hlt => ?_)
+    have hm : 2 ^ (S_K - 7) * TN < 2 ^ (S_K - 7) * TM :=
+      Nat.mul_lt_mul_of_pos_left hlt (Nat.pow_pos (by decide))
+    linarith only [hCD_le, hCDN_eq, hCDM_eq, hm]
+  have hCD_diff : CD_N - CD_M = 2 ^ (S_K - 7) * (TN - TM) := by
+    have hadd_CD : (CD_N - CD_M) + CD_M = CD_N := Nat.sub_add_cancel hCD_le
+    have hadd_T : (TN - TM) + TM = TN := Nat.sub_add_cancel hTM_le_TN
+    have hmul_T :
+        2 ^ (S_K - 7) * (TN - TM) + 2 ^ (S_K - 7) * TM = 2 ^ (S_K - 7) * TN := by
+      rw [← Nat.mul_add, hadd_T]
+    linarith only [hadd_CD, hCDN_eq, hCDM_eq, hmul_T]
+  have hdvd_CD : 2 ^ (S_K - 7) ∣ (CD_N - CD_M) := ⟨TN - TM, hCD_diff⟩
+  have hSK_ge7 : 7 ≤ S_K :=
+    waveInteriorExp_ge_seven_of_L1_zero_pos L_2 L_1 (hL1 0 (Nat.zero_le _)) K
+  have hp2_SK : 2 ^ S_K = 128 * 2 ^ (S_K - 7) := two_pow_eq_128_mul_sub hSK_ge7
+  have hdiff_eq : 16243286400 * (CD_N - CD_M) = 2059 * (Acc_M - Acc_N) := by
+    have hadd1 : (CD_N - CD_M) + CD_M = CD_N := Nat.sub_add_cancel hCD_le
+    have hadd2 : (Acc_M - Acc_N) + Acc_N = Acc_M := Nat.sub_add_cancel hAcc_le
+    linarith only [heq, hadd1, hadd2]
+  have hfactor :
+      (126900675 * 2 ^ S_K) * (TN - TM) = 2059 * (Acc_M - Acc_N) := by
+    rw [hCD_diff] at hdiff_eq
+    rw [hp2_SK]
+    linarith only [hdiff_eq]
+  have hcop : Nat.Coprime (126900675 * 2 ^ S_K) 2059 := by
+    have hc1 : Nat.Coprime 126900675 2059 := by decide
+    have hc2 : Nat.Coprime (2 ^ S_K) 2059 :=
+      Nat.Coprime.pow_left S_K (by decide : Nat.Coprime 2 2059)
+    exact Nat.Coprime.mul hc1 hc2
+  exact ⟨hdvd_CD, hcop.dvd_of_dvd_mul_left ⟨TN - TM, hfactor.symm⟩⟩
+
+/-!
+## Section 65: Incoming-Interface Multi-Wave Elimination (`U_start → W(N+1)`) & the `126,900,675 * 3^(S_N + 10*L_2(0))` Terminal-State Sieve
+
+Dual to Section 61's outgoing half-step elimination (`W(0) → U(N+1)`), what happens when we couple
+Section 54's `(N + 1)`-wave master identity with the **incoming** macro-run interface at `W(0)` from
+the preceding `1`-run `U_start` of length `1 ≤ L_1_start`:
+  `58025 * 3^(7*L_1_start) * U_start + 19 = 2059 * 2^(10*L_2(0)) * W(0)`?
+
+Multiplying Section 54's master identity by `2059 * 2^(10*L_2(0))` yields the **Incoming-Interface
+Multi-Wave (`U_start → W(N+1)`) Master Identity**:
+  `2059 * 2^(S_N + 10*L_2(0) + 10*L_2(N+1)) * W(N+1) + 19 * 2059 * 2^(10*L_2(0)) * Acc_N = 58025 * 3^(S_N + 10*L_2(0) + 7*L_1_start) * U_start + 19 * 3^(S_N + 10*L_2(0))`.
+
+Because `1 ≤ L_1_start` implies `7 ≤ 7 * L_1_start`, the coefficient `58025 * 3^(S_N + 10*L_2(0) + 7*L_1_start)`
+of `U_start` is universally a multiple of:
+  `58025 * 3^(S_N + 10*L_2(0) + 7) = 126,900,675 * 3^(S_N + 10*L_2(0))` (`126,900,675 = 2187 × 58,025`)!
+Reducing modulo `126,900,675 * 3^(S_N + 10*L_2(0))` **eliminates `W(0)`, `U_start`, and `L_1_start`
+simultaneously**, locking the terminal state `W(N+1)` modulo a modulus **`126,900,675×` larger** than
+Section 49's `3^(10*L_2 + 7*L_3)` remainder law!
+-/
+
+/-- **Incoming-Interface Multi-Wave Elimination (`U_start → W(N+1)`) & the `126,900,675 * 3^(S_N + 10*L_2(0))` Terminal-State Sieve:**
+Coupling the `(N + 1)`-wave master identity with the incoming interface at `W(0)` yields the exact
+`U_start → W(N+1)` master identity and locks `W(N+1)` modulo `126,900,675 * 3^(S_N + 10*L_2(0))`
+independently of `W(0)`, `U_start`, and `L_1_start`. -/
+theorem dense_core_multi_wave_incoming_elimination_and_126900675_sieve
+    {W L_2 L_1 : ℕ → ℕ} {N U_start L_1_start : ℕ}
+    (hrec : ∀ n ≤ N,
+      2 ^ (7 * L_1 n + 10 * L_2 (n + 1)) * W (n + 1) +
+        19 * ((3 ^ (7 * L_1 n) - 2 ^ (7 * L_1 n)) / 2059) =
+        3 ^ (10 * L_2 n + 7 * L_1 n) * W n)
+    (hL1_start : 1 ≤ L_1_start)
+    (hin_start :
+      58025 * 3 ^ (7 * L_1_start) * U_start + 19 =
+        2059 * 2 ^ (10 * L_2 0) * W 0) :
+    let S_N := waveInteriorExp L_2 L_1 N
+    let Acc_N := waveInteriorAcc L_2 L_1 N
+    -- 1. Exact incoming-interface multi-wave (U_start → W(N+1)) master identity:
+    2059 * 2 ^ (S_N + 10 * L_2 0 + 10 * L_2 (N + 1)) * W (N + 1) +
+      19 * (2059 * 2 ^ (10 * L_2 0) * Acc_N) =
+      58025 * 3 ^ (S_N + 10 * L_2 0 + 7 * L_1_start) * U_start +
+        19 * 3 ^ (S_N + 10 * L_2 0) ∧
+    -- 2. Upgraded 126,900,675 * 3^(S_N + 10*L_2(0)) terminal-state sieve (independent of W(0), U_start, L_1_start):
+    (2059 * 2 ^ (S_N + 10 * L_2 0 + 10 * L_2 (N + 1)) * W (N + 1) +
+      19 * (2059 * 2 ^ (10 * L_2 0) * Acc_N)) %
+      (126900675 * 3 ^ (S_N + 10 * L_2 0)) =
+      (19 * 3 ^ (S_N + 10 * L_2 0)) % (126900675 * 3 ^ (S_N + 10 * L_2 0)) := by
+  intro S_N Acc_N
+  have hm :=
+    (dense_core_symmetric_multi_wave_master_identity_and_boundary_independence.2
+      W L_2 L_1 N hrec).1
+  change 2 ^ S_N * (2 ^ (10 * L_2 (N + 1)) * W (N + 1)) + 19 * Acc_N =
+      3 ^ S_N * (3 ^ (10 * L_2 0) * W 0) at hm
+  have hp2_N :
+      2 ^ S_N * (2 ^ (10 * L_2 (N + 1)) * W (N + 1)) =
+        2 ^ (S_N + 10 * L_2 (N + 1)) * W (N + 1) := by
+    rw [Nat.pow_add]; ring
+  have hp3_0 :
+      3 ^ S_N * (3 ^ (10 * L_2 0) * W 0) = 3 ^ (S_N + 10 * L_2 0) * W 0 := by
+    rw [Nat.pow_add]; ring
+  rw [hp2_N, hp3_0] at hm
+  have hp2_full :
+      2 ^ (S_N + 10 * L_2 0 + 10 * L_2 (N + 1)) =
+        2 ^ (10 * L_2 0) * 2 ^ (S_N + 10 * L_2 (N + 1)) := by
+    have hexp : S_N + 10 * L_2 0 + 10 * L_2 (N + 1) = 10 * L_2 0 + (S_N + 10 * L_2 (N + 1)) := by
+      omega
+    rw [hexp, Nat.pow_add]
+  have hp3_full :
+      3 ^ (S_N + 10 * L_2 0 + 7 * L_1_start) =
+        3 ^ (S_N + 10 * L_2 0) * 3 ^ (7 * L_1_start) :=
+    Nat.pow_add 3 (S_N + 10 * L_2 0) (7 * L_1_start)
+  have hm_mul := congrArg (fun x => (2059 * 2 ^ (10 * L_2 0)) * x) hm
+  have hin_id :
+      2059 * 2 ^ (S_N + 10 * L_2 0 + 10 * L_2 (N + 1)) * W (N + 1) +
+        19 * (2059 * 2 ^ (10 * L_2 0) * Acc_N) =
+        58025 * 3 ^ (S_N + 10 * L_2 0 + 7 * L_1_start) * U_start +
+          19 * 3 ^ (S_N + 10 * L_2 0) := by
+    have hd_lhs :
+        (2059 * 2 ^ (10 * L_2 0)) *
+          (2 ^ (S_N + 10 * L_2 (N + 1)) * W (N + 1) + 19 * Acc_N) =
+          2059 * (2 ^ (10 * L_2 0) * 2 ^ (S_N + 10 * L_2 (N + 1))) * W (N + 1) +
+            19 * (2059 * 2 ^ (10 * L_2 0) * Acc_N) := by ring
+    have hd_rhs :
+        (2059 * 2 ^ (10 * L_2 0)) * (3 ^ (S_N + 10 * L_2 0) * W 0) =
+          3 ^ (S_N + 10 * L_2 0) * (2059 * 2 ^ (10 * L_2 0) * W 0) := by ring
+    have hd_in :
+        3 ^ (S_N + 10 * L_2 0) * (58025 * 3 ^ (7 * L_1_start) * U_start + 19) =
+          58025 * (3 ^ (S_N + 10 * L_2 0) * 3 ^ (7 * L_1_start)) * U_start +
+            19 * 3 ^ (S_N + 10 * L_2 0) := by ring
+    rw [← hin_start] at hd_rhs
+    rw [hp2_full, hp3_full]
+    linarith only [hm_mul, hd_lhs, hd_rhs, hd_in]
+  have hmod126 :
+      (2059 * 2 ^ (S_N + 10 * L_2 0 + 10 * L_2 (N + 1)) * W (N + 1) +
+        19 * (2059 * 2 ^ (10 * L_2 0) * Acc_N)) %
+        (126900675 * 3 ^ (S_N + 10 * L_2 0)) =
+        (19 * 3 ^ (S_N + 10 * L_2 0)) % (126900675 * 3 ^ (S_N + 10 * L_2 0)) := by
+    have hp2187 : 3 ^ (7 * L_1_start) = 2187 * 3 ^ (7 * L_1_start - 7) :=
+      three_pow_eq_2187_mul_sub (by omega)
+    have hsplit :
+        58025 * 3 ^ (S_N + 10 * L_2 0 + 7 * L_1_start) * U_start +
+          19 * 3 ^ (S_N + 10 * L_2 0) =
+          19 * 3 ^ (S_N + 10 * L_2 0) +
+            (126900675 * 3 ^ (S_N + 10 * L_2 0)) * (3 ^ (7 * L_1_start - 7) * U_start) := by
+      rw [hp3_full, hp2187]
+      ring
+    rw [hin_id, hsplit, Nat.add_mul_mod_self_left]
+  exact ⟨hin_id, hmod126⟩
+
+/-!
+## Section 66: The Two-Way `(16,243,286,400 * 2^(S_N + 10*L_end), 16,243,286,400 * 3^(S_N + 10*L_2(0)))` Tower Super-Divisibility Law, Dual `124,499,856,384 * 2^(S̃_N + 7*L_end)` (`+36`-Bit) Law & the `+33`-Bit Macro-Wave Repetition Cutoff
+
+In Section 59, we used only the **outgoing** interface at `W(N+1)` (`7,427,200 ∣ (W'(N+1) - W(N+1))`)
+to obtain `(58025 * 2^(S_N + 10*L_end + 7)) ∣ (W'(0) - W(0))`.
+In any interior multi-wave block of a Dense Core orbit, however, `W(0)` and `W'(0)` are **also**
+preceded by `1`-runs (`L_1_start, L_1_start' ≥ 1`)!
+By Section 58 (`w2_same_run_incoming_2187_dvd`), the incoming interface at `W(0)` simultaneously forces:
+  `2187 = 3^7 ∣ (W'(0) - W(0))`!
+
+1. **Two-Way Symmetric `M_W = 16,243,286,400` Tower Super-Divisibility:**
+   - At the **initial state** (`W'(0) - W(0)`): since `gcd(2187, 58025 * 2^(S_N + 10*L_end + 7)) = 1`,
+     their product divides `W'(0) - W(0)`:
+       `(16,243,286,400 * 2^(S_N + 10*L_end)) = (126,900,675 * 2^(S_N + 10*L_end + 7)) ∣ (W'(0) - W(0))`!
+   - At the **terminal state** (`W'(N+1) - W(N+1)`): transferring `2187 ∣ (W'(0) - W(0))` forward across
+     `2^(S_N + 10*L_end) * (W'(N+1) - W(N+1)) = 3^(S_N + 10*L_2(0)) * (W'(0) - W(0))` yields
+     `3^(S_N + 10*L_2(0) + 7) ∣ (W'(N+1) - W(N+1))`, and combining with `7,427,200 ∣ (W'(N+1) - W(N+1))`
+     via `gcd(7427200, 3^(S_N + 10*L_2(0) + 7)) = 1` gives:
+       `(16,243,286,400 * 3^(S_N + 10*L_2(0))) = (7,427,200 * 3^(S_N + 10*L_2(0) + 7)) ∣ (W'(N+1) - W(N+1))`!
+2. **The `+33`-Bit (`16,243,286,400 > 8,589,934,592 = 2^33`) Macro-Wave Repetition Cutoff:**
+   Since `16,243,286,400 > 2^33` (`126,900,675 > 67,108,864 = 2^26`), any `W(0) < W'(0)` (`1 ≤ W(0)`) forces:
+     `2^(S_N + 10*L_end + 33) < 16243286400 * 2^(S_N + 10*L_end) + W(0) ≤ W'(0)`,
+   upgrading our macro-wave repetition cutoff by **`+11` more bits** (to **`+33` bits**—nearly two full waves!):
+     `q * (S_N + 10 * L_end + 10 * L_2 (M + 1) + 33) < p * S_M + 10 * (p + q) * L_2 0 + q * W_0`!
+3. **Dual `M_U = 124,499,856,384` (`+36`-Bit) Two-Way Tower Super-Divisibility on `U`-Waves:**
+   Combining incoming (`59,049 = 3^10 ∣ (U'(0) - U(0))`) and outgoing (`2,108,416 ∣ (U'(N+1) - U(N+1))`)
+   interfaces across `U`-waves proves:
+     `(124,499,856,384 * 2^(S̃_N + 7*L_end)) ∣ (U'(0) - U(0))`  and
+     `(124,499,856,384 * 3^(S̃_N + 7*L_1(0))) ∣ (U'(N+1) - U(N+1))`,
+   forcing `2^(S̃_N + 7*L_end + 36) < U'(0)` whenever `U(0) < U'(0)` (`124,499,856,384 > 2^36`)!
+-/
+
+/-- **The Two-Way `16,243,286,400` and `124,499,856,384` Tower Super-Divisibility Laws & the `+33`-Bit / `+36`-Bit Macro-Wave Cutoffs:**
+Combining incoming and outgoing macro-run interfaces across an `(N + 1)`-wave tower forces
+`(16243286400 * 2^(S_N + 10*L_end)) ∣ (W'(0) - W(0))` (`+33` bits) and
+`(16243286400 * 3^(S_N + 10*L_2(0))) ∣ (W'(N+1) - W(N+1))` on `W`-waves, and dually
+`(124499856384 * 2^(S̃_N + 7*L_end)) ∣ (U'(0) - U(0))` (`+36` bits) and
+`(124499856384 * 3^(S̃_N + 7*L_1(0))) ∣ (U'(N+1) - U(N+1))` on `U`-waves. -/
+theorem dense_core_two_way_16243286400_tower_super_divisibility_and_33_bit_cutoff :
+    -- 1. Two-way 16,243,286,400 tower super-divisibility on W-waves (+33 bits):
+    (∀ (W L_2 L_1 W' L_2' L_1' : ℕ → ℕ)
+       (N U_start U_start' L_1_start L_1_start' W_3_end W_3_end' L_3_end L_3_end' : ℕ),
+      (∀ n ≤ N,
+        2 ^ (7 * L_1 n + 10 * L_2 (n + 1)) * W (n + 1) +
+          19 * ((3 ^ (7 * L_1 n) - 2 ^ (7 * L_1 n)) / 2059) =
+          3 ^ (10 * L_2 n + 7 * L_1 n) * W n) →
+      (∀ n ≤ N,
+        2 ^ (7 * L_1' n + 10 * L_2' (n + 1)) * W' (n + 1) +
+          19 * ((3 ^ (7 * L_1' n) - 2 ^ (7 * L_1' n)) / 2059) =
+          3 ^ (10 * L_2' n + 7 * L_1' n) * W' n) →
+      (∀ t ≤ N, L_1 t = L_1' t) →
+      (∀ t < N, L_2 (t + 1) = L_2' (t + 1)) →
+      L_2 0 = L_2' 0 →
+      L_2 (N + 1) = L_2' (N + 1) →
+      W 0 ≤ W' 0 →
+      1 ≤ L_1_start → 1 ≤ L_1_start' →
+      1 ≤ L_3_end → 1 ≤ L_3_end' →
+      58025 * 3 ^ (7 * L_1_start) * U_start + 19 = 2059 * 2 ^ (10 * L_2 0) * W 0 →
+      58025 * 3 ^ (7 * L_1_start') * U_start' + 19 = 2059 * 2 ^ (10 * L_2 0) * W' 0 →
+      58025 * 2 ^ (7 * L_3_end) * W_3_end + 19 = 2059 * 3 ^ (10 * L_2 (N + 1)) * W (N + 1) →
+      58025 * 2 ^ (7 * L_3_end') * W_3_end' + 19 = 2059 * 3 ^ (10 * L_2 (N + 1)) * W' (N + 1) →
+      let S_N := waveInteriorExp L_2 L_1 N
+      (16243286400 * 2 ^ (S_N + 10 * L_2 (N + 1))) ∣ (W' 0 - W 0) ∧
+      (16243286400 * 3 ^ (S_N + 10 * L_2 0)) ∣ (W' (N + 1) - W (N + 1)) ∧
+      (1 ≤ W 0 → W 0 < W' 0 →
+        2 ^ (S_N + 10 * L_2 (N + 1) + 33) < W' 0 ∧
+        W 0 + 16243286400 * 2 ^ (S_N + 10 * L_2 (N + 1)) ≤ W' 0)) ∧
+    -- 2. Upgraded +33-bit macro-wave archimedean repetition cutoff (16,243,286,400 > 2^33):
+    (∀ (W L_2 L_1 L_2_sub L_1_sub : ℕ → ℕ) (M N W_0 W_a L_end : ℕ),
+      W 0 < 2 ^ W_0 →
+      1 ≤ W_a → W_a < W (M + 1) →
+      (∀ n ≤ M,
+        2 ^ (7 * L_1 n + 10 * L_2 (n + 1)) * W (n + 1) +
+          19 * ((3 ^ (7 * L_1 n) - 2 ^ (7 * L_1 n)) / 2059) =
+          3 ^ (10 * L_2 n + 7 * L_1 n) * W n) →
+      1 ≤ L_1 0 →
+      (∀ t ≤ N, 1 ≤ L_1_sub t) →
+      (∀ t < N, 1 ≤ L_2_sub (t + 1)) →
+      (16243286400 * 2 ^ (waveInteriorExp L_2_sub L_1_sub N + 10 * L_end)) ∣ (W (M + 1) - W_a) →
+      let S_M := waveInteriorExp L_2 L_1 M
+      let S_N := waveInteriorExp L_2_sub L_1_sub N
+      2 ^ (S_N + 10 * L_end + 33) < W (M + 1) ∧
+      (∀ p q : ℕ, 1 ≤ q → 3 ^ q ≤ 2 ^ (p + q) →
+        q * (S_N + 10 * L_end + 10 * L_2 (M + 1) + 33) <
+          p * S_M + 10 * (p + q) * L_2 0 + q * W_0 ∧
+        q * (17 * N + 40 + 10 * L_end + 10 * L_2 (M + 1)) <
+          p * S_M + 10 * (p + q) * L_2 0 + q * W_0) ∧
+      17 * (S_N + 10 * L_end + 10 * L_2 (M + 1) + 33) <
+        10 * S_M + 270 * L_2 0 + 17 * W_0 ∧
+      17 * (17 * N + 40 + 10 * L_end + 10 * L_2 (M + 1)) <
+        10 * S_M + 270 * L_2 0 + 17 * W_0) ∧
+    -- 3. Dual two-way 124,499,856,384 tower super-divisibility on U-waves (+36 bits):
+    (∀ (U L_1 L_2 U' L_1' L_2' : ℕ → ℕ) (N : ℕ),
+      (∀ n ≤ N,
+        3 ^ (10 * L_2 n + 7 * L_1 n) * U n +
+          19 * ((3 ^ (10 * L_2 n) - 2 ^ (10 * L_2 n)) / 58025) =
+          2 ^ (10 * L_2 n + 7 * L_1 (n + 1)) * U (n + 1)) →
+      (∀ n ≤ N,
+        3 ^ (10 * L_2' n + 7 * L_1' n) * U' n +
+          19 * ((3 ^ (10 * L_2' n) - 2 ^ (10 * L_2' n)) / 58025) =
+          2 ^ (10 * L_2' n + 7 * L_1' (n + 1)) * U' (n + 1)) →
+      (∀ t ≤ N, L_2 t = L_2' t) →
+      (∀ t < N, L_1 (t + 1) = L_1' (t + 1)) →
+      L_1 0 = L_1' 0 →
+      L_1 (N + 1) = L_1' (N + 1) →
+      U 0 ≤ U' 0 →
+      59049 ∣ (U' 0 - U 0) →
+      U (N + 1) % 2108416 = U' (N + 1) % 2108416 →
+      let S_N := dualWaveInteriorExp L_1 L_2 N
+      (124499856384 * 2 ^ (S_N + 7 * L_1 (N + 1))) ∣ (U' 0 - U 0) ∧
+      (124499856384 * 3 ^ (S_N + 7 * L_1 0)) ∣ (U' (N + 1) - U (N + 1)) ∧
+      (1 ≤ U 0 → U 0 < U' 0 →
+        2 ^ (S_N + 7 * L_1 (N + 1) + 36) < U' 0 ∧
+        U 0 + 124499856384 * 2 ^ (S_N + 7 * L_1 (N + 1)) ≤ U' 0)) := by
+  refine ⟨?_, ?_, ?_⟩
+  · intro W L_2 L_1 W' L_2' L_1' N U_start U_start' L_1_start L_1_start' W_3_end W_3_end' L_3_end L_3_end'
+      hrec hrec' hL1_eq hL2_int hL2_0 hL2_end hW0_le hL1_s hL1_s' hL3_end hL3_end' hin hin' hout hout' S_N
+    have h59 :=
+      dense_core_multi_wave_58025_super_divisibility_and_22_bit_repetition_cutoff.1
+        W L_2 L_1 W' L_2' L_1' N W_3_end W_3_end' L_3_end L_3_end'
+        hrec hrec' hL1_eq hL2_int hL2_0 hL2_end hW0_le hL3_end hL3_end' hout hout'
+    have hd74 : 7427200 ∣ (W' (N + 1) - W (N + 1)) := h59.1
+    have hd58 : (58025 * 2 ^ (S_N + 10 * L_2 (N + 1) + 7)) ∣ (W' 0 - W 0) := h59.2.1
+    have hd2187 : 2187 ∣ (W' 0 - W 0) :=
+      w2_same_run_incoming_2187_dvd hL1_s hL1_s' hW0_le hin hin'
+    have hcop_start : Nat.Coprime 2187 (58025 * 2 ^ (S_N + 10 * L_2 (N + 1) + 7)) := by
+      have hc1 : Nat.Coprime 2187 58025 := by decide
+      have hc2 : Nat.Coprime 2187 (2 ^ (S_N + 10 * L_2 (N + 1) + 7)) :=
+        Nat.Coprime.pow_right _ (by decide : Nat.Coprime 2187 2)
+      exact Nat.Coprime.mul_right hc1 hc2
+    have hd_prod := hcop_start.mul_dvd_of_dvd_of_dvd hd2187 hd58
+    have hrew_start :
+        2187 * (58025 * 2 ^ (S_N + 10 * L_2 (N + 1) + 7)) =
+          16243286400 * 2 ^ (S_N + 10 * L_2 (N + 1)) := by
+      rw [Nat.pow_add 2 (S_N + 10 * L_2 (N + 1)) 7]; ring
+    rw [hrew_start] at hd_prod
+    -- Forward transfer of 2187 ∣ (W' 0 - W 0) to W' (N + 1) - W (N + 1):
+    have h55 :=
+      (dense_core_multi_wave_interior_match_cancellation_and_275_super_divisibility
+        hrec hrec' hL1_eq hL2_int).2 hL2_0 hW0_le
+    have hdiff_id := h55.1
+    change 2 ^ S_N * (2 ^ (10 * L_2' (N + 1)) * W' (N + 1) - 2 ^ (10 * L_2 (N + 1)) * W (N + 1)) =
+        3 ^ (S_N + 10 * L_2 0) * (W' 0 - W 0) at hdiff_id
+    rw [← hL2_end, ← Nat.mul_sub_left_distrib] at hdiff_id
+    rcases hd2187 with ⟨K3, hK3⟩
+    have hfactor_end :
+        2 ^ (S_N + 10 * L_2 (N + 1)) * (W' (N + 1) - W (N + 1)) =
+          3 ^ (S_N + 10 * L_2 0 + 7) * K3 := by
+      have hp2 :
+          2 ^ (S_N + 10 * L_2 (N + 1)) * (W' (N + 1) - W (N + 1)) =
+            2 ^ S_N * (2 ^ (10 * L_2 (N + 1)) * (W' (N + 1) - W (N + 1))) := by
+        rw [Nat.pow_add]; ring
+      have hp3 :
+          3 ^ (S_N + 10 * L_2 0 + 7) * K3 =
+            3 ^ (S_N + 10 * L_2 0) * (2187 * K3) := by
+        rw [Nat.pow_add 3 (S_N + 10 * L_2 0) 7]; ring
+      rw [hp2, hdiff_id, hK3, hp3]
+    have hcop_23 : Nat.Coprime (3 ^ (S_N + 10 * L_2 0 + 7)) (2 ^ (S_N + 10 * L_2 (N + 1))) :=
+      Nat.Coprime.pow _ _ (by decide : Nat.Coprime 3 2)
+    have hd_3_end : 3 ^ (S_N + 10 * L_2 0 + 7) ∣ (W' (N + 1) - W (N + 1)) :=
+      hcop_23.dvd_of_dvd_mul_left ⟨K3, hfactor_end⟩
+    have hcop_end : Nat.Coprime 7427200 (3 ^ (S_N + 10 * L_2 0 + 7)) :=
+      Nat.Coprime.pow_right _ (by decide : Nat.Coprime 7427200 3)
+    have hd_end_prod := hcop_end.mul_dvd_of_dvd_of_dvd hd74 hd_3_end
+    have hrew_end :
+        7427200 * 3 ^ (S_N + 10 * L_2 0 + 7) =
+          16243286400 * 3 ^ (S_N + 10 * L_2 0) := by
+      rw [Nat.pow_add 3 (S_N + 10 * L_2 0) 7]; ring
+    rw [hrew_end] at hd_end_prod
+    refine ⟨hd_prod, hd_end_prod, ?_⟩
+    intro hW0_pos hW0_lt
+    rcases hd_prod with ⟨K, hK⟩
+    have hK_pos : 1 ≤ K := by
+      rcases Nat.eq_zero_or_pos K with rfl | hp
+      · rw [Nat.mul_zero] at hK; omega
+      · exact hp
+    have hge_diff : 16243286400 * 2 ^ (S_N + 10 * L_2 (N + 1)) ≤ W' 0 - W 0 := by
+      rw [hK]
+      exact Nat.le_mul_of_pos_right _ hK_pos
+    have hstep_le : W 0 + 16243286400 * 2 ^ (S_N + 10 * L_2 (N + 1)) ≤ W' 0 := by omega
+    have h2_33_lt : 2 ^ (S_N + 10 * L_2 (N + 1) + 33) < W' 0 := by
+      have hp33 :
+          2 ^ (S_N + 10 * L_2 (N + 1) + 33) =
+            8589934592 * 2 ^ (S_N + 10 * L_2 (N + 1)) := by
+        rw [Nat.pow_add 2 (S_N + 10 * L_2 (N + 1)) 33]; ring
+      have hp_pos : 1 ≤ 2 ^ (S_N + 10 * L_2 (N + 1)) := Nat.pow_pos (by decide)
+      omega
+    exact ⟨h2_33_lt, hstep_le⟩
+  · intro W L_2 L_1 L_2_sub L_1_sub M N W_0 W_a L_end
+      hW0_lt hWa_pos hWa_lt hrec_M hL1_M0 hL1_sub hL2_sub hdvd_super S_M S_N
+    have hSN_ge : 17 * N + 7 ≤ S_N :=
+      waveInteriorExp_ge_seventeen_mul_add_seven L_2_sub L_1_sub N hL1_sub hL2_sub
+    have hAcc_pos : 1 ≤ waveInteriorAcc L_2 L_1 M :=
+      waveInteriorAcc_pos L_2 L_1 hL1_M0 M
+    have hm :=
+      (dense_core_symmetric_multi_wave_master_identity_and_boundary_independence.2
+        W L_2 L_1 M hrec_M).1
+    change 2 ^ S_M * (2 ^ (10 * L_2 (M + 1)) * W (M + 1)) + 19 * waveInteriorAcc L_2 L_1 M =
+        3 ^ S_M * (3 ^ (10 * L_2 0) * W 0) at hm
+    have hp2_M :
+        2 ^ (S_M + 10 * L_2 (M + 1)) * W (M + 1) =
+          2 ^ S_M * (2 ^ (10 * L_2 (M + 1)) * W (M + 1)) := by
+      rw [Nat.pow_add]; ring
+    have hp3_M :
+        3 ^ (S_M + 10 * L_2 0) * W 0 = 3 ^ S_M * (3 ^ (10 * L_2 0) * W 0) := by
+      rw [Nat.pow_add]; ring
+    have hup_W0 :
+        2 ^ (S_M + 10 * L_2 (M + 1)) * W (M + 1) < 3 ^ (S_M + 10 * L_2 0) * W 0 := by
+      linarith only [hm, hp2_M, hp3_M, hAcc_pos]
+    have hup_2W0 :
+        2 ^ (S_M + 10 * L_2 (M + 1)) * W (M + 1) < 3 ^ (S_M + 10 * L_2 0) * 2 ^ W_0 :=
+      lt_trans hup_W0 (Nat.mul_lt_mul_of_pos_left hW0_lt (Nat.pow_pos (by decide)))
+    rcases hdvd_super with ⟨K, hK⟩
+    have hK_pos : 1 ≤ K := by
+      rcases Nat.eq_zero_or_pos K with rfl | hp
+      · rw [Nat.mul_zero] at hK; omega
+      · exact hp
+    have hWM_ge : 16243286400 * 2 ^ (S_N + 10 * L_end) + W_a ≤ W (M + 1) := by
+      have h1 : 16243286400 * 2 ^ (S_N + 10 * L_end) ≤ W (M + 1) - W_a := by
+        dsimp [S_N]
+        rw [hK]
+        exact Nat.le_mul_of_pos_right _ hK_pos
+      omega
+    have h2_33_lt : 2 ^ (S_N + 10 * L_end + 33) < W (M + 1) := by
+      have hp33 : 2 ^ (S_N + 10 * L_end + 33) = 8589934592 * 2 ^ (S_N + 10 * L_end) := by
+        rw [Nat.pow_add 2 (S_N + 10 * L_end) 33]; ring
+      have hp_pos : 1 ≤ 2 ^ (S_N + 10 * L_end) := Nat.pow_pos (by decide)
+      omega
+    have hpq :
+        ∀ p q : ℕ, 1 ≤ q → 3 ^ q ≤ 2 ^ (p + q) →
+          q * (S_N + 10 * L_end + 10 * L_2 (M + 1) + 33) <
+            p * S_M + 10 * (p + q) * L_2 0 + q * W_0 ∧
+          q * (17 * N + 40 + 10 * L_end + 10 * L_2 (M + 1)) <
+            p * S_M + 10 * (p + q) * L_2 0 + q * W_0 := by
+      intro p q hq hpq_le
+      set E_lhs := S_N + 10 * L_end + 10 * L_2 (M + 1) + 33
+      set E_3 := S_M + 10 * L_2 0
+      have h2_lt : 2 ^ (S_M + E_lhs) < 3 ^ E_3 * 2 ^ W_0 := by
+        have hp_lhs :
+            2 ^ (S_M + E_lhs) =
+              2 ^ (S_M + 10 * L_2 (M + 1)) * 2 ^ (S_N + 10 * L_end + 33) := by
+          have hexp : S_M + E_lhs = (S_M + 10 * L_2 (M + 1)) + (S_N + 10 * L_end + 33) := by
+            dsimp [E_lhs]; omega
+          rw [hexp, Nat.pow_add]
+        have hm_lt :
+            2 ^ (S_M + 10 * L_2 (M + 1)) * 2 ^ (S_N + 10 * L_end + 33) <
+              2 ^ (S_M + 10 * L_2 (M + 1)) * W (M + 1) :=
+          Nat.mul_lt_mul_of_pos_left h2_33_lt (Nat.pow_pos (by decide))
+        rw [hp_lhs]
+        exact lt_trans hm_lt hup_2W0
+      have hpow_q : (2 ^ (S_M + E_lhs)) ^ q < (3 ^ E_3 * 2 ^ W_0) ^ q :=
+        pow_lt_pow_of_lt h2_lt hq
+      have h3_le : (3 ^ E_3) ^ q ≤ 2 ^ ((p + q) * E_3) := by
+        calc (3 ^ E_3) ^ q
+            = 3 ^ (E_3 * q) := (Nat.pow_mul 3 E_3 q).symm
+          _ = 3 ^ (q * E_3) := by rw [Nat.mul_comm E_3 q]
+          _ = (3 ^ q) ^ E_3 := Nat.pow_mul 3 q E_3
+          _ ≤ (2 ^ (p + q)) ^ E_3 := Nat.pow_le_pow_left hpq_le E_3
+          _ = 2 ^ ((p + q) * E_3) := (Nat.pow_mul 2 (p + q) E_3).symm
+      have hrhs_le : (3 ^ E_3 * 2 ^ W_0) ^ q ≤ 2 ^ ((p + q) * E_3 + q * W_0) := by
+        calc (3 ^ E_3 * 2 ^ W_0) ^ q
+            = (3 ^ E_3) ^ q * (2 ^ W_0) ^ q := Nat.mul_pow (3 ^ E_3) (2 ^ W_0) q
+          _ ≤ 2 ^ ((p + q) * E_3) * (2 ^ W_0) ^ q := Nat.mul_le_mul_right _ h3_le
+          _ = 2 ^ ((p + q) * E_3) * 2 ^ (W_0 * q) := by rw [← Nat.pow_mul 2 W_0 q]
+          _ = 2 ^ ((p + q) * E_3) * 2 ^ (q * W_0) := by rw [Nat.mul_comm W_0 q]
+          _ = 2 ^ ((p + q) * E_3 + q * W_0) := (Nat.pow_add 2 _ _).symm
+      have hlhs_eq : (2 ^ (S_M + E_lhs)) ^ q = 2 ^ (q * (S_M + E_lhs)) := by
+        rw [← Nat.pow_mul 2 (S_M + E_lhs) q, Nat.mul_comm (S_M + E_lhs) q]
+      have hpow2_lt : 2 ^ (q * (S_M + E_lhs)) < 2 ^ ((p + q) * E_3 + q * W_0) := by
+        rw [← hlhs_eq]
+        exact lt_of_lt_of_le hpow_q hrhs_le
+      have hexp_lt : q * (S_M + E_lhs) < (p + q) * E_3 + q * W_0 := by
+        refine Nat.lt_of_not_le (fun hge => ?_)
+        have hpow_ge : 2 ^ ((p + q) * E_3 + q * W_0) ≤ 2 ^ (q * (S_M + E_lhs)) :=
+          Nat.pow_le_pow_right (by decide) hge
+        omega
+      have hexp_expand1 : q * (S_M + E_lhs) = q * S_M + q * E_lhs := by ring
+      have hexp_expand2 :
+          (p + q) * E_3 + q * W_0 =
+            q * S_M + (p * S_M + 10 * (p + q) * L_2 0 + q * W_0) := by
+        dsimp [E_3]; ring
+      have hcut1 : q * E_lhs < p * S_M + 10 * (p + q) * L_2 0 + q * W_0 := by
+        rw [hexp_expand1, hexp_expand2] at hexp_lt
+        omega
+      have hcut2 :
+          q * (17 * N + 40 + 10 * L_end + 10 * L_2 (M + 1)) <
+            p * S_M + 10 * (p + q) * L_2 0 + q * W_0 := by
+        have hle_inner : 17 * N + 40 + 10 * L_end + 10 * L_2 (M + 1) ≤ E_lhs := by
+          dsimp [E_lhs]; omega
+        exact lt_of_le_of_lt (Nat.mul_le_mul_left q hle_inner) hcut1
+      exact ⟨hcut1, hcut2⟩
+    have h10_17 := hpq 10 17 (by decide) (by decide : 3 ^ 17 ≤ 2 ^ (10 + 17))
+    exact ⟨h2_33_lt, hpq, by linarith only [h10_17.1], by linarith only [h10_17.2]⟩
+  · intro U L_1 L_2 U' L_1' L_2' N hrec hrec' hL2_eq hL1_int hL1_0 hL1_end hU0_le hd59 hmod2108416 S_N
+    have h60 :=
+      dense_core_dual_one_run_multi_wave_master_identity_and_2059_super_divisibility.2.2
+        U L_1 L_2 U' L_1' L_2' N hrec hrec' hL2_eq hL1_int hL1_0 hL1_end hU0_le hmod2108416
+    have hdiff_id := h60.1
+    change 2 ^ (S_N + 7 * L_1 (N + 1)) * (U' (N + 1) - U (N + 1)) =
+        3 ^ (S_N + 7 * L_1 0) * (U' 0 - U 0) at hdiff_id
+    have hd2059 : (2059 * 2 ^ (S_N + 7 * L_1 (N + 1) + 10)) ∣ (U' 0 - U 0) := h60.2.1
+    have hcop_start : Nat.Coprime 59049 (2059 * 2 ^ (S_N + 7 * L_1 (N + 1) + 10)) := by
+      have hc1 : Nat.Coprime 59049 2059 := by decide
+      have hc2 : Nat.Coprime 59049 (2 ^ (S_N + 7 * L_1 (N + 1) + 10)) :=
+        Nat.Coprime.pow_right _ (by decide : Nat.Coprime 59049 2)
+      exact Nat.Coprime.mul_right hc1 hc2
+    have hd_prod := hcop_start.mul_dvd_of_dvd_of_dvd hd59 hd2059
+    have hrew_start :
+        59049 * (2059 * 2 ^ (S_N + 7 * L_1 (N + 1) + 10)) =
+          124499856384 * 2 ^ (S_N + 7 * L_1 (N + 1)) := by
+      rw [Nat.pow_add 2 (S_N + 7 * L_1 (N + 1)) 10]; ring
+    rw [hrew_start] at hd_prod
+    rcases hd59 with ⟨K3, hK3⟩
+    have hfactor_end :
+        2 ^ (S_N + 7 * L_1 (N + 1)) * (U' (N + 1) - U (N + 1)) =
+          3 ^ (S_N + 7 * L_1 0 + 10) * K3 := by
+      have hp3 :
+          3 ^ (S_N + 7 * L_1 0 + 10) * K3 =
+            3 ^ (S_N + 7 * L_1 0) * (59049 * K3) := by
+        rw [Nat.pow_add 3 (S_N + 7 * L_1 0) 10]; ring
+      rw [hdiff_id, hK3, hp3]
+    have hcop_23 : Nat.Coprime (3 ^ (S_N + 7 * L_1 0 + 10)) (2 ^ (S_N + 7 * L_1 (N + 1))) :=
+      Nat.Coprime.pow _ _ (by decide : Nat.Coprime 3 2)
+    have hd_3_end : 3 ^ (S_N + 7 * L_1 0 + 10) ∣ (U' (N + 1) - U (N + 1)) :=
+      hcop_23.dvd_of_dvd_mul_left ⟨K3, hfactor_end⟩
+    have hle_UN : U (N + 1) ≤ U' (N + 1) := by
+      refine Nat.le_of_not_lt (fun hgt => ?_)
+      have h0_lhs : U' (N + 1) - U (N + 1) = 0 := Nat.sub_eq_zero_of_le (le_of_lt hgt)
+      rw [h0_lhs, Nat.mul_zero] at hdiff_id
+      have hm := (dense_core_dual_one_run_multi_wave_master_identity_and_2059_super_divisibility.2.1
+        U L_1 L_2 N hrec).1
+      have hm' := (dense_core_dual_one_run_multi_wave_master_identity_and_2059_super_divisibility.2.1
+        U' L_1' L_2' N hrec').1
+      have hind_N := dense_core_dual_one_run_multi_wave_master_identity_and_2059_super_divisibility.1
+        L_1 L_2 L_1' L_2' N hL2_eq hL1_int
+      rw [← hind_N.1, ← hind_N.2, ← hL1_0, ← hL1_end] at hm'
+      change 3 ^ S_N * (3 ^ (7 * L_1 0) * U 0) + 19 * dualWaveInteriorAcc L_1 L_2 N =
+          2 ^ S_N * (2 ^ (7 * L_1 (N + 1)) * U (N + 1)) at hm
+      change 3 ^ S_N * (3 ^ (7 * L_1 0) * U' 0) + 19 * dualWaveInteriorAcc L_1 L_2 N =
+          2 ^ S_N * (2 ^ (7 * L_1 (N + 1)) * U' (N + 1)) at hm'
+      have hm1 : 2 ^ (7 * L_1 (N + 1)) * U' (N + 1) < 2 ^ (7 * L_1 (N + 1)) * U (N + 1) :=
+        Nat.mul_lt_mul_of_pos_left hgt (Nat.pow_pos (by decide))
+      have hm2 :
+          2 ^ S_N * (2 ^ (7 * L_1 (N + 1)) * U' (N + 1)) <
+            2 ^ S_N * (2 ^ (7 * L_1 (N + 1)) * U (N + 1)) :=
+        Nat.mul_lt_mul_of_pos_left hm1 (Nat.pow_pos (by decide))
+      have hge1 : 3 ^ (7 * L_1 0) * U 0 ≤ 3 ^ (7 * L_1 0) * U' 0 :=
+        Nat.mul_le_mul_left _ hU0_le
+      have hge2 :
+          3 ^ S_N * (3 ^ (7 * L_1 0) * U 0) ≤ 3 ^ S_N * (3 ^ (7 * L_1 0) * U' 0) :=
+        Nat.mul_le_mul_left _ hge1
+      omega
+    have hd21 : 2108416 ∣ (U' (N + 1) - U (N + 1)) := by
+      have hm0 : (U' (N + 1) - U (N + 1)) % 2108416 = 0 := by omega
+      exact Nat.dvd_of_mod_eq_zero hm0
+    have hcop_end : Nat.Coprime 2108416 (3 ^ (S_N + 7 * L_1 0 + 10)) :=
+      Nat.Coprime.pow_right _ (by decide : Nat.Coprime 2108416 3)
+    have hd_end_prod := hcop_end.mul_dvd_of_dvd_of_dvd hd21 hd_3_end
+    have hrew_end :
+        2108416 * 3 ^ (S_N + 7 * L_1 0 + 10) =
+          124499856384 * 3 ^ (S_N + 7 * L_1 0) := by
+      rw [Nat.pow_add 3 (S_N + 7 * L_1 0) 10]; ring
+    rw [hrew_end] at hd_end_prod
+    refine ⟨hd_prod, hd_end_prod, ?_⟩
+    intro hU0_pos hU0_lt
+    rcases hd_prod with ⟨K, hK⟩
+    have hK_pos : 1 ≤ K := by
+      rcases Nat.eq_zero_or_pos K with rfl | hp
+      · rw [Nat.mul_zero] at hK; omega
+      · exact hp
+    have hge_diff : 124499856384 * 2 ^ (S_N + 7 * L_1 (N + 1)) ≤ U' 0 - U 0 := by
+      rw [hK]
+      exact Nat.le_mul_of_pos_right _ hK_pos
+    have hstep_le : U 0 + 124499856384 * 2 ^ (S_N + 7 * L_1 (N + 1)) ≤ U' 0 := by omega
+    have h2_36_lt : 2 ^ (S_N + 7 * L_1 (N + 1) + 36) < U' 0 := by
+      have hp36 :
+          2 ^ (S_N + 7 * L_1 (N + 1) + 36) =
+            68719476736 * 2 ^ (S_N + 7 * L_1 (N + 1)) := by
+        rw [Nat.pow_add 2 (S_N + 7 * L_1 (N + 1)) 36]; ring
+      have hp_pos : 1 ≤ 2 ^ (S_N + 7 * L_1 (N + 1)) := Nat.pow_pos (by decide)
+      omega
+    exact ⟨h2_36_lt, hstep_le⟩
+
 end Mahler.DubickasExtension
 
 
