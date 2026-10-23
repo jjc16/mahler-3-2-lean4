@@ -22248,6 +22248,689 @@ theorem dense_core_multi_horizon_shift_composition_and_three_point_wronskian_syz
     rw [hlin, Nat.add_sub_cancel_left]
   exact ⟨hwronskian, hdvd3, hdvd2⟩
 
+/-!
+## Section 75: Cumulative `K`-Visit Billion-Step Level Growth (`W(m_0) + 16,243,286,400 * K ≤ W(m_K)`), Exponential Run-Length Explosion (`3^K * L_2(m_0) < 2^K * L_2(m_K)` and `19^K * L_2(m_0) < 12^K * L_2(m_K)`) & Unconditional Exclusion of Bounded-Run Non-Increasing Subsequences
+
+We now iterate Section 72's all-horizon laws across any chain of `K` multi-wave epochs
+`m(0) < m(1) < ... < m(K)` (`K ∈ ℕ`):
+
+1. **Cumulative `16,243,286,400 * K` and `124,499,856,384 * K` Level Growth Along Constant-Run-Length Subsequences:**
+   - Whenever `W(m(k)) + 16,243,286,400 ≤ W(m(k + 1))` and `16,243,286,400 ∣ (W(m(k + 1)) - W(m(k)))`
+     for all `k < K` (which holds automatically by Section 72 whenever `m(0) < m(1) < ... < m(K)` all
+     visit the same `2`-run length `L_2(m(k)) = ℓ`!), we obtain for every `K ∈ ℕ`:
+       `W(m(0)) + 16,243,286,400 * K ≤ W(m(K))`  and  `16,243,286,400 ∣ (W(m(K)) - W(m(0)))`!
+   - Dually, along any `K` visits to the same `1`-run length `L_1(m(k)) = ℓ`:
+       `U(m(0)) + 124,499,856,384 * K ≤ U(m(K))`  and  `124,499,856,384 ∣ (U(m(K)) - U(m(0)))`!
+2. **Exponential Run-Length Explosion Along Any Non-Increasing `W`-Chain (`W(m(k + 1)) ≤ W(m(k))`):**
+   Whenever `W(m(k + 1)) ≤ W(m(k))` across `K` epochs (`k < K`), Section 72 forces
+   `3 * L(k) < 2 * L(k + 1)` and `19 * L(k) < 12 * L(k + 1)` at every step `k < K`.
+   By induction on `K`, for all `K ≥ 1`:
+     `3^K * L(0) < 2^K * L(K)`,  `19^K * L(0) < 12^K * L(K)`,  and  `L(0) + K ≤ L(K)` (when `1 ≤ L(0)`)!
+3. **Unconditional Exclusion of Infinite Non-Increasing `W`-Chains Under Bounded Run Lengths & Exclusion of Strictly Decreasing `W`-Chains:**
+   - No sequence of positive run lengths bounded by `L(k) ≤ B` can sustain `3 * L(k) < 2 * L(k + 1)`
+     for `K > B` steps (or once `2^K * B ≤ 3^K * L(0)`), so **no infinite non-increasing `W`-chain
+     exists on any bounded-run-length orbit**!
+   - Even with unbounded run lengths, since `W(m(k)) % 88 = 81` universally (Section 51), any strictly
+     decreasing chain `W(m(k + 1)) < W(m(k))` satisfies `W(m(K)) + 88 * K ≤ W(m(0))`, terminating in
+     at most `W(m(0)) / 88` steps!
+-/
+
+/-- **Cumulative `K`-Visit Billion-Step Level Growth, Exponential Run-Length Explosion & Exclusion of Bounded-Run Non-Increasing Chains:**
+Across `K` visits to a constant run-length level, `W` grows by at least `16,243,286,400 * K` and `U`
+grows by at least `124,499,856,384 * K`; across `K ≥ 1` non-increasing `W`-epochs (`3 * L(k) < 2 * L(k + 1)`
+and `19 * L(k) < 12 * L(k + 1)`), run lengths explode exponentially via `3^K * L(0) < 2^K * L(K)` and
+`19^K * L(0) < 12^K * L(K)`, ruling out infinite non-increasing `W`-chains on bounded run lengths and
+all infinite strictly decreasing `W`-chains. -/
+theorem dense_core_cumulative_level_growth_and_exponential_run_explosion :
+    -- 1. Cumulative 16,243,286,400 * K and 124,499,856,384 * K monotone level growth:
+    (∀ (W_seq : ℕ → ℕ) (K : ℕ),
+      (∀ k < K, W_seq k + 16243286400 ≤ W_seq (k + 1) ∧ 16243286400 ∣ (W_seq (k + 1) - W_seq k)) →
+      W_seq 0 + 16243286400 * K ≤ W_seq K ∧ 16243286400 ∣ (W_seq K - W_seq 0)) ∧
+    (∀ (U_seq : ℕ → ℕ) (K : ℕ),
+      (∀ k < K, U_seq k + 124499856384 ≤ U_seq (k + 1) ∧ 124499856384 ∣ (U_seq (k + 1) - U_seq k)) →
+      U_seq 0 + 124499856384 * K ≤ U_seq K ∧ 124499856384 ∣ (U_seq K - U_seq 0)) ∧
+    -- 2. Exponential run-length explosion (3^K * L(0) < 2^K * L(K) and 19^K * L(0) < 12^K * L(K)) across K + 1 epochs:
+    (∀ (L_seq : ℕ → ℕ) (m : ℕ),
+      1 ≤ L_seq 0 →
+      (∀ k ≤ m, 3 * L_seq k < 2 * L_seq (k + 1) ∧ 19 * L_seq k < 12 * L_seq (k + 1)) →
+      3 ^ (m + 1) * L_seq 0 < 2 ^ (m + 1) * L_seq (m + 1) ∧
+      19 ^ (m + 1) * L_seq 0 < 12 ^ (m + 1) * L_seq (m + 1) ∧
+      L_seq 0 + (m + 1) ≤ L_seq (m + 1)) ∧
+    -- 3. Unconditional exclusion of infinite non-increasing W-chains under bounded run lengths and exclusion of strictly decreasing chains:
+    (∀ (B : ℕ), ¬∃ (L_seq : ℕ → ℕ),
+      1 ≤ L_seq 0 ∧ (∀ k : ℕ, L_seq k ≤ B) ∧ (∀ k : ℕ, 3 * L_seq k < 2 * L_seq (k + 1))) ∧
+    (∀ (W_seq : ℕ → ℕ) (K : ℕ),
+      (∀ k ≤ K, W_seq k % 88 = 81) →
+      (∀ k < K, W_seq (k + 1) < W_seq k) →
+      W_seq K + 88 * K ≤ W_seq 0 ∧ 88 ∣ (W_seq 0 - W_seq K)) := by
+  refine ⟨?_, ?_, ?_, ?_, ?_⟩
+  · intro W_seq K hstep
+    induction K with
+    | zero =>
+        simp only [Nat.mul_zero, Nat.add_zero, Nat.sub_self]
+        exact ⟨Nat.le_refl _, ⟨0, by ring⟩⟩
+    | succ k ih =>
+        have ih_k := ih (fun j hj => hstep j (Nat.lt_succ_of_lt hj))
+        have hk := hstep k (Nat.lt_succ_self k)
+        rcases ih_k.2 with ⟨Q1, hQ1⟩
+        rcases hk.2 with ⟨Q2, hQ2⟩
+        refine ⟨by omega, ⟨Q1 + Q2, ?_⟩⟩
+        have hle1 : W_seq 0 ≤ W_seq k := by omega
+        have hle2 : W_seq k ≤ W_seq (k + 1) := by omega
+        omega
+  · intro U_seq K hstep
+    induction K with
+    | zero =>
+        simp only [Nat.mul_zero, Nat.add_zero, Nat.sub_self]
+        exact ⟨Nat.le_refl _, ⟨0, by ring⟩⟩
+    | succ k ih =>
+        have ih_k := ih (fun j hj => hstep j (Nat.lt_succ_of_lt hj))
+        have hk := hstep k (Nat.lt_succ_self k)
+        rcases ih_k.2 with ⟨Q1, hQ1⟩
+        rcases hk.2 with ⟨Q2, hQ2⟩
+        refine ⟨by omega, ⟨Q1 + Q2, ?_⟩⟩
+        have hle1 : U_seq 0 ≤ U_seq k := by omega
+        have hle2 : U_seq k ≤ U_seq (k + 1) := by omega
+        omega
+  · intro L_seq m hL0 hstep
+    induction m with
+    | zero =>
+        have h0 := hstep 0 (Nat.le_refl 0)
+        have h32 : 3 * L_seq 0 < 2 * L_seq 1 := h0.1
+        change 3 * L_seq 0 < 2 * L_seq 1 ∧ 19 * L_seq 0 < 12 * L_seq 1 ∧ L_seq 0 + 1 ≤ L_seq 1
+        exact ⟨h0.1, h0.2, by omega⟩
+    | succ k ih =>
+        have ih_k := ih (fun j hj => hstep j (Nat.le_succ_of_le hj))
+        have hk := hstep (k + 1) (Nat.le_refl _)
+        have h3_lt :
+            3 ^ (k + 2) * L_seq 0 < 2 ^ (k + 2) * L_seq (k + 2) := by
+          have hp3 : 3 ^ (k + 2) * L_seq 0 = 3 * (3 ^ (k + 1) * L_seq 0) := by
+            rw [Nat.pow_succ 3 (k + 1)]; ring
+          have hp2 : 2 ^ (k + 2) * L_seq (k + 2) = 2 ^ (k + 1) * (2 * L_seq (k + 2)) := by
+            rw [Nat.pow_succ 2 (k + 1)]; ring
+          have hm1 : 3 * (3 ^ (k + 1) * L_seq 0) < 3 * (2 ^ (k + 1) * L_seq (k + 1)) :=
+            Nat.mul_lt_mul_of_pos_left ih_k.1 (by decide)
+          have hm2 : 3 * (2 ^ (k + 1) * L_seq (k + 1)) = 2 ^ (k + 1) * (3 * L_seq (k + 1)) := by
+            ring
+          have hm3 : 2 ^ (k + 1) * (3 * L_seq (k + 1)) < 2 ^ (k + 1) * (2 * L_seq (k + 2)) :=
+            Nat.mul_lt_mul_of_pos_left hk.1 (Nat.pow_pos (by decide))
+          rw [hp3, hp2]
+          exact lt_trans (by linarith only [hm1, hm2]) hm3
+        have h19_lt :
+            19 ^ (k + 2) * L_seq 0 < 12 ^ (k + 2) * L_seq (k + 2) := by
+          have hp19 : 19 ^ (k + 2) * L_seq 0 = 19 * (19 ^ (k + 1) * L_seq 0) := by
+            rw [Nat.pow_succ 19 (k + 1)]; ring
+          have hp12 : 12 ^ (k + 2) * L_seq (k + 2) = 12 ^ (k + 1) * (12 * L_seq (k + 2)) := by
+            rw [Nat.pow_succ 12 (k + 1)]; ring
+          have hm1 : 19 * (19 ^ (k + 1) * L_seq 0) < 19 * (12 ^ (k + 1) * L_seq (k + 1)) :=
+            Nat.mul_lt_mul_of_pos_left ih_k.2.1 (by decide)
+          have hm2 :
+              19 * (12 ^ (k + 1) * L_seq (k + 1)) = 12 ^ (k + 1) * (19 * L_seq (k + 1)) := by
+            ring
+          have hm3 :
+              12 ^ (k + 1) * (19 * L_seq (k + 1)) < 12 ^ (k + 1) * (12 * L_seq (k + 2)) :=
+            Nat.mul_lt_mul_of_pos_left hk.2 (Nat.pow_pos (by decide))
+          rw [hp19, hp12]
+          exact lt_trans (by linarith only [hm1, hm2]) hm3
+        have hlin_le : L_seq 0 + (k + 2) ≤ L_seq (k + 2) := by
+          have hpos_k1 : 1 ≤ L_seq (k + 1) := by linarith only [hL0, ih_k.2.2]
+          have h32 : 3 * L_seq (k + 1) < 2 * L_seq (k + 2) := hk.1
+          have hstep_k1 : L_seq (k + 1) + 1 ≤ L_seq (k + 2) := by omega
+          linarith only [ih_k.2.2, hstep_k1]
+        exact ⟨h3_lt, h19_lt, hlin_le⟩
+  · intro B ⟨L_seq, hL0, hB, h32⟩
+    have hstep_ge : ∀ k : ℕ, L_seq 0 + k ≤ L_seq k := by
+      intro k
+      induction k with
+      | zero => omega
+      | succ j ih =>
+          have hj := h32 j
+          omega
+    have hB_at := hB (B + 1)
+    have hge_at := hstep_ge (B + 1)
+    omega
+  · intro W_seq K hmod88 hlt
+    induction K with
+    | zero =>
+        simp only [Nat.mul_zero, Nat.add_zero, Nat.sub_self]
+        exact ⟨Nat.le_refl _, ⟨0, by ring⟩⟩
+    | succ k ih =>
+        have ih_k := ih (fun j hj => hmod88 j (Nat.le_succ_of_le hj))
+          (fun j hj => hlt j (Nat.lt_succ_of_lt hj))
+        have hk_lt := hlt k (Nat.lt_succ_self k)
+        have h88_k := hmod88 k (Nat.le_succ k)
+        have h88_k1 := hmod88 (k + 1) (Nat.le_refl _)
+        have hstep88 : W_seq (k + 1) + 88 ≤ W_seq k ∧ 88 ∣ (W_seq k - W_seq (k + 1)) :=
+          dense_core_fermat_homoclinic_sieves_and_mod_4400_39600_bijections.2.2.1
+            (W_seq k) (W_seq (k + 1)) h88_k h88_k1 hk_lt
+        rcases ih_k.2 with ⟨Q1, hQ1⟩
+        rcases hstep88.2 with ⟨Q2, hQ2⟩
+        refine ⟨by omega, ⟨Q1 + Q2, ?_⟩⟩
+        have hstep_le := hstep88.1
+        have hih_le := ih_k.1
+        omega
+
+/-!
+## Section 76: Prime-Factor `29` and `71` Homoclinic Sieves on `1`-Run Quotients (`2059 = 29 × 71`), Exact Mod-`4` / Mod-`5` Bijections (`W_3 % 29 ∈ {1, 17, 28, 12}`, `W_3 % 71 ∈ {46, 17, 14, 70, 66}`) & Mod-`464` / Mod-`1392` Bijections
+
+In Section 51, we factored `58,025 = 25 × 11 × 211` and exploited the small multiplicative orders of
+`3^10` modulo `11` (order `1`) and `25` (order `2`) to lock `W_2 % 11 = 4` and `W_2 % 25 ∈ {9, 16}`
+(`W_2 % 4400 ∈ {609, 4041}`).
+
+What about the dual constant `2059 = 29 × 71` governing `1`-run states `W_3` via
+`(58025 * 2^(7*L_3) * W_3 + 19) % 2059 = 0` (Section 51)?
+Remarkably, `2^7 = 128` has **tiny multiplicative orders** modulo both prime factors of `2059`:
+- **Modulo `29`:** `2^7 = 128 ≡ 12 (mod 29)`, and `12^2 = 144 ≡ -1 (mod 29)`, so `(2^7)^4 ≡ 1 (mod 29)`
+  (exact period `4` in `L_3`)!
+- **Modulo `71`:** `2^7 = 128 ≡ 57 (mod 71)`, and `57^5 ≡ 1 (mod 71)` (exact period `5` in `L_3`)!
+
+Consequently, for **every** `1`-run state `W_3` (`1 ≤ L_3`):
+1. **The `4`-Way Mod-`29` Bijection (`W_3 % 29 ∈ {1, 17, 28, 12}`):**
+   `(L_3 % 4 = 1 ↔ W_3 % 29 = 1) ∧ (L_3 % 4 = 2 ↔ W_3 % 29 = 17) ∧`
+   `(L_3 % 4 = 3 ↔ W_3 % 29 = 28) ∧ (L_3 % 4 = 0 ↔ W_3 % 29 = 12)`.
+2. **The `5`-Way Mod-`71` Bijection (`W_3 % 71 ∈ {46, 17, 14, 70, 66}`):**
+   `(L_3 % 5 = 1 ↔ W_3 % 71 = 46) ∧ (L_3 % 5 = 2 ↔ W_3 % 71 = 17) ∧`
+   `(L_3 % 5 = 3 ↔ W_3 % 71 = 14) ∧ (L_3 % 5 = 4 ↔ W_3 % 71 = 70) ∧ (L_3 % 5 = 0 ↔ W_3 % 71 = 66)`.
+3. **The Combined `4`-Way Mod-`464` (`16 × 29`) & Mod-`1392` (`16 × 3 × 29`) Bijections:**
+   Combining `W_3 % 29` (period `4`) with `W_3 % 16 ∈ {15, 13, 7, 5}` (period `4`) and `W_3 % 24 ∈ {23, 13}`
+   (period `2`) yields `4`-way bijections modulo `464` (`{175, 365, 231, 389}`) and modulo `1392`
+   (`{1103, 829, 695, 853}`)!
+-/
+
+private lemma two_pow_seven_mul_mod_29 (k : ℕ) :
+    (k % 4 = 0 → 2 ^ (7 * k) % 29 = 1) ∧
+    (k % 4 = 1 → 2 ^ (7 * k) % 29 = 12) ∧
+    (k % 4 = 2 → 2 ^ (7 * k) % 29 = 28) ∧
+    (k % 4 = 3 → 2 ^ (7 * k) % 29 = 17) := by
+  induction k with
+  | zero => decide
+  | succ m ih =>
+      have hp : 2 ^ (7 * (m + 1)) % 29 = ((2 ^ (7 * m) % 29) * (2 ^ 7 % 29)) % 29 := by
+        have hexp : 7 * (m + 1) = 7 * m + 7 := by omega
+        rw [hexp, Nat.pow_add, Nat.mul_mod]
+      rcases ih with ⟨ih0, ih1, ih2, ih3⟩
+      refine ⟨?_, ?_, ?_, ?_⟩ <;> intro hm <;> rw [hp]
+      · rw [ih3 (by omega)]; rfl
+      · rw [ih0 (by omega)]; rfl
+      · rw [ih1 (by omega)]; rfl
+      · rw [ih2 (by omega)]; rfl
+
+private lemma two_pow_seven_mul_mod_71 (k : ℕ) :
+    (k % 5 = 0 → 2 ^ (7 * k) % 71 = 1) ∧
+    (k % 5 = 1 → 2 ^ (7 * k) % 71 = 57) ∧
+    (k % 5 = 2 → 2 ^ (7 * k) % 71 = 54) ∧
+    (k % 5 = 3 → 2 ^ (7 * k) % 71 = 25) ∧
+    (k % 5 = 4 → 2 ^ (7 * k) % 71 = 5) := by
+  induction k with
+  | zero => decide
+  | succ m ih =>
+      have hp : 2 ^ (7 * (m + 1)) % 71 = ((2 ^ (7 * m) % 71) * (2 ^ 7 % 71)) % 71 := by
+        have hexp : 7 * (m + 1) = 7 * m + 7 := by omega
+        rw [hexp, Nat.pow_add, Nat.mul_mod]
+      rcases ih with ⟨ih0, ih1, ih2, ih3, ih4⟩
+      refine ⟨?_, ?_, ?_, ?_, ?_⟩ <;> intro hm <;> rw [hp]
+      · rw [ih4 (by omega)]; rfl
+      · rw [ih0 (by omega)]; rfl
+      · rw [ih1 (by omega)]; rfl
+      · rw [ih2 (by omega)]; rfl
+      · rw [ih3 (by omega)]; rfl
+
+private lemma w3_mod_29_bijection {W_3 L_3 : ℕ}
+    (hmod : (58025 * 2 ^ (7 * L_3) * W_3 + 19) % 29 = 0) :
+    (L_3 % 4 = 1 ↔ W_3 % 29 = 1) ∧
+    (L_3 % 4 = 2 ↔ W_3 % 29 = 17) ∧
+    (L_3 % 4 = 3 ↔ W_3 % 29 = 28) ∧
+    (L_3 % 4 = 0 ↔ W_3 % 29 = 12) := by
+  have hp := two_pow_seven_mul_mod_29 L_3
+  have hm := hmod
+  rw [Nat.add_mod, Nat.mul_mod, Nat.mul_mod 58025] at hm
+  have h1 : L_3 % 4 = 1 → W_3 % 29 = 1 := by
+    intro h; rw [hp.2.1 h] at hm
+    have hc : ((58025 % 29) * 12) % 29 = 10 := by decide
+    rw [hc] at hm; omega
+  have h2 : L_3 % 4 = 2 → W_3 % 29 = 17 := by
+    intro h; rw [hp.2.2.1 h] at hm
+    have hc : ((58025 % 29) * 28) % 29 = 4 := by decide
+    rw [hc] at hm; omega
+  have h3 : L_3 % 4 = 3 → W_3 % 29 = 28 := by
+    intro h; rw [hp.2.2.2 h] at hm
+    have hc : ((58025 % 29) * 17) % 29 = 19 := by decide
+    rw [hc] at hm; omega
+  have h0 : L_3 % 4 = 0 → W_3 % 29 = 12 := by
+    intro h; rw [hp.1 h] at hm
+    have hc : ((58025 % 29) * 1) % 29 = 25 := by decide
+    rw [hc] at hm; omega
+  refine ⟨⟨h1, fun hw => ?_⟩, ⟨h2, fun hw => ?_⟩, ⟨h3, fun hw => ?_⟩, ⟨h0, fun hw => ?_⟩⟩ <;> omega
+
+private lemma w3_mod_71_bijection {W_3 L_3 : ℕ}
+    (hmod : (58025 * 2 ^ (7 * L_3) * W_3 + 19) % 71 = 0) :
+    (L_3 % 5 = 1 ↔ W_3 % 71 = 46) ∧
+    (L_3 % 5 = 2 ↔ W_3 % 71 = 17) ∧
+    (L_3 % 5 = 3 ↔ W_3 % 71 = 14) ∧
+    (L_3 % 5 = 4 ↔ W_3 % 71 = 70) ∧
+    (L_3 % 5 = 0 ↔ W_3 % 71 = 66) := by
+  have hp := two_pow_seven_mul_mod_71 L_3
+  have hm := hmod
+  rw [Nat.add_mod, Nat.mul_mod, Nat.mul_mod 58025] at hm
+  have h1 : L_3 % 5 = 1 → W_3 % 71 = 46 := by
+    intro h; rw [hp.2.1 h] at hm
+    have hc : ((58025 % 71) * 57) % 71 = 32 := by decide
+    rw [hc] at hm; omega
+  have h2 : L_3 % 5 = 2 → W_3 % 71 = 17 := by
+    intro h; rw [hp.2.2.1 h] at hm
+    have hc : ((58025 % 71) * 54) % 71 = 49 := by decide
+    rw [hc] at hm; omega
+  have h3 : L_3 % 5 = 3 → W_3 % 71 = 14 := by
+    intro h; rw [hp.2.2.2.1 h] at hm
+    have hc : ((58025 % 71) * 25) % 71 = 24 := by decide
+    rw [hc] at hm; omega
+  have h4 : L_3 % 5 = 4 → W_3 % 71 = 70 := by
+    intro h; rw [hp.2.2.2.2 h] at hm
+    have hc : ((58025 % 71) * 5) % 71 = 19 := by decide
+    rw [hc] at hm; omega
+  have h0 : L_3 % 5 = 0 → W_3 % 71 = 66 := by
+    intro h; rw [hp.1 h] at hm
+    have hc : ((58025 % 71) * 1) % 71 = 18 := by decide
+    rw [hc] at hm; omega
+  refine ⟨⟨h1, fun hw => ?_⟩, ⟨h2, fun hw => ?_⟩, ⟨h3, fun hw => ?_⟩,
+    ⟨h4, fun hw => ?_⟩, ⟨h0, fun hw => ?_⟩⟩ <;> omega
+
+private lemma w3_mod_464_and_1392_bijection {W_3 L_3 : ℕ}
+    (h16 : (L_3 % 4 = 0 ↔ W_3 % 16 = 5) ∧ (L_3 % 4 = 1 ↔ W_3 % 16 = 15) ∧
+           (L_3 % 4 = 2 ↔ W_3 % 16 = 13) ∧ (L_3 % 4 = 3 ↔ W_3 % 16 = 7))
+    (h24 : (L_3 % 2 = 1 ↔ W_3 % 24 = 23) ∧ (L_3 % 2 = 0 ↔ W_3 % 24 = 13))
+    (h29 : (L_3 % 4 = 1 ↔ W_3 % 29 = 1) ∧ (L_3 % 4 = 2 ↔ W_3 % 29 = 17) ∧
+           (L_3 % 4 = 3 ↔ W_3 % 29 = 28) ∧ (L_3 % 4 = 0 ↔ W_3 % 29 = 12)) :
+    ((L_3 % 4 = 1 ↔ W_3 % 464 = 175) ∧
+     (L_3 % 4 = 2 ↔ W_3 % 464 = 365) ∧
+     (L_3 % 4 = 3 ↔ W_3 % 464 = 231) ∧
+     (L_3 % 4 = 0 ↔ W_3 % 464 = 389)) ∧
+    ((L_3 % 4 = 1 ↔ W_3 % 1392 = 1103) ∧
+     (L_3 % 4 = 2 ↔ W_3 % 1392 = 829) ∧
+     (L_3 % 4 = 3 ↔ W_3 % 1392 = 695) ∧
+     (L_3 % 4 = 0 ↔ W_3 % 1392 = 853)) := by
+  have hd16 := Nat.div_add_mod W_3 16
+  have hd24 := Nat.div_add_mod W_3 24
+  have hd29 := Nat.div_add_mod W_3 29
+  have hd464 := Nat.div_add_mod W_3 464
+  have hd1392 := Nat.div_add_mod W_3 1392
+  have h16_bound := Nat.mod_lt W_3 (by decide : 0 < 16)
+  have h24_bound := Nat.mod_lt W_3 (by decide : 0 < 24)
+  have h29_bound := Nat.mod_lt W_3 (by decide : 0 < 29)
+  have h464_bound := Nat.mod_lt W_3 (by decide : 0 < 464)
+  have h1392_bound := Nat.mod_lt W_3 (by decide : 0 < 1392)
+  refine ⟨⟨⟨fun h => by omega, fun h => by omega⟩,
+           ⟨fun h => by omega, fun h => by omega⟩,
+           ⟨fun h => by omega, fun h => by omega⟩,
+           ⟨fun h => by omega, fun h => by omega⟩⟩,
+          ⟨⟨fun h => by omega, fun h => by omega⟩,
+           ⟨fun h => by omega, fun h => by omega⟩,
+           ⟨fun h => by omega, fun h => by omega⟩,
+           ⟨fun h => by omega, fun h => by omega⟩⟩⟩
+
+/-- **Prime-Factor `29` and `71` Homoclinic Sieves on `1`-Run Quotients (`2059 = 29 × 71`) & Mod-`29` / `71` / `464` / `1392` Bijections:**
+Because `2^7 ≡ 12 (mod 29)` has multiplicative order `4` and `2^7 ≡ 57 (mod 71)` has multiplicative
+order `5`, every `1`-run state `W_3` satisfies a `4`-way bijection between `L_3 % 4` and `W_3 % 29 ∈ {1, 17, 28, 12}`,
+a `5`-way bijection between `L_3 % 5` and `W_3 % 71 ∈ {46, 17, 14, 70, 66}`, and `4`-way bijections
+between `L_3 % 4` and `W_3 % 464 ∈ {175, 365, 231, 389}` and `W_3 % 1392 ∈ {1103, 829, 695, 853}`. -/
+theorem dense_core_one_run_mod_29_71_464_1392_bijections
+    {W_2 W_3 W_4 L_2 L_3 L_4 : ℕ}
+    (hL2 : 1 ≤ L_2) (hL3 : 1 ≤ L_3) (hL4 : 1 ≤ L_4)
+    (h23 : 58025 * 2 ^ (7 * L_3) * W_3 + 19 = 2059 * 3 ^ (10 * L_2) * W_2)
+    (h34 : 58025 * 3 ^ (7 * L_3) * W_3 + 19 = 2059 * 2 ^ (10 * L_4) * W_4) :
+    -- 1. 4-way bijection between L_3 % 4 and W_3 % 29 ∈ {1, 17, 28, 12}:
+    ((L_3 % 4 = 1 ↔ W_3 % 29 = 1) ∧
+     (L_3 % 4 = 2 ↔ W_3 % 29 = 17) ∧
+     (L_3 % 4 = 3 ↔ W_3 % 29 = 28) ∧
+     (L_3 % 4 = 0 ↔ W_3 % 29 = 12)) ∧
+    -- 2. 5-way bijection between L_3 % 5 and W_3 % 71 ∈ {46, 17, 14, 70, 66}:
+    ((L_3 % 5 = 1 ↔ W_3 % 71 = 46) ∧
+     (L_3 % 5 = 2 ↔ W_3 % 71 = 17) ∧
+     (L_3 % 5 = 3 ↔ W_3 % 71 = 14) ∧
+     (L_3 % 5 = 4 ↔ W_3 % 71 = 70) ∧
+     (L_3 % 5 = 0 ↔ W_3 % 71 = 66)) ∧
+    -- 3. 4-way bijections modulo 464 = 16 * 29 and modulo 1392 = 16 * 3 * 29:
+    ((L_3 % 4 = 1 ↔ W_3 % 464 = 175) ∧
+     (L_3 % 4 = 2 ↔ W_3 % 464 = 365) ∧
+     (L_3 % 4 = 3 ↔ W_3 % 464 = 231) ∧
+     (L_3 % 4 = 0 ↔ W_3 % 464 = 389)) ∧
+    ((L_3 % 4 = 1 ↔ W_3 % 1392 = 1103) ∧
+     (L_3 % 4 = 2 ↔ W_3 % 1392 = 829) ∧
+     (L_3 % 4 = 3 ↔ W_3 % 1392 = 695) ∧
+     (L_3 % 4 = 0 ↔ W_3 % 1392 = 853)) := by
+  have hmod29 : (58025 * 2 ^ (7 * L_3) * W_3 + 19) % 29 = 0 := by
+    have hsplit : 58025 * 2 ^ (7 * L_3) * W_3 + 19 = 29 * (71 * 3 ^ (10 * L_2) * W_2) := by
+      linarith only [h23]
+    rw [hsplit, Nat.mul_mod_right]
+  have hmod71 : (58025 * 2 ^ (7 * L_3) * W_3 + 19) % 71 = 0 := by
+    have hsplit : 58025 * 2 ^ (7 * L_3) * W_3 + 19 = 71 * (29 * 3 ^ (10 * L_2) * W_2) := by
+      linarith only [h23]
+    rw [hsplit, Nat.mul_mod_right]
+  have h29_bij := w3_mod_29_bijection hmod29
+  have h71_bij := w3_mod_71_bijection hmod71
+  have h34_comm : 58025 * 3 ^ (7 * L_3) * W_3 + 19 = 2 ^ (10 * L_4) * 2059 * W_4 := by
+    linarith only [h34]
+  have h16_bij :=
+    (dense_core_macro_run_mod_16_128_1024_bijections_and_step_8_descent.2.1
+      W_3 W_4 L_3 L_4 hL4 h34_comm).2.2.2
+  have h24_bij :=
+    (dense_core_three_adic_mirror_sieves_and_mod_24_144_bijections.2.1
+      W_2 W_3 W_4 L_2 L_3 L_4 hL2 hL3 hL4 h23 h34_comm).2.2.2.2.2.1
+  have hcomb := w3_mod_464_and_1392_bijection h16_bij h24_bij h29_bij
+  exact ⟨h29_bij, h71_bij, hcomb.1, hcomb.2⟩
+
+/-!
+## Section 77: Exact Three-Way Multi-Wave GCD Equality (`gcd(W(0), W(N+1)) = gcd(W(0), 19*Acc_N) = gcd(W(N+1), 19*Acc_N)`), the `1 / 6,377,292` GCD Upper Bound & Dual `U`-Wave Three-Way GCD Law
+
+Across any `N + 1` consecutive waves (`N ∈ ℕ`), how can the initial state `W(0)` and the terminal
+state `W(N+1)` share a common factor?
+From Section 54's symmetric master identity:
+  `2^(S_N + 10*L_2(N+1)) * W(N+1) + 19 * Acc_N = 3^(S_N + 10*L_2(0)) * W(0)`,
+because `W(0)` is coprime to `2` (`W(0) % 2 = 1`) and `W(N+1)` is coprime to `3` (`W(N+1) % 3 = 1`),
+every common divisor of any two of `(W(0), W(N+1), 19 * Acc_N)` automatically divides the third!
+
+1. **Exact Three-Way Multi-Wave GCD Equality (`W`-Waves):**
+   `Nat.gcd (W 0) (W (N + 1)) = Nat.gcd (W 0) (19 * Acc_N)`  and
+   `Nat.gcd (W 0) (W (N + 1)) = Nat.gcd (W (N + 1)) (19 * Acc_N)`.
+2. **The Universal `1 / 6,377,292` Multi-Wave GCD Upper Bound:**
+   Because `Nat.gcd (W 0) (W (N + 1)) ∣ (19 * Acc_N)` and `6,377,292 * (19 * Acc_N) < 3^(S_N + 10*L_2(0))`
+   (Section 68), we obtain for **every** horizon `N ∈ ℕ`:
+     `6,377,292 * Nat.gcd (W 0) (W (N + 1)) < 3^(S_N + 10*L_2(0))`!
+3. **Dual `U`-Wave Three-Way GCD Equality & `1 / 6,676,911` GCD Upper Bound:**
+   Because `U(0) % 2 = 1` and `¬(3 ∣ U(N+1))`, across any `N + 1` consecutive `U`-waves:
+     `Nat.gcd (U 0) (U (N + 1)) = Nat.gcd (U 0) (19 * Acc̃_N) = Nat.gcd (U (N + 1)) (19 * Acc̃_N)`
+   and `6,676,911 * Nat.gcd (U 0) (U (N + 1)) < 3^(S̃_N + 7*L_1(0))`!
+-/
+
+private lemma dvd_right_of_dvd_add_of_dvd_left {g A B : ℕ}
+    (hA : g ∣ A) (hAB : g ∣ A + B) : g ∣ B := by
+  rcases hA with ⟨q1, rfl⟩
+  rcases hAB with ⟨q2, hq2⟩
+  rcases Nat.eq_zero_or_pos g with rfl | hg
+  · simp only [Nat.zero_mul, Nat.zero_add] at hq2 ⊢
+    exact ⟨0, by omega⟩
+  · have hle : q1 ≤ q2 := by
+      refine Nat.le_of_not_lt (fun hlt => ?_)
+      have hm : g * q2 < g * q1 := Nat.mul_lt_mul_of_pos_left hlt hg
+      omega
+    refine ⟨q2 - q1, ?_⟩
+    rw [Nat.mul_sub_left_distrib]
+    omega
+
+private lemma three_way_gcd_of_pow_add
+    {X Y R E2 E3 : ℕ}
+    (hX_odd : X % 2 = 1) (hY_cop3 : Nat.Coprime Y 3)
+    (heq : 2 ^ E2 * Y + R = 3 ^ E3 * X) :
+    Nat.gcd X Y = Nat.gcd X R ∧
+    Nat.gcd X Y = Nat.gcd Y R ∧
+    Nat.gcd X Y ∣ R := by
+  have hcopX2 : Nat.Coprime X (2 ^ E2) := by
+    have hc : Nat.Coprime X 2 := by
+      rw [Nat.Coprime, Nat.gcd_comm, Nat.gcd_rec, hX_odd]
+      rfl
+    exact Nat.Coprime.pow_right E2 hc
+  have hcopY3 : Nat.Coprime Y (3 ^ E3) := Nat.Coprime.pow_right E3 hY_cop3
+  have hdvd_R_of_XY : Nat.gcd X Y ∣ R := by
+    have hdX : Nat.gcd X Y ∣ 3 ^ E3 * X := dvd_mul_of_dvd_right (Nat.gcd_dvd_left X Y) _
+    have hdY : Nat.gcd X Y ∣ 2 ^ E2 * Y := dvd_mul_of_dvd_right (Nat.gcd_dvd_right X Y) _
+    rw [← heq] at hdX
+    exact dvd_right_of_dvd_add_of_dvd_left hdY hdX
+  have hdvd_Y_of_XR : Nat.gcd X R ∣ Y := by
+    have hdX : Nat.gcd X R ∣ 3 ^ E3 * X := dvd_mul_of_dvd_right (Nat.gcd_dvd_left X R) _
+    have hdR : Nat.gcd X R ∣ R := Nat.gcd_dvd_right X R
+    have heq_comm : R + 2 ^ E2 * Y = 3 ^ E3 * X := by linarith only [heq]
+    rw [← heq_comm] at hdX
+    have hd_prod : Nat.gcd X R ∣ 2 ^ E2 * Y :=
+      dvd_right_of_dvd_add_of_dvd_left hdR hdX
+    have hcop_g : Nat.Coprime (Nat.gcd X R) (2 ^ E2) :=
+      hcopX2.coprime_dvd_left (Nat.gcd_dvd_left X R)
+    exact hcop_g.dvd_of_dvd_mul_left hd_prod
+  have hdvd_X_of_YR : Nat.gcd Y R ∣ X := by
+    have hdY : Nat.gcd Y R ∣ 2 ^ E2 * Y := dvd_mul_of_dvd_right (Nat.gcd_dvd_left Y R) _
+    have hdR : Nat.gcd Y R ∣ R := Nat.gcd_dvd_right Y R
+    have hd_prod : Nat.gcd Y R ∣ 3 ^ E3 * X := by
+      rw [← heq]
+      exact Nat.dvd_add hdY hdR
+    have hcop_g : Nat.Coprime (Nat.gcd Y R) (3 ^ E3) :=
+      hcopY3.coprime_dvd_left (Nat.gcd_dvd_left Y R)
+    exact hcop_g.dvd_of_dvd_mul_left hd_prod
+  have h1 : Nat.gcd X Y = Nat.gcd X R :=
+    Nat.dvd_antisymm
+      (Nat.dvd_gcd (Nat.gcd_dvd_left X Y) hdvd_R_of_XY)
+      (Nat.dvd_gcd (Nat.gcd_dvd_left X R) hdvd_Y_of_XR)
+  have h2 : Nat.gcd X Y = Nat.gcd Y R :=
+    Nat.dvd_antisymm
+      (Nat.dvd_gcd (Nat.gcd_dvd_right X Y) hdvd_R_of_XY)
+      (Nat.dvd_gcd hdvd_X_of_YR (Nat.gcd_dvd_left Y R))
+  exact ⟨h1, h2, hdvd_R_of_XY⟩
+
+/-- **Exact Three-Way Multi-Wave GCD Equality & the `1 / 6,377,292` and `1 / 6,676,911` GCD Upper Bounds:**
+Across any `N + 1` consecutive waves (`N ∈ ℕ`), `gcd(W(0), W(N+1)) = gcd(W(0), 19*Acc_N) = gcd(W(N+1), 19*Acc_N)`
+with `6,377,292 * gcd(W(0), W(N+1)) < 3^(S_N + 10*L_2(0))`, and dually on `U`-waves
+`gcd(U(0), U(N+1)) = gcd(U(0), 19*Acc̃_N) = gcd(U(N+1), 19*Acc̃_N)` with
+`6,676,911 * gcd(U(0), U(N+1)) < 3^(S̃_N + 7*L_1(0))`. -/
+theorem dense_core_multi_wave_three_way_gcd_equality_and_corridor_bound :
+    -- 1. W-wave three-way GCD equality and 1 / 6,377,292 upper bound:
+    (∀ (W L_2 L_1 : ℕ → ℕ) (N : ℕ),
+      W 0 % 2 = 1 → Nat.Coprime (W (N + 1)) 3 →
+      1 ≤ L_2 0 → (∀ t ≤ N, 1 ≤ L_1 t) →
+      (∀ n ≤ N,
+        2 ^ (7 * L_1 n + 10 * L_2 (n + 1)) * W (n + 1) +
+          19 * ((3 ^ (7 * L_1 n) - 2 ^ (7 * L_1 n)) / 2059) =
+          3 ^ (10 * L_2 n + 7 * L_1 n) * W n) →
+      let S_N := waveInteriorExp L_2 L_1 N
+      let Acc_N := waveInteriorAcc L_2 L_1 N
+      Nat.gcd (W 0) (W (N + 1)) = Nat.gcd (W 0) (19 * Acc_N) ∧
+      Nat.gcd (W 0) (W (N + 1)) = Nat.gcd (W (N + 1)) (19 * Acc_N) ∧
+      Nat.gcd (W 0) (W (N + 1)) ∣ (19 * Acc_N) ∧
+      6377292 * Nat.gcd (W 0) (W (N + 1)) < 3 ^ (S_N + 10 * L_2 0)) ∧
+    -- 2. Dual U-wave three-way GCD equality and 1 / 6,676,911 upper bound:
+    (∀ (U L_1 L_2 : ℕ → ℕ) (N : ℕ),
+      U 0 % 2 = 1 → Nat.Coprime (U 0) 3 →
+      1 ≤ L_1 0 → (∀ t ≤ N, 1 ≤ L_2 t) →
+      (∀ n ≤ N,
+        3 ^ (10 * L_2 n + 7 * L_1 n) * U n +
+          19 * ((3 ^ (10 * L_2 n) - 2 ^ (10 * L_2 n)) / 58025) =
+          2 ^ (10 * L_2 n + 7 * L_1 (n + 1)) * U (n + 1)) →
+      let S_N := dualWaveInteriorExp L_1 L_2 N
+      let Acc_N := dualWaveInteriorAcc L_1 L_2 N
+      Nat.gcd (U 0) (U (N + 1)) = Nat.gcd (U 0) (19 * Acc_N) ∧
+      Nat.gcd (U 0) (U (N + 1)) = Nat.gcd (U (N + 1)) (19 * Acc_N) ∧
+      Nat.gcd (U 0) (U (N + 1)) ∣ (19 * Acc_N) ∧
+      6676911 * Nat.gcd (U 0) (U (N + 1)) < 3 ^ (S_N + 7 * L_1 0)) := by
+  refine ⟨?_, ?_⟩
+  · intro W L_2 L_1 N hW0_odd hWN_cop3 hL2_0 hL1 hrec S_N Acc_N
+    have hm :=
+      (dense_core_symmetric_multi_wave_master_identity_and_boundary_independence.2
+        W L_2 L_1 N hrec).1
+    change 2 ^ S_N * (2 ^ (10 * L_2 (N + 1)) * W (N + 1)) + 19 * Acc_N =
+        3 ^ S_N * (3 ^ (10 * L_2 0) * W 0) at hm
+    have hp2 :
+        2 ^ S_N * (2 ^ (10 * L_2 (N + 1)) * W (N + 1)) =
+          2 ^ (S_N + 10 * L_2 (N + 1)) * W (N + 1) := by
+      rw [Nat.pow_add]; ring
+    have hp3 :
+        3 ^ S_N * (3 ^ (10 * L_2 0) * W 0) =
+          3 ^ (S_N + 10 * L_2 0) * W 0 := by
+      rw [Nat.pow_add]; ring
+    rw [hp2, hp3] at hm
+    have hgcd := three_way_gcd_of_pow_add hW0_odd hWN_cop3 hm
+    have hW0_pos : 1 ≤ W 0 := by omega
+    have hcor :=
+      (dense_core_universal_multi_wave_constant_of_motion_and_three_adic_remainders.1
+        W L_2 L_1 N hW0_pos hL2_0 hL1 hrec).2.2.1
+    change 6377292 * (19 * Acc_N) < 3 ^ (S_N + 10 * L_2 0) at hcor
+    have hAcc_pos : 1 ≤ Acc_N := waveInteriorAcc_pos L_2 L_1 (hL1 0 (Nat.zero_le _)) N
+    have hgcd_le : Nat.gcd (W 0) (W (N + 1)) ≤ 19 * Acc_N :=
+      Nat.le_of_dvd (by omega) hgcd.2.2
+    have hmul_le : 6377292 * Nat.gcd (W 0) (W (N + 1)) ≤ 6377292 * (19 * Acc_N) :=
+      Nat.mul_le_mul_left 6377292 hgcd_le
+    exact ⟨hgcd.1, hgcd.2.1, hgcd.2.2, lt_of_le_of_lt hmul_le hcor⟩
+  · intro U L_1 L_2 N hU0_odd hU0_cop3 hL1_0 hL2 hrec S_N Acc_N
+    have hm :=
+      (dense_core_dual_one_run_multi_wave_master_identity_and_2059_super_divisibility.2.1
+        U L_1 L_2 N hrec).1
+    change 3 ^ S_N * (3 ^ (7 * L_1 0) * U 0) + 19 * Acc_N =
+        2 ^ S_N * (2 ^ (7 * L_1 (N + 1)) * U (N + 1)) at hm
+    have hp3 :
+        3 ^ S_N * (3 ^ (7 * L_1 0) * U 0) = 3 ^ (S_N + 7 * L_1 0) * U 0 := by
+      rw [Nat.pow_add]; ring
+    have hp2 :
+        2 ^ S_N * (2 ^ (7 * L_1 (N + 1)) * U (N + 1)) =
+          2 ^ (S_N + 7 * L_1 (N + 1)) * U (N + 1) := by
+      rw [Nat.pow_add]; ring
+    rw [hp3, hp2] at hm
+    have hcopU2 : Nat.Coprime (U 0) (2 ^ (S_N + 7 * L_1 (N + 1))) := by
+      have hc : Nat.Coprime (U 0) 2 := by
+        rw [Nat.Coprime, Nat.gcd_comm, Nat.gcd_rec, hU0_odd]
+        rfl
+      exact Nat.Coprime.pow_right _ hc
+    have hcopU3 : Nat.Coprime (U 0) (3 ^ (S_N + 7 * L_1 0)) :=
+      Nat.Coprime.pow_right _ hU0_cop3
+    have hdvd_R_of_UY : Nat.gcd (U 0) (U (N + 1)) ∣ (19 * Acc_N) := by
+      have hdX : Nat.gcd (U 0) (U (N + 1)) ∣ 3 ^ (S_N + 7 * L_1 0) * U 0 :=
+        dvd_mul_of_dvd_right (Nat.gcd_dvd_left _ _) _
+      have hdY : Nat.gcd (U 0) (U (N + 1)) ∣ 2 ^ (S_N + 7 * L_1 (N + 1)) * U (N + 1) :=
+        dvd_mul_of_dvd_right (Nat.gcd_dvd_right _ _) _
+      rw [← hm] at hdY
+      exact dvd_right_of_dvd_add_of_dvd_left hdX hdY
+    have hdvd_Y_of_UR : Nat.gcd (U 0) (19 * Acc_N) ∣ U (N + 1) := by
+      have hdX : Nat.gcd (U 0) (19 * Acc_N) ∣ 3 ^ (S_N + 7 * L_1 0) * U 0 :=
+        dvd_mul_of_dvd_right (Nat.gcd_dvd_left _ _) _
+      have hdR : Nat.gcd (U 0) (19 * Acc_N) ∣ (19 * Acc_N) := Nat.gcd_dvd_right _ _
+      have hd_prod : Nat.gcd (U 0) (19 * Acc_N) ∣ 2 ^ (S_N + 7 * L_1 (N + 1)) * U (N + 1) := by
+        rw [← hm]
+        exact Nat.dvd_add hdX hdR
+      have hcop_g : Nat.Coprime (Nat.gcd (U 0) (19 * Acc_N)) (2 ^ (S_N + 7 * L_1 (N + 1))) :=
+        hcopU2.coprime_dvd_left (Nat.gcd_dvd_left _ _)
+      exact hcop_g.dvd_of_dvd_mul_left hd_prod
+    have hcopY3_all : Nat.Coprime (Nat.gcd (U (N + 1)) (19 * Acc_N)) (3 ^ (S_N + 7 * L_1 0)) := by
+      have hndvd3_Acc :=
+        (dense_core_dualWaveInteriorAcc_telescopic_cross_defect_and_mirror_collapses.1
+          L_1 L_2 N hL2).2.2.2.2.2.2.2
+      change ¬(3 ∣ Acc_N) at hndvd3_Acc
+      have hcop_19Acc_3 : Nat.Coprime (19 * Acc_N) 3 := by
+        have hc19 : Nat.Coprime 19 3 := by decide
+        have hcAcc : Nat.Coprime Acc_N 3 :=
+          ((Nat.Prime.coprime_iff_not_dvd (by decide : Nat.Prime 3)).mpr hndvd3_Acc).symm
+        exact Nat.Coprime.mul hc19 hcAcc
+      have hcop_pow : Nat.Coprime (19 * Acc_N) (3 ^ (S_N + 7 * L_1 0)) :=
+        Nat.Coprime.pow_right _ hcop_19Acc_3
+      exact hcop_pow.coprime_dvd_left (Nat.gcd_dvd_right _ _)
+    have hdvd_U0_of_YR : Nat.gcd (U (N + 1)) (19 * Acc_N) ∣ U 0 := by
+      have hdY : Nat.gcd (U (N + 1)) (19 * Acc_N) ∣ 2 ^ (S_N + 7 * L_1 (N + 1)) * U (N + 1) :=
+        dvd_mul_of_dvd_right (Nat.gcd_dvd_left _ _) _
+      have hdR : Nat.gcd (U (N + 1)) (19 * Acc_N) ∣ (19 * Acc_N) := Nat.gcd_dvd_right _ _
+      have hm_comm : 19 * Acc_N + 3 ^ (S_N + 7 * L_1 0) * U 0 =
+          2 ^ (S_N + 7 * L_1 (N + 1)) * U (N + 1) := by linarith only [hm]
+      rw [← hm_comm] at hdY
+      have hd_prod : Nat.gcd (U (N + 1)) (19 * Acc_N) ∣ 3 ^ (S_N + 7 * L_1 0) * U 0 :=
+        dvd_right_of_dvd_add_of_dvd_left hdR hdY
+      exact hcopY3_all.dvd_of_dvd_mul_left hd_prod
+    have h1 : Nat.gcd (U 0) (U (N + 1)) = Nat.gcd (U 0) (19 * Acc_N) :=
+      Nat.dvd_antisymm
+        (Nat.dvd_gcd (Nat.gcd_dvd_left _ _) hdvd_R_of_UY)
+        (Nat.dvd_gcd (Nat.gcd_dvd_left _ _) hdvd_Y_of_UR)
+    have h2 : Nat.gcd (U 0) (U (N + 1)) = Nat.gcd (U (N + 1)) (19 * Acc_N) :=
+      Nat.dvd_antisymm
+        (Nat.dvd_gcd (Nat.gcd_dvd_right _ _) hdvd_R_of_UY)
+        (Nat.dvd_gcd hdvd_U0_of_YR (Nat.gcd_dvd_left _ _))
+    have hcor :=
+      (dense_core_universal_multi_wave_constant_of_motion_and_three_adic_remainders.2
+        U L_1 L_2 N hL1_0 hL2 hrec).2.2.1
+    change 6676911 * (19 * Acc_N) < 3 ^ (S_N + 7 * L_1 0) at hcor
+    have hAcc_pos : 1 ≤ Acc_N := dualWaveInteriorAcc_pos L_1 L_2 (hL2 0 (Nat.zero_le _)) N
+    have hgcd_le : Nat.gcd (U 0) (U (N + 1)) ≤ 19 * Acc_N :=
+      Nat.le_of_dvd (by omega) hdvd_R_of_UY
+    have hmul_le : 6676911 * Nat.gcd (U 0) (U (N + 1)) ≤ 6676911 * (19 * Acc_N) :=
+      Nat.mul_le_mul_left 6676911 hgcd_le
+    exact ⟨h1, h2, hdvd_R_of_UY, lt_of_le_of_lt hmul_le hcor⟩
+
+/-!
+## Section 78: Multi-Horizon Wronskian Archimedean Sandwich & Two-Way Modular Congruence Locks Across Horizons `0 < K + 1 < K + 2 + d`
+
+From Section 74's Three-Point Homogeneous Wronskian Syzygy:
+  `Acc_full * W(K+1) = 3^(S_K + 10*L_2(0)) * Acc_tail * W(0) + 2^(S_tail + 10*L_2(K+2+d)) * Acc_K * W(K+2+d)`,
+we establish the exact archimedean sandwich and two-way `(2, 3)`-adic modular congruence locks
+linking the middle state `W(K+1)` to both boundary states `W(0)` and `W(K+2+d)`:
+
+1. **Strict Two-Sided Wronskian Archimedean Sandwich (`1 ≤ W(0)`, `1 ≤ W(K+2+d)`):**
+   - `3^(S_K + 10*L_2(0)) * Acc_tail * W(0) < Acc_full * W(K+1)`,
+   - `2^(S_tail + 10*L_2(K+2+d)) * Acc_K * W(K+2+d) < Acc_full * W(K+1)`.
+2. **Exact Two-Way `(2, 3)`-Adic Modular Congruence Locks on `Acc_full * W(K+1)`:**
+   - Modulo `3^(S_K + 10*L_2(0))` (eliminating `W(0)` and `Acc_tail`):
+       `(Acc_full * W(K+1)) % 3^(S_K + 10*L_2(0)) = (2^(S_tail + 10*L_2(K+2+d)) * Acc_K * W(K+2+d)) % 3^(S_K + 10*L_2(0))`,
+   - Modulo `2^(S_tail + 10*L_2(K+2+d))` (eliminating `W(K+2+d)` and `Acc_K`):
+       `(Acc_full * W(K+1)) % 2^(S_tail + 10*L_2(K+2+d)) = (3^(S_K + 10*L_2(0)) * Acc_tail * W(0)) % 2^(S_tail + 10*L_2(K+2+d))`.
+-/
+
+/-- **Multi-Horizon Wronskian Archimedean Sandwich & Two-Way Modular Congruence Locks:**
+Across any three nested horizons `0 < K + 1 < K + 2 + d`, `Acc_full * W(K+1)` strictly dominates
+both `3^(S_K + 10*L_2(0)) * Acc_tail * W(0)` and `2^(S_tail + 10*L_2(K+2+d)) * Acc_K * W(K+2+d)`
+and satisfies exact modular congruence locks modulo `3^(S_K + 10*L_2(0))` and `2^(S_tail + 10*L_2(K+2+d))`. -/
+theorem dense_core_multi_horizon_wronskian_archimedean_and_divisibility_bounds
+    {W L_2 L_1 : ℕ → ℕ} {K d : ℕ}
+    (hW0 : 1 ≤ W 0) (hWend : 1 ≤ W (K + 2 + d))
+    (hL1_0 : 1 ≤ L_1 0) (hL1_K1 : 1 ≤ L_1 (K + 1))
+    (hrec : ∀ n ≤ K + 1 + d,
+      2 ^ (7 * L_1 n + 10 * L_2 (n + 1)) * W (n + 1) +
+        19 * ((3 ^ (7 * L_1 n) - 2 ^ (7 * L_1 n)) / 2059) =
+        3 ^ (10 * L_2 n + 7 * L_1 n) * W n) :
+    let S_K := waveInteriorExp L_2 L_1 K
+    let Acc_K := waveInteriorAcc L_2 L_1 K
+    let S_tail := waveInteriorExp (fun t => L_2 (K + 1 + t)) (fun t => L_1 (K + 1 + t)) d
+    let Acc_tail := waveInteriorAcc (fun t => L_2 (K + 1 + t)) (fun t => L_1 (K + 1 + t)) d
+    let Acc_full := waveInteriorAcc L_2 L_1 (K + 1 + d)
+    -- 1. Strict two-sided Wronskian archimedean sandwich:
+    3 ^ (S_K + 10 * L_2 0) * Acc_tail * W 0 < Acc_full * W (K + 1) ∧
+    2 ^ (S_tail + 10 * L_2 (K + 2 + d)) * Acc_K * W (K + 2 + d) < Acc_full * W (K + 1) ∧
+    -- 2. Exact two-way (2, 3)-adic modular congruence locks on Acc_full * W(K+1):
+    (Acc_full * W (K + 1)) % 3 ^ (S_K + 10 * L_2 0) =
+      (2 ^ (S_tail + 10 * L_2 (K + 2 + d)) * Acc_K * W (K + 2 + d)) % 3 ^ (S_K + 10 * L_2 0) ∧
+    (Acc_full * W (K + 1)) % 2 ^ (S_tail + 10 * L_2 (K + 2 + d)) =
+      (3 ^ (S_K + 10 * L_2 0) * Acc_tail * W 0) % 2 ^ (S_tail + 10 * L_2 (K + 2 + d)) := by
+  intro S_K Acc_K S_tail Acc_tail Acc_full
+  have hw :=
+    (dense_core_multi_horizon_shift_composition_and_three_point_wronskian_syzygy.2
+      W L_2 L_1 K d hrec).1
+  change Acc_full * W (K + 1) =
+      3 ^ (S_K + 10 * L_2 0) * Acc_tail * W 0 +
+        2 ^ (S_tail + 10 * L_2 (K + 2 + d)) * Acc_K * W (K + 2 + d) at hw
+  have hAccK_pos : 1 ≤ Acc_K := waveInteriorAcc_pos L_2 L_1 hL1_0 K
+  have hL1_tail0 : 1 ≤ (fun t => L_1 (K + 1 + t)) 0 := by
+    dsimp; have h0 : K + 1 + 0 = K + 1 := by omega
+    rw [h0]; exact hL1_K1
+  have hAcctail_pos : 1 ≤ Acc_tail :=
+    waveInteriorAcc_pos (fun t => L_2 (K + 1 + t)) (fun t => L_1 (K + 1 + t)) hL1_tail0 d
+  have hp3 : 1 ≤ 3 ^ (S_K + 10 * L_2 0) := Nat.pow_pos (by decide)
+  have hp2 : 1 ≤ 2 ^ (S_tail + 10 * L_2 (K + 2 + d)) := Nat.pow_pos (by decide)
+  have hpos1 : 0 < 3 ^ (S_K + 10 * L_2 0) * Acc_tail * W 0 :=
+    Nat.mul_pos (Nat.mul_pos hp3 hAcctail_pos) hW0
+  have hpos2 : 0 < 2 ^ (S_tail + 10 * L_2 (K + 2 + d)) * Acc_K * W (K + 2 + d) :=
+    Nat.mul_pos (Nat.mul_pos hp2 hAccK_pos) hWend
+  have hlt1 : 3 ^ (S_K + 10 * L_2 0) * Acc_tail * W 0 < Acc_full * W (K + 1) := by omega
+  have hlt2 : 2 ^ (S_tail + 10 * L_2 (K + 2 + d)) * Acc_K * W (K + 2 + d) < Acc_full * W (K + 1) := by
+    omega
+  have hmod3 :
+      (Acc_full * W (K + 1)) % 3 ^ (S_K + 10 * L_2 0) =
+        (2 ^ (S_tail + 10 * L_2 (K + 2 + d)) * Acc_K * W (K + 2 + d)) % 3 ^ (S_K + 10 * L_2 0) := by
+    have hsplit :
+        Acc_full * W (K + 1) =
+          2 ^ (S_tail + 10 * L_2 (K + 2 + d)) * Acc_K * W (K + 2 + d) +
+            3 ^ (S_K + 10 * L_2 0) * (Acc_tail * W 0) := by
+      linarith only [hw]
+    rw [hsplit, Nat.add_mul_mod_self_left]
+  have hmod2 :
+      (Acc_full * W (K + 1)) % 2 ^ (S_tail + 10 * L_2 (K + 2 + d)) =
+        (3 ^ (S_K + 10 * L_2 0) * Acc_tail * W 0) % 2 ^ (S_tail + 10 * L_2 (K + 2 + d)) := by
+    have hsplit :
+        Acc_full * W (K + 1) =
+          3 ^ (S_K + 10 * L_2 0) * Acc_tail * W 0 +
+            2 ^ (S_tail + 10 * L_2 (K + 2 + d)) * (Acc_K * W (K + 2 + d)) := by
+      linarith only [hw]
+    rw [hsplit, Nat.add_mul_mod_self_left]
+  exact ⟨hlt1, hlt2, hmod3, hmod2⟩
+
 end Mahler.DubickasExtension
 
 
