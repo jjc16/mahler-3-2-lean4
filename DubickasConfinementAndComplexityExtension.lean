@@ -29430,7 +29430,786 @@ theorem dense_core_bounded_run_abelian_step_sum_pigeonhole_anagram_existence :
   have hj := (hband j).1
   exact ⟨i, j, hij, by omega⟩
 
+/-!
+## Section 118: Internal Junction Bidirectional Anagram Sieve & Homogeneous Defect-Free Junction Syzygy (`(58,025 * 2^(S_{K,2}) * 3^(E_{suf,1})) ∣ (W(m') - W(m))`)
+
+Why was a single block's middle divergence `E_mid` able to separate the prefix `S_K` from the suffix
+`E_suf` in Sections 91 and 106? Because inside a single block, `S_K` acts on the start node `0` while
+`E_suf` acts on the end node `end`, with the divergent middle sitting **between** them.
+Now consider the **internal junction** `(m, m')` between a left anagram pair (Block 1, ending at
+`(m, m')` with shared suffix step-sum `E_suf1`) and a right anagram pair (Block 2, starting at
+`(m, m')` with shared prefix step-sum `S_K2`):
+- Block 1's suffix `E_suf1` sits immediately to the **left** of `(m, m')`, delivering
+  `58025 * 3 ^ E_suf1 ∣ (Y(m') - Y(m))` directly to `(m, m')` (`Y(m') - Y(m) = 58025 * 3 ^ E_suf1 * q_Y`)!
+- Block 2's prefix `S_K2` sits immediately to the **right** of `(m, m')`, delivering
+  `58025 * 2 ^ S_K2 ∣ (X(m') - X(m))` directly to the **same** junction `(m, m')`
+  (`X(m') - X(m) = 58025 * 2 ^ S_K2 * q_X`)!
+There is **no divergent middle between Block 1's suffix and Block 2's prefix**—they meet head-on at
+the single junction `(m, m')`!
+1. **Unconditional Lower-Run Factor Extraction (`L_2(m) ≤ L_2(m')`):**
+   Even when `L_2(m) < L_2(m')`, since `X(m') - X(m) = 3^(10*L_2(m)) * (3^(10*ΔL) * W(m') - W(m))`
+   and `Y(m') - Y(m) = 2^(10*L_2(m)) * (2^(10*ΔL) * W(m') - W(m))`, coprimality gives:
+   - `(58025 * 2 ^ S_K2 * 3 ^ (10 * L_2 m)) ∣ (X(m') - X(m))`,
+   - `(58025 * 2 ^ (10 * L_2 m) * 3 ^ E_suf1) ∣ (Y(m') - Y(m))`.
+2. **Matching Junction `2`-Run (`L_2(m) = L_2(m')`) — Homogeneous Defect-Free Junction Syzygy & Product Divisibility:**
+   When `L_2(m) = L_2(m')`, `2^(10*L_2(m)) * (X(m') - X(m)) = 3^(10*L_2(m)) * (Y(m') - Y(m))` holds
+   with **zero middle-defect term**, yielding:
+     `2 ^ (10 * L_2 m + S_K2) * q_X = 3 ^ (10 * L_2 m + E_suf1) * q_Y`,
+   forcing `W(m) < W(m')` strictly and the **multiplicative product divisibility** on the single
+   state difference `W(m') - W(m)`:
+     `(58025 * 2 ^ S_K2 * 3 ^ E_suf1) ∣ (W(m') - W(m))` and
+     `58025 * 2 ^ S_K2 * 3 ^ E_suf1 ≤ W(m') - W(m) < W(m')`!
+-/
+
+/-- **Internal Junction Bidirectional Anagram Sieve & Product Divisibility:**
+At any internal junction `(m, m')` where the left anagram supplies `(58025 * 3 ^ E_suf1) ∣ (Y(m') - Y(m))`
+and the right anagram supplies `(58025 * 2 ^ S_K2) ∣ (X(m') - X(m))`:
+1. Whenever `L_2(m) ≤ L_2(m')`, `(58025 * 2 ^ S_K2 * 3 ^ (10 * L_2 m)) ∣ (X(m') - X(m))` and
+   `(58025 * 2 ^ (10 * L_2 m) * 3 ^ E_suf1) ∣ (Y(m') - Y(m))`.
+2. Whenever `L_2(m) = L_2(m')`, `(58025 * 2 ^ S_K2 * 3 ^ E_suf1) ∣ (W(m') - W(m))`, and if
+   `X(m) < X(m')` then `W(m) < W(m')` and `58025 * 2 ^ S_K2 * 3 ^ E_suf1 ≤ W(m') - W(m) < W(m')`. -/
+theorem dense_core_internal_junction_bidirectional_anagram_sieve_and_product_divisibility
+    {W L_2 : ℕ → ℕ} {m m' S_K2 E_suf1 : ℕ}
+    (hdvd_X : (58025 * 2 ^ S_K2) ∣ (scaledWaveX W L_2 m' - scaledWaveX W L_2 m))
+    (hdvd_Y : (58025 * 3 ^ E_suf1) ∣ (scaledWaveY W L_2 m' - scaledWaveY W L_2 m)) :
+    -- 1. Lower-run factor extraction whenever L_2(m) ≤ L_2(m'):
+    (L_2 m ≤ L_2 m' →
+      scaledWaveX W L_2 m ≤ scaledWaveX W L_2 m' →
+      scaledWaveY W L_2 m ≤ scaledWaveY W L_2 m' →
+      (58025 * 2 ^ S_K2) ∣ (3 ^ (10 * (L_2 m' - L_2 m)) * W m' - W m) ∧
+      (58025 * 3 ^ E_suf1) ∣ (2 ^ (10 * (L_2 m' - L_2 m)) * W m' - W m) ∧
+      (58025 * 2 ^ S_K2 * 3 ^ (10 * L_2 m)) ∣ (scaledWaveX W L_2 m' - scaledWaveX W L_2 m) ∧
+      (58025 * 2 ^ (10 * L_2 m) * 3 ^ E_suf1) ∣ (scaledWaveY W L_2 m' - scaledWaveY W L_2 m)) ∧
+    -- 2. Matching junction 2-run (L_2(m) = L_2(m')) multiplicative product divisibility & lower bound:
+    (L_2 m = L_2 m' →
+      scaledWaveX W L_2 m < scaledWaveX W L_2 m' →
+      W m < W m' ∧
+      (58025 * 2 ^ S_K2 * 3 ^ E_suf1) ∣ (W m' - W m) ∧
+      58025 * 2 ^ S_K2 * 3 ^ E_suf1 ≤ W m' - W m ∧
+      (1 ≤ W m → 58025 * 2 ^ S_K2 * 3 ^ E_suf1 < W m') ∧
+      (58025 * 2 ^ S_K2 * 3 ^ (10 * L_2 m + E_suf1)) ∣
+        (scaledWaveX W L_2 m' - scaledWaveX W L_2 m) ∧
+      (58025 * 2 ^ (10 * L_2 m + S_K2) * 3 ^ E_suf1) ∣
+        (scaledWaveY W L_2 m' - scaledWaveY W L_2 m)) := by
+  have hpart1 :
+      L_2 m ≤ L_2 m' →
+      scaledWaveX W L_2 m ≤ scaledWaveX W L_2 m' →
+      scaledWaveY W L_2 m ≤ scaledWaveY W L_2 m' →
+      (58025 * 2 ^ S_K2) ∣ (3 ^ (10 * (L_2 m' - L_2 m)) * W m' - W m) ∧
+      (58025 * 3 ^ E_suf1) ∣ (2 ^ (10 * (L_2 m' - L_2 m)) * W m' - W m) ∧
+      (58025 * 2 ^ S_K2 * 3 ^ (10 * L_2 m)) ∣ (scaledWaveX W L_2 m' - scaledWaveX W L_2 m) ∧
+      (58025 * 2 ^ (10 * L_2 m) * 3 ^ E_suf1) ∣ (scaledWaveY W L_2 m' - scaledWaveY W L_2 m) := by
+    intro hL_le _ _
+    have hexp_split : 10 * L_2 m' = 10 * L_2 m + 10 * (L_2 m' - L_2 m) := by omega
+    have hX_factor :
+        scaledWaveX W L_2 m' - scaledWaveX W L_2 m =
+          3 ^ (10 * L_2 m) * (3 ^ (10 * (L_2 m' - L_2 m)) * W m' - W m) := by
+      dsimp [scaledWaveX]
+      rw [hexp_split, Nat.pow_add]
+      have hmul :
+          3 ^ (10 * L_2 m) * 3 ^ (10 * (L_2 m' - L_2 m)) * W m' =
+            3 ^ (10 * L_2 m) * (3 ^ (10 * (L_2 m' - L_2 m)) * W m') := by ring
+      rw [hmul, ← Nat.mul_sub_left_distrib]
+    have hY_factor :
+        scaledWaveY W L_2 m' - scaledWaveY W L_2 m =
+          2 ^ (10 * L_2 m) * (2 ^ (10 * (L_2 m' - L_2 m)) * W m' - W m) := by
+      dsimp [scaledWaveY]
+      rw [hexp_split, Nat.pow_add]
+      have hmul :
+          2 ^ (10 * L_2 m) * 2 ^ (10 * (L_2 m' - L_2 m)) * W m' =
+            2 ^ (10 * L_2 m) * (2 ^ (10 * (L_2 m' - L_2 m)) * W m') := by ring
+      rw [hmul, ← Nat.mul_sub_left_distrib]
+    have hcop_X : Nat.Coprime (58025 * 2 ^ S_K2) (3 ^ (10 * L_2 m)) :=
+      Nat.Coprime.mul
+        (Nat.Coprime.pow_right _ (by decide : Nat.Coprime 58025 3))
+        (Nat.Coprime.pow _ _ (by decide : Nat.Coprime 2 3))
+    have hcop_Y : Nat.Coprime (58025 * 3 ^ E_suf1) (2 ^ (10 * L_2 m)) :=
+      Nat.Coprime.mul
+        (Nat.Coprime.pow_right _ (by decide : Nat.Coprime 58025 2))
+        (Nat.Coprime.pow _ _ (by decide : Nat.Coprime 3 2))
+    have hdX_inner : (58025 * 2 ^ S_K2) ∣ (3 ^ (10 * (L_2 m' - L_2 m)) * W m' - W m) := by
+      rw [hX_factor] at hdvd_X
+      exact hcop_X.dvd_of_dvd_mul_left hdvd_X
+    have hdY_inner : (58025 * 3 ^ E_suf1) ∣ (2 ^ (10 * (L_2 m' - L_2 m)) * W m' - W m) := by
+      rw [hY_factor] at hdvd_Y
+      exact hcop_Y.dvd_of_dvd_mul_left hdvd_Y
+    rcases hdX_inner with ⟨kX, hkX⟩
+    have hdX_full :
+        (58025 * 2 ^ S_K2 * 3 ^ (10 * L_2 m)) ∣ (scaledWaveX W L_2 m' - scaledWaveX W L_2 m) := by
+      refine ⟨kX, ?_⟩
+      rw [hX_factor, hkX]; ring
+    rcases hdY_inner with ⟨kY, hkY⟩
+    have hdY_full :
+        (58025 * 2 ^ (10 * L_2 m) * 3 ^ E_suf1) ∣ (scaledWaveY W L_2 m' - scaledWaveY W L_2 m) := by
+      refine ⟨kY, ?_⟩
+      rw [hY_factor, hkY]; ring
+    exact ⟨⟨kX, hkX⟩, ⟨kY, hkY⟩, hdX_full, hdY_full⟩
+  refine ⟨hpart1, ?_⟩
+  intro hL_eq hX_lt
+  have hW_lt : W m < W m' := by
+    dsimp [scaledWaveX] at hX_lt
+    rw [← hL_eq] at hX_lt
+    exact Nat.lt_of_mul_lt_mul_left hX_lt
+  have hY_lt : scaledWaveY W L_2 m < scaledWaveY W L_2 m' := by
+    dsimp [scaledWaveY]
+    rw [← hL_eq]
+    exact Nat.mul_lt_mul_of_pos_left hW_lt (Nat.pow_pos (by decide))
+  have hp1 := hpart1 (le_of_eq hL_eq) (le_of_lt hX_lt) (le_of_lt hY_lt)
+  have hsub0 : L_2 m' - L_2 m = 0 := by omega
+  have hd_2 : (58025 * 2 ^ S_K2) ∣ (W m' - W m) := by
+    have h := hp1.1
+    rw [hsub0, Nat.mul_zero, Nat.pow_zero, Nat.one_mul] at h
+    exact h
+  have hd_3 : (58025 * 3 ^ E_suf1) ∣ (W m' - W m) := by
+    have h := hp1.2.1
+    rw [hsub0, Nat.mul_zero, Nat.pow_zero, Nat.one_mul] at h
+    exact h
+  have hd_3_only : 3 ^ E_suf1 ∣ (W m' - W m) :=
+    dvd_trans (dvd_mul_left (3 ^ E_suf1) 58025) hd_3
+  have hcop_prod : Nat.Coprime (58025 * 2 ^ S_K2) (3 ^ E_suf1) :=
+    Nat.Coprime.mul
+      (Nat.Coprime.pow_right _ (by decide : Nat.Coprime 58025 3))
+      (Nat.Coprime.pow _ _ (by decide : Nat.Coprime 2 3))
+  have hd_prod : (58025 * 2 ^ S_K2 * 3 ^ E_suf1) ∣ (W m' - W m) :=
+    hcop_prod.mul_dvd_of_dvd_of_dvd hd_2 hd_3_only
+  rcases hd_prod with ⟨K, hK⟩
+  have hK_pos : 1 ≤ K := by
+    rcases Nat.eq_zero_or_pos K with rfl | hp
+    · rw [Nat.mul_zero] at hK; omega
+    · exact hp
+  have hge_diff : 58025 * 2 ^ S_K2 * 3 ^ E_suf1 ≤ W m' - W m := by
+    rw [hK]; exact Nat.le_mul_of_pos_right _ hK_pos
+  have hlt_Wm' : 1 ≤ W m → 58025 * 2 ^ S_K2 * 3 ^ E_suf1 < W m' := by
+    intro hWm_pos
+    omega
+  have hdX_prod :
+      (58025 * 2 ^ S_K2 * 3 ^ (10 * L_2 m + E_suf1)) ∣
+        (scaledWaveX W L_2 m' - scaledWaveX W L_2 m) := by
+    refine ⟨K, ?_⟩
+    dsimp [scaledWaveX]
+    rw [← hL_eq, ← Nat.mul_sub_left_distrib, hK, Nat.pow_add]
+    ring
+  have hdY_prod :
+      (58025 * 2 ^ (10 * L_2 m + S_K2) * 3 ^ E_suf1) ∣
+        (scaledWaveY W L_2 m' - scaledWaveY W L_2 m) := by
+    refine ⟨K, ?_⟩
+    dsimp [scaledWaveY]
+    rw [← hL_eq, ← Nat.mul_sub_left_distrib, hK, Nat.pow_add]
+    ring
+  exact ⟨hW_lt, ⟨K, hK⟩, hge_diff, hlt_Wm', hdX_prod, hdY_prod⟩
+
+/-!
+## Section 119: Internal Junction Bidirectional Archimedean Cutoff (`17*S_{K,2} + 27*E_{suf,1} + 170*L_2(M+1) + 255 < 10*S_M + 270*L_2(0) + 17*W_0`)
+
+Combining Section 118's multiplicative junction bound `58025 * 2 ^ S_K2 * 3 ^ E_suf1 < W(M + 1)`
+at the junction node `m' = M + 1` with the single-point Archimedean upper bound at `M + 1`
+(`2^(S_M + 10*L_2(M+1)) * W(M+1) < 3^(S_M + 10*L_2(0)) * W(0)`) cancels `3 ^ E_suf1` directly
+against `3^(S_M + 10*L_2(0))` while keeping `2 ^ S_K2` on the LHS:
+  `58025 * 2 ^ (S_M + 10 * L_2 (M + 1) + S_K2) < 3 ^ (S_M + 10 * L_2 0 - E_suf1) * W 0`!
+Notice the critical improvement over Section 91's Joint Prefix+Suffix Cutoff:
+- In Section 91, combining a prefix `S_K` and suffix `E_suf` of a single block required bounding
+  two different states (`W(r_2)` and `W(end)`), doubling the RHS to `2*p*S_pre + p*E_mid` and
+  reducing the prefix weight on the LHS to `(q - p) * S_K = 7 * S_K`.
+- At an **internal junction** `m' = M + 1`, both `2 ^ S_K2` and `3 ^ E_suf1` divide the **single**
+  state difference `W(M + 1) - W(m)`, so we invoke the Archimedean bound **only once** at `M + 1`:
+    `q * S_K2 + (p + q) * E_suf1 + 10 * q * L_2 (M + 1) + 15 * q < p * S_M + 10 * (p + q) * L_2 0 + q * W_0`,
+  and at `(p, q) = (10, 17)`:
+    `17 * S_K2 + 27 * E_suf1 + 170 * L_2 (M + 1) + 255 < 10 * S_M + 270 * L_2 0 + 17 * W_0`!
+-/
+
+/-- **Internal Junction Bidirectional Archimedean Cutoff:**
+Whenever an internal junction at `M + 1` satisfies `58025 * 2 ^ S_K2 * 3 ^ E_suf1 < W(M + 1)` with
+`E_suf1 ≤ S_M + 10 * L_2 0`, canceling `3 ^ E_suf1` against `3 ^ (S_M + 10 * L_2 0)` forces:
+`q * S_K2 + (p + q) * E_suf1 + 10 * q * L_2 (M + 1) + 15 * q < p * S_M + 10 * (p + q) * L_2 0 + q * W_0`
+(`17 * S_K2 + 27 * E_suf1 + 170 * L_2 (M + 1) + 255 < 10 * S_M + 270 * L_2 0 + 17 * W_0`). -/
+theorem dense_core_internal_junction_bidirectional_archimedean_cutoff
+    {W L_2 L_1 : ℕ → ℕ} {M W_0 S_K2 E_suf1 : ℕ}
+    (hW0_lt : W 0 < 2 ^ W_0)
+    (hL1_0 : 1 ≤ L_1 0)
+    (hrec : ∀ n ≤ M,
+      2 ^ (7 * L_1 n + 10 * L_2 (n + 1)) * W (n + 1) +
+        19 * ((3 ^ (7 * L_1 n) - 2 ^ (7 * L_1 n)) / 2059) =
+        3 ^ (10 * L_2 n + 7 * L_1 n) * W n)
+    (hEsuf_le : E_suf1 ≤ waveInteriorExp L_2 L_1 M + 10 * L_2 0)
+    (hjunc_lt : 58025 * 2 ^ S_K2 * 3 ^ E_suf1 < W (M + 1)) :
+    let S_M := waveInteriorExp L_2 L_1 M
+    58025 * 2 ^ (S_M + 10 * L_2 (M + 1) + S_K2) <
+      3 ^ (S_M + 10 * L_2 0 - E_suf1) * W 0 ∧
+    58025 * 2 ^ (S_M + 10 * L_2 (M + 1) + S_K2) <
+      3 ^ (S_M + 10 * L_2 0 - E_suf1) * 2 ^ W_0 ∧
+    (∀ p q : ℕ, 1 ≤ q → 3 ^ q ≤ 2 ^ (p + q) →
+      q * S_K2 + (p + q) * E_suf1 + 10 * q * L_2 (M + 1) + 15 * q <
+        p * S_M + 10 * (p + q) * L_2 0 + q * W_0) ∧
+    17 * S_K2 + 27 * E_suf1 + 170 * L_2 (M + 1) + 255 <
+      10 * S_M + 270 * L_2 0 + 17 * W_0 := by
+  intro S_M
+  have hAcc_pos : 1 ≤ waveInteriorAcc L_2 L_1 M :=
+    waveInteriorAcc_pos L_2 L_1 hL1_0 M
+  have hm :=
+    (dense_core_symmetric_multi_wave_master_identity_and_boundary_independence.2
+      W L_2 L_1 M hrec).1
+  change 2 ^ S_M * (2 ^ (10 * L_2 (M + 1)) * W (M + 1)) + 19 * waveInteriorAcc L_2 L_1 M =
+      3 ^ S_M * (3 ^ (10 * L_2 0) * W 0) at hm
+  have hp2_M :
+      2 ^ (S_M + 10 * L_2 (M + 1)) * W (M + 1) =
+        2 ^ S_M * (2 ^ (10 * L_2 (M + 1)) * W (M + 1)) := by
+    rw [Nat.pow_add]; ring
+  have hp3_M :
+      3 ^ (S_M + 10 * L_2 0) * W 0 = 3 ^ S_M * (3 ^ (10 * L_2 0) * W 0) := by
+    rw [Nat.pow_add]; ring
+  have hup_W0 : 2 ^ (S_M + 10 * L_2 (M + 1)) * W (M + 1) < 3 ^ (S_M + 10 * L_2 0) * W 0 := by
+    linarith only [hm, hp2_M, hp3_M, hAcc_pos]
+  have hm_lt :
+      2 ^ (S_M + 10 * L_2 (M + 1)) * (58025 * 2 ^ S_K2 * 3 ^ E_suf1) <
+        2 ^ (S_M + 10 * L_2 (M + 1)) * W (M + 1) :=
+    Nat.mul_lt_mul_of_pos_left hjunc_lt (Nat.pow_pos (by decide))
+  have hlhs_combine :
+      2 ^ (S_M + 10 * L_2 (M + 1)) * (58025 * 2 ^ S_K2 * 3 ^ E_suf1) =
+        3 ^ E_suf1 * (58025 * 2 ^ (S_M + 10 * L_2 (M + 1) + S_K2)) := by
+    rw [Nat.pow_add 2 (S_M + 10 * L_2 (M + 1)) S_K2]; ring
+  have hrhs_split :
+      3 ^ (S_M + 10 * L_2 0) * W 0 =
+        3 ^ E_suf1 * (3 ^ (S_M + 10 * L_2 0 - E_suf1) * W 0) := by
+    set E_rem := S_M + 10 * L_2 0 - E_suf1
+    have hexp : S_M + 10 * L_2 0 = E_suf1 + E_rem := by dsimp [E_rem]; omega
+    calc 3 ^ (S_M + 10 * L_2 0) * W 0
+        = (3 ^ E_suf1 * 3 ^ E_rem) * W 0 := by rw [hexp, Nat.pow_add]
+      _ = 3 ^ E_suf1 * (3 ^ E_rem * W 0) := by ring
+  have hcancel_W0 :
+      58025 * 2 ^ (S_M + 10 * L_2 (M + 1) + S_K2) <
+        3 ^ (S_M + 10 * L_2 0 - E_suf1) * W 0 := by
+    have hlt_mul :
+        3 ^ E_suf1 * (58025 * 2 ^ (S_M + 10 * L_2 (M + 1) + S_K2)) <
+          3 ^ E_suf1 * (3 ^ (S_M + 10 * L_2 0 - E_suf1) * W 0) := by
+      rw [← hlhs_combine, ← hrhs_split]
+      exact lt_trans hm_lt hup_W0
+    exact Nat.lt_of_mul_lt_mul_left hlt_mul
+  have hcancel_2W0 :
+      58025 * 2 ^ (S_M + 10 * L_2 (M + 1) + S_K2) <
+        3 ^ (S_M + 10 * L_2 0 - E_suf1) * 2 ^ W_0 := by
+    have hW0_mul :
+        3 ^ (S_M + 10 * L_2 0 - E_suf1) * W 0 <
+          3 ^ (S_M + 10 * L_2 0 - E_suf1) * 2 ^ W_0 :=
+      Nat.mul_lt_mul_of_pos_left hW0_lt (Nat.pow_pos (by decide))
+    exact lt_trans hcancel_W0 hW0_mul
+  have hpq :
+      ∀ p q : ℕ, 1 ≤ q → 3 ^ q ≤ 2 ^ (p + q) →
+        q * S_K2 + (p + q) * E_suf1 + 10 * q * L_2 (M + 1) + 15 * q <
+          p * S_M + 10 * (p + q) * L_2 0 + q * W_0 := by
+    intro p q hq hpq_le
+    set E_lhs := S_M + 10 * L_2 (M + 1) + S_K2
+    set E_3 := S_M + 10 * L_2 0 - E_suf1
+    have h2_15_lt : 2 ^ 15 * 2 ^ E_lhs < 3 ^ E_3 * 2 ^ W_0 := by
+      have h2_15_le : 2 ^ 15 ≤ 58025 := by decide
+      exact lt_of_le_of_lt (Nat.mul_le_mul_right (2 ^ E_lhs) h2_15_le) hcancel_2W0
+    have hpow_q : (2 ^ 15 * 2 ^ E_lhs) ^ q < (3 ^ E_3 * 2 ^ W_0) ^ q :=
+      pow_lt_pow_of_lt h2_15_lt hq
+    have hlhs_ge : 2 ^ (q * E_lhs + 15 * q) ≤ (2 ^ 15 * 2 ^ E_lhs) ^ q := by
+      have heq : 2 ^ (q * E_lhs + 15 * q) = (2 ^ 15 * 2 ^ E_lhs) ^ q := by
+        calc 2 ^ (q * E_lhs + 15 * q)
+            = 2 ^ (15 * q) * 2 ^ (q * E_lhs) := by rw [Nat.add_comm, Nat.pow_add]
+          _ = (2 ^ 15) ^ q * (2 ^ E_lhs) ^ q := by
+              rw [Nat.pow_mul 2 15 q, Nat.mul_comm q E_lhs, Nat.pow_mul 2 E_lhs q]
+          _ = (2 ^ 15 * 2 ^ E_lhs) ^ q := (Nat.mul_pow (2 ^ 15) (2 ^ E_lhs) q).symm
+      exact le_of_eq heq
+    have h3_le : (3 ^ E_3) ^ q ≤ 2 ^ ((p + q) * E_3) := by
+      calc (3 ^ E_3) ^ q
+          = 3 ^ (E_3 * q) := (Nat.pow_mul 3 E_3 q).symm
+        _ = 3 ^ (q * E_3) := by rw [Nat.mul_comm E_3 q]
+        _ = (3 ^ q) ^ E_3 := Nat.pow_mul 3 q E_3
+        _ ≤ (2 ^ (p + q)) ^ E_3 := Nat.pow_le_pow_left hpq_le E_3
+        _ = 2 ^ ((p + q) * E_3) := (Nat.pow_mul 2 (p + q) E_3).symm
+    have hrhs_le : (3 ^ E_3 * 2 ^ W_0) ^ q ≤ 2 ^ ((p + q) * E_3 + q * W_0) := by
+      calc (3 ^ E_3 * 2 ^ W_0) ^ q
+          = (3 ^ E_3) ^ q * (2 ^ W_0) ^ q := Nat.mul_pow (3 ^ E_3) (2 ^ W_0) q
+        _ ≤ 2 ^ ((p + q) * E_3) * (2 ^ W_0) ^ q := Nat.mul_le_mul_right _ h3_le
+        _ = 2 ^ ((p + q) * E_3) * 2 ^ (W_0 * q) := by rw [← Nat.pow_mul 2 W_0 q]
+        _ = 2 ^ ((p + q) * E_3) * 2 ^ (q * W_0) := by rw [Nat.mul_comm W_0 q]
+        _ = 2 ^ ((p + q) * E_3 + q * W_0) := (Nat.pow_add 2 _ _).symm
+    have hpow2_lt : 2 ^ (q * E_lhs + 15 * q) < 2 ^ ((p + q) * E_3 + q * W_0) :=
+      lt_of_le_of_lt hlhs_ge (lt_of_lt_of_le hpow_q hrhs_le)
+    have hexp_lt : q * E_lhs + 15 * q < (p + q) * E_3 + q * W_0 := by
+      refine Nat.lt_of_not_le (fun hge => ?_)
+      have hpow_ge : 2 ^ ((p + q) * E_3 + q * W_0) ≤ 2 ^ (q * E_lhs + 15 * q) :=
+        Nat.pow_le_pow_right (by decide) hge
+      omega
+    have hE3_expand :
+        (p + q) * E_3 + (p + q) * E_suf1 = (p + q) * S_M + 10 * (p + q) * L_2 0 := by
+      have h1 : E_3 + E_suf1 = S_M + 10 * L_2 0 := by dsimp [E_3]; omega
+      calc (p + q) * E_3 + (p + q) * E_suf1
+          = (p + q) * (E_3 + E_suf1) := (Nat.mul_add (p + q) E_3 E_suf1).symm
+        _ = (p + q) * (S_M + 10 * L_2 0) := by rw [h1]
+        _ = (p + q) * S_M + 10 * (p + q) * L_2 0 := by ring
+    have hElhs_expand :
+        q * E_lhs = q * S_M + 10 * q * L_2 (M + 1) + q * S_K2 := by
+      dsimp [E_lhs]; ring
+    have hSM_split : (p + q) * S_M = p * S_M + q * S_M := Nat.add_mul p q S_M
+    linarith only [hexp_lt, hE3_expand, hElhs_expand, hSM_split]
+  have h10_17 := hpq 10 17 (by decide) (by decide : 3 ^ 17 ≤ 2 ^ (10 + 17))
+  exact ⟨hcancel_W0, hcancel_2W0, hpq, by linarith only [h10_17]⟩
+
+/-!
+## Section 120: Two-Block Concatenated Anagram Accumulator Decomposition & Cross-Block Complementarity Law
+
+How does the multi-wave accumulator `waveInteriorAcc` behave across a **two-block piecewise anagram**
+where Block 1 (`S_{N_1} = S'_{N'_1} = S_1`) and Block 2 (`S^tail_{N_2} = S'^tail_{N'_2} = S_2`) meet
+across a matching bridge `2`-run `L_2(N_1 + 1) = L'_2(N'_1 + 1)` (`E_bridge = 10 * L_2(N_1 + 1)`)?
+By `waveInteriorAcc_shift_comp` (Section 74):
+  `Acc_{N_1 + 1 + N_2} = 3 ^ (E_bridge + S_2) * Acc_1 + 2 ^ (S_1 + E_bridge) * Acc_2`!
+Notice the **Cross-Block Complementarity** built into this formula:
+1. Block 1's accumulator difference `Acc'_1 - Acc_1` is multiplied by `3 ^ (E_bridge + S_2)`, which
+   is divisible by `3 ^ S_K2` for **any** prefix step-sum `S_K2 ≤ E_bridge + S_2` of Block 2!
+2. Block 2's accumulator difference `Acc'_2 - Acc_2` is multiplied by `2 ^ (S_1 + E_bridge)`, which
+   is divisible by `2 ^ E_suf1` for **any** suffix step-sum `E_suf1 ≤ S_1 + E_bridge` of Block 1!
+3. Therefore, whenever `(3045 * 2 ^ E_suf1) ∣ (Acc'_1 - Acc_1)` (from Block 1's suffix) and
+   `(3045 * 3 ^ S_K2) ∣ (Acc'_2 - Acc_2)` (from Block 2's prefix), **both** terms in
+   `Acc'_tot - Acc_tot` are divisible by `3045 * 2 ^ E_suf1 * 3 ^ S_K2`, so:
+     `(3045 * 2 ^ E_suf1 * 3 ^ S_K2) ∣ (Acc'_tot - Acc_tot)`!
+4. Furthermore, if Block 1 is an exact interior match (`Acc_1 = Acc'_1`), then Term 1 vanishes and
+   `(3045 * 2 ^ (S_1 + E_bridge + E_suf2) * 3 ^ S_K2) ∣ (Acc'_tot - Acc_tot)` (amplifying the `2`-adic
+   exponent by the entire step-sum `S_1 + E_bridge` of Block 1!). Symmetrically, if Block 2 is an
+   exact interior match (`Acc_2 = Acc'_2`), then `(3045 * 2 ^ E_suf1 * 3 ^ (S_K1 + E_bridge + S_2)) ∣ (Acc'_tot - Acc_tot)`!
+-/
+
+/-- **Two-Block Concatenated Anagram Accumulator Decomposition & Cross-Block Complementarity Law:**
+Across any two-block piecewise anagram (`S_{N_1} = S'_{N'_1}`, `L_2(N_1+1) = L'_2(N'_1+1)`,
+`S^tail_{N_2} = S'^tail_{N'_2}`):
+1. The concatenated step-sums match: `S_{N_1 + 1 + N_2} = S'_{N'_1 + 1 + N'_2}`.
+2. `Acc'_tot - Acc_tot = 3^(E_bridge + S_2) * (Acc'_1 - Acc_1) + 2^(S_1 + E_bridge) * (Acc'_2 - Acc_2)`.
+3. Cross-Block Complementarity: `(3045 * 2 ^ E_suf1) ∣ (Acc'_1 - Acc_1)` and
+   `(3045 * 3 ^ S_K2) ∣ (Acc'_2 - Acc_2)` imply `(3045 * 2 ^ E_suf1 * 3 ^ S_K2) ∣ (Acc'_tot - Acc_tot)`.
+4. Half-Block Exact Match Amplification: if `Acc_1 = Acc'_1` then `2^(S_1 + E_bridge)` amplifies
+   Block 2's `2`-adic divisor; if `Acc_2 = Acc'_2` then `3^(E_bridge + S_2)` amplifies Block 1's `3`-adic divisor. -/
+theorem dense_core_two_block_concatenated_anagram_accumulator_decomposition
+    (L_2 L_1 L_2' L_1' : ℕ → ℕ) (N_1 N_1' N_2 N_2' : ℕ)
+    (hS1 : waveInteriorExp L_2 L_1 N_1 = waveInteriorExp L_2' L_1' N_1')
+    (hL_bridge : L_2 (N_1 + 1) = L_2' (N_1' + 1))
+    (hS2 :
+      waveInteriorExp (fun t => L_2 (N_1 + 1 + t)) (fun t => L_1 (N_1 + 1 + t)) N_2 =
+        waveInteriorExp (fun t => L_2' (N_1' + 1 + t)) (fun t => L_1' (N_1' + 1 + t)) N_2') :
+    let S_1 := waveInteriorExp L_2 L_1 N_1
+    let E_bridge := 10 * L_2 (N_1 + 1)
+    let S_2 := waveInteriorExp (fun t => L_2 (N_1 + 1 + t)) (fun t => L_1 (N_1 + 1 + t)) N_2
+    let Acc_1 := waveInteriorAcc L_2 L_1 N_1
+    let Acc_1' := waveInteriorAcc L_2' L_1' N_1'
+    let Acc_2 := waveInteriorAcc (fun t => L_2 (N_1 + 1 + t)) (fun t => L_1 (N_1 + 1 + t)) N_2
+    let Acc_2' := waveInteriorAcc (fun t => L_2' (N_1' + 1 + t)) (fun t => L_1' (N_1' + 1 + t)) N_2'
+    let Acc_tot := waveInteriorAcc L_2 L_1 (N_1 + 1 + N_2)
+    let Acc_tot' := waveInteriorAcc L_2' L_1' (N_1' + 1 + N_2')
+    -- 1. Concatenated step-sum equality:
+    waveInteriorExp L_2 L_1 (N_1 + 1 + N_2) = S_1 + E_bridge + S_2 ∧
+    waveInteriorExp L_2' L_1' (N_1' + 1 + N_2') = S_1 + E_bridge + S_2 ∧
+    -- 2. Concatenated accumulator difference decomposition:
+    (Acc_1 ≤ Acc_1' → Acc_2 ≤ Acc_2' →
+      Acc_tot' - Acc_tot =
+        3 ^ (E_bridge + S_2) * (Acc_1' - Acc_1) + 2 ^ (S_1 + E_bridge) * (Acc_2' - Acc_2) ∧
+      -- 3. Cross-block complementarity divisibility:
+      (∀ E_suf1 S_K2 : ℕ,
+        E_suf1 ≤ S_1 + E_bridge →
+        S_K2 ≤ E_bridge + S_2 →
+        (3045 * 2 ^ E_suf1) ∣ (Acc_1' - Acc_1) →
+        (3045 * 3 ^ S_K2) ∣ (Acc_2' - Acc_2) →
+        (3045 * 2 ^ E_suf1 * 3 ^ S_K2) ∣ (Acc_tot' - Acc_tot)) ∧
+      -- 4a. Block-1 exact interior match ⟹ 2^(S_1 + E_bridge) amplification of Block 2:
+      (∀ E_suf2 S_K2 : ℕ,
+        Acc_1 = Acc_1' →
+        (3045 * 2 ^ E_suf2 * 3 ^ S_K2) ∣ (Acc_2' - Acc_2) →
+        (3045 * 2 ^ (S_1 + E_bridge + E_suf2) * 3 ^ S_K2) ∣ (Acc_tot' - Acc_tot)) ∧
+      -- 4b. Block-2 exact interior match ⟹ 3^(E_bridge + S_2) amplification of Block 1:
+      (∀ E_suf1 S_K1 : ℕ,
+        Acc_2 = Acc_2' →
+        (3045 * 2 ^ E_suf1 * 3 ^ S_K1) ∣ (Acc_1' - Acc_1) →
+        (3045 * 2 ^ E_suf1 * 3 ^ (S_K1 + E_bridge + S_2)) ∣ (Acc_tot' - Acc_tot))) := by
+  intro S_1 E_bridge S_2 Acc_1 Acc_1' Acc_2 Acc_2' Acc_tot Acc_tot'
+  have hexp_1 := waveInteriorExp_shift_comp L_2 L_1 N_1 N_2
+  have hexp_2 := waveInteriorExp_shift_comp L_2' L_1' N_1' N_2'
+  rw [← hS1, ← hL_bridge, ← hS2] at hexp_2
+  have hacc_1 := waveInteriorAcc_shift_comp L_2 L_1 N_1 N_2
+  have hacc_2 := waveInteriorAcc_shift_comp L_2' L_1' N_1' N_2'
+  rw [← hS1, ← hL_bridge, ← hS2] at hacc_2
+  refine ⟨hexp_1, hexp_2, ?_⟩
+  intro hle_1 hle_2
+  have hdiff_eq :
+      Acc_tot' - Acc_tot =
+        3 ^ (E_bridge + S_2) * (Acc_1' - Acc_1) + 2 ^ (S_1 + E_bridge) * (Acc_2' - Acc_2) := by
+    change Acc_tot' - Acc_tot =
+      3 ^ (E_bridge + S_2) * (Acc_1' - Acc_1) + 2 ^ (S_1 + E_bridge) * (Acc_2' - Acc_2)
+    have hm1 :
+        3 ^ (E_bridge + S_2) * (Acc_1' - Acc_1) =
+          3 ^ (E_bridge + S_2) * Acc_1' - 3 ^ (E_bridge + S_2) * Acc_1 :=
+      Nat.mul_sub_left_distrib _ _ _
+    have hm2 :
+        2 ^ (S_1 + E_bridge) * (Acc_2' - Acc_2) =
+          2 ^ (S_1 + E_bridge) * Acc_2' - 2 ^ (S_1 + E_bridge) * Acc_2 :=
+      Nat.mul_sub_left_distrib _ _ _
+    have hge1 : 3 ^ (E_bridge + S_2) * Acc_1 ≤ 3 ^ (E_bridge + S_2) * Acc_1' :=
+      Nat.mul_le_mul_left _ hle_1
+    have hge2 : 2 ^ (S_1 + E_bridge) * Acc_2 ≤ 2 ^ (S_1 + E_bridge) * Acc_2' :=
+      Nat.mul_le_mul_left _ hle_2
+    change Acc_tot = 3 ^ (E_bridge + S_2) * Acc_1 + 2 ^ (S_1 + E_bridge) * Acc_2 at hacc_1
+    change Acc_tot' = 3 ^ (E_bridge + S_2) * Acc_1' + 2 ^ (S_1 + E_bridge) * Acc_2' at hacc_2
+    omega
+  have hcomp_dvd :
+      ∀ E_suf1 S_K2 : ℕ,
+        E_suf1 ≤ S_1 + E_bridge →
+        S_K2 ≤ E_bridge + S_2 →
+        (3045 * 2 ^ E_suf1) ∣ (Acc_1' - Acc_1) →
+        (3045 * 3 ^ S_K2) ∣ (Acc_2' - Acc_2) →
+        (3045 * 2 ^ E_suf1 * 3 ^ S_K2) ∣ (Acc_tot' - Acc_tot) := by
+    intro E_suf1 S_K2 hE_le hS_le ⟨k1, hk1⟩ ⟨k2, hk2⟩
+    have hp3_split :
+        3 ^ (E_bridge + S_2) = 3 ^ S_K2 * 3 ^ (E_bridge + S_2 - S_K2) := by
+      calc 3 ^ (E_bridge + S_2)
+          = 3 ^ (S_K2 + (E_bridge + S_2 - S_K2)) := by congr 1; omega
+        _ = 3 ^ S_K2 * 3 ^ (E_bridge + S_2 - S_K2) := Nat.pow_add 3 _ _
+    have hp2_split :
+        2 ^ (S_1 + E_bridge) = 2 ^ E_suf1 * 2 ^ (S_1 + E_bridge - E_suf1) := by
+      calc 2 ^ (S_1 + E_bridge)
+          = 2 ^ (E_suf1 + (S_1 + E_bridge - E_suf1)) := by congr 1; omega
+        _ = 2 ^ E_suf1 * 2 ^ (S_1 + E_bridge - E_suf1) := Nat.pow_add 2 _ _
+    refine ⟨3 ^ (E_bridge + S_2 - S_K2) * k1 + 2 ^ (S_1 + E_bridge - E_suf1) * k2, ?_⟩
+    rw [hdiff_eq, hk1, hk2, hp3_split, hp2_split]
+    ring
+  have hamp_2 :
+      ∀ E_suf2 S_K2 : ℕ,
+        Acc_1 = Acc_1' →
+        (3045 * 2 ^ E_suf2 * 3 ^ S_K2) ∣ (Acc_2' - Acc_2) →
+        (3045 * 2 ^ (S_1 + E_bridge + E_suf2) * 3 ^ S_K2) ∣ (Acc_tot' - Acc_tot) := by
+    intro E_suf2 S_K2 h1_eq ⟨k2, hk2⟩
+    refine ⟨k2, ?_⟩
+    have hsub0 : Acc_1' - Acc_1 = 0 := by omega
+    rw [hdiff_eq, hsub0, Nat.mul_zero, Nat.zero_add, hk2,
+      Nat.pow_add 2 (S_1 + E_bridge) E_suf2]
+    ring
+  have hamp_1 :
+      ∀ E_suf1 S_K1 : ℕ,
+        Acc_2 = Acc_2' →
+        (3045 * 2 ^ E_suf1 * 3 ^ S_K1) ∣ (Acc_1' - Acc_1) →
+        (3045 * 2 ^ E_suf1 * 3 ^ (S_K1 + E_bridge + S_2)) ∣ (Acc_tot' - Acc_tot) := by
+    intro E_suf1 S_K1 h2_eq ⟨k1, hk1⟩
+    refine ⟨k1, ?_⟩
+    have hsub0 : Acc_2' - Acc_2 = 0 := by omega
+    have hexp3 : S_K1 + E_bridge + S_2 = (E_bridge + S_2) + S_K1 := by omega
+    rw [hdiff_eq, hsub0, Nat.mul_zero, Nat.add_zero, hk1, hexp3,
+      Nat.pow_add 3 (E_bridge + S_2) S_K1]
+    ring
+  exact ⟨hdiff_eq, hcomp_dvd, hamp_2, hamp_1⟩
+
+/-!
+## Section 121: Boundary-Locked & Two-Block Junction-Locked Abelian Step-Sum Pigeonhole Theorems (`O(B^2 * N)` and `O(B^3 * N_1 * N_2)` Horizons)
+
+In Section 117, we proved that among any `(17 * N + 7) * (B - 1) + 2` windows along a bounded-run
+orbit (`1 ≤ L_1(n), L_2(n) ≤ B`), Pigeonhole guarantees two windows `i < j` with identical interior
+step-sums `S^{(r(i))}_N = S^{(r(j))}_N`.
+Now we refine the Pigeonhole map to lock the **boundary and internal junction `2`-runs** at the
+same time:
+1. **Boundary-Locked Abelian Step-Sum Pigeonhole (`B * ((17 * N + 7) * (B - 1) + 1) + 1` Windows):**
+   Since `L_2(r(i)) ∈ {1, ..., B}` (`B` values) and `S^{(r(i))}_N` takes at most
+   `C_N := (17 * N + 7) * (B - 1) + 1` values, the joint index
+   `(L_2(r(i)) - 1) * C_N + (S^{(r(i))}_N - (17 * N + 7))` lies in `Fin (B * C_N)`.
+   By Pigeonhole, among any `B * C_N + 1` windows `r(0) < ... < r(B * C_N)`, there ALWAYS exist
+   `i < j` with **both** `L_2(r(i)) = L_2(r(j))` **and** `S^{(r(i))}_N = S^{(r(j))}_N`!
+2. **Two-Block Junction-Locked Simultaneous Anagram Pigeonhole (`B * C_{N_1} * C_{N_2} + 1` Windows):**
+   For a two-block window of `(N_1 + 1) + (N_2 + 1)` waves meeting at internal junction
+   `m(i) = r(i) + N_1 + 1`, the triple `(L_2(m(i)), S^{(r(i))}_{N_1}, S^{(m(i))}_{N_2})` takes at
+   most `B * C_{N_1} * C_{N_2}` values (`O(B^3 * N_1 * N_2)`).
+   By Pigeonhole, among any `B * C_{N_1} * C_{N_2} + 1` windows, there ALWAYS exist `i < j` that
+   simultaneously have:
+   - Matching Block-1 interior step-sums `S^{(r(i))}_{N_1} = S^{(r(j))}_{N_1}`,
+   - Matching internal junction `2`-runs `L_2(r(i) + N_1 + 1) = L_2(r(j) + N_1 + 1)`,
+   - Matching Block-2 interior step-sums `S^{(r(i) + N_1 + 1)}_{N_2} = S^{(r(j) + N_1 + 1)}_{N_2}`,
+   - And matching concatenated `(N_1 + 1 + N_2)`-wave interior step-sums
+     `S^{(r(i))}_{N_1 + 1 + N_2} = S^{(r(j))}_{N_1 + 1 + N_2}`!
+-/
+
+/-- **Boundary-Locked & Two-Block Junction-Locked Abelian Step-Sum Pigeonhole Theorems:**
+1. Among any `B * ((17 * N + 7) * (B - 1) + 1) + 1` windows along a bounded-run sequence in `[1, B]`,
+   there exist `i < j` with both `L_2(r i) = L_2(r j)` and `S^{(r i)}_N = S^{(r j)}_N`.
+2. Among any `B * ((17 * N_1 + 7) * (B - 1) + 1) * ((17 * N_2 + 7) * (B - 1) + 1) + 1` windows,
+   there exist `i < j` that are simultaneous Block-1 anagrams, Block-2 anagrams, total
+   `(N_1 + 1 + N_2)`-wave anagrams, and have matching internal junction `2`-runs
+   `L_2(r i + N_1 + 1) = L_2(r j + N_1 + 1)`. -/
+theorem dense_core_bounded_run_boundary_locked_and_two_block_anagram_pigeonhole :
+    -- 1. Boundary-locked abelian step-sum Pigeonhole (O(B^2 * N) windows):
+    (∀ (L_2 L_1 : ℕ → ℕ) (N B : ℕ)
+       (r : Fin (B * ((17 * N + 7) * (B - 1) + 1) + 1) → ℕ),
+      1 ≤ B →
+      (∀ n : ℕ, 1 ≤ L_1 n ∧ L_1 n ≤ B) →
+      (∀ n : ℕ, 1 ≤ L_2 n ∧ L_2 n ≤ B) →
+      ∃ i j : Fin (B * ((17 * N + 7) * (B - 1) + 1) + 1),
+        i < j ∧
+        L_2 (r i) = L_2 (r j) ∧
+        waveInteriorExp (fun t => L_2 (r i + t)) (fun t => L_1 (r i + t)) N =
+          waveInteriorExp (fun t => L_2 (r j + t)) (fun t => L_1 (r j + t)) N) ∧
+    -- 2. Two-block junction-locked simultaneous anagram Pigeonhole (O(B^3 * N_1 * N_2) windows):
+    (∀ (L_2 L_1 : ℕ → ℕ) (N_1 N_2 B : ℕ)
+       (r : Fin (B * ((17 * N_1 + 7) * (B - 1) + 1) * ((17 * N_2 + 7) * (B - 1) + 1) + 1) → ℕ),
+      1 ≤ B →
+      (∀ n : ℕ, 1 ≤ L_1 n ∧ L_1 n ≤ B) →
+      (∀ n : ℕ, 1 ≤ L_2 n ∧ L_2 n ≤ B) →
+      ∃ i j : Fin (B * ((17 * N_1 + 7) * (B - 1) + 1) * ((17 * N_2 + 7) * (B - 1) + 1) + 1),
+        i < j ∧
+        L_2 (r i + N_1 + 1) = L_2 (r j + N_1 + 1) ∧
+        waveInteriorExp (fun t => L_2 (r i + t)) (fun t => L_1 (r i + t)) N_1 =
+          waveInteriorExp (fun t => L_2 (r j + t)) (fun t => L_1 (r j + t)) N_1 ∧
+        waveInteriorExp (fun t => L_2 (r i + N_1 + 1 + t)) (fun t => L_1 (r i + N_1 + 1 + t)) N_2 =
+          waveInteriorExp (fun t => L_2 (r j + N_1 + 1 + t)) (fun t => L_1 (r j + N_1 + 1 + t)) N_2 ∧
+        waveInteriorExp (fun t => L_2 (r i + t)) (fun t => L_1 (r i + t)) (N_1 + 1 + N_2) =
+          waveInteriorExp (fun t => L_2 (r j + t)) (fun t => L_1 (r j + t)) (N_1 + 1 + N_2)) := by
+  refine ⟨?_, ?_⟩
+  · intro L_2 L_1 N B r hB hL1 hL2
+    let C_N := (17 * N + 7) * (B - 1) + 1
+    let M_tot := B * C_N
+    have hband :
+        ∀ i : Fin (M_tot + 1),
+          (L_2 (r i) - 1 < B) ∧
+          (waveInteriorExp (fun t => L_2 (r i + t)) (fun t => L_1 (r i + t)) N - (17 * N + 7) < C_N) ∧
+          17 * N + 7 ≤ waveInteriorExp (fun t => L_2 (r i + t)) (fun t => L_1 (r i + t)) N := by
+      intro i
+      have hL2_ri := hL2 (r i)
+      have hmin := waveInteriorExp_ge_seventeen_mul_add_seven
+        (fun t => L_2 (r i + t)) (fun t => L_1 (r i + t)) N
+        (fun t _ => (hL1 (r i + t)).1) (fun t _ => (hL2 (r i + (t + 1))).1)
+      have hmax := waveInteriorExp_le_seventeen_mul_add_seven_mul
+        (fun t => L_2 (r i + t)) (fun t => L_1 (r i + t)) N B
+        (fun t _ => (hL1 (r i + t)).2) (fun t _ => (hL2 (r i + (t + 1))).2)
+      have hB_sub : (17 * N + 7) * B - (17 * N + 7) = (17 * N + 7) * (B - 1) := by
+        have h1 : B = (B - 1) + 1 := by omega
+        calc (17 * N + 7) * B - (17 * N + 7)
+            = (17 * N + 7) * ((B - 1) + 1) - (17 * N + 7) := by rw [← h1]
+          _ = (17 * N + 7) * (B - 1) + (17 * N + 7) - (17 * N + 7) := by ring_nf
+          _ = (17 * N + 7) * (B - 1) := Nat.add_sub_cancel _ _
+      dsimp [C_N]
+      refine ⟨by omega, by omega, hmin⟩
+    let codeIdx : Fin (M_tot + 1) → Fin M_tot := fun i =>
+      ⟨(L_2 (r i) - 1) * C_N +
+        (waveInteriorExp (fun t => L_2 (r i + t)) (fun t => L_1 (r i + t)) N - (17 * N + 7)), by
+        have hi := hband i
+        have h1 : L_2 (r i) - 1 + 1 ≤ B := hi.1
+        have h2 :
+            (L_2 (r i) - 1) * C_N +
+              (waveInteriorExp (fun t => L_2 (r i + t)) (fun t => L_1 (r i + t)) N - (17 * N + 7)) <
+              (L_2 (r i) - 1) * C_N + C_N :=
+          Nat.add_lt_add_left hi.2.1 _
+        have h3 : (L_2 (r i) - 1) * C_N + C_N = (L_2 (r i) - 1 + 1) * C_N := by ring
+        have h4 : (L_2 (r i) - 1 + 1) * C_N ≤ B * C_N := Nat.mul_le_mul_right C_N h1
+        dsimp [M_tot]
+        omega⟩
+    have hnot_inj : ¬Function.Injective codeIdx := by
+      intro hinj
+      have hcard := Fintype.card_le_of_injective codeIdx hinj
+      simp only [Fintype.card_fin] at hcard
+      omega
+    rw [Function.Injective] at hnot_inj
+    push_neg at hnot_inj
+    rcases hnot_inj with ⟨a, b, hab_eq, hab_ne⟩
+    have hij_ex : ∃ i j : Fin (M_tot + 1), i < j ∧ codeIdx i = codeIdx j := by
+      rcases lt_trichotomy a b with hlt | rfl | hgt
+      · exact ⟨a, b, hlt, hab_eq⟩
+      · exact absurd rfl hab_ne
+      · exact ⟨b, a, hgt, hab_eq.symm⟩
+    rcases hij_ex with ⟨i, j, hij, hcode_eq⟩
+    have hval_eq : (codeIdx i).1 = (codeIdx j).1 := congrArg Fin.val hcode_eq
+    dsimp [codeIdx] at hval_eq
+    have hi := hband i
+    have hj := hband j
+    set a_i := L_2 (r i) - 1
+    set a_j := L_2 (r j) - 1
+    set b_i := waveInteriorExp (fun t => L_2 (r i + t)) (fun t => L_1 (r i + t)) N - (17 * N + 7)
+    set b_j := waveInteriorExp (fun t => L_2 (r j + t)) (fun t => L_1 (r j + t)) N - (17 * N + 7)
+    have hbi_lt : b_i < C_N := hi.2.1
+    have hbj_lt : b_j < C_N := hj.2.1
+    have ha_eq : a_i = a_j := by
+      rcases lt_trichotomy a_i a_j with hlt | heq | hgt
+      · have hle : a_i + 1 ≤ a_j := hlt
+        have hm : (a_i + 1) * C_N ≤ a_j * C_N := Nat.mul_le_mul_right C_N hle
+        have hd : (a_i + 1) * C_N = a_i * C_N + C_N := by ring
+        omega
+      · exact heq
+      · have hle : a_j + 1 ≤ a_i := hgt
+        have hm : (a_j + 1) * C_N ≤ a_i * C_N := Nat.mul_le_mul_right C_N hle
+        have hd : (a_j + 1) * C_N = a_j * C_N + C_N := by ring
+        omega
+    have hb_eq : b_i = b_j := by
+      rw [ha_eq] at hval_eq
+      omega
+    have hL_ri := (hL2 (r i)).1
+    have hL_rj := (hL2 (r j)).1
+    have hmin_i := hi.2.2
+    have hmin_j := hj.2.2
+    refine ⟨i, j, hij, ?_, ?_⟩
+    · dsimp [a_i, a_j] at ha_eq; omega
+    · dsimp [b_i, b_j] at hb_eq; omega
+  · intro L_2 L_1 N_1 N_2 B r hB hL1 hL2
+    let C_1 := (17 * N_1 + 7) * (B - 1) + 1
+    let C_2 := (17 * N_2 + 7) * (B - 1) + 1
+    let M_tot := B * C_1 * C_2
+    have hband :
+        ∀ i : Fin (M_tot + 1),
+          (L_2 (r i + N_1 + 1) - 1 < B) ∧
+          (waveInteriorExp (fun t => L_2 (r i + t)) (fun t => L_1 (r i + t)) N_1 - (17 * N_1 + 7) < C_1) ∧
+          17 * N_1 + 7 ≤ waveInteriorExp (fun t => L_2 (r i + t)) (fun t => L_1 (r i + t)) N_1 ∧
+          (waveInteriorExp (fun t => L_2 (r i + N_1 + 1 + t)) (fun t => L_1 (r i + N_1 + 1 + t)) N_2 -
+            (17 * N_2 + 7) < C_2) ∧
+          17 * N_2 + 7 ≤
+            waveInteriorExp (fun t => L_2 (r i + N_1 + 1 + t)) (fun t => L_1 (r i + N_1 + 1 + t)) N_2 := by
+      intro i
+      have hL2_m := hL2 (r i + N_1 + 1)
+      have hmin1 := waveInteriorExp_ge_seventeen_mul_add_seven
+        (fun t => L_2 (r i + t)) (fun t => L_1 (r i + t)) N_1
+        (fun t _ => (hL1 (r i + t)).1) (fun t _ => (hL2 (r i + (t + 1))).1)
+      have hmax1 := waveInteriorExp_le_seventeen_mul_add_seven_mul
+        (fun t => L_2 (r i + t)) (fun t => L_1 (r i + t)) N_1 B
+        (fun t _ => (hL1 (r i + t)).2) (fun t _ => (hL2 (r i + (t + 1))).2)
+      have hmin2 := waveInteriorExp_ge_seventeen_mul_add_seven
+        (fun t => L_2 (r i + N_1 + 1 + t)) (fun t => L_1 (r i + N_1 + 1 + t)) N_2
+        (fun t _ => (hL1 (r i + N_1 + 1 + t)).1) (fun t _ => (hL2 (r i + N_1 + 1 + (t + 1))).1)
+      have hmax2 := waveInteriorExp_le_seventeen_mul_add_seven_mul
+        (fun t => L_2 (r i + N_1 + 1 + t)) (fun t => L_1 (r i + N_1 + 1 + t)) N_2 B
+        (fun t _ => (hL1 (r i + N_1 + 1 + t)).2) (fun t _ => (hL2 (r i + N_1 + 1 + (t + 1))).2)
+      have hB_sub1 : (17 * N_1 + 7) * B - (17 * N_1 + 7) = (17 * N_1 + 7) * (B - 1) := by
+        have h1 : B = (B - 1) + 1 := by omega
+        calc (17 * N_1 + 7) * B - (17 * N_1 + 7)
+            = (17 * N_1 + 7) * ((B - 1) + 1) - (17 * N_1 + 7) := by rw [← h1]
+          _ = (17 * N_1 + 7) * (B - 1) + (17 * N_1 + 7) - (17 * N_1 + 7) := by ring_nf
+          _ = (17 * N_1 + 7) * (B - 1) := Nat.add_sub_cancel _ _
+      have hB_sub2 : (17 * N_2 + 7) * B - (17 * N_2 + 7) = (17 * N_2 + 7) * (B - 1) := by
+        have h1 : B = (B - 1) + 1 := by omega
+        calc (17 * N_2 + 7) * B - (17 * N_2 + 7)
+            = (17 * N_2 + 7) * ((B - 1) + 1) - (17 * N_2 + 7) := by rw [← h1]
+          _ = (17 * N_2 + 7) * (B - 1) + (17 * N_2 + 7) - (17 * N_2 + 7) := by ring_nf
+          _ = (17 * N_2 + 7) * (B - 1) := Nat.add_sub_cancel _ _
+      dsimp [C_1, C_2]
+      refine ⟨by omega, by omega, hmin1, by omega, hmin2⟩
+    let codeIdx : Fin (M_tot + 1) → Fin M_tot := fun i =>
+      ⟨((L_2 (r i + N_1 + 1) - 1) * C_1 +
+          (waveInteriorExp (fun t => L_2 (r i + t)) (fun t => L_1 (r i + t)) N_1 - (17 * N_1 + 7))) * C_2 +
+        (waveInteriorExp (fun t => L_2 (r i + N_1 + 1 + t)) (fun t => L_1 (r i + N_1 + 1 + t)) N_2 -
+          (17 * N_2 + 7)), by
+        have hi := hband i
+        set a := L_2 (r i + N_1 + 1) - 1
+        set b1 := waveInteriorExp (fun t => L_2 (r i + t)) (fun t => L_1 (r i + t)) N_1 - (17 * N_1 + 7)
+        set b2 :=
+          waveInteriorExp (fun t => L_2 (r i + N_1 + 1 + t)) (fun t => L_1 (r i + N_1 + 1 + t)) N_2 -
+            (17 * N_2 + 7)
+        have ha1 : a + 1 ≤ B := hi.1
+        have hb1_lt : a * C_1 + b1 < (a + 1) * C_1 := by
+          have hd : (a + 1) * C_1 = a * C_1 + C_1 := by ring
+          rw [hd]
+          exact Nat.add_lt_add_left hi.2.1 _
+        have hab1_le : a * C_1 + b1 + 1 ≤ B * C_1 := by
+          have hm : (a + 1) * C_1 ≤ B * C_1 := Nat.mul_le_mul_right C_1 ha1
+          omega
+        have hb2_lt : (a * C_1 + b1) * C_2 + b2 < (a * C_1 + b1 + 1) * C_2 := by
+          have hd : (a * C_1 + b1 + 1) * C_2 = (a * C_1 + b1) * C_2 + C_2 := by ring
+          rw [hd]
+          exact Nat.add_lt_add_left hi.2.2.2.1 _
+        have htot_le : (a * C_1 + b1 + 1) * C_2 ≤ B * C_1 * C_2 :=
+          Nat.mul_le_mul_right C_2 hab1_le
+        dsimp [M_tot]
+        omega⟩
+    have hnot_inj : ¬Function.Injective codeIdx := by
+      intro hinj
+      have hcard := Fintype.card_le_of_injective codeIdx hinj
+      simp only [Fintype.card_fin] at hcard
+      omega
+    rw [Function.Injective] at hnot_inj
+    push_neg at hnot_inj
+    rcases hnot_inj with ⟨a, b, hab_eq, hab_ne⟩
+    have hij_ex : ∃ i j : Fin (M_tot + 1), i < j ∧ codeIdx i = codeIdx j := by
+      rcases lt_trichotomy a b with hlt | rfl | hgt
+      · exact ⟨a, b, hlt, hab_eq⟩
+      · exact absurd rfl hab_ne
+      · exact ⟨b, a, hgt, hab_eq.symm⟩
+    rcases hij_ex with ⟨i, j, hij, hcode_eq⟩
+    have hval_eq : (codeIdx i).1 = (codeIdx j).1 := congrArg Fin.val hcode_eq
+    dsimp [codeIdx] at hval_eq
+    have hi := hband i
+    have hj := hband j
+    set a_i := L_2 (r i + N_1 + 1) - 1
+    set a_j := L_2 (r j + N_1 + 1) - 1
+    set b1_i := waveInteriorExp (fun t => L_2 (r i + t)) (fun t => L_1 (r i + t)) N_1 - (17 * N_1 + 7)
+    set b1_j := waveInteriorExp (fun t => L_2 (r j + t)) (fun t => L_1 (r j + t)) N_1 - (17 * N_1 + 7)
+    set b2_i :=
+      waveInteriorExp (fun t => L_2 (r i + N_1 + 1 + t)) (fun t => L_1 (r i + N_1 + 1 + t)) N_2 -
+        (17 * N_2 + 7)
+    set b2_j :=
+      waveInteriorExp (fun t => L_2 (r j + N_1 + 1 + t)) (fun t => L_1 (r j + N_1 + 1 + t)) N_2 -
+        (17 * N_2 + 7)
+    set p_i := a_i * C_1 + b1_i
+    set p_j := a_j * C_1 + b1_j
+    have hb2i_lt : b2_i < C_2 := hi.2.2.2.1
+    have hb2j_lt : b2_j < C_2 := hj.2.2.2.1
+    have hp_eq : p_i = p_j := by
+      rcases lt_trichotomy p_i p_j with hlt | heq | hgt
+      · have hle : p_i + 1 ≤ p_j := hlt
+        have hm : (p_i + 1) * C_2 ≤ p_j * C_2 := Nat.mul_le_mul_right C_2 hle
+        have hd : (p_i + 1) * C_2 = p_i * C_2 + C_2 := by ring
+        omega
+      · exact heq
+      · have hle : p_j + 1 ≤ p_i := hgt
+        have hm : (p_j + 1) * C_2 ≤ p_i * C_2 := Nat.mul_le_mul_right C_2 hle
+        have hd : (p_j + 1) * C_2 = p_j * C_2 + C_2 := by ring
+        omega
+    have hb2_eq : b2_i = b2_j := by
+      rw [hp_eq] at hval_eq
+      omega
+    dsimp [p_i, p_j] at hp_eq
+    have hb1i_lt : b1_i < C_1 := hi.2.1
+    have hb1j_lt : b1_j < C_1 := hj.2.1
+    have ha_eq : a_i = a_j := by
+      rcases lt_trichotomy a_i a_j with hlt | heq | hgt
+      · have hle : a_i + 1 ≤ a_j := hlt
+        have hm : (a_i + 1) * C_1 ≤ a_j * C_1 := Nat.mul_le_mul_right C_1 hle
+        have hd : (a_i + 1) * C_1 = a_i * C_1 + C_1 := by ring
+        omega
+      · exact heq
+      · have hle : a_j + 1 ≤ a_i := hgt
+        have hm : (a_j + 1) * C_1 ≤ a_i * C_1 := Nat.mul_le_mul_right C_1 hle
+        have hd : (a_j + 1) * C_1 = a_j * C_1 + C_1 := by ring
+        omega
+    have hb1_eq : b1_i = b1_j := by
+      rw [ha_eq] at hp_eq
+      omega
+    have hL_mi := (hL2 (r i + N_1 + 1)).1
+    have hL_mj := (hL2 (r j + N_1 + 1)).1
+    have hmin1_i := hi.2.2.1
+    have hmin1_j := hj.2.2.1
+    have hmin2_i := hi.2.2.2.2
+    have hmin2_j := hj.2.2.2.2
+    have hL_eq : L_2 (r i + N_1 + 1) = L_2 (r j + N_1 + 1) := by
+      dsimp [a_i, a_j] at ha_eq; omega
+    have hS1_eq :
+        waveInteriorExp (fun t => L_2 (r i + t)) (fun t => L_1 (r i + t)) N_1 =
+          waveInteriorExp (fun t => L_2 (r j + t)) (fun t => L_1 (r j + t)) N_1 := by
+      dsimp [b1_i, b1_j] at hb1_eq; omega
+    have hS2_eq :
+        waveInteriorExp (fun t => L_2 (r i + N_1 + 1 + t)) (fun t => L_1 (r i + N_1 + 1 + t)) N_2 =
+          waveInteriorExp (fun t => L_2 (r j + N_1 + 1 + t)) (fun t => L_1 (r j + N_1 + 1 + t)) N_2 := by
+      dsimp [b2_i, b2_j] at hb2_eq; omega
+    have hStot_eq :
+        waveInteriorExp (fun t => L_2 (r i + t)) (fun t => L_1 (r i + t)) (N_1 + 1 + N_2) =
+          waveInteriorExp (fun t => L_2 (r j + t)) (fun t => L_1 (r j + t)) (N_1 + 1 + N_2) := by
+      have hc_i := waveInteriorExp_shift_comp (fun t => L_2 (r i + t)) (fun t => L_1 (r i + t)) N_1 N_2
+      have hc_j := waveInteriorExp_shift_comp (fun t => L_2 (r j + t)) (fun t => L_1 (r j + t)) N_1 N_2
+      have hfun_L2_i : (fun t => L_2 (r i + (N_1 + 1 + t))) = (fun t => L_2 (r i + N_1 + 1 + t)) := by
+        funext t; congr 1; omega
+      have hfun_L1_i : (fun t => L_1 (r i + (N_1 + 1 + t))) = (fun t => L_1 (r i + N_1 + 1 + t)) := by
+        funext t; congr 1; omega
+      have hfun_L2_j : (fun t => L_2 (r j + (N_1 + 1 + t))) = (fun t => L_2 (r j + N_1 + 1 + t)) := by
+        funext t; congr 1; omega
+      have hfun_L1_j : (fun t => L_1 (r j + (N_1 + 1 + t))) = (fun t => L_1 (r j + N_1 + 1 + t)) := by
+        funext t; congr 1; omega
+      have hmid_i : r i + (N_1 + 1) = r i + N_1 + 1 := by omega
+      have hmid_j : r j + (N_1 + 1) = r j + N_1 + 1 := by omega
+      rw [hfun_L2_i, hfun_L1_i, hmid_i] at hc_i
+      rw [hfun_L2_j, hfun_L1_j, hmid_j] at hc_j
+      rw [hc_i, hc_j, hS1_eq, hL_eq, hS2_eq]
+    exact ⟨i, j, hij, hL_eq, hS1_eq, hS2_eq, hStot_eq⟩
+
 end Mahler.DubickasExtension
+
+
 
 
 
