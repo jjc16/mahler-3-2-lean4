@@ -28961,6 +28961,475 @@ theorem dense_core_dual_single_two_run_collision_archimedean_cutoff
   have h10_17 := hpq 10 17 (by decide) (by decide : 3 ^ 17 ≤ 2 ^ (10 + 17))
   exact ⟨h2_11_lt, hcancel_lt, hpq, by linarith only [h10_17]⟩
 
+/-!
+## Section 114: Opposite-Sign Additive Middle-Defect Cancellation & Unconditional Non-Vanishing `(2^E_mid, 3^E_mid)` Exponent Restoration
+
+In Section 110, we subtracted the reduced syzygies of two anagram pairs whose middle defects had the
+**same** sign (`2^(E_mid + E_suf) * q_Y + 41553 * q_A = 3^(S_K + E_mid) * q_X`), which required
+`3^S_K1 * q_X1 < 3^S_K2 * q_X2` to guarantee non-vanishing after subtraction.
+What happens when two anagram pairs have **opposite-sign** middle defects (for example, Pair 1 swaps
+`A → B` so `Acc_1 ≤ Acc'_1`, while Pair 2 swaps `B → A` inside a different frame `(S_K2, E_suf2)` so
+`Acc'_2 ≤ Acc_2`)?
+- Pair 1: `2^(E_mid + E_suf1) * q_Y1 + 41553 * q_A = 3^(S_K1 + E_mid) * q_X1`
+- Pair 2: `2^(E_mid + E_suf2) * q_Y2 = 3^(S_K2 + E_mid) * q_X2 + 41553 * q_A`
+1. **Exact Homogeneous Additive Syzygy (`41,553 * q_A` Canceled by Addition!):**
+     `2^E_mid * (2^E_suf1 * q_Y1 + 2^E_suf2 * q_Y2) = 3^E_mid * (3^S_K1 * q_X1 + 3^S_K2 * q_X2)`!
+2. **Unconditional Non-Vanishing `(2^E_mid, 3^E_mid)` Restoration (With Zero Ordering Hypothesis!):**
+   Because `q_X1, q_X2, q_Y1, q_Y2 ≥ 1` are positive, **their sum never vanishes**:
+   - `2^E_mid ∣ (3^S_K1 * q_X1 + 3^S_K2 * q_X2)` and `3^E_mid ∣ (2^E_suf1 * q_Y1 + 2^E_suf2 * q_Y2)`;
+   - When `S_K1 ≤ S_K2` and `E_suf1 ≤ E_suf2`:
+       `2^(E_mid + E_suf1) ∣ (q_X1 + 3^(S_K2 - S_K1) * q_X2)`  and
+       `3^(S_K1 + E_mid) ∣ (q_Y1 + 2^(E_suf2 - E_suf1) * q_Y2)`,
+     forcing **`2^(E_mid + E_suf1) ≤ q_X1 + 3^(S_K2 - S_K1) * q_X2`** and
+     **`3^(S_K1 + E_mid) ≤ q_Y1 + 2^(E_suf2 - E_suf1) * q_Y2` unconditionally!**
+-/
+
+/-- **Opposite-Sign Additive Middle-Defect Cancellation & Unconditional `(2^E_mid, 3^E_mid)` Restoration:**
+Whenever Pair 1 (`+ 41553 * q_A` on LHS) and Pair 2 (`+ 41553 * q_A` on RHS) have opposite-sign
+middle defects of the same magnitude `q_A`, adding their reduced syzygies cancels `41553 * q_A` and
+restores `2^(E_mid + E_suf1) ≤ q_X1 + 3^(S_K2 - S_K1) * q_X2` and
+`3^(S_K1 + E_mid) ≤ q_Y1 + 2^(E_suf2 - E_suf1) * q_Y2` with **zero** ordering hypothesis on `q_X` or `q_Y`. -/
+theorem dense_core_opposite_sign_additive_middle_defect_cancellation
+    {S_K1 S_K2 E_mid E_suf1 E_suf2 q_X1 q_X2 q_Y1 q_Y2 q_A : ℕ}
+    (hsyz1 : 2 ^ (E_mid + E_suf1) * q_Y1 + 41553 * q_A = 3 ^ (S_K1 + E_mid) * q_X1)
+    (hsyz2 : 2 ^ (E_mid + E_suf2) * q_Y2 = 3 ^ (S_K2 + E_mid) * q_X2 + 41553 * q_A) :
+    -- 1. Exact homogeneous additive 4-window syzygy (41553 * q_A canceled by addition):
+    2 ^ E_mid * (2 ^ E_suf1 * q_Y1 + 2 ^ E_suf2 * q_Y2) =
+      3 ^ E_mid * (3 ^ S_K1 * q_X1 + 3 ^ S_K2 * q_X2) ∧
+    -- 2. Full 2^E_mid and 3^E_mid divisibility of the positive sums:
+    2 ^ E_mid ∣ (3 ^ S_K1 * q_X1 + 3 ^ S_K2 * q_X2) ∧
+    3 ^ E_mid ∣ (2 ^ E_suf1 * q_Y1 + 2 ^ E_suf2 * q_Y2) ∧
+    -- 3. Factored divisibilities and unconditional lower bounds when S_K1 ≤ S_K2, E_suf1 ≤ E_suf2:
+    (S_K1 ≤ S_K2 → E_suf1 ≤ E_suf2 →
+      2 ^ (E_mid + E_suf1) ∣ (q_X1 + 3 ^ (S_K2 - S_K1) * q_X2) ∧
+      3 ^ (S_K1 + E_mid) ∣ (q_Y1 + 2 ^ (E_suf2 - E_suf1) * q_Y2) ∧
+      (1 ≤ q_X1 → 2 ^ (E_mid + E_suf1) ≤ q_X1 + 3 ^ (S_K2 - S_K1) * q_X2) ∧
+      (1 ≤ q_Y1 → 3 ^ (S_K1 + E_mid) ≤ q_Y1 + 2 ^ (E_suf2 - E_suf1) * q_Y2)) := by
+  have hp2_1 : 2 ^ (E_mid + E_suf1) * q_Y1 = 2 ^ E_mid * (2 ^ E_suf1 * q_Y1) := by
+    rw [Nat.pow_add]; ring
+  have hp2_2 : 2 ^ (E_mid + E_suf2) * q_Y2 = 2 ^ E_mid * (2 ^ E_suf2 * q_Y2) := by
+    rw [Nat.pow_add]; ring
+  have hp3_1 : 3 ^ (S_K1 + E_mid) * q_X1 = 3 ^ E_mid * (3 ^ S_K1 * q_X1) := by
+    rw [Nat.pow_add]; ring
+  have hp3_2 : 3 ^ (S_K2 + E_mid) * q_X2 = 3 ^ E_mid * (3 ^ S_K2 * q_X2) := by
+    rw [Nat.pow_add]; ring
+  rw [hp2_1, hp3_1] at hsyz1
+  rw [hp2_2, hp3_2] at hsyz2
+  have hhom :
+      2 ^ E_mid * (2 ^ E_suf1 * q_Y1 + 2 ^ E_suf2 * q_Y2) =
+        3 ^ E_mid * (3 ^ S_K1 * q_X1 + 3 ^ S_K2 * q_X2) := by
+    have hd1 :
+        2 ^ E_mid * (2 ^ E_suf1 * q_Y1 + 2 ^ E_suf2 * q_Y2) =
+          2 ^ E_mid * (2 ^ E_suf1 * q_Y1) + 2 ^ E_mid * (2 ^ E_suf2 * q_Y2) := by ring
+    have hd2 :
+        3 ^ E_mid * (3 ^ S_K1 * q_X1 + 3 ^ S_K2 * q_X2) =
+          3 ^ E_mid * (3 ^ S_K1 * q_X1) + 3 ^ E_mid * (3 ^ S_K2 * q_X2) := by ring
+    linarith only [hsyz1, hsyz2, hd1, hd2]
+  have hcop : Nat.Coprime (2 ^ E_mid) (3 ^ E_mid) :=
+    Nat.Coprime.pow _ _ (by decide : Nat.Coprime 2 3)
+  have hd2 : 2 ^ E_mid ∣ (3 ^ S_K1 * q_X1 + 3 ^ S_K2 * q_X2) :=
+    hcop.dvd_of_dvd_mul_left ⟨2 ^ E_suf1 * q_Y1 + 2 ^ E_suf2 * q_Y2, hhom.symm⟩
+  have hd3 : 3 ^ E_mid ∣ (2 ^ E_suf1 * q_Y1 + 2 ^ E_suf2 * q_Y2) :=
+    hcop.symm.dvd_of_dvd_mul_left ⟨3 ^ S_K1 * q_X1 + 3 ^ S_K2 * q_X2, hhom⟩
+  refine ⟨hhom, hd2, hd3, ?_⟩
+  intro hSK_le hEsuf_le
+  have hp3_sum :
+      3 ^ S_K1 * q_X1 + 3 ^ S_K2 * q_X2 =
+        3 ^ S_K1 * (q_X1 + 3 ^ (S_K2 - S_K1) * q_X2) := by
+    have hexp : S_K2 = S_K1 + (S_K2 - S_K1) := by omega
+    calc 3 ^ S_K1 * q_X1 + 3 ^ S_K2 * q_X2
+        = 3 ^ S_K1 * q_X1 + (3 ^ S_K1 * 3 ^ (S_K2 - S_K1)) * q_X2 := by
+            rw [← Nat.pow_add, ← hexp]
+      _ = 3 ^ S_K1 * (q_X1 + 3 ^ (S_K2 - S_K1) * q_X2) := by ring
+  have hp2_sum :
+      2 ^ E_suf1 * q_Y1 + 2 ^ E_suf2 * q_Y2 =
+        2 ^ E_suf1 * (q_Y1 + 2 ^ (E_suf2 - E_suf1) * q_Y2) := by
+    have hexp : E_suf2 = E_suf1 + (E_suf2 - E_suf1) := by omega
+    calc 2 ^ E_suf1 * q_Y1 + 2 ^ E_suf2 * q_Y2
+        = 2 ^ E_suf1 * q_Y1 + (2 ^ E_suf1 * 2 ^ (E_suf2 - E_suf1)) * q_Y2 := by
+            rw [← Nat.pow_add, ← hexp]
+      _ = 2 ^ E_suf1 * (q_Y1 + 2 ^ (E_suf2 - E_suf1) * q_Y2) := by ring
+  have hhom_factored :
+      2 ^ (E_mid + E_suf1) * (q_Y1 + 2 ^ (E_suf2 - E_suf1) * q_Y2) =
+        3 ^ (S_K1 + E_mid) * (q_X1 + 3 ^ (S_K2 - S_K1) * q_X2) := by
+    rw [Nat.pow_add 2 E_mid E_suf1, Nat.pow_add 3 S_K1 E_mid]
+    have h := hhom
+    rw [hp2_sum, hp3_sum] at h
+    linarith only [h]
+  have hcop_full : Nat.Coprime (2 ^ (E_mid + E_suf1)) (3 ^ (S_K1 + E_mid)) :=
+    Nat.Coprime.pow _ _ (by decide : Nat.Coprime 2 3)
+  have hd2_full : 2 ^ (E_mid + E_suf1) ∣ (q_X1 + 3 ^ (S_K2 - S_K1) * q_X2) :=
+    hcop_full.dvd_of_dvd_mul_left ⟨q_Y1 + 2 ^ (E_suf2 - E_suf1) * q_Y2, hhom_factored.symm⟩
+  have hd3_full : 3 ^ (S_K1 + E_mid) ∣ (q_Y1 + 2 ^ (E_suf2 - E_suf1) * q_Y2) :=
+    hcop_full.symm.dvd_of_dvd_mul_left ⟨q_X1 + 3 ^ (S_K2 - S_K1) * q_X2, hhom_factored⟩
+  refine ⟨hd2_full, hd3_full, ?_, ?_⟩
+  · intro hqX1_pos
+    rcases hd2_full with ⟨KX, hKX⟩
+    have hKX_pos : 1 ≤ KX := by
+      rcases Nat.eq_zero_or_pos KX with rfl | hp
+      · rw [Nat.mul_zero] at hKX; omega
+      · exact hp
+    rw [hKX]; exact Nat.le_mul_of_pos_right _ hKX_pos
+  · intro hqY1_pos
+    rcases hd3_full with ⟨KY, hKY⟩
+    have hKY_pos : 1 ≤ KY := by
+      rcases Nat.eq_zero_or_pos KY with rfl | hp
+      · rw [Nat.mul_zero] at hKY; omega
+      · exact hp
+    rw [hKY]; exact Nat.le_mul_of_pos_right _ hKY_pos
+
+/-!
+## Section 115: Sign-Blind Unified Four-Window Middle-Defect Dichotomy (`3^(S_K1 + E_mid) ≤ 2^(E_suf2 - E_suf1) * q_Y2 + q_Y1`)
+
+Putting Section 110 (same-sign subtraction) and Section 114 (opposite-sign addition) together yields
+a **completely sign-blind four-window theorem**:
+Whenever two anagram pairs in frames `(S_K1, E_suf1)` and `(S_K2, E_suf2)` (`S_K1 ≤ S_K2`,
+`E_suf1 ≤ E_suf2`, `3^S_K1 * q_X1 < 3^S_K2 * q_X2`) share the **same unsigned middle defect
+magnitude `q_A`**—regardless of whether the two pairs have the same sign or opposite signs in
+Section 106's disjunction:
+  `2^(E_mid + E_suf) * q_Y + 41553 * q_A = 3^(S_K + E_mid) * q_X  ∨  2^(E_mid + E_suf) * q_Y = 3^(S_K + E_mid) * q_X + 41553 * q_A`,
+we have **in all four sign combinations**:
+  `2^(E_mid + E_suf1) ≤ 3^(S_K2 - S_K1) * q_X2 + q_X1`  and
+  `3^(S_K1 + E_mid) ≤ 2^(E_suf2 - E_suf1) * q_Y2 + q_Y1`!
+-/
+
+/-- **Sign-Blind Unified Four-Window Middle-Defect Dichotomy:**
+Whenever two anagram pairs share the same unsigned middle defect magnitude `q_A` (in any of the 4
+sign combinations of Section 106's disjunction) with `S_K1 ≤ S_K2`, `E_suf1 ≤ E_suf2`,
+`1 ≤ q_X1`, `1 ≤ q_Y1`, and `3^S_K1 * q_X1 < 3^S_K2 * q_X2`, we have unconditionally:
+`2^(E_mid + E_suf1) ≤ 3^(S_K2 - S_K1) * q_X2 + q_X1` and
+`3^(S_K1 + E_mid) ≤ 2^(E_suf2 - E_suf1) * q_Y2 + q_Y1`. -/
+theorem dense_core_signed_middle_defect_unconditional_four_window_dichotomy
+    {S_K1 S_K2 E_mid E_suf1 E_suf2 q_X1 q_X2 q_Y1 q_Y2 q_A : ℕ}
+    (hSK_le : S_K1 ≤ S_K2) (hEsuf_le : E_suf1 ≤ E_suf2)
+    (hqX1_pos : 1 ≤ q_X1) (hqY1_pos : 1 ≤ q_Y1)
+    (hlt : 3 ^ S_K1 * q_X1 < 3 ^ S_K2 * q_X2)
+    (h1 : 2 ^ (E_mid + E_suf1) * q_Y1 + 41553 * q_A = 3 ^ (S_K1 + E_mid) * q_X1 ∨
+          2 ^ (E_mid + E_suf1) * q_Y1 = 3 ^ (S_K1 + E_mid) * q_X1 + 41553 * q_A)
+    (h2 : 2 ^ (E_mid + E_suf2) * q_Y2 + 41553 * q_A = 3 ^ (S_K2 + E_mid) * q_X2 ∨
+          2 ^ (E_mid + E_suf2) * q_Y2 = 3 ^ (S_K2 + E_mid) * q_X2 + 41553 * q_A) :
+    (3 ^ (S_K1 + E_mid) ∣ (2 ^ (E_suf2 - E_suf1) * q_Y2 - q_Y1) ∨
+     3 ^ (S_K1 + E_mid) ∣ (q_Y1 + 2 ^ (E_suf2 - E_suf1) * q_Y2)) ∧
+    2 ^ (E_mid + E_suf1) ≤ 3 ^ (S_K2 - S_K1) * q_X2 + q_X1 ∧
+    3 ^ (S_K1 + E_mid) ≤ 2 ^ (E_suf2 - E_suf1) * q_Y2 + q_Y1 := by
+  rcases h1 with h1_l | h1_r <;> rcases h2 with h2_l | h2_r
+  · -- Case (+, +): Section 110 directly
+    have h110 :=
+      (dense_core_four_window_middle_defect_cancellation_and_full_exponent_restoration
+        h1_l h2_l (le_of_lt hlt)).2.2.2.2 hSK_le hEsuf_le
+    have hbounds := h110.2.2 hqX1_pos hqY1_pos hlt
+    exact ⟨Or.inl h110.2.1, by omega, by omega⟩
+  · -- Case (+, -): Section 114 directly
+    have h114 :=
+      (dense_core_opposite_sign_additive_middle_defect_cancellation h1_l h2_r).2.2.2
+        hSK_le hEsuf_le
+    have hbX := h114.2.2.1 hqX1_pos
+    have hbY := h114.2.2.2 hqY1_pos
+    exact ⟨Or.inr h114.2.1, by omega, by omega⟩
+  · -- Case (-, +): Section 114 with Pair 2 and Pair 1 swapped in hsyz
+    have hsyz1' : 2 ^ (E_mid + E_suf1) * q_Y1 = 3 ^ (S_K1 + E_mid) * q_X1 + 41553 * q_A := h1_r
+    have hsyz2' : 2 ^ (E_mid + E_suf2) * q_Y2 + 41553 * q_A = 3 ^ (S_K2 + E_mid) * q_X2 := h2_l
+    have hp2_1 : 2 ^ (E_mid + E_suf1) * q_Y1 = 2 ^ E_mid * (2 ^ E_suf1 * q_Y1) := by
+      rw [Nat.pow_add]; ring
+    have hp2_2 : 2 ^ (E_mid + E_suf2) * q_Y2 = 2 ^ E_mid * (2 ^ E_suf2 * q_Y2) := by
+      rw [Nat.pow_add]; ring
+    have hp3_1 : 3 ^ (S_K1 + E_mid) * q_X1 = 3 ^ E_mid * (3 ^ S_K1 * q_X1) := by
+      rw [Nat.pow_add]; ring
+    have hp3_2 : 3 ^ (S_K2 + E_mid) * q_X2 = 3 ^ E_mid * (3 ^ S_K2 * q_X2) := by
+      rw [Nat.pow_add]; ring
+    have h1_swap : 2 ^ (E_mid + E_suf1) * q_Y1 + 41553 * 0 = 3 ^ (S_K1 + E_mid) * q_X1 + 41553 * q_A := by
+      omega
+    -- Notice that adding h1_r and h2_l gives the exact same additive equation as Section 114!
+    have hhom_factored :
+        2 ^ (E_mid + E_suf1) * (q_Y1 + 2 ^ (E_suf2 - E_suf1) * q_Y2) =
+          3 ^ (S_K1 + E_mid) * (q_X1 + 3 ^ (S_K2 - S_K1) * q_X2) := by
+      have hexp3 : S_K2 = S_K1 + (S_K2 - S_K1) := by omega
+      have hexp2 : E_suf2 = E_suf1 + (E_suf2 - E_suf1) := by omega
+      have hs3 :
+          3 ^ (S_K1 + E_mid) * q_X1 + 3 ^ (S_K2 + E_mid) * q_X2 =
+            3 ^ (S_K1 + E_mid) * (q_X1 + 3 ^ (S_K2 - S_K1) * q_X2) := by
+        have h : S_K2 + E_mid = (S_K1 + E_mid) + (S_K2 - S_K1) := by omega
+        rw [h, Nat.pow_add 3 (S_K1 + E_mid) (S_K2 - S_K1)]; ring
+      have hs2 :
+          2 ^ (E_mid + E_suf1) * q_Y1 + 2 ^ (E_mid + E_suf2) * q_Y2 =
+            2 ^ (E_mid + E_suf1) * (q_Y1 + 2 ^ (E_suf2 - E_suf1) * q_Y2) := by
+        have h : E_mid + E_suf2 = (E_mid + E_suf1) + (E_suf2 - E_suf1) := by omega
+        rw [h, Nat.pow_add 2 (E_mid + E_suf1) (E_suf2 - E_suf1)]; ring
+      linarith only [h1_r, h2_l, hs3, hs2]
+    have hcop_full : Nat.Coprime (2 ^ (E_mid + E_suf1)) (3 ^ (S_K1 + E_mid)) :=
+      Nat.Coprime.pow _ _ (by decide : Nat.Coprime 2 3)
+    have hd2_full : 2 ^ (E_mid + E_suf1) ∣ (q_X1 + 3 ^ (S_K2 - S_K1) * q_X2) :=
+      hcop_full.dvd_of_dvd_mul_left ⟨q_Y1 + 2 ^ (E_suf2 - E_suf1) * q_Y2, hhom_factored.symm⟩
+    have hd3_full : 3 ^ (S_K1 + E_mid) ∣ (q_Y1 + 2 ^ (E_suf2 - E_suf1) * q_Y2) :=
+      hcop_full.symm.dvd_of_dvd_mul_left ⟨q_X1 + 3 ^ (S_K2 - S_K1) * q_X2, hhom_factored⟩
+    rcases hd2_full with ⟨KX, hKX⟩
+    have hKX_pos : 1 ≤ KX := by
+      rcases Nat.eq_zero_or_pos KX with rfl | hp
+      · rw [Nat.mul_zero] at hKX; omega
+      · exact hp
+    have hbX : 2 ^ (E_mid + E_suf1) ≤ q_X1 + 3 ^ (S_K2 - S_K1) * q_X2 := by
+      rw [hKX]; exact Nat.le_mul_of_pos_right _ hKX_pos
+    rcases hd3_full with ⟨KY, hKY⟩
+    have hKY_pos : 1 ≤ KY := by
+      rcases Nat.eq_zero_or_pos KY with rfl | hp
+      · rw [Nat.mul_zero] at hKY; omega
+      · exact hp
+    have hbY : 3 ^ (S_K1 + E_mid) ≤ q_Y1 + 2 ^ (E_suf2 - E_suf1) * q_Y2 := by
+      rw [hKY]; exact Nat.le_mul_of_pos_right _ hKY_pos
+    exact ⟨Or.inr ⟨KY, hKY⟩, by omega, by omega⟩
+  · -- Case (-, -): Subtracting h1_r from h2_r gives the exact same difference equation as Section 110!
+    have hs3 :
+        3 ^ (S_K2 + E_mid) * q_X2 - 3 ^ (S_K1 + E_mid) * q_X1 =
+          3 ^ (S_K1 + E_mid) * (3 ^ (S_K2 - S_K1) * q_X2 - q_X1) := by
+      have h : S_K2 + E_mid = (S_K1 + E_mid) + (S_K2 - S_K1) := by omega
+      have hsplit :
+          3 ^ (S_K2 + E_mid) * q_X2 =
+            3 ^ (S_K1 + E_mid) * (3 ^ (S_K2 - S_K1) * q_X2) := by
+        rw [h, Nat.pow_add 3 (S_K1 + E_mid) (S_K2 - S_K1)]; ring
+      rw [hsplit, ← Nat.mul_sub_left_distrib]
+    have hY_gt : 2 ^ (E_mid + E_suf1) * q_Y1 < 2 ^ (E_mid + E_suf2) * q_Y2 := by
+      have hm_lt :
+          3 ^ E_mid * (3 ^ S_K1 * q_X1) < 3 ^ E_mid * (3 ^ S_K2 * q_X2) :=
+        Nat.mul_lt_mul_of_pos_left hlt (Nat.pow_pos (by decide))
+      have hp3_1 : 3 ^ (S_K1 + E_mid) * q_X1 = 3 ^ E_mid * (3 ^ S_K1 * q_X1) := by
+        rw [Nat.pow_add]; ring
+      have hp3_2 : 3 ^ (S_K2 + E_mid) * q_X2 = 3 ^ E_mid * (3 ^ S_K2 * q_X2) := by
+        rw [Nat.pow_add]; ring
+      linarith only [h1_r, h2_r, hm_lt, hp3_1, hp3_2]
+    have hs2 :
+        2 ^ (E_mid + E_suf2) * q_Y2 - 2 ^ (E_mid + E_suf1) * q_Y1 =
+          2 ^ (E_mid + E_suf1) * (2 ^ (E_suf2 - E_suf1) * q_Y2 - q_Y1) := by
+      have h : E_mid + E_suf2 = (E_mid + E_suf1) + (E_suf2 - E_suf1) := by omega
+      have hsplit :
+          2 ^ (E_mid + E_suf2) * q_Y2 =
+            2 ^ (E_mid + E_suf1) * (2 ^ (E_suf2 - E_suf1) * q_Y2) := by
+        rw [h, Nat.pow_add 2 (E_mid + E_suf1) (E_suf2 - E_suf1)]; ring
+      rw [hsplit, ← Nat.mul_sub_left_distrib]
+    have hhom_factored :
+        2 ^ (E_mid + E_suf1) * (2 ^ (E_suf2 - E_suf1) * q_Y2 - q_Y1) =
+          3 ^ (S_K1 + E_mid) * (3 ^ (S_K2 - S_K1) * q_X2 - q_X1) := by
+      have hdiff :
+          2 ^ (E_mid + E_suf2) * q_Y2 - 2 ^ (E_mid + E_suf1) * q_Y1 =
+            3 ^ (S_K2 + E_mid) * q_X2 - 3 ^ (S_K1 + E_mid) * q_X1 := by omega
+      rw [← hs2, ← hs3]; exact hdiff
+    have hcop_full : Nat.Coprime (2 ^ (E_mid + E_suf1)) (3 ^ (S_K1 + E_mid)) :=
+      Nat.Coprime.pow _ _ (by decide : Nat.Coprime 2 3)
+    have hd2_full : 2 ^ (E_mid + E_suf1) ∣ (3 ^ (S_K2 - S_K1) * q_X2 - q_X1) :=
+      hcop_full.dvd_of_dvd_mul_left ⟨2 ^ (E_suf2 - E_suf1) * q_Y2 - q_Y1, hhom_factored.symm⟩
+    have hd3_full : 3 ^ (S_K1 + E_mid) ∣ (2 ^ (E_suf2 - E_suf1) * q_Y2 - q_Y1) :=
+      hcop_full.symm.dvd_of_dvd_mul_left ⟨3 ^ (S_K2 - S_K1) * q_X2 - q_X1, hhom_factored⟩
+    have hY_sub_pos : 1 ≤ 2 ^ (E_suf2 - E_suf1) * q_Y2 - q_Y1 := by
+      refine Nat.pos_of_ne_zero (fun h0 => ?_)
+      rw [h0, Nat.mul_zero] at hs2
+      omega
+    have hX_sub_pos : 1 ≤ 3 ^ (S_K2 - S_K1) * q_X2 - q_X1 := by
+      refine Nat.pos_of_ne_zero (fun h0 => ?_)
+      rw [h0, Nat.mul_zero] at hhom_factored
+      have hp2_pos : 1 ≤ 2 ^ (E_mid + E_suf1) := Nat.pow_pos (by decide)
+      have hm_pos : 1 ≤ 2 ^ (E_mid + E_suf1) * (2 ^ (E_suf2 - E_suf1) * q_Y2 - q_Y1) :=
+        Nat.mul_pos hp2_pos hY_sub_pos
+      linarith only [hhom_factored, hm_pos]
+    rcases hd2_full with ⟨KX, hKX⟩
+    have hKX_pos : 1 ≤ KX := by
+      rcases Nat.eq_zero_or_pos KX with rfl | hp
+      · rw [Nat.mul_zero] at hKX; linarith only [hKX, hX_sub_pos]
+      · exact hp
+    have hbX : 2 ^ (E_mid + E_suf1) ≤ 3 ^ (S_K2 - S_K1) * q_X2 - q_X1 := by
+      rw [hKX]; exact Nat.le_mul_of_pos_right _ hKX_pos
+    rcases hd3_full with ⟨KY, hKY⟩
+    have hKY_pos : 1 ≤ KY := by
+      rcases Nat.eq_zero_or_pos KY with rfl | hp
+      · rw [Nat.mul_zero] at hKY; linarith only [hKY, hY_sub_pos]
+      · exact hp
+    have hbY : 3 ^ (S_K1 + E_mid) ≤ 2 ^ (E_suf2 - E_suf1) * q_Y2 - q_Y1 := by
+      rw [hKY]; exact Nat.le_mul_of_pos_right _ hKY_pos
+    exact ⟨Or.inl ⟨KY, hKY⟩, by omega, by omega⟩
+
+/-!
+## Section 116: Frame-Independent Middle-Defect Palette Pigeonhole Cutoff Across `C + 1` Arbitrary Prefix/Suffix Frames
+
+In Section 107, we applied Pigeonhole to `C + 1` windows that shared the **same** prefix and suffix.
+Combining Sections 110 and 111 with Pigeonhole yields a **frame-independent** theorem:
+Suppose `C + 1` anagram pairs indexed by `i : Fin (C + 1)`—each in its own **distinct prefix/suffix
+frame** `(S_K(i), E_suf(i))` with middle step-sum `E_mid`—draw their middle defect `q_A(i)` from a
+palette of at most `C` values (`defectIdx : Fin (C + 1) → Fin C` such that `defectIdx i = defectIdx j → q_A i = q_A j`).
+Then there exist `i < j` in `Fin (C + 1)` with `q_A(i) = q_A(j)`, restoring the full
+`2^(E_mid + E_suf(i))` and `3^(S_K(i) + E_mid)` divisors and forcing Section 111's full-weight
+cutoff `(p + q) * (S_K(i) + E_mid) + p * E_suf(j) + q * E_suf(i) + 15 * q < p * S_M + ...`!
+-/
+
+/-- **Frame-Independent Middle-Defect Palette Pigeonhole Cutoff Across `C + 1` Arbitrary Frames:**
+Whenever `C + 1` anagram pairs in arbitrary monotone frames `(S_K i, E_suf i)` draw their middle
+defects `q_A i` from a palette of size `≤ C`, at least two pairs `i < j` collide in `q_A`, restoring
+`3^(S_K i + E_mid) < 2^(E_suf j - E_suf i) * q_Y j` and forcing the full `(p + q) * (S_K i + E_mid)`
+Archimedean cutoff. -/
+theorem dense_core_frame_independent_middle_defect_palette_pigeonhole_cutoff
+    {W L_2 L_1 : ℕ → ℕ} {C E_mid W_0 : ℕ}
+    (S_K E_suf q_X q_Y q_A M_end : Fin (C + 1) → ℕ)
+    (defectIdx : Fin (C + 1) → Fin C)
+    (hW0_lt : W 0 < 2 ^ W_0)
+    (hL1_0 : 1 ≤ L_1 0)
+    (hrec : ∀ n : ℕ,
+      2 ^ (7 * L_1 n + 10 * L_2 (n + 1)) * W (n + 1) +
+        19 * ((3 ^ (7 * L_1 n) - 2 ^ (7 * L_1 n)) / 2059) =
+        3 ^ (10 * L_2 n + 7 * L_1 n) * W n)
+    (hSK_mono : Monotone S_K)
+    (hEsuf_mono : Monotone E_suf)
+    (hX_strict : StrictMono (fun i => 3 ^ (S_K i) * q_X i))
+    (hqX_pos : ∀ i, 1 ≤ q_X i)
+    (hqY_pos : ∀ i, 1 ≤ q_Y i)
+    (hsyz : ∀ i,
+      2 ^ (E_mid + E_suf i) * q_Y i + 41553 * q_A i = 3 ^ (S_K i + E_mid) * q_X i)
+    (hY_bound : ∀ i, 58025 * 3 ^ (E_suf i) * q_Y i ≤ scaledWaveY W L_2 (M_end i + 1))
+    (hsum_le : ∀ i j, i < j →
+      S_K i + E_mid + E_suf j ≤ waveInteriorExp L_2 L_1 (M_end j) + 10 * L_2 0)
+    (hpalette : ∀ i j, defectIdx i = defectIdx j → q_A i = q_A j) :
+    ∃ i j : Fin (C + 1),
+      i < j ∧
+      q_A i = q_A j ∧
+      2 ^ (E_mid + E_suf i) < 3 ^ (S_K j - S_K i) * q_X j ∧
+      3 ^ (S_K i + E_mid) < 2 ^ (E_suf j - E_suf i) * q_Y j ∧
+      (∀ p q : ℕ, 1 ≤ q → 3 ^ q ≤ 2 ^ (p + q) →
+        (p + q) * (S_K i + E_mid) + p * E_suf j + q * E_suf i + 15 * q <
+          p * waveInteriorExp L_2 L_1 (M_end j) + 10 * (p + q) * L_2 0 + q * W_0) ∧
+      27 * (S_K i + E_mid) + 10 * E_suf j + 17 * E_suf i + 255 <
+        10 * waveInteriorExp L_2 L_1 (M_end j) + 270 * L_2 0 + 17 * W_0 := by
+  have hnot_inj : ¬Function.Injective defectIdx := by
+    intro hinj
+    have hcard := Fintype.card_le_of_injective defectIdx hinj
+    simp only [Fintype.card_fin] at hcard
+    omega
+  rw [Function.Injective] at hnot_inj
+  push_neg at hnot_inj
+  rcases hnot_inj with ⟨a, b, hab_eq, hab_ne⟩
+  have hij_ex : ∃ i j : Fin (C + 1), i < j ∧ defectIdx i = defectIdx j := by
+    rcases lt_trichotomy a b with hlt | rfl | hgt
+    · exact ⟨a, b, hlt, hab_eq⟩
+    · exact absurd rfl hab_ne
+    · exact ⟨b, a, hgt, hab_eq.symm⟩
+  rcases hij_ex with ⟨i, j, hij, hdef_eq⟩
+  have hqA_eq : q_A i = q_A j := hpalette i j hdef_eq
+  have hsyz_i := hsyz i
+  have hsyz_j := hsyz j
+  rw [← hqA_eq] at hsyz_j
+  have hSK_ij : S_K i ≤ S_K j := hSK_mono (le_of_lt hij)
+  have hEsuf_ij : E_suf i ≤ E_suf j := hEsuf_mono (le_of_lt hij)
+  have hX_lt : 3 ^ (S_K i) * q_X i < 3 ^ (S_K j) * q_X j := hX_strict hij
+  have h110 :=
+    ((dense_core_four_window_middle_defect_cancellation_and_full_exponent_restoration
+      hsyz_i hsyz_j (le_of_lt hX_lt)).2.2.2.2 hSK_ij hEsuf_ij).2.2
+      (hqX_pos i) (hqY_pos i) hX_lt
+  have h111 :=
+    dense_core_four_window_middle_cancellation_archimedean_cutoff
+      hW0_lt hL1_0 (fun n _ => hrec n) hEsuf_ij (hsum_le i j hij) h110.2 (hY_bound j)
+  exact ⟨i, j, hij, hqA_eq, h110.1, h110.2, h111.2.2.1, h111.2.2.2⟩
+
+/-!
+## Section 117: Bounded-Run Abelian Step-Sum Linear Corridor (`17*N + 7 ≤ S_N ≤ (17*N + 7)*B`) & Mandatory Pigeonhole Anagram Existence Under Arbitrary Subword Complexity
+
+Why must macro-wave anagrams (`S^{(r_1)}_N = S^{(r_2)}_N`) occur at a **linear horizon** `O(N)` in any
+bounded-run trajectory (`1 ≤ L_1(t), L_2(t) ≤ B`), **even if its ordered subword complexity `p(N)` is
+exponential (`B^(2N + 1)`)**?
+1. **Universal Two-Sided Linear Step-Sum Band (`17*N + 7 ≤ S_N ≤ (17*N + 7)*B`):**
+   By induction on `N ∈ ℕ`, whenever `1 ≤ L_1(t) ≤ B` (`t ≤ N`) and `1 ≤ L_2(t + 1) ≤ B` (`t < N`):
+     `17 * N + 7 ≤ waveInteriorExp L_2 L_1 N ≤ (17 * N + 7) * B`!
+2. **Mandatory Pigeonhole Anagram Existence Within `(17 * N + 7) * (B - 1) + 2` Windows:**
+   Consequently, for any `(17 * N + 7) * (B - 1) + 2` window positions `r(0) < r(1) < ... < r(C)`
+   (`C = (17 * N + 7) * (B - 1) + 1`), the normalized step-sum `S^{(r(i))}_N - (17 * N + 7)` lies in
+   `Fin ((17 * N + 7) * (B - 1) + 1)`. By the Pigeonhole Principle, **there ALWAYS exist two windows
+   `i < j` with the exact same interior step-sum `S^{(r(i))}_N = S^{(r(j))}_N`** (forming an exact
+   macro-wave anagram), **regardless of how high the ordered subword complexity of the orbit is!**
+-/
+
+private lemma waveInteriorExp_le_seventeen_mul_add_seven_mul
+    (L_2 L_1 : ℕ → ℕ) (N B : ℕ)
+    (hL1_B : ∀ t ≤ N, L_1 t ≤ B)
+    (hL2_B : ∀ t < N, L_2 (t + 1) ≤ B) :
+    waveInteriorExp L_2 L_1 N ≤ (17 * N + 7) * B := by
+  induction N with
+  | zero =>
+      simp only [waveInteriorExp, Nat.mul_zero, Nat.zero_add]
+      exact Nat.mul_le_mul_left 7 (hL1_B 0 (Nat.le_refl 0))
+  | succ k ih =>
+      have ih_k := ih (fun t ht => hL1_B t (Nat.le_succ_of_le ht))
+        (fun t ht => hL2_B t (Nat.lt_succ_of_lt ht))
+      have hL1_k1 : L_1 (k + 1) ≤ B := hL1_B (k + 1) (Nat.le_refl _)
+      have hL2_k1 : L_2 (k + 1) ≤ B := hL2_B k (Nat.lt_succ_self k)
+      change waveInteriorExp L_2 L_1 k + (10 * L_2 (k + 1) + 7 * L_1 (k + 1)) ≤
+        (17 * (k + 1) + 7) * B
+      have hstep : 10 * L_2 (k + 1) + 7 * L_1 (k + 1) ≤ 17 * B := by omega
+      have hdist : (17 * (k + 1) + 7) * B = (17 * k + 7) * B + 17 * B := by ring
+      omega
+
+/-- **Bounded-Run Abelian Step-Sum Linear Corridor & Mandatory Pigeonhole Anagram Existence:**
+1. Every `(N + 1)`-wave block with interior runs in `[1, B]` satisfies
+   `17 * N + 7 ≤ waveInteriorExp L_2 L_1 N ≤ (17 * N + 7) * B`.
+2. Among any `(17 * N + 7) * (B - 1) + 2` windows `r(0) < ... < r(C)` along a bounded-run sequence,
+   there always exist `i < j` with identical interior step-sums `S^{(r(i))}_N = S^{(r(j))}_N`. -/
+theorem dense_core_bounded_run_abelian_step_sum_pigeonhole_anagram_existence :
+    -- 1. Universal two-sided linear step-sum corridor for bounded runs in [1, B]:
+    (∀ (L_2 L_1 : ℕ → ℕ) (N B : ℕ),
+      (∀ t ≤ N, 1 ≤ L_1 t) →
+      (∀ t < N, 1 ≤ L_2 (t + 1)) →
+      (∀ t ≤ N, L_1 t ≤ B) →
+      (∀ t < N, L_2 (t + 1) ≤ B) →
+      17 * N + 7 ≤ waveInteriorExp L_2 L_1 N ∧
+      waveInteriorExp L_2 L_1 N ≤ (17 * N + 7) * B) ∧
+    -- 2. Mandatory Pigeonhole anagram existence among any (17*N + 7)*(B - 1) + 2 windows:
+    (∀ (L_2 L_1 : ℕ → ℕ) (N B : ℕ)
+       (r : Fin ((17 * N + 7) * (B - 1) + 2) → ℕ),
+      1 ≤ B →
+      (∀ n : ℕ, 1 ≤ L_1 n ∧ L_1 n ≤ B) →
+      (∀ n : ℕ, 1 ≤ L_2 n ∧ L_2 n ≤ B) →
+      ∃ i j : Fin ((17 * N + 7) * (B - 1) + 2),
+        i < j ∧
+        waveInteriorExp (fun t => L_2 (r i + t)) (fun t => L_1 (r i + t)) N =
+          waveInteriorExp (fun t => L_2 (r j + t)) (fun t => L_1 (r j + t)) N) := by
+  refine ⟨fun L_2 L_1 N B h1 h2 h3 h4 =>
+    ⟨waveInteriorExp_ge_seventeen_mul_add_seven L_2 L_1 N h1 h2,
+     waveInteriorExp_le_seventeen_mul_add_seven_mul L_2 L_1 N B h3 h4⟩, ?_⟩
+  intro L_2 L_1 N B r hB hL1 hL2
+  set C := (17 * N + 7) * (B - 1) + 1
+  have hband :
+      ∀ i : Fin (C + 1),
+        17 * N + 7 ≤ waveInteriorExp (fun t => L_2 (r i + t)) (fun t => L_1 (r i + t)) N ∧
+        waveInteriorExp (fun t => L_2 (r i + t)) (fun t => L_1 (r i + t)) N ≤ (17 * N + 7) * B := by
+    intro i
+    exact ⟨waveInteriorExp_ge_seventeen_mul_add_seven _ _ N
+      (fun t _ => (hL1 (r i + t)).1) (fun t _ => (hL2 (r i + (t + 1))).1),
+      waveInteriorExp_le_seventeen_mul_add_seven_mul _ _ N B
+      (fun t _ => (hL1 (r i + t)).2) (fun t _ => (hL2 (r i + (t + 1))).2)⟩
+  let stepIdx : Fin (C + 1) → Fin C := fun i =>
+    ⟨waveInteriorExp (fun t => L_2 (r i + t)) (fun t => L_1 (r i + t)) N - (17 * N + 7), by
+      have hi := hband i
+      have hB_sub : (17 * N + 7) * B - (17 * N + 7) = (17 * N + 7) * (B - 1) := by
+        have h1 : B = (B - 1) + 1 := by omega
+        calc (17 * N + 7) * B - (17 * N + 7)
+            = (17 * N + 7) * ((B - 1) + 1) - (17 * N + 7) := by rw [← h1]
+          _ = (17 * N + 7) * (B - 1) + (17 * N + 7) - (17 * N + 7) := by ring_nf
+          _ = (17 * N + 7) * (B - 1) := Nat.add_sub_cancel _ _
+      dsimp [C]
+      omega⟩
+  have hnot_inj : ¬Function.Injective stepIdx := by
+    intro hinj
+    have hcard := Fintype.card_le_of_injective stepIdx hinj
+    simp only [Fintype.card_fin] at hcard
+    omega
+  rw [Function.Injective] at hnot_inj
+  push_neg at hnot_inj
+  rcases hnot_inj with ⟨a, b, hab_eq, hab_ne⟩
+  have hij_ex : ∃ i j : Fin (C + 1), i < j ∧ stepIdx i = stepIdx j := by
+    rcases lt_trichotomy a b with hlt | rfl | hgt
+    · exact ⟨a, b, hlt, hab_eq⟩
+    · exact absurd rfl hab_ne
+    · exact ⟨b, a, hgt, hab_eq.symm⟩
+  rcases hij_ex with ⟨i, j, hij, hstep_eq⟩
+  have hval_eq : (stepIdx i).1 = (stepIdx j).1 := congrArg Fin.val hstep_eq
+  dsimp [stepIdx] at hval_eq
+  have hi := (hband i).1
+  have hj := (hband j).1
+  exact ⟨i, j, hij, by omega⟩
+
 end Mahler.DubickasExtension
 
 
