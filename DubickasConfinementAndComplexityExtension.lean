@@ -22931,6 +22931,631 @@ theorem dense_core_multi_horizon_wronskian_archimedean_and_divisibility_bounds
     rw [hsplit, Nat.add_mul_mod_self_left]
   exact ⟨hlt1, hlt2, hmod3, hmod2⟩
 
+/-!
+## Section 79: Universal Exponential Lower Bounds on `waveInteriorAcc` (`3^(S_N - 7) ≤ Acc_N`) and `dualWaveInteriorAcc` (`3^(S̃_N - 10) ≤ Acc̃_N`), the Razor-Thin `(2059/2187, 1)` & `(58025/59049, 1)` Multiplicative Bands & the Two-Sided Cauchy Pinch Across Nested Horizons
+
+Previously (in Section 56), we used only the trivial positivity bound `1 ≤ Acc_N`, and in Section 68
+we established the upper bounds `2059 * Acc_N < 3^(S_N)` and `58025 * Acc̃_N < 3^(S̃_N)`.
+How large are `Acc_N` and `Acc̃_N` from below?
+
+1. **Single-Run Quotient Exponential Lower Bounds (`1 ≤ k`):**
+   - Since `2059 * Q_k + 2^(7*k) = 3^(7*k) = 2187 * 3^(7*k - 7)` and `2^(7*k) = 128 * 2^(7*k - 7) ≤ 128 * 3^(7*k - 7)`:
+       `3^(7*k - 7) ≤ (3^(7*k) - 2^(7*k)) / 2059`.
+   - Dually, since `58025 * R_k + 2^(10*k) = 3^(10*k) = 59049 * 3^(10*k - 10)` and `2^(10*k) ≤ 1024 * 3^(10*k - 10)`:
+       `3^(10*k - 10) ≤ (3^(10*k) - 2^(10*k)) / 58025`.
+2. **Universal Exponential Lower Bounds & Razor-Thin Multiplicative Bands (`N ∈ ℕ`):**
+   By induction on `N ∈ ℕ`:
+   - Whenever `1 ≤ L_1(0)`:
+       `3^(S_N - 7) ≤ Acc_N`  and  `2059 * 3^(S_N - 7) ≤ 2059 * Acc_N < 3^(S_N) = 2187 * 3^(S_N - 7)`,
+     trapping `2059 * Acc_N / 3^(S_N)` inside `[2059/2187, 1) ≈ [0.94147, 1)` for **all** `N ∈ ℕ`!
+   - Dually, whenever `1 ≤ L_2(0)`:
+       `3^(S̃_N - 10) ≤ Acc̃_N`  and  `58025 * 3^(S̃_N - 10) ≤ 58025 * Acc̃_N < 3^(S̃_N) = 59049 * 3^(S̃_N - 10)`,
+     trapping `58025 * Acc̃_N / 3^(S̃_N)` inside `[58025/59049, 1) ≈ [0.98266, 1)` for **all** `N ∈ ℕ`!
+3. **Two-Sided Archimedean Cauchy Pinch Across Nested Horizons (`K < K + 1 + d`):**
+   Applying these two-sided bounds to the tail accumulator `Acc_tail` in Section 74's shift-composition
+   law `Acc_{K+1+d} = 3^(10*L_2(K+1) + S_tail) * Acc_K + 2^(S_K + 10*L_2(K+1)) * Acc_tail` yields:
+   - `3^(10*L_2(K+1) + S_tail) * Acc_K + 2^(S_K + 10*L_2(K+1)) * 3^(S_tail - 7) ≤ Acc_{K+1+d}`,
+   - `2059 * (Acc_{K+1+d} - 3^(10*L_2(K+1) + S_tail) * Acc_K) < 2^(S_K + 10*L_2(K+1)) * 3^(S_tail)`!
+-/
+
+private lemma three_pow_sub_seven_le_div_2059 {k : ℕ} (hk : 1 ≤ k) :
+    3 ^ (7 * k - 7) ≤ (3 ^ (7 * k) - 2 ^ (7 * k)) / 2059 := by
+  have hQ := mul_2059_div_add_two_pow_seven k
+  set Q_k := (3 ^ (7 * k) - 2 ^ (7 * k)) / 2059
+  have hp3 : 3 ^ (7 * k) = 2187 * 3 ^ (7 * k - 7) := three_pow_eq_2187_mul_sub (by omega)
+  have hp2 : 2 ^ (7 * k) = 128 * 2 ^ (7 * k - 7) := two_pow_eq_128_mul_sub (by omega)
+  have h2_le_3 : 2 ^ (7 * k - 7) ≤ 3 ^ (7 * k - 7) :=
+    Nat.pow_le_pow_left (by decide) (7 * k - 7)
+  refine Nat.le_of_not_lt (fun hlt => ?_)
+  have hm1 : 2059 * Q_k < 2059 * 3 ^ (7 * k - 7) :=
+    Nat.mul_lt_mul_of_pos_left hlt (by decide)
+  have hm2 : 128 * 2 ^ (7 * k - 7) ≤ 128 * 3 ^ (7 * k - 7) :=
+    Nat.mul_le_mul_left 128 h2_le_3
+  linarith only [hQ, hp3, hp2, hm1, hm2]
+
+private lemma three_pow_sub_ten_le_div_58025 {k : ℕ} (hk : 1 ≤ k) :
+    3 ^ (10 * k - 10) ≤ (3 ^ (10 * k) - 2 ^ (10 * k)) / 58025 := by
+  have hR := mul_58025_div_add_two_pow_ten k
+  set R_k := (3 ^ (10 * k) - 2 ^ (10 * k)) / 58025
+  have hp3 : 3 ^ (10 * k) = 59049 * 3 ^ (10 * k - 10) := three_pow_eq_59049_mul_sub (by omega)
+  have hp2 : 2 ^ (10 * k) = 1024 * 2 ^ (10 * k - 10) := two_pow_eq_1024_mul_sub (by omega)
+  have h2_le_3 : 2 ^ (10 * k - 10) ≤ 3 ^ (10 * k - 10) :=
+    Nat.pow_le_pow_left (by decide) (10 * k - 10)
+  refine Nat.le_of_not_lt (fun hlt => ?_)
+  have hm1 : 58025 * R_k < 58025 * 3 ^ (10 * k - 10) :=
+    Nat.mul_lt_mul_of_pos_left hlt (by decide)
+  have hm2 : 1024 * 2 ^ (10 * k - 10) ≤ 1024 * 3 ^ (10 * k - 10) :=
+    Nat.mul_le_mul_left 1024 h2_le_3
+  linarith only [hR, hp3, hp2, hm1, hm2]
+
+private lemma waveInteriorAcc_ge_three_pow_sub_seven
+    (L_2 L_1 : ℕ → ℕ) (hL1_0 : 1 ≤ L_1 0) (N : ℕ) :
+    3 ^ (waveInteriorExp L_2 L_1 N - 7) ≤ waveInteriorAcc L_2 L_1 N := by
+  induction N with
+  | zero =>
+      simp only [waveInteriorExp, waveInteriorAcc]
+      exact three_pow_sub_seven_le_div_2059 hL1_0
+  | succ k ih =>
+      have hSk_ge7 : 7 ≤ waveInteriorExp L_2 L_1 k :=
+        waveInteriorExp_ge_seven_of_L1_zero_pos L_2 L_1 hL1_0 k
+      set S_k := waveInteriorExp L_2 L_1 k
+      set step_k := 10 * L_2 (k + 1) + 7 * L_1 (k + 1)
+      have hp3_split :
+          3 ^ (waveInteriorExp L_2 L_1 (k + 1) - 7) = 3 ^ step_k * 3 ^ (S_k - 7) := by
+        rw [← Nat.pow_add]
+        congr 1
+        change (S_k + step_k) - 7 = step_k + (S_k - 7)
+        omega
+      have hm : 3 ^ step_k * 3 ^ (S_k - 7) ≤ 3 ^ step_k * waveInteriorAcc L_2 L_1 k :=
+        Nat.mul_le_mul_left _ ih
+      simp only [waveInteriorAcc]
+      rw [hp3_split]
+      change 3 ^ step_k * 3 ^ (S_k - 7) ≤ 3 ^ step_k * waveInteriorAcc L_2 L_1 k + _
+      omega
+
+private lemma dualWaveInteriorAcc_ge_three_pow_sub_ten
+    (L_1 L_2 : ℕ → ℕ) (hL2_0 : 1 ≤ L_2 0) (N : ℕ) :
+    3 ^ (dualWaveInteriorExp L_1 L_2 N - 10) ≤ dualWaveInteriorAcc L_1 L_2 N := by
+  induction N with
+  | zero =>
+      simp only [dualWaveInteriorExp, dualWaveInteriorAcc]
+      exact three_pow_sub_ten_le_div_58025 hL2_0
+  | succ k ih =>
+      have hSk_ge10 : 10 ≤ dualWaveInteriorExp L_1 L_2 k :=
+        dualWaveInteriorExp_ge_ten_of_L2_zero_pos L_1 L_2 hL2_0 k
+      set S_k := dualWaveInteriorExp L_1 L_2 k
+      set step_k := 7 * L_1 (k + 1) + 10 * L_2 (k + 1)
+      have hp3_split :
+          3 ^ (dualWaveInteriorExp L_1 L_2 (k + 1) - 10) = 3 ^ step_k * 3 ^ (S_k - 10) := by
+        rw [← Nat.pow_add]
+        congr 1
+        change (S_k + step_k) - 10 = step_k + (S_k - 10)
+        omega
+      have hm : 3 ^ step_k * 3 ^ (S_k - 10) ≤ 3 ^ step_k * dualWaveInteriorAcc L_1 L_2 k :=
+        Nat.mul_le_mul_left _ ih
+      simp only [dualWaveInteriorAcc]
+      rw [hp3_split]
+      change 3 ^ step_k * 3 ^ (S_k - 10) ≤ 3 ^ step_k * dualWaveInteriorAcc L_1 L_2 k + _
+      omega
+
+/-- **Universal Exponential Lower Bounds on `waveInteriorAcc` and `dualWaveInteriorAcc`, the `(2059/2187, 1)` & `(58025/59049, 1)` Multiplicative Bands & the Two-Sided Cauchy Pinch:**
+For all `N ∈ ℕ`, `3^(S_N - 7) ≤ Acc_N` (`2059 * 3^(S_N - 7) ≤ 2059 * Acc_N < 3^(S_N)`) and
+`3^(S̃_N - 10) ≤ Acc̃_N` (`58025 * 3^(S̃_N - 10) ≤ 58025 * Acc̃_N < 3^(S̃_N)`), yielding a two-sided
+archimedean Cauchy pinch across every nested horizon pair `K < K + 1 + d`. -/
+theorem dense_core_accumulator_exponential_bands_and_cauchy_pinch :
+    -- 1. Universal exponential lower bound and [2059/2187, 1) multiplicative band on waveInteriorAcc:
+    (∀ (L_2 L_1 : ℕ → ℕ) (N : ℕ),
+      (∀ t ≤ N, 1 ≤ L_1 t) →
+      let S_N := waveInteriorExp L_2 L_1 N
+      let Acc_N := waveInteriorAcc L_2 L_1 N
+      3 ^ (S_N - 7) ≤ Acc_N ∧
+      2059 * 3 ^ (S_N - 7) ≤ 2059 * Acc_N ∧
+      2059 * Acc_N < 3 ^ S_N) ∧
+    -- 2. Universal exponential lower bound and [58025/59049, 1) multiplicative band on dualWaveInteriorAcc:
+    (∀ (L_1 L_2 : ℕ → ℕ) (N : ℕ),
+      (∀ t ≤ N, 1 ≤ L_2 t) →
+      let S_N := dualWaveInteriorExp L_1 L_2 N
+      let Acc_N := dualWaveInteriorAcc L_1 L_2 N
+      3 ^ (S_N - 10) ≤ Acc_N ∧
+      58025 * 3 ^ (S_N - 10) ≤ 58025 * Acc_N ∧
+      58025 * Acc_N < 3 ^ S_N) ∧
+    -- 3. Two-sided archimedean Cauchy pinch across nested horizons K < K + 1 + d:
+    (∀ (L_2 L_1 : ℕ → ℕ) (K d : ℕ),
+      (∀ t ≤ d, 1 ≤ L_1 (K + 1 + t)) →
+      let S_K := waveInteriorExp L_2 L_1 K
+      let Acc_K := waveInteriorAcc L_2 L_1 K
+      let S_tail := waveInteriorExp (fun t => L_2 (K + 1 + t)) (fun t => L_1 (K + 1 + t)) d
+      let Acc_full := waveInteriorAcc L_2 L_1 (K + 1 + d)
+      3 ^ (10 * L_2 (K + 1) + S_tail) * Acc_K +
+        2 ^ (S_K + 10 * L_2 (K + 1)) * 3 ^ (S_tail - 7) ≤ Acc_full ∧
+      2059 * (Acc_full - 3 ^ (10 * L_2 (K + 1) + S_tail) * Acc_K) <
+        2 ^ (S_K + 10 * L_2 (K + 1)) * 3 ^ S_tail) := by
+  refine ⟨?_, ?_, ?_⟩
+  · intro L_2 L_1 N hL1 S_N Acc_N
+    have hlow := waveInteriorAcc_ge_three_pow_sub_seven L_2 L_1 (hL1 0 (Nat.zero_le _)) N
+    have hid :=
+      (dense_core_waveInteriorAcc_telescopic_cross_defect_and_mirror_collapses.1 L_2 L_1 N hL1).1
+    change 2059 * Acc_N + 2 ^ S_N + 16243286400 * waveCrossDefect L_2 L_1 N = 3 ^ S_N at hid
+    have h2_pos : 1 ≤ 2 ^ S_N := Nat.pow_pos (by decide)
+    exact ⟨hlow, Nat.mul_le_mul_left 2059 hlow, by linarith only [hid, h2_pos]⟩
+  · intro L_1 L_2 N hL2 S_N Acc_N
+    have hlow := dualWaveInteriorAcc_ge_three_pow_sub_ten L_1 L_2 (hL2 0 (Nat.zero_le _)) N
+    have hid :=
+      (dense_core_dualWaveInteriorAcc_telescopic_cross_defect_and_mirror_collapses.1 L_1 L_2 N hL2).1
+    change 58025 * Acc_N + 2 ^ S_N + 124499856384 * dualWaveCrossDefect L_1 L_2 N = 3 ^ S_N at hid
+    have h2_pos : 1 ≤ 2 ^ S_N := Nat.pow_pos (by decide)
+    exact ⟨hlow, Nat.mul_le_mul_left 58025 hlow, by linarith only [hid, h2_pos]⟩
+  · intro L_2 L_1 K d hL1_tail S_K Acc_K S_tail Acc_full
+    set L_2_t := fun t => L_2 (K + 1 + t)
+    set L_1_t := fun t => L_1 (K + 1 + t)
+    set Acc_tail := waveInteriorAcc L_2_t L_1_t d
+    have hcomp := waveInteriorAcc_shift_comp L_2 L_1 K d
+    change Acc_full =
+        3 ^ (10 * L_2 (K + 1) + S_tail) * Acc_K +
+          2 ^ (S_K + 10 * L_2 (K + 1)) * Acc_tail at hcomp
+    have hL1_t0 : 1 ≤ L_1_t 0 := hL1_tail 0 (Nat.zero_le _)
+    have hlow_tail : 3 ^ (S_tail - 7) ≤ Acc_tail :=
+      waveInteriorAcc_ge_three_pow_sub_seven L_2_t L_1_t hL1_t0 d
+    have hid_tail :=
+      (dense_core_waveInteriorAcc_telescopic_cross_defect_and_mirror_collapses.1
+        L_2_t L_1_t d hL1_tail).1
+    change 2059 * Acc_tail + 2 ^ S_tail + 16243286400 * waveCrossDefect L_2_t L_1_t d =
+        3 ^ S_tail at hid_tail
+    have h2_pos : 1 ≤ 2 ^ S_tail := Nat.pow_pos (by decide)
+    have hup_tail : 2059 * Acc_tail < 3 ^ S_tail := by linarith only [hid_tail, h2_pos]
+    have hm_low :
+        2 ^ (S_K + 10 * L_2 (K + 1)) * 3 ^ (S_tail - 7) ≤
+          2 ^ (S_K + 10 * L_2 (K + 1)) * Acc_tail :=
+      Nat.mul_le_mul_left _ hlow_tail
+    have hsub :
+        Acc_full - 3 ^ (10 * L_2 (K + 1) + S_tail) * Acc_K =
+          2 ^ (S_K + 10 * L_2 (K + 1)) * Acc_tail := by
+      rw [hcomp, Nat.add_sub_cancel_left]
+    have hm_up :
+        2 ^ (S_K + 10 * L_2 (K + 1)) * (2059 * Acc_tail) <
+          2 ^ (S_K + 10 * L_2 (K + 1)) * 3 ^ S_tail :=
+      Nat.mul_lt_mul_of_pos_left hup_tail (Nat.pow_pos (by decide))
+    refine ⟨by omega, ?_⟩
+    rw [hsub]
+    linarith only [hm_up]
+
+/-!
+## Section 80: The Full-Exponent Archimedean Wave Bound (`2 * 3^(S_N + 10*L_2(0) - 1) * W(0) < 2^(S_N + 10*L_2(N+1)) * W(N+1)`) & the Cumulative Step-Sum Run-Expansion Law (`p' * S_N + 10*(p'+q')*L_2(0) < 10*q'*L_2(N+1) + p'`)
+
+In Section 71, canceling `2^(S_N)` gave `3^(10*L_2(0)) * W(0) < 2^(10*L_2(N+1)) * W(N+1)`, which
+forced `3 * L_2(0) < 2 * L_2(N+1)` under `W(N+1) ≤ W(0)` independently of `S_N`.
+Why did `S_N` disappear there? Because we dropped `(3/2)^(S_N)`!
+
+Using Section 68 (`6,377,292 * (19 * Acc_N) < 3^(S_N + 10*L_2(0))`) directly inside the symmetric
+master identity `2^(S_N + 10*L_2(N+1)) * W(N+1) + 19 * Acc_N = 3^(S_N + 10*L_2(0)) * W(0)` preserves
+the **entire exponential factor `3^(S_N)`**:
+1. **The Full-Exponent Archimedean Wave Bound (`1 ≤ W(0)`, `1 ≤ L_2(0)`):**
+   Since `3^(S_N + 10*L_2(0)) = 3 * 3^(S_N + 10*L_2(0) - 1)` and `19 * Acc_N < 3^(S_N + 10*L_2(0) - 1) * W(0)`:
+     `2 * 3^(S_N + 10*L_2(0) - 1) * W(0) < 2^(S_N + 10*L_2(N+1)) * W(N+1)`!
+2. **Full-Exponent Growth Criterion:**
+   Whenever `2^(S_N + 10*L_2(N+1) - 1) ≤ 3^(S_N + 10*L_2(0) - 1)`, we must have **`W(0) < W(N+1)` strictly**!
+3. **The Cumulative Step-Sum Run-Expansion Law Under `W(N+1) ≤ W(0)`:**
+   Whenever `W(N+1) ≤ W(0)`, canceling `2 * W(N+1) ≤ 2 * W(0)` yields
+     `3^(S_N + 10*L_2(0) - 1) < 2^(S_N + 10*L_2(N+1) - 1)`.
+   Raising to `q' ≥ 1` with `2^(p' + q') ≤ 3^(q')` and canceling `q' * (S_N - 1)` from both sides proves:
+     `p' * S_N + 10 * (p' + q') * L_2(0) < 10 * q' * L_2(N+1) + p'`!
+   - At `(p', q') = (1, 2)` (`2^3 ≤ 3^2`): `S_N + 30 * L_2(0) < 20 * L_2(N+1) + 1`,
+   - At `(p', q') = (7, 12)` (`2^19 ≤ 3^12`):
+       `7 * S_N + 190 * L_2(0) < 120 * L_2(N+1) + 7`  and  `119 * N + 190 * L_2(0) + 42 < 120 * L_2(N+1)`!
+   Thus, to make `W(N+1) ≤ W(0)` after `N + 1` waves, the **single terminal run length `L_2(N+1)`
+   must exceed the cumulative step-sum `(7/120) * S_N + (19/12) * L_2(0) ≥ N + (19/12) * L_2(0)`**!
+-/
+
+/-- **The Full-Exponent Archimedean Wave Bound & the Cumulative Step-Sum Run-Expansion Law:**
+For every horizon `N ∈ ℕ`, `2 * 3^(S_N + 10*L_2(0) - 1) * W(0) < 2^(S_N + 10*L_2(N+1)) * W(N+1)`;
+consequently, `W(N+1) ≤ W(0)` forces `p' * S_N + 10 * (p' + q') * L_2(0) < 10 * q' * L_2(N+1) + p'`
+for every `2^(p' + q') ≤ 3^(q')` (`7 * S_N + 190 * L_2(0) < 120 * L_2(N+1) + 7`). -/
+theorem dense_core_full_exponent_archimedean_wave_bound_and_step_sum_expansion
+    {W L_2 L_1 : ℕ → ℕ} {N : ℕ}
+    (hW0 : 1 ≤ W 0) (hL2_0 : 1 ≤ L_2 0)
+    (hL1 : ∀ t ≤ N, 1 ≤ L_1 t)
+    (hrec : ∀ n ≤ N,
+      2 ^ (7 * L_1 n + 10 * L_2 (n + 1)) * W (n + 1) +
+        19 * ((3 ^ (7 * L_1 n) - 2 ^ (7 * L_1 n)) / 2059) =
+        3 ^ (10 * L_2 n + 7 * L_1 n) * W n) :
+    let S_N := waveInteriorExp L_2 L_1 N
+    -- 1. Full-exponent archimedean lower bound on W(N+1) and strict growth criterion:
+    2 * 3 ^ (S_N + 10 * L_2 0 - 1) * W 0 < 2 ^ (S_N + 10 * L_2 (N + 1)) * W (N + 1) ∧
+    (2 ^ (S_N + 10 * L_2 (N + 1) - 1) ≤ 3 ^ (S_N + 10 * L_2 0 - 1) → W 0 < W (N + 1)) ∧
+    -- 2. Cumulative step-sum run-expansion law under W(N+1) ≤ W(0):
+    (W (N + 1) ≤ W 0 →
+      3 ^ (S_N + 10 * L_2 0 - 1) < 2 ^ (S_N + 10 * L_2 (N + 1) - 1) ∧
+      (∀ p' q' : ℕ, 1 ≤ q' → 2 ^ (p' + q') ≤ 3 ^ q' →
+        p' * S_N + 10 * (p' + q') * L_2 0 < 10 * q' * L_2 (N + 1) + p') ∧
+      S_N + 30 * L_2 0 < 20 * L_2 (N + 1) + 1 ∧
+      7 * S_N + 190 * L_2 0 < 120 * L_2 (N + 1) + 7 ∧
+      ((∀ t < N, 1 ≤ L_2 (t + 1)) →
+        119 * N + 190 * L_2 0 + 42 < 120 * L_2 (N + 1))) := by
+  intro S_N
+  set Acc_N := waveInteriorAcc L_2 L_1 N
+  have hS_ge7 : 7 ≤ S_N :=
+    waveInteriorExp_ge_seven_of_L1_zero_pos L_2 L_1 (hL1 0 (Nat.zero_le _)) N
+  have hm :=
+    (dense_core_symmetric_multi_wave_master_identity_and_boundary_independence.2
+      W L_2 L_1 N hrec).1
+  change 2 ^ S_N * (2 ^ (10 * L_2 (N + 1)) * W (N + 1)) + 19 * Acc_N =
+      3 ^ S_N * (3 ^ (10 * L_2 0) * W 0) at hm
+  have hp2 :
+      2 ^ S_N * (2 ^ (10 * L_2 (N + 1)) * W (N + 1)) =
+        2 ^ (S_N + 10 * L_2 (N + 1)) * W (N + 1) := by
+    rw [Nat.pow_add]; ring
+  have hp3 :
+      3 ^ S_N * (3 ^ (10 * L_2 0) * W 0) =
+        3 ^ (S_N + 10 * L_2 0) * W 0 := by
+    rw [Nat.pow_add]; ring
+  rw [hp2, hp3] at hm
+  have hcor :=
+    (dense_core_universal_multi_wave_constant_of_motion_and_three_adic_remainders.1
+      W L_2 L_1 N hW0 hL2_0 hL1 hrec).2.2.1
+  change 6377292 * (19 * Acc_N) < 3 ^ (S_N + 10 * L_2 0) at hcor
+  have hp3_sub1 :
+      3 ^ (S_N + 10 * L_2 0) = 3 * 3 ^ (S_N + 10 * L_2 0 - 1) := by
+    have hexp : 1 + (S_N + 10 * L_2 0 - 1) = S_N + 10 * L_2 0 :=
+      Nat.add_sub_of_le (by omega)
+    calc 3 ^ (S_N + 10 * L_2 0)
+        = 3 ^ (1 + (S_N + 10 * L_2 0 - 1)) := by rw [hexp]
+      _ = 3 ^ 1 * 3 ^ (S_N + 10 * L_2 0 - 1) := Nat.pow_add 3 1 _
+      _ = 3 * 3 ^ (S_N + 10 * L_2 0 - 1) := rfl
+  have hp2_sub1 :
+      2 ^ (S_N + 10 * L_2 (N + 1)) = 2 * 2 ^ (S_N + 10 * L_2 (N + 1) - 1) := by
+    have hexp : 1 + (S_N + 10 * L_2 (N + 1) - 1) = S_N + 10 * L_2 (N + 1) :=
+      Nat.add_sub_of_le (by omega)
+    calc 2 ^ (S_N + 10 * L_2 (N + 1))
+        = 2 ^ (1 + (S_N + 10 * L_2 (N + 1) - 1)) := by rw [hexp]
+      _ = 2 ^ 1 * 2 ^ (S_N + 10 * L_2 (N + 1) - 1) := Nat.pow_add 2 1 _
+      _ = 2 * 2 ^ (S_N + 10 * L_2 (N + 1) - 1) := rfl
+  have hAcc_pos : 1 ≤ Acc_N := waveInteriorAcc_pos L_2 L_1 (hL1 0 (Nat.zero_le _)) N
+  have h19_lt_sub1 : 19 * Acc_N < 3 ^ (S_N + 10 * L_2 0 - 1) * W 0 := by
+    have h1 : 3 * (19 * Acc_N) < 3 * 3 ^ (S_N + 10 * L_2 0 - 1) := by
+      rw [← hp3_sub1]
+      linarith only [hcor, hAcc_pos]
+    have h2 : 19 * Acc_N < 3 ^ (S_N + 10 * L_2 0 - 1) := by omega
+    have h3 : 3 ^ (S_N + 10 * L_2 0 - 1) ≤ 3 ^ (S_N + 10 * L_2 0 - 1) * W 0 :=
+      Nat.le_mul_of_pos_right _ hW0
+    exact lt_of_lt_of_le h2 h3
+  have hfull_bound :
+      2 * 3 ^ (S_N + 10 * L_2 0 - 1) * W 0 < 2 ^ (S_N + 10 * L_2 (N + 1)) * W (N + 1) := by
+    have hsplit3 :
+        3 ^ (S_N + 10 * L_2 0) * W 0 =
+          2 * 3 ^ (S_N + 10 * L_2 0 - 1) * W 0 + 3 ^ (S_N + 10 * L_2 0 - 1) * W 0 := by
+      rw [hp3_sub1]; ring
+    linarith only [hm, hsplit3, h19_lt_sub1]
+  have hlt_of_pow_le :
+      2 ^ (S_N + 10 * L_2 (N + 1) - 1) ≤ 3 ^ (S_N + 10 * L_2 0 - 1) → W 0 < W (N + 1) := by
+    intro hp_le
+    refine Nat.lt_of_not_le (fun hge => ?_)
+    have hm1 :
+        2 ^ (S_N + 10 * L_2 (N + 1)) * W (N + 1) ≤ 2 ^ (S_N + 10 * L_2 (N + 1)) * W 0 :=
+      Nat.mul_le_mul_left _ hge
+    have hm2 : 2 ^ (S_N + 10 * L_2 (N + 1)) ≤ 2 * 3 ^ (S_N + 10 * L_2 0 - 1) := by
+      rw [hp2_sub1]
+      exact Nat.mul_le_mul_left 2 hp_le
+    have hm3 :
+        2 ^ (S_N + 10 * L_2 (N + 1)) * W 0 ≤ 2 * 3 ^ (S_N + 10 * L_2 0 - 1) * W 0 :=
+      Nat.mul_le_mul_right (W 0) hm2
+    omega
+  refine ⟨hfull_bound, hlt_of_pow_le, ?_⟩
+  intro hW_le
+  have hpow_lt : 3 ^ (S_N + 10 * L_2 0 - 1) < 2 ^ (S_N + 10 * L_2 (N + 1) - 1) := by
+    refine Nat.lt_of_not_le (fun hge => ?_)
+    have hlt := hlt_of_pow_le hge
+    omega
+  have hpq :
+      ∀ p' q' : ℕ, 1 ≤ q' → 2 ^ (p' + q') ≤ 3 ^ q' →
+        p' * S_N + 10 * (p' + q') * L_2 0 < 10 * q' * L_2 (N + 1) + p' := by
+    intro p' q' hq' hpq_le
+    set E3 := S_N + 10 * L_2 0 - 1
+    set E2 := S_N + 10 * L_2 (N + 1) - 1
+    have hpow_q : (3 ^ E3) ^ q' < (2 ^ E2) ^ q' := pow_lt_pow_of_lt hpow_lt hq'
+    have h2_le : 2 ^ ((p' + q') * E3) ≤ (3 ^ E3) ^ q' := by
+      calc 2 ^ ((p' + q') * E3)
+          = (2 ^ (p' + q')) ^ E3 := Nat.pow_mul 2 (p' + q') E3
+        _ ≤ (3 ^ q') ^ E3 := Nat.pow_le_pow_left hpq_le E3
+        _ = 3 ^ (q' * E3) := (Nat.pow_mul 3 q' E3).symm
+        _ = 3 ^ (E3 * q') := by rw [Nat.mul_comm q' E3]
+        _ = (3 ^ E3) ^ q' := Nat.pow_mul 3 E3 q'
+    have hrhs_eq : (2 ^ E2) ^ q' = 2 ^ (q' * E2) := by
+      rw [← Nat.pow_mul 2 E2 q', Nat.mul_comm E2 q']
+    have h2_lt : 2 ^ ((p' + q') * E3) < 2 ^ (q' * E2) := by
+      rw [← hrhs_eq]
+      exact lt_of_le_of_lt h2_le hpow_q
+    have hexp : (p' + q') * E3 < q' * E2 := by
+      refine Nat.lt_of_not_le (fun hge => ?_)
+      have hp_ge : 2 ^ (q' * E2) ≤ 2 ^ ((p' + q') * E3) :=
+        Nat.pow_le_pow_right (by decide) hge
+      omega
+    have hE3_add : E3 + 1 = S_N + 10 * L_2 0 := by dsimp [E3]; omega
+    have hE2_add : E2 + 1 = S_N + 10 * L_2 (N + 1) := by dsimp [E2]; omega
+    have hexp1 :
+        (p' + q') * E3 + (p' + q') =
+          q' * S_N + (p' * S_N + 10 * (p' + q') * L_2 0) := by
+      calc (p' + q') * E3 + (p' + q')
+          = (p' + q') * (E3 + 1) := by ring
+        _ = (p' + q') * (S_N + 10 * L_2 0) := by rw [hE3_add]
+        _ = q' * S_N + (p' * S_N + 10 * (p' + q') * L_2 0) := by ring
+    have hexp2 :
+        q' * E2 + (p' + q') =
+          q' * S_N + (10 * q' * L_2 (N + 1) + p') := by
+      calc q' * E2 + (p' + q')
+          = q' * (E2 + 1) + p' := by ring
+        _ = q' * (S_N + 10 * L_2 (N + 1)) + p' := by rw [hE2_add]
+        _ = q' * S_N + (10 * q' * L_2 (N + 1) + p') := by ring
+    omega
+  have h12 := hpq 1 2 (by decide) (by decide)
+  have h712 := hpq 7 12 (by decide) (by decide)
+  refine ⟨hpow_lt, hpq, by omega, h712, ?_⟩
+  intro hL2_int
+  have hSN_ge : 17 * N + 7 ≤ S_N :=
+    waveInteriorExp_ge_seventeen_mul_add_seven L_2 L_1 N hL1 hL2_int
+  omega
+
+/-!
+## Section 81: Unconditional Multi-Wave Growth in `{1, 2}` (`631 * W(0) < W(N+1)` for All `N ≥ 1` with `L_2(N+1) ≤ 2`, and `W(0) < W(1)` Whenever `2 ≤ L_1(0)`)
+
+What does Section 80's full-exponent archimedean wave bound
+`2 * 3^(S_N + 10*L_2(0) - 1) * W(0) < 2^(S_N + 10*L_2(N+1)) * W(N+1)`
+prove in the `{1, 2}` short-run regime (`1 ≤ L_2(0)`, `L_2(N+1) ≤ 2`, where previously `L_2(0) = 1 → L_2(N+1) = 2`
+was the only transition that could evade `L_2(N+1) ≤ L_2(0)`)?
+
+1. **Strict Growth Whenever `9 ≤ S_N` (`2^28 = 268,435,456 ≤ 387,420,489 = 3^18`):**
+   Whenever `9 ≤ S_N`, `1 ≤ L_2(0)`, and `L_2(N+1) ≤ 2`, we have:
+     `2^(S_N + 10*L_2(N+1) - 1) ≤ 2^(S_N + 19) = 2^(S_N - 9) * 2^28 ≤ 3^(S_N - 9) * 3^18 = 3^(S_N + 9) ≤ 3^(S_N + 10*L_2(0) - 1)`,
+   so by Section 80, **`W(0) < W(N+1)` strictly**!
+   In particular, for a **single wave (`N = 0`) with `2 ≤ L_1(0)`**, `S_0 = 7 * L_1(0) ≥ 14 ≥ 9`, so
+   **`W(0) < W(1)` holds even when `L_2(0) = 1` and `L_2(1) = 2`**!
+   Thus, in `{1, 2}`, the **only** single-wave step where `W` can ever decrease is the isolated
+   triple `(L_2(0) = 1, L_1(0) = 1, L_2(1) = 2)`.
+2. **Unconditional `631 * W(0) < W(N+1)` (`2^9 * W(0) < W(N+1)`) Across Any `N + 1 ≥ 2` Waves (`N ≥ 1`):**
+   Whenever `N ≥ 1` (`N = m + 1`) and all interior runs are positive (`1 ≤ L_1`, `1 ≤ L_2`), we have
+   `24 ≤ 17 * N + 7 ≤ S_N`. Since `631 * 2^43 = 5,550,334,697,013,248 < 5,559,060,566,555,523 = 3^33`,
+   for **every** `N ≥ 1` with `1 ≤ L_2(0)` and `L_2(N+1) ≤ 2`:
+     `631 * W(0) < W(N+1)`  (and `512 * W(0) = 2^9 * W(0) < W(N+1)`)!
+   That is: **even if an orbit in `{1, 2}` takes the single dipping step `(1, 1, 2)` at wave `0`, by
+   wave `2` (`N = 1`) it has already rebounded to more than `631 × W(0)`!**
+-/
+
+/-- **Unconditional Multi-Wave Growth in `{1, 2}` (`631 * W(0) < W(N+1)` for All `N ≥ 1` with `L_2(N+1) ≤ 2`) & Single-Wave Growth for `2 ≤ L_1(0)`:**
+Whenever `1 ≤ W(0)`, `1 ≤ L_2(0)`, and `L_2(N+1) ≤ 2`, `9 ≤ S_N` (including `N = 0` with `2 ≤ L_1(0)`)
+forces `W(0) < W(N+1)` strictly, and `24 ≤ S_N` (which holds for all `N ≥ 1` with positive interior
+runs) forces `631 * W(0) < W(N+1)`. -/
+theorem dense_core_short_run_two_wave_631_growth_and_isolated_dip_law
+    {W L_2 L_1 : ℕ → ℕ} {N : ℕ}
+    (hW0 : 1 ≤ W 0) (hL2_0 : 1 ≤ L_2 0) (hL2_end : L_2 (N + 1) ≤ 2)
+    (hL1 : ∀ t ≤ N, 1 ≤ L_1 t)
+    (hrec : ∀ n ≤ N,
+      2 ^ (7 * L_1 n + 10 * L_2 (n + 1)) * W (n + 1) +
+        19 * ((3 ^ (7 * L_1 n) - 2 ^ (7 * L_1 n)) / 2059) =
+        3 ^ (10 * L_2 n + 7 * L_1 n) * W n) :
+    let S_N := waveInteriorExp L_2 L_1 N
+    -- 1. Strict growth W(0) < W(N+1) whenever 9 ≤ S_N (including N = 0 with 2 ≤ L_1(0)):
+    (9 ≤ S_N → W 0 < W (N + 1)) ∧
+    (2 ≤ L_1 0 → W 0 < W (N + 1)) ∧
+    -- 2. Unconditional 631 * W(0) < W(N+1) whenever 24 ≤ S_N (which holds for all N ≥ 1):
+    (24 ≤ S_N → 631 * W 0 < W (N + 1)) ∧
+    (1 ≤ N → (∀ t < N, 1 ≤ L_2 (t + 1)) →
+      24 ≤ S_N ∧ 631 * W 0 < W (N + 1) ∧ 512 * W 0 < W (N + 1)) := by
+  intro S_N
+  have h80 :=
+    dense_core_full_exponent_archimedean_wave_bound_and_step_sum_expansion
+      hW0 hL2_0 hL1 hrec
+  have hfull :
+      2 * 3 ^ (S_N + 10 * L_2 0 - 1) * W 0 < 2 ^ (S_N + 10 * L_2 (N + 1)) * W (N + 1) :=
+    h80.1
+  have hlt_of_9 : 9 ≤ S_N → W 0 < W (N + 1) := by
+    intro h9
+    apply h80.2.1
+    have h2_le : 2 ^ (S_N + 10 * L_2 (N + 1) - 1) ≤ 2 ^ ((S_N - 9) + 28) :=
+      Nat.pow_le_pow_right (by decide) (by omega)
+    have h23_split : 2 ^ ((S_N - 9) + 28) ≤ 3 ^ ((S_N - 9) + 18) := by
+      rw [Nat.pow_add 2 (S_N - 9) 28, Nat.pow_add 3 (S_N - 9) 18]
+      have ha : 2 ^ (S_N - 9) ≤ 3 ^ (S_N - 9) := Nat.pow_le_pow_left (by decide) (S_N - 9)
+      have hb : (2 : ℕ) ^ 28 ≤ 3 ^ 18 := by decide
+      exact Nat.mul_le_mul ha hb
+    have h3_le : 3 ^ ((S_N - 9) + 18) ≤ 3 ^ (S_N + 10 * L_2 0 - 1) :=
+      Nat.pow_le_pow_right (by decide) (by omega)
+    exact le_trans h2_le (le_trans h23_split h3_le)
+  have hlt_of_L1_2 : 2 ≤ L_1 0 → W 0 < W (N + 1) := by
+    intro h2
+    apply hlt_of_9
+    have hS0_le : 7 * L_1 0 ≤ S_N := by
+      have h0 : waveInteriorExp L_2 L_1 0 ≤ S_N := waveInteriorExp_mono L_2 L_1 (Nat.zero_le N)
+      simpa [waveInteriorExp] using h0
+    omega
+  have h631_of_24 : 24 ≤ S_N → 631 * W 0 < W (N + 1) := by
+    intro h24
+    have hp2_le :
+        2 ^ (S_N + 10 * L_2 (N + 1)) * W (N + 1) ≤ 2 ^ (S_N + 20) * W (N + 1) := by
+      have hp : 2 ^ (S_N + 10 * L_2 (N + 1)) ≤ 2 ^ (S_N + 20) :=
+        Nat.pow_le_pow_right (by decide) (by omega)
+      exact Nat.mul_le_mul_right _ hp
+    have hp3_ge :
+        2 * 3 ^ (S_N + 9) * W 0 ≤ 2 * 3 ^ (S_N + 10 * L_2 0 - 1) * W 0 := by
+      have hp : 3 ^ (S_N + 9) ≤ 3 ^ (S_N + 10 * L_2 0 - 1) :=
+        Nat.pow_le_pow_right (by decide) (by omega)
+      have hm1 : 2 * 3 ^ (S_N + 9) ≤ 2 * 3 ^ (S_N + 10 * L_2 0 - 1) :=
+        Nat.mul_le_mul_left 2 hp
+      exact Nat.mul_le_mul_right (W 0) hm1
+    have hbase : 631 * 2 ^ (S_N + 20) ≤ 2 * 3 ^ (S_N + 9) := by
+      have hexp2 : S_N + 20 = (S_N - 24) + 44 := by omega
+      have hexp3 : S_N + 9 = (S_N - 24) + 33 := by omega
+      rw [hexp2, hexp3, Nat.pow_add 2 (S_N - 24) 44, Nat.pow_add 3 (S_N - 24) 33]
+      have ha : 2 ^ (S_N - 24) ≤ 3 ^ (S_N - 24) := Nat.pow_le_pow_left (by decide) (S_N - 24)
+      have hb : 631 * (2 : ℕ) ^ 44 ≤ 2 * 3 ^ 33 := by decide
+      calc 631 * (2 ^ (S_N - 24) * 2 ^ 44)
+          = 2 ^ (S_N - 24) * (631 * 2 ^ 44) := by ring
+        _ ≤ 3 ^ (S_N - 24) * (2 * 3 ^ 33) := Nat.mul_le_mul ha hb
+        _ = 2 * (3 ^ (S_N - 24) * 3 ^ 33) := by ring
+    have hm_base :
+        2 ^ (S_N + 20) * (631 * W 0) ≤ 2 * 3 ^ (S_N + 9) * W 0 := by
+      have hcomm : 2 ^ (S_N + 20) * (631 * W 0) = (631 * 2 ^ (S_N + 20)) * W 0 := by ring
+      rw [hcomm]
+      exact Nat.mul_le_mul_right (W 0) hbase
+    have hlt_mul :
+        2 ^ (S_N + 20) * (631 * W 0) < 2 ^ (S_N + 20) * W (N + 1) :=
+      lt_of_le_of_lt (le_trans hm_base hp3_ge) (lt_of_lt_of_le hfull hp2_le)
+    refine Nat.lt_of_not_le (fun hge => ?_)
+    have hm_ge : 2 ^ (S_N + 20) * W (N + 1) ≤ 2 ^ (S_N + 20) * (631 * W 0) :=
+      Nat.mul_le_mul_left _ hge
+    omega
+  refine ⟨hlt_of_9, hlt_of_L1_2, h631_of_24, ?_⟩
+  intro hN1 hL2_int
+  have hSN_ge : 17 * N + 7 ≤ S_N :=
+    waveInteriorExp_ge_seventeen_mul_add_seven L_2 L_1 N hL1 hL2_int
+  have h24 : 24 ≤ S_N := by omega
+  have h631 := h631_of_24 h24
+  exact ⟨h24, h631, by omega⟩
+
+/-!
+## Section 82: Dual `U`-Wave Full-Exponent Expansion Law (`7 * S̃_N + 133 * L_1(0) < 84 * L_1(N+1)`) & Unconditional `7^(N+1)`-Fold Exponential Growth of `1`-Run States in `{1, 2}`
+
+What about `1`-run states `U(n)` (`1 → 2 → 1` waves)?
+Because Section 60's dual master identity `3^(S̃_N + 7*L_1(0)) * U(0) + 19 * Acc̃_N = 2^(S̃_N + 7*L_1(N+1)) * U(N+1)`
+has `+ 19 * Acc̃_N` on the **`3`-power side**, we have for **every** horizon `N ∈ ℕ`:
+  `3^(S̃_N + 7*L_1(0)) * U(0) < 2^(S̃_N + 7*L_1(N+1)) * U(N+1)`!
+
+1. **Dual Cumulative Step-Sum Run-Expansion Law Under `U(N+1) ≤ U(0)`:**
+   Whenever `U(N+1) ≤ U(0)` (`1 ≤ U(0)`), `3^(S̃_N + 7*L_1(0)) < 2^(S̃_N + 7*L_1(N+1))`, which for
+   every `2^(p' + q') ≤ 3^(q')` (`q' ≥ 1`) cancels `q' * S̃_N` and forces:
+     `p' * S̃_N + 7 * (p' + q') * L_1(0) < 7 * q' * L_1(N+1)`!
+   - At `(p', q') = (1, 2)`: `S̃_N + 21 * L_1(0) < 14 * L_1(N+1)`,
+   - At `(p', q') = (7, 12)`: `7 * S̃_N + 133 * L_1(0) < 84 * L_1(N+1)`.
+   When `1 ≤ L_1(0)` and `1 ≤ L_2(0)`, `10 ≤ S̃_N`, so `203 ≤ 7 * S̃_N + 133 * L_1(0) < 84 * L_1(N+1)`,
+   forcing **`3 ≤ L_1(N+1)`**!
+2. **Unconditional `7 * U(0) < U(N+1)` and `7^(N+1) * U(0) ≤ U(N+1)` Growth in `{1, 2}`:**
+   Because `7 * 2^24 = 117,440,512 < 129,140,163 = 3^17`, whenever `1 ≤ U(0)`, `1 ≤ L_1(0)`,
+   `1 ≤ L_2(0)`, and `L_1(N+1) ≤ 2` (for **any** `N ≥ 0`, including a single wave `N = 0`!):
+     `7 * U(0) < U(N+1)`!
+   Thus, unlike `W(n)` (which had the single isolated dipping step `(1, 1, 2)`), **in `{1, 2}`,
+   `1`-run states `U(n)` NEVER dip at all—not even for a single wave—and grow by more than `7×` at
+   every single wave (`7^K * U(0) ≤ U(K)` for all `K ∈ ℕ`)!**
+-/
+
+/-- **Dual `U`-Wave Full-Exponent Expansion Law (`7 * S̃_N + 133 * L_1(0) < 84 * L_1(N+1)`) & Unconditional `7^K`-Fold Growth in `{1, 2}`:**
+Across any `N + 1` consecutive `U`-waves, `U(N+1) ≤ U(0)` forces
+`p' * S̃_N + 7 * (p' + q') * L_1(0) < 7 * q' * L_1(N+1)` (`3 ≤ L_1(N+1)`), while `L_1(N+1) ≤ 2`
+forces `7 * U(0) < U(N+1)` at every wave (`7^K * U(0) ≤ U(K)` across `K` waves). -/
+theorem dense_core_dual_one_run_full_exponent_expansion_and_seven_pow_growth :
+    -- 1. Dual full-exponent cumulative step-sum expansion under U(N+1) ≤ U(0) and 7 * U(0) < U(N+1) for L_1(N+1) ≤ 2:
+    (∀ (U L_1 L_2 : ℕ → ℕ) (N : ℕ),
+      1 ≤ U 0 → 1 ≤ L_1 0 → 1 ≤ L_2 0 →
+      (∀ n ≤ N,
+        3 ^ (10 * L_2 n + 7 * L_1 n) * U n +
+          19 * ((3 ^ (10 * L_2 n) - 2 ^ (10 * L_2 n)) / 58025) =
+          2 ^ (10 * L_2 n + 7 * L_1 (n + 1)) * U (n + 1)) →
+      let S_N := dualWaveInteriorExp L_1 L_2 N
+      (L_1 (N + 1) ≤ 2 → 7 * U 0 < U (N + 1)) ∧
+      (U (N + 1) ≤ U 0 →
+        3 ^ (S_N + 7 * L_1 0) < 2 ^ (S_N + 7 * L_1 (N + 1)) ∧
+        (∀ p' q' : ℕ, 1 ≤ q' → 2 ^ (p' + q') ≤ 3 ^ q' →
+          p' * S_N + 7 * (p' + q') * L_1 0 < 7 * q' * L_1 (N + 1)) ∧
+        S_N + 21 * L_1 0 < 14 * L_1 (N + 1) ∧
+        7 * S_N + 133 * L_1 0 < 84 * L_1 (N + 1) ∧
+        3 ≤ L_1 (N + 1))) ∧
+    -- 2. Cumulative 7^K * U(0) ≤ U(K) exponential growth across K waves in {1, 2}:
+    (∀ (U : ℕ → ℕ) (K : ℕ),
+      (∀ k < K, 7 * U k < U (k + 1)) →
+      7 ^ K * U 0 ≤ U K) := by
+  refine ⟨?_, ?_⟩
+  · intro U L_1 L_2 N hU0 hL1_0 hL2_0 hrec S_N
+    have h60 :=
+      (dense_core_dual_one_run_multi_wave_master_identity_and_2059_super_divisibility.2.1
+        U L_1 L_2 N hrec).2.2 hL2_0
+    change 3 ^ (S_N + 7 * L_1 0) * U 0 < 2 ^ (S_N + 7 * L_1 (N + 1)) * U (N + 1) at h60
+    have hS_ge10 : 10 ≤ S_N :=
+      dualWaveInteriorExp_ge_ten_of_L2_zero_pos L_1 L_2 hL2_0 N
+    have h7_of_le2 : L_1 (N + 1) ≤ 2 → 7 * U 0 < U (N + 1) := by
+      intro hle2
+      have hp2_le :
+          2 ^ (S_N + 7 * L_1 (N + 1)) * U (N + 1) ≤ 2 ^ (S_N + 14) * U (N + 1) := by
+        have hp : 2 ^ (S_N + 7 * L_1 (N + 1)) ≤ 2 ^ (S_N + 14) :=
+          Nat.pow_le_pow_right (by decide) (by omega)
+        exact Nat.mul_le_mul_right _ hp
+      have hp3_ge :
+          3 ^ (S_N + 7) * U 0 ≤ 3 ^ (S_N + 7 * L_1 0) * U 0 := by
+        have hp : 3 ^ (S_N + 7) ≤ 3 ^ (S_N + 7 * L_1 0) :=
+          Nat.pow_le_pow_right (by decide) (by omega)
+        exact Nat.mul_le_mul_right (U 0) hp
+      have hbase : 7 * 2 ^ (S_N + 14) ≤ 3 ^ (S_N + 7) := by
+        have hexp2 : S_N + 14 = (S_N - 10) + 24 := by omega
+        have hexp3 : S_N + 7 = (S_N - 10) + 17 := by omega
+        rw [hexp2, hexp3, Nat.pow_add 2 (S_N - 10) 24, Nat.pow_add 3 (S_N - 10) 17]
+        have ha : 2 ^ (S_N - 10) ≤ 3 ^ (S_N - 10) := Nat.pow_le_pow_left (by decide) (S_N - 10)
+        have hb : 7 * (2 : ℕ) ^ 24 ≤ 3 ^ 17 := by decide
+        calc 7 * (2 ^ (S_N - 10) * 2 ^ 24)
+            = 2 ^ (S_N - 10) * (7 * 2 ^ 24) := by ring
+          _ ≤ 3 ^ (S_N - 10) * 3 ^ 17 := Nat.mul_le_mul ha hb
+      have hm_base : 2 ^ (S_N + 14) * (7 * U 0) ≤ 3 ^ (S_N + 7) * U 0 := by
+        have hcomm : 2 ^ (S_N + 14) * (7 * U 0) = (7 * 2 ^ (S_N + 14)) * U 0 := by ring
+        rw [hcomm]
+        exact Nat.mul_le_mul_right (U 0) hbase
+      have hlt_mul :
+          2 ^ (S_N + 14) * (7 * U 0) < 2 ^ (S_N + 14) * U (N + 1) :=
+        lt_of_le_of_lt (le_trans hm_base hp3_ge) (lt_of_lt_of_le h60 hp2_le)
+      refine Nat.lt_of_not_le (fun hge => ?_)
+      have hm_ge : 2 ^ (S_N + 14) * U (N + 1) ≤ 2 ^ (S_N + 14) * (7 * U 0) :=
+        Nat.mul_le_mul_left _ hge
+      omega
+    refine ⟨h7_of_le2, ?_⟩
+    intro hU_le
+    have hpow_lt : 3 ^ (S_N + 7 * L_1 0) < 2 ^ (S_N + 7 * L_1 (N + 1)) := by
+      refine Nat.lt_of_not_le (fun hge => ?_)
+      have hm1 :
+          2 ^ (S_N + 7 * L_1 (N + 1)) * U (N + 1) ≤ 2 ^ (S_N + 7 * L_1 (N + 1)) * U 0 :=
+        Nat.mul_le_mul_left _ hU_le
+      have hm2 :
+          2 ^ (S_N + 7 * L_1 (N + 1)) * U 0 ≤ 3 ^ (S_N + 7 * L_1 0) * U 0 :=
+        Nat.mul_le_mul_right (U 0) hge
+      omega
+    have hpq :
+        ∀ p' q' : ℕ, 1 ≤ q' → 2 ^ (p' + q') ≤ 3 ^ q' →
+          p' * S_N + 7 * (p' + q') * L_1 0 < 7 * q' * L_1 (N + 1) := by
+      intro p' q' hq' hpq_le
+      set E3 := S_N + 7 * L_1 0
+      set E2 := S_N + 7 * L_1 (N + 1)
+      have hpow_q : (3 ^ E3) ^ q' < (2 ^ E2) ^ q' := pow_lt_pow_of_lt hpow_lt hq'
+      have h2_le : 2 ^ ((p' + q') * E3) ≤ (3 ^ E3) ^ q' := by
+        calc 2 ^ ((p' + q') * E3)
+            = (2 ^ (p' + q')) ^ E3 := Nat.pow_mul 2 (p' + q') E3
+          _ ≤ (3 ^ q') ^ E3 := Nat.pow_le_pow_left hpq_le E3
+          _ = 3 ^ (q' * E3) := (Nat.pow_mul 3 q' E3).symm
+          _ = 3 ^ (E3 * q') := by rw [Nat.mul_comm q' E3]
+          _ = (3 ^ E3) ^ q' := Nat.pow_mul 3 E3 q'
+      have hrhs_eq : (2 ^ E2) ^ q' = 2 ^ (q' * E2) := by
+        rw [← Nat.pow_mul 2 E2 q', Nat.mul_comm E2 q']
+      have h2_lt : 2 ^ ((p' + q') * E3) < 2 ^ (q' * E2) := by
+        rw [← hrhs_eq]
+        exact lt_of_le_of_lt h2_le hpow_q
+      have hexp : (p' + q') * E3 < q' * E2 := by
+        refine Nat.lt_of_not_le (fun hge => ?_)
+        have hp_ge : 2 ^ (q' * E2) ≤ 2 ^ ((p' + q') * E3) :=
+          Nat.pow_le_pow_right (by decide) hge
+        omega
+      have hexp1 : (p' + q') * E3 = q' * S_N + (p' * S_N + 7 * (p' + q') * L_1 0) := by
+        dsimp [E3]; ring
+      have hexp2 : q' * E2 = q' * S_N + 7 * q' * L_1 (N + 1) := by
+        dsimp [E2]; ring
+      omega
+    have h12 := hpq 1 2 (by decide) (by decide)
+    have h712 := hpq 7 12 (by decide) (by decide)
+    refine ⟨hpow_lt, hpq, by omega, h712, by omega⟩
+  · intro U K hstep
+    induction K with
+    | zero =>
+        simp only [Nat.pow_zero, Nat.one_mul]
+        exact Nat.le_refl _
+    | succ k ih =>
+        have ih_k := ih (fun j hj => hstep j (Nat.lt_succ_of_lt hj))
+        have hk := hstep k (Nat.lt_succ_self k)
+        have hp7 : 7 ^ (k + 1) * U 0 = 7 * (7 ^ k * U 0) := by
+          rw [Nat.pow_succ 7 k]; ring
+        have hm : 7 * (7 ^ k * U 0) ≤ 7 * U k := Nat.mul_le_mul_left 7 ih_k
+        omega
+
 end Mahler.DubickasExtension
 
 
