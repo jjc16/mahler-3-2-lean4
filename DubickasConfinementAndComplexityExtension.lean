@@ -20860,6 +20860,693 @@ theorem dense_core_two_way_16243286400_tower_super_divisibility_and_33_bit_cutof
       omega
     exact ⟨h2_36_lt, hstep_le⟩
 
+/-!
+## Section 67: Automatic Self-Propagation of `2059` and `58025` Prime Divisibilities Across Macro-Run Interfaces
+
+Why do the prime factors of `2059 = 29 × 71` and `58025 = 5² × 11 × 211` never impose new
+independent divisibility obstructions after Step `0` of a macro-wave orbit?
+Because of two exact algebraic self-propagation identities across consecutive macro-run interfaces:
+
+1. **`2 → 1` Interface Automatically Propagates `2059` to the Next `1 → 2` Interface:**
+   Whenever `58025 * 2^(7*L_1) * U_1 + 19 = 2059 * 3^(10*L_2) * W_2`, the next interface numerator
+   `58025 * 3^(7*L_1) * U_1 + 19` satisfies:
+     `2^(7*L_1) * (58025 * 3^(7*L_1) * U_1 + 19) + 19 * (2059 * Q_{L_1}) = 2059 * (3^(10*L_2 + 7*L_1) * W_2)`.
+   Because `gcd(2^(7*L_1), 2059) = 1`, we obtain unconditionally for **every** `L_1 ∈ ℕ`:
+     `2059 ∣ (58025 * 3^(7*L_1) * U_1 + 19)`  and  `(58025 * 3^(7*L_1) * U_1 + 19) % 2059 = 0`!
+2. **`1 → 2` Interface Automatically Propagates `58025` to the Next `2 → 1` Interface:**
+   Dually, whenever `58025 * 3^(7*L_1) * U_1 + 19 = 2059 * 2^(10*L_2) * W_2`, the next interface
+   numerator `2059 * 3^(10*L_2) * W_2 - 19` satisfies:
+     `2^(10*L_2) * (2059 * 3^(10*L_2) * W_2) = 58025 * (3^(10*L_2 + 7*L_1) * U_1 + 19 * R_{L_2}) + 19 * 2^(10*L_2)`.
+   Because `gcd(2^(10*L_2), 58025) = 1`, we obtain unconditionally for **every** `L_2 ∈ ℕ`:
+     `58025 ∣ (2059 * 3^(10*L_2) * W_2 - 19)`  and  `(2059 * 3^(10*L_2) * W_2) % 58025 = 19`!
+-/
+
+/-- **Automatic Self-Propagation of `2059` and `58025` Prime Divisibilities Across Macro-Run Interfaces:**
+Once a macro-run state satisfies its incoming interface equation, the prime factors of `2059` (at a
+`1`-run `U_1`) and `58025` (at a `2`-run `W_2`) divide the outgoing interface numerator automatically
+for every run length `L_1, L_2 ∈ ℕ`. -/
+theorem dense_core_interface_2059_and_58025_automatic_self_propagation :
+    -- 1. Automatic propagation of 2059 across any 1-run U_1 of length L_1:
+    (∀ (W_2 U_1 L_2 L_1 : ℕ),
+      58025 * 2 ^ (7 * L_1) * U_1 + 19 = 2059 * 3 ^ (10 * L_2) * W_2 →
+      let Q_L1 := (3 ^ (7 * L_1) - 2 ^ (7 * L_1)) / 2059
+      2 ^ (7 * L_1) * (58025 * 3 ^ (7 * L_1) * U_1 + 19) + 19 * (2059 * Q_L1) =
+        2059 * (3 ^ (10 * L_2 + 7 * L_1) * W_2) ∧
+      2059 ∣ (58025 * 3 ^ (7 * L_1) * U_1 + 19) ∧
+      (58025 * 3 ^ (7 * L_1) * U_1 + 19) % 2059 = 0) ∧
+    -- 2. Automatic propagation of 58025 across any 2-run W_2 of length L_2:
+    (∀ (U_1 W_2 L_1 L_2 : ℕ),
+      58025 * 3 ^ (7 * L_1) * U_1 + 19 = 2059 * 2 ^ (10 * L_2) * W_2 →
+      let R_L2 := (3 ^ (10 * L_2) - 2 ^ (10 * L_2)) / 58025
+      2 ^ (10 * L_2) * (2059 * 3 ^ (10 * L_2) * W_2) =
+        58025 * (3 ^ (10 * L_2 + 7 * L_1) * U_1 + 19 * R_L2) + 19 * 2 ^ (10 * L_2) ∧
+      58025 ∣ (2059 * 3 ^ (10 * L_2) * W_2 - 19) ∧
+      (2059 * 3 ^ (10 * L_2) * W_2) % 58025 = 19) := by
+  refine ⟨?_, ?_⟩
+  · intro W_2 U_1 L_2 L_1 h21 Q_L1
+    have hQ := mul_2059_div_add_two_pow_seven L_1
+    change 2059 * Q_L1 + 2 ^ (7 * L_1) = 3 ^ (7 * L_1) at hQ
+    have hp3 : 3 ^ (10 * L_2 + 7 * L_1) = 3 ^ (7 * L_1) * 3 ^ (10 * L_2) := by
+      rw [Nat.pow_add]; ring
+    have hm := congrArg (fun x => 3 ^ (7 * L_1) * x) h21
+    have hid :
+        2 ^ (7 * L_1) * (58025 * 3 ^ (7 * L_1) * U_1 + 19) + 19 * (2059 * Q_L1) =
+          2059 * (3 ^ (10 * L_2 + 7 * L_1) * W_2) := by
+      have hd1 :
+          3 ^ (7 * L_1) * (58025 * 2 ^ (7 * L_1) * U_1 + 19) =
+            2 ^ (7 * L_1) * (58025 * 3 ^ (7 * L_1) * U_1) + 19 * 3 ^ (7 * L_1) := by ring
+      have hd2 :
+          3 ^ (7 * L_1) * (2059 * 3 ^ (10 * L_2) * W_2) =
+            2059 * ((3 ^ (7 * L_1) * 3 ^ (10 * L_2)) * W_2) := by ring
+      have hd3 :
+          2 ^ (7 * L_1) * (58025 * 3 ^ (7 * L_1) * U_1 + 19) =
+            2 ^ (7 * L_1) * (58025 * 3 ^ (7 * L_1) * U_1) + 19 * 2 ^ (7 * L_1) := by ring
+      rw [hp3]
+      linarith only [hm, hd1, hd2, hd3, hQ]
+    have hle : 19 * (2059 * Q_L1) ≤ 2059 * (3 ^ (10 * L_2 + 7 * L_1) * W_2) := by
+      omega
+    have hKL_le : 19 * Q_L1 ≤ 3 ^ (10 * L_2 + 7 * L_1) * W_2 := by
+      refine Nat.le_of_not_lt (fun hgt => ?_)
+      have hm_lt : 2059 * (3 ^ (10 * L_2 + 7 * L_1) * W_2) < 2059 * (19 * Q_L1) :=
+        Nat.mul_lt_mul_of_pos_left hgt (by decide)
+      omega
+    have hfactor :
+        2 ^ (7 * L_1) * (58025 * 3 ^ (7 * L_1) * U_1 + 19) =
+          2059 * (3 ^ (10 * L_2 + 7 * L_1) * W_2 - 19 * Q_L1) := by
+      have hadd := Nat.sub_add_cancel hKL_le
+      linarith only [hid, hadd]
+    have hcop : Nat.Coprime 2059 (2 ^ (7 * L_1)) :=
+      Nat.Coprime.pow_right _ (by decide : Nat.Coprime 2059 2)
+    have hdvd : 2059 ∣ (58025 * 3 ^ (7 * L_1) * U_1 + 19) :=
+      hcop.dvd_of_dvd_mul_left ⟨3 ^ (10 * L_2 + 7 * L_1) * W_2 - 19 * Q_L1, hfactor⟩
+    exact ⟨hid, hdvd, Nat.mod_eq_zero_of_dvd hdvd⟩
+  · intro U_1 W_2 L_1 L_2 h12 R_L2
+    have hR := mul_58025_div_add_two_pow_ten L_2
+    change 58025 * R_L2 + 2 ^ (10 * L_2) = 3 ^ (10 * L_2) at hR
+    have hp3 : 3 ^ (10 * L_2 + 7 * L_1) = 3 ^ (10 * L_2) * 3 ^ (7 * L_1) :=
+      Nat.pow_add 3 (10 * L_2) (7 * L_1)
+    have hm := congrArg (fun x => 3 ^ (10 * L_2) * x) h12
+    have hid :
+        2 ^ (10 * L_2) * (2059 * 3 ^ (10 * L_2) * W_2) =
+          58025 * (3 ^ (10 * L_2 + 7 * L_1) * U_1 + 19 * R_L2) + 19 * 2 ^ (10 * L_2) := by
+      have hd1 :
+          3 ^ (10 * L_2) * (58025 * 3 ^ (7 * L_1) * U_1 + 19) =
+            58025 * ((3 ^ (10 * L_2) * 3 ^ (7 * L_1)) * U_1) + 19 * 3 ^ (10 * L_2) := by ring
+      have hd2 :
+          3 ^ (10 * L_2) * (2059 * 2 ^ (10 * L_2) * W_2) =
+            2 ^ (10 * L_2) * (2059 * 3 ^ (10 * L_2) * W_2) := by ring
+      have hd3 :
+          58025 * (3 ^ (10 * L_2 + 7 * L_1) * U_1 + 19 * R_L2) =
+            58025 * (3 ^ (10 * L_2 + 7 * L_1) * U_1) + 19 * (58025 * R_L2) := by ring
+      rw [hp3] at hd3 ⊢
+      linarith only [hm, hd1, hd2, hd3, hR]
+    have hge19 : 19 ≤ 2059 * 3 ^ (10 * L_2) * W_2 := by
+      have hge_2 : 19 ≤ 2059 * 2 ^ (10 * L_2) * W_2 := by omega
+      have hle_23 : 2 ^ (10 * L_2) ≤ 3 ^ (10 * L_2) :=
+        Nat.pow_le_pow_left (by decide) (10 * L_2)
+      have hm1 : 2059 * 2 ^ (10 * L_2) ≤ 2059 * 3 ^ (10 * L_2) :=
+        Nat.mul_le_mul_left 2059 hle_23
+      have hm2 : 2059 * 2 ^ (10 * L_2) * W_2 ≤ 2059 * 3 ^ (10 * L_2) * W_2 :=
+        Nat.mul_le_mul_right W_2 hm1
+      exact le_trans hge_2 hm2
+    have hfactor :
+        2 ^ (10 * L_2) * (2059 * 3 ^ (10 * L_2) * W_2 - 19) =
+          58025 * (3 ^ (10 * L_2 + 7 * L_1) * U_1 + 19 * R_L2) := by
+      have hadd := Nat.sub_add_cancel hge19
+      have hd :
+          2 ^ (10 * L_2) * (2059 * 3 ^ (10 * L_2) * W_2 - 19) + 19 * 2 ^ (10 * L_2) =
+            2 ^ (10 * L_2) * (2059 * 3 ^ (10 * L_2) * W_2) := by
+        calc 2 ^ (10 * L_2) * (2059 * 3 ^ (10 * L_2) * W_2 - 19) + 19 * 2 ^ (10 * L_2)
+            = 2 ^ (10 * L_2) * ((2059 * 3 ^ (10 * L_2) * W_2 - 19) + 19) := by ring
+          _ = 2 ^ (10 * L_2) * (2059 * 3 ^ (10 * L_2) * W_2) := by rw [hadd]
+      linarith only [hid, hd]
+    have hcop : Nat.Coprime 58025 (2 ^ (10 * L_2)) :=
+      Nat.Coprime.pow_right _ (by decide : Nat.Coprime 58025 2)
+    have hdvd : 58025 ∣ (2059 * 3 ^ (10 * L_2) * W_2 - 19) :=
+      hcop.dvd_of_dvd_mul_left ⟨3 ^ (10 * L_2 + 7 * L_1) * U_1 + 19 * R_L2, hfactor⟩
+    rcases hdvd with ⟨K, hK⟩
+    have hmod : (2059 * 3 ^ (10 * L_2) * W_2) % 58025 = 19 := by
+      have hadd := Nat.sub_add_cancel hge19
+      have hlin : 2059 * 3 ^ (10 * L_2) * W_2 = 19 + 58025 * K := by
+        linarith only [hK, hadd]
+      rw [hlin, Nat.add_mul_mod_self_left]
+    exact ⟨hid, ⟨K, hK⟩, hmod⟩
+
+/-!
+## Section 68: The Universal Multi-Wave Constant of Motion (`W(0) - 1` and `U(0)`) & Full-Power `3`-Adic Remainder Laws for All Horizons `N ≥ 0`
+
+In Sections 47 and 49, we proved the single-wave (`N = 0`) floor invariants
+`⌊2^(7*L_3 + 10*L_4) * W_4 / 3^(10*L_2 + 7*L_3)⌋ = W_2 - 1` and
+`⌊2^(10*L_2 + 7*L_3) * W_3 / 3^(10*L_2 + 7*m_1)⌋ = U_1`.
+Because Section 57 proved `2059 * Acc_N + 2^(S_N) + 16243286400 * CD_N = 3^(S_N)` and Section 62
+proved `58025 * Acc̃_N + 2^(S̃_N) + 124499856384 * CD̃_N = 3^(S̃_N)`, we obtain **unconditionally for
+every multi-wave horizon `N ∈ ℕ`**:
+  `2059 * Acc_N < 3^(S_N)`  and  `58025 * Acc̃_N < 3^(S̃_N)`!
+
+Since `2059 * 59049 = 121,581,891 = 19 * 6,399,046 + 17 > 19 * 6,377,292` (for `1 ≤ L_2(0)`) and
+`58025 * 2187 = 126,900,675 = 19 * 6,678,982 + 17 > 19 * 6,676,911` (for `1 ≤ L_1(0)`), the total
+accumulated drift across **any number `N + 1` of waves** satisfies:
+  `6,377,292 * (19 * Acc_N) < 3^(S_N + 10*L_2(0))`  and  `6,676,911 * (19 * Acc̃_N) < 3^(S̃_N + 7*L_1(0))`.
+
+Consequently, for **every multi-wave horizon `N ∈ ℕ` simultaneously**:
+1. **Universal `W`-Wave Multi-Wave Corridor, Constant of Motion & Full-Power `3`-Adic Remainder:**
+   - `3^(S_N + 10*L_2(0)) * (W(0) - 1) < 2^(S_N + 10*L_2(N+1)) * W(N+1) < 3^(S_N + 10*L_2(0)) * W(0)`,
+   - `(2^(S_N + 10*L_2(N+1)) * W(N+1)) / 3^(S_N + 10*L_2(0)) = W(0) - 1`,
+   - `(2^(S_N + 10*L_2(N+1)) * W(N+1)) % 3^(S_N + 10*L_2(0)) = 3^(S_N + 10*L_2(0)) - 19 * Acc_N`.
+2. **Universal `U`-Wave Multi-Wave Corridor, Constant of Motion & Full-Power `3`-Adic Remainder:**
+   - `3^(S̃_N + 7*L_1(0)) * U(0) < 2^(S̃_N + 7*L_1(N+1)) * U(N+1) < 3^(S̃_N + 7*L_1(0)) * (U(0) + 1)`,
+   - `(2^(S̃_N + 7*L_1(N+1)) * U(N+1)) / 3^(S̃_N + 7*L_1(0)) = U(0)`,
+   - `(2^(S̃_N + 7*L_1(N+1)) * U(N+1)) % 3^(S̃_N + 7*L_1(0)) = 19 * Acc̃_N`.
+-/
+
+/-- **The Universal Multi-Wave Constant of Motion (`W(0) - 1` and `U(0)`) & Full-Power `3`-Adic Remainder Laws for All Horizons `N ≥ 0`:**
+Across any `N + 1` consecutive waves (`N ∈ ℕ`), `2059 * Acc_N < 3^(S_N)` and `58025 * Acc̃_N < 3^(S̃_N)`
+lock the multi-wave integer quotients to `W(0) - 1` and `U(0)` and the full-power `3`-adic remainders
+to `3^(S_N + 10*L_2(0)) - 19 * Acc_N` and `19 * Acc̃_N`. -/
+theorem dense_core_universal_multi_wave_constant_of_motion_and_three_adic_remainders :
+    -- 1. Universal W-wave multi-wave corridor, Constant of Motion W(0) - 1, and exact 3-adic remainder for all N ∈ ℕ:
+    (∀ (W L_2 L_1 : ℕ → ℕ) (N : ℕ),
+      1 ≤ W 0 → 1 ≤ L_2 0 →
+      (∀ t ≤ N, 1 ≤ L_1 t) →
+      (∀ n ≤ N,
+        2 ^ (7 * L_1 n + 10 * L_2 (n + 1)) * W (n + 1) +
+          19 * ((3 ^ (7 * L_1 n) - 2 ^ (7 * L_1 n)) / 2059) =
+          3 ^ (10 * L_2 n + 7 * L_1 n) * W n) →
+      let S_N := waveInteriorExp L_2 L_1 N
+      let Acc_N := waveInteriorAcc L_2 L_1 N
+      1 ≤ Acc_N ∧
+      2059 * Acc_N < 3 ^ S_N ∧
+      6377292 * (19 * Acc_N) < 3 ^ (S_N + 10 * L_2 0) ∧
+      6377292 * (3 ^ (S_N + 10 * L_2 0) * W 0 - 2 ^ (S_N + 10 * L_2 (N + 1)) * W (N + 1)) <
+        3 ^ (S_N + 10 * L_2 0) ∧
+      3 ^ (S_N + 10 * L_2 0) * (W 0 - 1) < 2 ^ (S_N + 10 * L_2 (N + 1)) * W (N + 1) ∧
+      2 ^ (S_N + 10 * L_2 (N + 1)) * W (N + 1) < 3 ^ (S_N + 10 * L_2 0) * W 0 ∧
+      (2 ^ (S_N + 10 * L_2 (N + 1)) * W (N + 1)) / 3 ^ (S_N + 10 * L_2 0) = W 0 - 1 ∧
+      (2 ^ (S_N + 10 * L_2 (N + 1)) * W (N + 1)) % 3 ^ (S_N + 10 * L_2 0) =
+        3 ^ (S_N + 10 * L_2 0) - 19 * Acc_N) ∧
+    -- 2. Universal U-wave multi-wave corridor, Constant of Motion U(0), and exact 3-adic remainder for all N ∈ ℕ:
+    (∀ (U L_1 L_2 : ℕ → ℕ) (N : ℕ),
+      1 ≤ L_1 0 →
+      (∀ t ≤ N, 1 ≤ L_2 t) →
+      (∀ n ≤ N,
+        3 ^ (10 * L_2 n + 7 * L_1 n) * U n +
+          19 * ((3 ^ (10 * L_2 n) - 2 ^ (10 * L_2 n)) / 58025) =
+          2 ^ (10 * L_2 n + 7 * L_1 (n + 1)) * U (n + 1)) →
+      let S_N := dualWaveInteriorExp L_1 L_2 N
+      let Acc_N := dualWaveInteriorAcc L_1 L_2 N
+      1 ≤ Acc_N ∧
+      58025 * Acc_N < 3 ^ S_N ∧
+      6676911 * (19 * Acc_N) < 3 ^ (S_N + 7 * L_1 0) ∧
+      6676911 * (2 ^ (S_N + 7 * L_1 (N + 1)) * U (N + 1) - 3 ^ (S_N + 7 * L_1 0) * U 0) <
+        3 ^ (S_N + 7 * L_1 0) ∧
+      3 ^ (S_N + 7 * L_1 0) * U 0 < 2 ^ (S_N + 7 * L_1 (N + 1)) * U (N + 1) ∧
+      2 ^ (S_N + 7 * L_1 (N + 1)) * U (N + 1) < 3 ^ (S_N + 7 * L_1 0) * (U 0 + 1) ∧
+      (2 ^ (S_N + 7 * L_1 (N + 1)) * U (N + 1)) / 3 ^ (S_N + 7 * L_1 0) = U 0 ∧
+      (2 ^ (S_N + 7 * L_1 (N + 1)) * U (N + 1)) % 3 ^ (S_N + 7 * L_1 0) = 19 * Acc_N) := by
+  refine ⟨?_, ?_⟩
+  · intro W L_2 L_1 N hW0 hL2_0 hL1 hrec S_N Acc_N
+    have hAcc_pos : 1 ≤ Acc_N := waveInteriorAcc_pos L_2 L_1 (hL1 0 (Nat.zero_le _)) N
+    have hid :=
+      (dense_core_waveInteriorAcc_telescopic_cross_defect_and_mirror_collapses.1 L_2 L_1 N hL1).1
+    change 2059 * Acc_N + 2 ^ S_N + 16243286400 * waveCrossDefect L_2 L_1 N = 3 ^ S_N at hid
+    have h2_pos : 1 ≤ 2 ^ S_N := Nat.pow_pos (by decide)
+    have h2059_lt : 2059 * Acc_N < 3 ^ S_N := by linarith only [hid, h2_pos]
+    have hp3_L2 : 59049 ≤ 3 ^ (10 * L_2 0) := by
+      have h10 : 10 ≤ 10 * L_2 0 := by omega
+      have hp := Nat.pow_le_pow_right (by decide : 1 ≤ 3) h10
+      exact hp
+    have hpow3_split : 3 ^ (S_N + 10 * L_2 0) = 3 ^ (10 * L_2 0) * 3 ^ S_N := by
+      rw [Nat.pow_add]; ring
+    have hcor_Acc : 6377292 * (19 * Acc_N) < 3 ^ (S_N + 10 * L_2 0) := by
+      have hm1 : 59049 * (2059 * Acc_N) < 59049 * 3 ^ S_N :=
+        Nat.mul_lt_mul_of_pos_left h2059_lt (by decide)
+      have hm2 : 59049 * 3 ^ S_N ≤ 3 ^ (10 * L_2 0) * 3 ^ S_N :=
+        Nat.mul_le_mul_right (3 ^ S_N) hp3_L2
+      rw [hpow3_split]
+      linarith only [hm1, hm2, hAcc_pos]
+    have hm :=
+      (dense_core_symmetric_multi_wave_master_identity_and_boundary_independence.2
+        W L_2 L_1 N hrec).1
+    change 2 ^ S_N * (2 ^ (10 * L_2 (N + 1)) * W (N + 1)) + 19 * Acc_N =
+        3 ^ S_N * (3 ^ (10 * L_2 0) * W 0) at hm
+    have hp2_N :
+        2 ^ (S_N + 10 * L_2 (N + 1)) * W (N + 1) =
+          2 ^ S_N * (2 ^ (10 * L_2 (N + 1)) * W (N + 1)) := by
+      rw [Nat.pow_add]; ring
+    have hp3_0 :
+        3 ^ (S_N + 10 * L_2 0) * W 0 = 3 ^ S_N * (3 ^ (10 * L_2 0) * W 0) := by
+      rw [Nat.pow_add]; ring
+    set M3 := 3 ^ (S_N + 10 * L_2 0)
+    set E2 := 2 ^ (S_N + 10 * L_2 (N + 1)) * W (N + 1)
+    have hmaster_flat : E2 + 19 * Acc_N = M3 * W 0 := by
+      rw [hp2_N, hp3_0, hm]
+    have hdiff_eq : M3 * W 0 - E2 = 19 * Acc_N := by omega
+    have hcor_W : 6377292 * (M3 * W 0 - E2) < M3 := by
+      rw [hdiff_eq]; exact hcor_Acc
+    have h19_lt_M3 : 19 * Acc_N < M3 := by linarith only [hcor_Acc, hAcc_pos]
+    have hW0_split : M3 * (W 0 - 1) + M3 = M3 * W 0 := by
+      have hw : (W 0 - 1) + 1 = W 0 := by omega
+      calc M3 * (W 0 - 1) + M3 = M3 * ((W 0 - 1) + 1) := by ring
+        _ = M3 * W 0 := by rw [hw]
+    have hlow : M3 * (W 0 - 1) < E2 := by linarith only [hmaster_flat, h19_lt_M3, hW0_split]
+    have hhigh : E2 < M3 * W 0 := by linarith only [hmaster_flat, hAcc_pos]
+    have hrem_lt : M3 - 19 * Acc_N < M3 := by omega
+    have hbez : E2 + M3 * 0 = M3 * (W 0 - 1) + (M3 - 19 * Acc_N) := by
+      have hsub := Nat.sub_add_cancel (le_of_lt h19_lt_M3)
+      linarith only [hmaster_flat, hW0_split, hsub]
+    have hdivmod := mod_and_div_of_bezout (V := E2) (M := M3) (a := 0) (b := W 0 - 1)
+      (r := M3 - 19 * Acc_N) hbez hrem_lt
+    have hM3_pos : 0 < M3 := Nat.pow_pos (by decide)
+    have hmul_M3 : M3 * (E2 / M3) = M3 * (W 0 - 1) := by
+      linarith only [hdivmod.2, hbez]
+    have hfloor : E2 / M3 = W 0 - 1 := Nat.eq_of_mul_eq_mul_left hM3_pos hmul_M3
+    exact ⟨hAcc_pos, h2059_lt, hcor_Acc, hcor_W, hlow, hhigh, hfloor, hdivmod.1⟩
+  · intro U L_1 L_2 N hL1_0 hL2 hrec S_N Acc_N
+    have hAcc_pos : 1 ≤ Acc_N := dualWaveInteriorAcc_pos L_1 L_2 (hL2 0 (Nat.zero_le _)) N
+    have hid :=
+      (dense_core_dualWaveInteriorAcc_telescopic_cross_defect_and_mirror_collapses.1 L_1 L_2 N hL2).1
+    change 58025 * Acc_N + 2 ^ S_N + 124499856384 * dualWaveCrossDefect L_1 L_2 N = 3 ^ S_N at hid
+    have h2_pos : 1 ≤ 2 ^ S_N := Nat.pow_pos (by decide)
+    have h58025_lt : 58025 * Acc_N < 3 ^ S_N := by linarith only [hid, h2_pos]
+    have hp3_L1 : 2187 ≤ 3 ^ (7 * L_1 0) := by
+      have h7 : 7 ≤ 7 * L_1 0 := by omega
+      exact Nat.pow_le_pow_right (by decide : 1 ≤ 3) h7
+    have hpow3_split : 3 ^ (S_N + 7 * L_1 0) = 3 ^ (7 * L_1 0) * 3 ^ S_N := by
+      rw [Nat.pow_add]; ring
+    have hcor_Acc : 6676911 * (19 * Acc_N) < 3 ^ (S_N + 7 * L_1 0) := by
+      have hm1 : 2187 * (58025 * Acc_N) < 2187 * 3 ^ S_N :=
+        Nat.mul_lt_mul_of_pos_left h58025_lt (by decide)
+      have hm2 : 2187 * 3 ^ S_N ≤ 3 ^ (7 * L_1 0) * 3 ^ S_N :=
+        Nat.mul_le_mul_right (3 ^ S_N) hp3_L1
+      rw [hpow3_split]
+      linarith only [hm1, hm2, hAcc_pos]
+    have hm :=
+      (dense_core_dual_one_run_multi_wave_master_identity_and_2059_super_divisibility.2.1
+        U L_1 L_2 N hrec).1
+    change 3 ^ S_N * (3 ^ (7 * L_1 0) * U 0) + 19 * Acc_N =
+        2 ^ S_N * (2 ^ (7 * L_1 (N + 1)) * U (N + 1)) at hm
+    have hp3_0 : 3 ^ (S_N + 7 * L_1 0) * U 0 = 3 ^ S_N * (3 ^ (7 * L_1 0) * U 0) := by
+      rw [Nat.pow_add]; ring
+    have hp2_N :
+        2 ^ (S_N + 7 * L_1 (N + 1)) * U (N + 1) =
+          2 ^ S_N * (2 ^ (7 * L_1 (N + 1)) * U (N + 1)) := by
+      rw [Nat.pow_add]; ring
+    set M3 := 3 ^ (S_N + 7 * L_1 0)
+    set E2 := 2 ^ (S_N + 7 * L_1 (N + 1)) * U (N + 1)
+    have hmaster_flat : M3 * U 0 + 19 * Acc_N = E2 := by
+      rw [hp3_0, hp2_N, hm]
+    have hdiff_eq : E2 - M3 * U 0 = 19 * Acc_N := by omega
+    have hcor_U : 6676911 * (E2 - M3 * U 0) < M3 := by
+      rw [hdiff_eq]; exact hcor_Acc
+    have h19_lt_M3 : 19 * Acc_N < M3 := by linarith only [hcor_Acc, hAcc_pos]
+    have hlow : M3 * U 0 < E2 := by linarith only [hmaster_flat, hAcc_pos]
+    have hhigh : E2 < M3 * (U 0 + 1) := by
+      have hd : M3 * (U 0 + 1) = M3 * U 0 + M3 := by ring
+      linarith only [hmaster_flat, h19_lt_M3, hd]
+    have hbez : E2 + M3 * 0 = M3 * U 0 + 19 * Acc_N := by linarith only [hmaster_flat]
+    have hdivmod := mod_and_div_of_bezout (V := E2) (M := M3) (a := 0) (b := U 0)
+      (r := 19 * Acc_N) hbez h19_lt_M3
+    have hM3_pos : 0 < M3 := Nat.pow_pos (by decide)
+    have hmul_M3 : M3 * (E2 / M3) = M3 * U 0 := by
+      linarith only [hdivmod.2, hbez]
+    have hfloor : E2 / M3 = U 0 := Nat.eq_of_mul_eq_mul_left hM3_pos hmul_M3
+    exact ⟨hAcc_pos, h58025_lt, hcor_Acc, hcor_U, hlow, hhigh, hfloor, hdivmod.1⟩
+
+/-!
+## Section 69: Exact Cross-Defect–Dual-Accumulator Factorization (`CD_{m+1} = 2^(7*L_1(0)-7) * 3^(7*L_1(m+1)-7) * Acc̃_m`) & the `W`–`U` Complementarity Law
+
+Why did Section 63 reveal that `waveCrossDefect L_2 L_1 (m + 1)` (`CD_{m+1}`) always has exact
+`2`-adic valuation `7 * L_1(0) - 7` and exact `3`-adic valuation `7 * L_1(m+1) - 7`?
+Because `CD_{m+1}` is **literally** `2^(7*L_1(0) - 7) * 3^(7*L_1(m+1) - 7)` times the **dual `U`-wave
+accumulator** `dualWaveInteriorAcc L_1 (fun t => L_2 (t + 1)) m` (`Acc̃_m`) on the shifted interior runs!
+
+1. **Exact Exponent Shift Duality (`m ∈ ℕ`):**
+   - `waveInteriorExp L_2 L_1 (m + 1) = 7 * L_1 0 + dualWaveInteriorExp L_1 (fun t => L_2 (t + 1)) m + 7 * L_1 (m + 1)`,
+   - `dualWaveInteriorExp L_1 L_2 (m + 1) = 10 * L_2 0 + waveInteriorExp L_2 (fun t => L_1 (t + 1)) m + 10 * L_2 (m + 1)`.
+2. **Exact Cross-Defect–Dual-Accumulator Factorizations (`m ∈ ℕ`):**
+   - `waveCrossDefect L_2 L_1 (m + 1) = 2^(7*L_1(0) - 7) * 3^(7*L_1(m+1) - 7) * dualWaveInteriorAcc L_1 (fun t => L_2 (t + 1)) m`,
+   - `dualWaveCrossDefect L_1 L_2 (m + 1) = 2^(10*L_2(0) - 10) * 3^(10*L_2(m+1) - 10) * waveInteriorAcc L_2 (fun t => L_1 (t + 1)) m`.
+3. **The Exact `W`–`U` Complementarity Laws (Zero Path-Dependent Remainder!):**
+   Substituting these factorizations into Sections 57 and 62 eliminates `CD_{m+1}` and `CD̃_{m+1}`
+   completely and proves that the `W`-wave accumulator and the interleaved `U`-wave accumulator are
+   **exact complementary halves** of `3^(S_{m+1}) - 2^(S_{m+1})`:
+   - `2059 * Acc_{m+1} + 58025 * 2^(7*L_1(0)) * 3^(7*L_1(m+1)) * Acc̃_m + 2^(S_{m+1}) = 3^(S_{m+1})`,
+   - `58025 * Acc̃_{m+1} + 2059 * 2^(10*L_2(0)) * 3^(10*L_2(m+1)) * Acc_m + 2^(S̃_{m+1}) = 3^(S̃_{m+1})`!
+-/
+
+private lemma waveInteriorExp_eq_add_dualWaveInteriorExp
+    (L_2 L_1 : ℕ → ℕ) (m : ℕ) :
+    waveInteriorExp L_2 L_1 (m + 1) =
+      7 * L_1 0 + dualWaveInteriorExp L_1 (fun t => L_2 (t + 1)) m + 7 * L_1 (m + 1) := by
+  induction m with
+  | zero =>
+      change 7 * L_1 0 + (10 * L_2 1 + 7 * L_1 1) =
+        7 * L_1 0 + 10 * L_2 1 + 7 * L_1 1
+      omega
+  | succ k ih =>
+      change waveInteriorExp L_2 L_1 (k + 1) + (10 * L_2 (k + 2) + 7 * L_1 (k + 2)) =
+        7 * L_1 0 +
+          (dualWaveInteriorExp L_1 (fun t => L_2 (t + 1)) k +
+            (7 * L_1 (k + 1) + 10 * L_2 (k + 2))) +
+          7 * L_1 (k + 2)
+      omega
+
+private lemma dualWaveInteriorExp_eq_add_waveInteriorExp
+    (L_1 L_2 : ℕ → ℕ) (m : ℕ) :
+    dualWaveInteriorExp L_1 L_2 (m + 1) =
+      10 * L_2 0 + waveInteriorExp L_2 (fun t => L_1 (t + 1)) m + 10 * L_2 (m + 1) := by
+  induction m with
+  | zero =>
+      change 10 * L_2 0 + (7 * L_1 1 + 10 * L_2 1) =
+        10 * L_2 0 + 7 * L_1 1 + 10 * L_2 1
+      omega
+  | succ k ih =>
+      change dualWaveInteriorExp L_1 L_2 (k + 1) + (7 * L_1 (k + 2) + 10 * L_2 (k + 2)) =
+        10 * L_2 0 +
+          (waveInteriorExp L_2 (fun t => L_1 (t + 1)) k +
+            (10 * L_2 (k + 1) + 7 * L_1 (k + 2))) +
+          10 * L_2 (k + 2)
+      omega
+
+private lemma waveCrossDefect_eq_mul_dualWaveInteriorAcc
+    (L_2 L_1 : ℕ → ℕ) (m : ℕ) (hL1 : ∀ t ≤ m + 1, 1 ≤ L_1 t) :
+    waveCrossDefect L_2 L_1 (m + 1) =
+      2 ^ (7 * L_1 0 - 7) * 3 ^ (7 * L_1 (m + 1) - 7) *
+        dualWaveInteriorAcc L_1 (fun t => L_2 (t + 1)) m := by
+  induction m with
+  | zero =>
+      simp only [waveCrossDefect, waveInteriorExp, dualWaveInteriorAcc, Nat.mul_zero, Nat.zero_add]
+  | succ k ih =>
+      have ih_k := ih (fun t ht => hL1 t (Nat.le_succ_of_le ht))
+      have hL1_0 : 1 ≤ L_1 0 := hL1 0 (Nat.zero_le _)
+      have hL1_k1 : 1 ≤ L_1 (k + 1) := hL1 (k + 1) (by omega)
+      have hL1_k2 : 1 ≤ L_1 (k + 2) := hL1 (k + 2) (Nat.le_refl _)
+      set D_k := dualWaveInteriorAcc L_1 (fun t => L_2 (t + 1)) k
+      set SD_k := dualWaveInteriorExp L_1 (fun t => L_2 (t + 1)) k
+      set R_k2 := (3 ^ (10 * L_2 (k + 2)) - 2 ^ (10 * L_2 (k + 2))) / 58025
+      have hexp_shift := waveInteriorExp_eq_add_dualWaveInteriorExp L_2 L_1 k
+      have hp3_swap :
+          3 ^ (10 * L_2 (k + 2) + 7 * L_1 (k + 2)) * 3 ^ (7 * L_1 (k + 1) - 7) =
+            3 ^ (7 * L_1 (k + 2) - 7) * 3 ^ (7 * L_1 (k + 1) + 10 * L_2 (k + 2)) := by
+        rw [← Nat.pow_add, ← Nat.pow_add]
+        congr 1
+        omega
+      have hp2_shift :
+          2 ^ (waveInteriorExp L_2 L_1 (k + 1) - 7) =
+            2 ^ (7 * L_1 0 - 7) * 2 ^ (SD_k + 7 * L_1 (k + 1)) := by
+        rw [← Nat.pow_add]
+        congr 1
+        dsimp [SD_k] at hexp_shift ⊢
+        omega
+      change 3 ^ (10 * L_2 (k + 2) + 7 * L_1 (k + 2)) * waveCrossDefect L_2 L_1 (k + 1) +
+          2 ^ (waveInteriorExp L_2 L_1 (k + 1) - 7) * 3 ^ (7 * L_1 (k + 2) - 7) * R_k2 =
+        2 ^ (7 * L_1 0 - 7) * 3 ^ (7 * L_1 (k + 2) - 7) *
+          (3 ^ (7 * L_1 (k + 1) + 10 * L_2 (k + 2)) * D_k +
+            2 ^ (SD_k + 7 * L_1 (k + 1)) * R_k2)
+      rw [ih_k, hp2_shift]
+      calc 3 ^ (10 * L_2 (k + 2) + 7 * L_1 (k + 2)) *
+              (2 ^ (7 * L_1 0 - 7) * 3 ^ (7 * L_1 (k + 1) - 7) * D_k) +
+              2 ^ (7 * L_1 0 - 7) * 2 ^ (SD_k + 7 * L_1 (k + 1)) *
+                3 ^ (7 * L_1 (k + 2) - 7) * R_k2
+          = 2 ^ (7 * L_1 0 - 7) *
+              (3 ^ (10 * L_2 (k + 2) + 7 * L_1 (k + 2)) * 3 ^ (7 * L_1 (k + 1) - 7)) * D_k +
+              2 ^ (7 * L_1 0 - 7) * 3 ^ (7 * L_1 (k + 2) - 7) *
+                (2 ^ (SD_k + 7 * L_1 (k + 1)) * R_k2) := by ring
+        _ = 2 ^ (7 * L_1 0 - 7) *
+              (3 ^ (7 * L_1 (k + 2) - 7) * 3 ^ (7 * L_1 (k + 1) + 10 * L_2 (k + 2))) * D_k +
+              2 ^ (7 * L_1 0 - 7) * 3 ^ (7 * L_1 (k + 2) - 7) *
+                (2 ^ (SD_k + 7 * L_1 (k + 1)) * R_k2) := by rw [hp3_swap]
+        _ = 2 ^ (7 * L_1 0 - 7) * 3 ^ (7 * L_1 (k + 2) - 7) *
+              (3 ^ (7 * L_1 (k + 1) + 10 * L_2 (k + 2)) * D_k +
+                2 ^ (SD_k + 7 * L_1 (k + 1)) * R_k2) := by ring
+
+private lemma dualWaveCrossDefect_eq_mul_waveInteriorAcc
+    (L_1 L_2 : ℕ → ℕ) (m : ℕ) (hL2 : ∀ t ≤ m + 1, 1 ≤ L_2 t) :
+    dualWaveCrossDefect L_1 L_2 (m + 1) =
+      2 ^ (10 * L_2 0 - 10) * 3 ^ (10 * L_2 (m + 1) - 10) *
+        waveInteriorAcc L_2 (fun t => L_1 (t + 1)) m := by
+  induction m with
+  | zero =>
+      simp only [dualWaveCrossDefect, dualWaveInteriorExp, waveInteriorAcc, Nat.mul_zero, Nat.zero_add]
+  | succ k ih =>
+      have ih_k := ih (fun t ht => hL2 t (Nat.le_succ_of_le ht))
+      have hL2_0 : 1 ≤ L_2 0 := hL2 0 (Nat.zero_le _)
+      have hL2_k1 : 1 ≤ L_2 (k + 1) := hL2 (k + 1) (by omega)
+      have hL2_k2 : 1 ≤ L_2 (k + 2) := hL2 (k + 2) (Nat.le_refl _)
+      set W_k := waveInteriorAcc L_2 (fun t => L_1 (t + 1)) k
+      set SW_k := waveInteriorExp L_2 (fun t => L_1 (t + 1)) k
+      set Q_k2 := (3 ^ (7 * L_1 (k + 2)) - 2 ^ (7 * L_1 (k + 2))) / 2059
+      have hexp_shift := dualWaveInteriorExp_eq_add_waveInteriorExp L_1 L_2 k
+      have hp3_swap :
+          3 ^ (7 * L_1 (k + 2) + 10 * L_2 (k + 2)) * 3 ^ (10 * L_2 (k + 1) - 10) =
+            3 ^ (10 * L_2 (k + 2) - 10) * 3 ^ (10 * L_2 (k + 1) + 7 * L_1 (k + 2)) := by
+        rw [← Nat.pow_add, ← Nat.pow_add]
+        congr 1
+        omega
+      have hp2_shift :
+          2 ^ (dualWaveInteriorExp L_1 L_2 (k + 1) - 10) =
+            2 ^ (10 * L_2 0 - 10) * 2 ^ (SW_k + 10 * L_2 (k + 1)) := by
+        rw [← Nat.pow_add]
+        congr 1
+        dsimp [SW_k] at hexp_shift ⊢
+        omega
+      change 3 ^ (7 * L_1 (k + 2) + 10 * L_2 (k + 2)) * dualWaveCrossDefect L_1 L_2 (k + 1) +
+          2 ^ (dualWaveInteriorExp L_1 L_2 (k + 1) - 10) * 3 ^ (10 * L_2 (k + 2) - 10) * Q_k2 =
+        2 ^ (10 * L_2 0 - 10) * 3 ^ (10 * L_2 (k + 2) - 10) *
+          (3 ^ (10 * L_2 (k + 1) + 7 * L_1 (k + 2)) * W_k +
+            2 ^ (SW_k + 10 * L_2 (k + 1)) * Q_k2)
+      rw [ih_k, hp2_shift]
+      calc 3 ^ (7 * L_1 (k + 2) + 10 * L_2 (k + 2)) *
+              (2 ^ (10 * L_2 0 - 10) * 3 ^ (10 * L_2 (k + 1) - 10) * W_k) +
+              2 ^ (10 * L_2 0 - 10) * 2 ^ (SW_k + 10 * L_2 (k + 1)) *
+                3 ^ (10 * L_2 (k + 2) - 10) * Q_k2
+          = 2 ^ (10 * L_2 0 - 10) *
+              (3 ^ (7 * L_1 (k + 2) + 10 * L_2 (k + 2)) * 3 ^ (10 * L_2 (k + 1) - 10)) * W_k +
+              2 ^ (10 * L_2 0 - 10) * 3 ^ (10 * L_2 (k + 2) - 10) *
+                (2 ^ (SW_k + 10 * L_2 (k + 1)) * Q_k2) := by ring
+        _ = 2 ^ (10 * L_2 0 - 10) *
+              (3 ^ (10 * L_2 (k + 2) - 10) * 3 ^ (10 * L_2 (k + 1) + 7 * L_1 (k + 2))) * W_k +
+              2 ^ (10 * L_2 0 - 10) * 3 ^ (10 * L_2 (k + 2) - 10) *
+                (2 ^ (SW_k + 10 * L_2 (k + 1)) * Q_k2) := by rw [hp3_swap]
+        _ = 2 ^ (10 * L_2 0 - 10) * 3 ^ (10 * L_2 (k + 2) - 10) *
+              (3 ^ (10 * L_2 (k + 1) + 7 * L_1 (k + 2)) * W_k +
+                2 ^ (SW_k + 10 * L_2 (k + 1)) * Q_k2) := by ring
+
+/-- **Exact Cross-Defect–Dual-Accumulator Factorization (`CD_{m+1} = 2^(7*L_1(0)-7) * 3^(7*L_1(m+1)-7) * Acc̃_m`) & the `W`–`U` Complementarity Law:**
+For every `m ∈ ℕ`, `waveCrossDefect L_2 L_1 (m + 1)` factors as `2^(7*L_1(0)-7) * 3^(7*L_1(m+1)-7)`
+times the shifted dual `U`-wave accumulator `dualWaveInteriorAcc L_1 (fun t => L_2 (t + 1)) m` (and
+dually for `dualWaveCrossDefect`), uniting `Acc_{m+1}` and `Acc̃_m` into the exact complementarity law
+`2059 * Acc_{m+1} + 58025 * 2^(7*L_1(0)) * 3^(7*L_1(m+1)) * Acc̃_m + 2^(S_{m+1}) = 3^(S_{m+1})`. -/
+theorem dense_core_cross_defect_dual_accumulator_factorization_and_complementarity :
+    -- 1. Exact exponent shift duality:
+    (∀ (L_2 L_1 : ℕ → ℕ) (m : ℕ),
+      waveInteriorExp L_2 L_1 (m + 1) =
+        7 * L_1 0 + dualWaveInteriorExp L_1 (fun t => L_2 (t + 1)) m + 7 * L_1 (m + 1) ∧
+      dualWaveInteriorExp L_1 L_2 (m + 1) =
+        10 * L_2 0 + waveInteriorExp L_2 (fun t => L_1 (t + 1)) m + 10 * L_2 (m + 1)) ∧
+    -- 2. Exact factorization of waveCrossDefect and W-U complementarity law:
+    (∀ (L_2 L_1 : ℕ → ℕ) (m : ℕ),
+      (∀ t ≤ m + 1, 1 ≤ L_1 t) →
+      let S_m1 := waveInteriorExp L_2 L_1 (m + 1)
+      let Acc_m1 := waveInteriorAcc L_2 L_1 (m + 1)
+      let DualAcc_m := dualWaveInteriorAcc L_1 (fun t => L_2 (t + 1)) m
+      waveCrossDefect L_2 L_1 (m + 1) =
+        2 ^ (7 * L_1 0 - 7) * 3 ^ (7 * L_1 (m + 1) - 7) * DualAcc_m ∧
+      2059 * Acc_m1 + 58025 * 2 ^ (7 * L_1 0) * 3 ^ (7 * L_1 (m + 1)) * DualAcc_m + 2 ^ S_m1 =
+        3 ^ S_m1) ∧
+    -- 3. Dual factorization of dualWaveCrossDefect and U-W complementarity law:
+    (∀ (L_1 L_2 : ℕ → ℕ) (m : ℕ),
+      (∀ t ≤ m + 1, 1 ≤ L_2 t) →
+      let S_m1 := dualWaveInteriorExp L_1 L_2 (m + 1)
+      let DualAcc_m1 := dualWaveInteriorAcc L_1 L_2 (m + 1)
+      let Acc_m := waveInteriorAcc L_2 (fun t => L_1 (t + 1)) m
+      dualWaveCrossDefect L_1 L_2 (m + 1) =
+        2 ^ (10 * L_2 0 - 10) * 3 ^ (10 * L_2 (m + 1) - 10) * Acc_m ∧
+      58025 * DualAcc_m1 + 2059 * 2 ^ (10 * L_2 0) * 3 ^ (10 * L_2 (m + 1)) * Acc_m + 2 ^ S_m1 =
+        3 ^ S_m1) := by
+  refine ⟨fun L_2 L_1 m => ⟨waveInteriorExp_eq_add_dualWaveInteriorExp L_2 L_1 m,
+    dualWaveInteriorExp_eq_add_waveInteriorExp L_1 L_2 m⟩, ?_, ?_⟩
+  · intro L_2 L_1 m hL1 S_m1 Acc_m1 DualAcc_m
+    have hfac := waveCrossDefect_eq_mul_dualWaveInteriorAcc L_2 L_1 m hL1
+    have hid :=
+      (dense_core_waveInteriorAcc_telescopic_cross_defect_and_mirror_collapses.1
+        L_2 L_1 (m + 1) hL1).1
+    change 2059 * Acc_m1 + 2 ^ S_m1 + 16243286400 * waveCrossDefect L_2 L_1 (m + 1) = 3 ^ S_m1 at hid
+    have hL1_0 : 1 ≤ L_1 0 := hL1 0 (Nat.zero_le _)
+    have hL1_m1 : 1 ≤ L_1 (m + 1) := hL1 (m + 1) (Nat.le_refl _)
+    have hp2 : 2 ^ (7 * L_1 0) = 128 * 2 ^ (7 * L_1 0 - 7) := two_pow_eq_128_mul_sub (by omega)
+    have hp3 : 3 ^ (7 * L_1 (m + 1)) = 2187 * 3 ^ (7 * L_1 (m + 1) - 7) :=
+      three_pow_eq_2187_mul_sub (by omega)
+    have hterm :
+        16243286400 * (2 ^ (7 * L_1 0 - 7) * 3 ^ (7 * L_1 (m + 1) - 7) * DualAcc_m) =
+          58025 * (128 * 2 ^ (7 * L_1 0 - 7)) * (2187 * 3 ^ (7 * L_1 (m + 1) - 7)) * DualAcc_m := by
+      ring
+    rw [hfac, hterm, ← hp2, ← hp3] at hid
+    exact ⟨hfac, by linarith only [hid]⟩
+  · intro L_1 L_2 m hL2 S_m1 DualAcc_m1 Acc_m
+    have hfac := dualWaveCrossDefect_eq_mul_waveInteriorAcc L_1 L_2 m hL2
+    have hid :=
+      (dense_core_dualWaveInteriorAcc_telescopic_cross_defect_and_mirror_collapses.1
+        L_1 L_2 (m + 1) hL2).1
+    change 58025 * DualAcc_m1 + 2 ^ S_m1 + 124499856384 * dualWaveCrossDefect L_1 L_2 (m + 1) =
+        3 ^ S_m1 at hid
+    have hL2_0 : 1 ≤ L_2 0 := hL2 0 (Nat.zero_le _)
+    have hL2_m1 : 1 ≤ L_2 (m + 1) := hL2 (m + 1) (Nat.le_refl _)
+    have hp2 : 2 ^ (10 * L_2 0) = 1024 * 2 ^ (10 * L_2 0 - 10) :=
+      two_pow_eq_1024_mul_sub (by omega)
+    have hp3 : 3 ^ (10 * L_2 (m + 1)) = 59049 * 3 ^ (10 * L_2 (m + 1) - 10) :=
+      three_pow_eq_59049_mul_sub (by omega)
+    have hterm :
+        124499856384 * (2 ^ (10 * L_2 0 - 10) * 3 ^ (10 * L_2 (m + 1) - 10) * Acc_m) =
+          2059 * (1024 * 2 ^ (10 * L_2 0 - 10)) * (59049 * 3 ^ (10 * L_2 (m + 1) - 10)) * Acc_m := by
+      ring
+    rw [hfac, hterm, ← hp2, ← hp3] at hid
+    exact ⟨hfac, by linarith only [hid]⟩
+
+/-!
+## Section 70: Right-Suffix `3`-Adic Cancellation & Two-Sided Prefix+Suffix `(58025 * 2^(S_K) * 3^(S_{J+D} - S_J + 7))` Anagram Super-Divisibility
+
+In Section 64, we proved that if two macro-wave anagrams (`S_N = S'_M`) share their **first `K`
+interior waves** from the left, then `(126,900,675 * 2^(S_K)) ∣ (Acc'_M - Acc_N)`.
+What if two macro-wave anagrams (`S_{J+D} = S'_{J'+D}`) also share their **last `D` interior waves**
+from the right (`L_1(J + 1 + d) = L_1'(J' + 1 + d)` and `L_2(J + 1 + d) = L_2'(J' + 1 + d)` for `d < D`)?
+
+1. **Exact Suffix Cancellation & `3^(S_{J+D} - S_J)` Factorization:**
+   Because the last `D` step sizes `10 * L_2 + 7 * L_1` are identical and `S_{J+D} = S'_{J'+D}`,
+   the intermediate step-sums match at every suffix step (`S_{J+d} = S'_{J'+d}` for all `d ≤ D`),
+   so the entire suffix drift sum from `J` to `J + D` **cancels out 100% identically**!
+   Consequently:
+     `Acc'_{J'+D} - Acc_{J+D} = 3^(S_{J+D} - S_J) * (Acc'_{J'} - Acc_J)`!
+2. **Two-Sided Prefix+Suffix `(58025 * 2^(S_K) * 3^(S_{J+D} - S_J + 7))` Anagram Super-Divisibility:**
+   When the two anagrams share both a **left prefix of `K` waves** (`K ≤ J`, `K ≤ J'`) and a
+   **right suffix of `D` waves**, applying Section 64 to the prefix anagrams `(J, J')` gives
+   `(126,900,675 * 2^(S_K)) ∣ (Acc'_{J'} - Acc_J)`. Since `126,900,675 = 58,025 × 2,187 = 58,025 × 3^7`,
+   multiplying by `3^(S_{J+D} - S_J)` yields simultaneous `2`-adic and `3`-adic super-divisibility:
+     `(58025 * 2^(S_K) * 3^(S_{J+D} - S_J + 7)) ∣ (Acc'_{J'+D} - Acc_{J+D})`!
+-/
+
+private lemma waveInteriorAcc_suffix_anagram_cancellation
+    (L_2 L_1 L_2' L_1' : ℕ → ℕ) (J J' D : ℕ)
+    (hS_end : waveInteriorExp L_2 L_1 (J + D) = waveInteriorExp L_2' L_1' (J' + D))
+    (hL1_suf : ∀ d < D, L_1 (J + 1 + d) = L_1' (J' + 1 + d))
+    (hL2_suf : ∀ d < D, L_2 (J + 1 + d) = L_2' (J' + 1 + d)) :
+    waveInteriorExp L_2 L_1 J = waveInteriorExp L_2' L_1' J' ∧
+    (waveInteriorAcc L_2 L_1 (J + D) ≤ waveInteriorAcc L_2' L_1' (J' + D) →
+      waveInteriorAcc L_2 L_1 J ≤ waveInteriorAcc L_2' L_1' J' ∧
+      waveInteriorAcc L_2' L_1' (J' + D) - waveInteriorAcc L_2 L_1 (J + D) =
+        3 ^ (waveInteriorExp L_2 L_1 (J + D) - waveInteriorExp L_2 L_1 J) *
+          (waveInteriorAcc L_2' L_1' J' - waveInteriorAcc L_2 L_1 J)) := by
+  induction D with
+  | zero =>
+      simp only [Nat.add_zero] at hS_end ⊢
+      refine ⟨hS_end, fun hle => ⟨hle, ?_⟩⟩
+      rw [Nat.sub_self, Nat.pow_zero, Nat.one_mul]
+  | succ d ih =>
+      have hL1_d : L_1 (J + d + 1) = L_1' (J' + d + 1) := by
+        have h := hL1_suf d (Nat.lt_succ_self d)
+        have hi1 : J + 1 + d = J + d + 1 := by omega
+        have hi2 : J' + 1 + d = J' + d + 1 := by omega
+        rw [hi1, hi2] at h
+        exact h
+      have hL2_d : L_2 (J + d + 1) = L_2' (J' + d + 1) := by
+        have h := hL2_suf d (Nat.lt_succ_self d)
+        have hi1 : J + 1 + d = J + d + 1 := by omega
+        have hi2 : J' + 1 + d = J' + d + 1 := by omega
+        rw [hi1, hi2] at h
+        exact h
+      have hS_d : waveInteriorExp L_2 L_1 (J + d) = waveInteriorExp L_2' L_1' (J' + d) := by
+        change waveInteriorExp L_2 L_1 (J + d) + (10 * L_2 (J + d + 1) + 7 * L_1 (J + d + 1)) =
+          waveInteriorExp L_2' L_1' (J' + d) + (10 * L_2' (J' + d + 1) + 7 * L_1' (J' + d + 1)) at hS_end
+        rw [hL1_d, hL2_d] at hS_end
+        omega
+      have ih_d := ih hS_d
+        (fun t ht => hL1_suf t (Nat.lt_succ_of_lt ht))
+        (fun t ht => hL2_suf t (Nat.lt_succ_of_lt ht))
+      refine ⟨ih_d.1, fun hle_succ => ?_⟩
+      set step_d := 10 * L_2 (J + d + 1) + 7 * L_1 (J + d + 1)
+      set Tail_d :=
+        2 ^ (waveInteriorExp L_2 L_1 (J + d) + 10 * L_2 (J + d + 1)) *
+          ((3 ^ (7 * L_1 (J + d + 1)) - 2 ^ (7 * L_1 (J + d + 1))) / 2059)
+      have hAcc_succ :
+          waveInteriorAcc L_2 L_1 (J + (d + 1)) =
+            3 ^ step_d * waveInteriorAcc L_2 L_1 (J + d) + Tail_d := rfl
+      have hAcc_succ' :
+          waveInteriorAcc L_2' L_1' (J' + (d + 1)) =
+            3 ^ step_d * waveInteriorAcc L_2' L_1' (J' + d) + Tail_d := by
+        change 3 ^ (10 * L_2' (J' + d + 1) + 7 * L_1' (J' + d + 1)) *
+            waveInteriorAcc L_2' L_1' (J' + d) +
+            2 ^ (waveInteriorExp L_2' L_1' (J' + d) + 10 * L_2' (J' + d + 1)) *
+              ((3 ^ (7 * L_1' (J' + d + 1)) - 2 ^ (7 * L_1' (J' + d + 1))) / 2059) = _
+        rw [← hL1_d, ← hL2_d, ← hS_d]
+      have hle_d : waveInteriorAcc L_2 L_1 (J + d) ≤ waveInteriorAcc L_2' L_1' (J' + d) := by
+        rw [hAcc_succ, hAcc_succ'] at hle_succ
+        refine Nat.le_of_not_lt (fun hgt => ?_)
+        have hm :
+            3 ^ step_d * waveInteriorAcc L_2' L_1' (J' + d) <
+              3 ^ step_d * waveInteriorAcc L_2 L_1 (J + d) :=
+          Nat.mul_lt_mul_of_pos_left hgt (Nat.pow_pos (by decide))
+        omega
+      have ih_res := ih_d.2 hle_d
+      refine ⟨ih_res.1, ?_⟩
+      have hsub_step :
+          waveInteriorAcc L_2' L_1' (J' + (d + 1)) - waveInteriorAcc L_2 L_1 (J + (d + 1)) =
+            3 ^ step_d * (waveInteriorAcc L_2' L_1' (J' + d) - waveInteriorAcc L_2 L_1 (J + d)) := by
+        rw [hAcc_succ, hAcc_succ', Nat.mul_sub_left_distrib]
+        omega
+      have hSJ_le : waveInteriorExp L_2 L_1 J ≤ waveInteriorExp L_2 L_1 (J + d) :=
+        waveInteriorExp_mono L_2 L_1 (by omega)
+      have hp3_exp :
+          3 ^ (waveInteriorExp L_2 L_1 (J + (d + 1)) - waveInteriorExp L_2 L_1 J) =
+            3 ^ step_d * 3 ^ (waveInteriorExp L_2 L_1 (J + d) - waveInteriorExp L_2 L_1 J) := by
+        rw [← Nat.pow_add]
+        congr 1
+        change (waveInteriorExp L_2 L_1 (J + d) + step_d) - waveInteriorExp L_2 L_1 J =
+          step_d + (waveInteriorExp L_2 L_1 (J + d) - waveInteriorExp L_2 L_1 J)
+        omega
+      rw [hsub_step, ih_res.2, hp3_exp, Nat.mul_assoc]
+
+/-- **Right-Suffix `3`-Adic Cancellation & Two-Sided Prefix+Suffix `(58025 * 2^(S_K) * 3^(S_{J+D} - S_J + 7))` Anagram Super-Divisibility:**
+Whenever two macro-wave anagrams (`S_{J+D} = S'_{J'+D}`) share their last `D` interior waves, the
+suffix drift cancels identically (`Acc'_{J'+D} - Acc_{J+D} = 3^(S_{J+D} - S_J) * (Acc'_{J'} - Acc_J)`);
+if they also share their first `K` interior waves (`K ≤ J`, `K ≤ J'`), then
+`(58025 * 2^(S_K) * 3^(S_{J+D} - S_J + 7)) ∣ (Acc'_{J'+D} - Acc_{J+D})`. -/
+theorem dense_core_two_sided_prefix_suffix_anagram_super_divisibility
+    (L_2 L_1 L_2' L_1' : ℕ → ℕ) (K J J' D : ℕ)
+    (hKJ : K ≤ J) (hKJ' : K ≤ J')
+    (hL1 : ∀ t ≤ J, 1 ≤ L_1 t)
+    (hL1' : ∀ t ≤ J', 1 ≤ L_1' t)
+    (hK1 : ∀ t ≤ K, L_1 t = L_1' t)
+    (hK2 : ∀ t < K, L_2 (t + 1) = L_2' (t + 1))
+    (hS_end : waveInteriorExp L_2 L_1 (J + D) = waveInteriorExp L_2' L_1' (J' + D))
+    (hL1_suf : ∀ d < D, L_1 (J + 1 + d) = L_1' (J' + 1 + d))
+    (hL2_suf : ∀ d < D, L_2 (J + 1 + d) = L_2' (J' + 1 + d))
+    (hAcc_le : waveInteriorAcc L_2 L_1 (J + D) ≤ waveInteriorAcc L_2' L_1' (J' + D)) :
+    let S_K := waveInteriorExp L_2 L_1 K
+    let S_J := waveInteriorExp L_2 L_1 J
+    let S_end := waveInteriorExp L_2 L_1 (J + D)
+    -- 1. Automatic prefix exponent equality and exact suffix 3^(S_end - S_J) factorization:
+    waveInteriorExp L_2 L_1 J = waveInteriorExp L_2' L_1' J' ∧
+    waveInteriorAcc L_2' L_1' (J' + D) - waveInteriorAcc L_2 L_1 (J + D) =
+      3 ^ (S_end - S_J) * (waveInteriorAcc L_2' L_1' J' - waveInteriorAcc L_2 L_1 J) ∧
+    -- 2. Two-sided prefix+suffix (58025 * 2^(S_K) * 3^(S_end - S_J + 7)) super-divisibility:
+    (58025 * 2 ^ S_K * 3 ^ (S_end - S_J + 7)) ∣
+      (waveInteriorAcc L_2' L_1' (J' + D) - waveInteriorAcc L_2 L_1 (J + D)) := by
+  intro S_K S_J S_end
+  have hsuf := waveInteriorAcc_suffix_anagram_cancellation
+    L_2 L_1 L_2' L_1' J J' D hS_end hL1_suf hL2_suf
+  have hSJ_eq := hsuf.1
+  have hsuf_res := hsuf.2 hAcc_le
+  have h64 :=
+    (dense_core_waveCrossDefect_prefix_filtration_and_anagram_divisibility.2
+      L_2 L_1 L_2' L_1' K J J' hKJ hKJ' hL1 hL1' hK1 hK2 hSJ_eq hsuf_res.1).2
+  rcases h64 with ⟨Q, hQ⟩
+  refine ⟨hSJ_eq, hsuf_res.2, ⟨Q, ?_⟩⟩
+  have hp3 : 3 ^ (S_end - S_J + 7) = 2187 * 3 ^ (S_end - S_J) := by
+    rw [Nat.pow_add 3 (S_end - S_J) 7]; ring
+  rw [hsuf_res.2, hQ, hp3]
+  dsimp [S_K]
+  ring
+
 end Mahler.DubickasExtension
 
 
