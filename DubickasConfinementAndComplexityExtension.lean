@@ -32225,7 +32225,883 @@ theorem dense_core_bounded_run_boundary_locked_boosted_terminal_growth
     omega
   exact ⟨i, j, hij, hL_eq, hS_eq, hdvd_W, hcut_B, hcontra_B⟩
 
+/-!
+## Section 134: Sign-Blind Four-Window `19 * q_Acc`-Cancellation for Double-Boundary-Locked Anagrams
+
+In Section 131, we proved that any double-boundary-locked anagram pair (`S_N = S'_M = S_end`,
+`L_2(0) = L'_2(0) = L_start`, `L_2(N + 1) = L'_2(M + 1) = L_end`) satisfies the
+`16,243,286,400`-reduced syzygy:
+  `2 ^ (S_end + 10 * L_end) * q_{W,end} ± 19 * q_Acc = 3 ^ (S_end + 10 * L_start) * q_{W,0}`,
+where the defect term `19 * q_Acc` carries **zero frame multiplier**!
+Consequently, whenever two double-boundary-locked anagram pairs with the same interior step-sum
+`S_end` and boundary runs `L_start1 ≤ L_start2`, `L_end1 ≤ L_end2` share the same unsigned reduced
+defect `q_Acc`—in **any of the four sign combinations** `(+,+)`, `(+,-)`, `(-,+)`, `(-,-)`—subtracting
+or adding their reduced syzygies cancels `19 * q_Acc` and restores the **entire exponents
+`S_end + 10 * L_end1` and `S_end + 10 * L_start1`**:
+1. `2 ^ (S_end + 10 * L_end1) ≤ 3 ^ (10 * (L_start2 - L_start1)) * q_W0_2 + q_W0_1`,
+2. `3 ^ (S_end + 10 * L_start1) ≤ 2 ^ (10 * (L_end2 - L_end1)) * q_Wend_2 + q_Wend_1`!
+-/
+
+/-- **Sign-Blind Four-Window `19 * q_Acc`-Cancellation for Double-Boundary-Locked Anagrams:**
+Whenever two double-boundary-locked anagram pairs with interior step-sum `S_end` and boundary runs
+`L_start1 ≤ L_start2`, `L_end1 ≤ L_end2` share the unsigned reduced defect `q_Acc` (in any of the
+4 sign combinations of Section 131's disjunction) with `1 ≤ q_W0_1`, `1 ≤ q_Wend_1`, and
+`3 ^ (S_end + 10 * L_start1) * q_W0_1 < 3 ^ (S_end + 10 * L_start2) * q_W0_2`, canceling `19 * q_Acc`
+by subtraction or addition restores:
+`2 ^ (S_end + 10 * L_end1) ≤ 3 ^ (10 * (L_start2 - L_start1)) * q_W0_2 + q_W0_1` and
+`3 ^ (S_end + 10 * L_start1) ≤ 2 ^ (10 * (L_end2 - L_end1)) * q_Wend_2 + q_Wend_1`. -/
+theorem dense_core_double_boundary_sign_blind_four_window_defect_cancellation
+    {S_end L_start1 L_start2 L_end1 L_end2 q_W0_1 q_W0_2 q_Wend_1 q_Wend_2 q_Acc : ℕ}
+    (hLs_le : L_start1 ≤ L_start2)
+    (hLe_le : L_end1 ≤ L_end2)
+    (hqW0_pos : 1 ≤ q_W0_1)
+    (hqWend_pos : 1 ≤ q_Wend_1)
+    (hlt : 3 ^ (S_end + 10 * L_start1) * q_W0_1 < 3 ^ (S_end + 10 * L_start2) * q_W0_2)
+    (h1 : 2 ^ (S_end + 10 * L_end1) * q_Wend_1 + 19 * q_Acc =
+            3 ^ (S_end + 10 * L_start1) * q_W0_1 ∨
+          2 ^ (S_end + 10 * L_end1) * q_Wend_1 =
+            3 ^ (S_end + 10 * L_start1) * q_W0_1 + 19 * q_Acc)
+    (h2 : 2 ^ (S_end + 10 * L_end2) * q_Wend_2 + 19 * q_Acc =
+            3 ^ (S_end + 10 * L_start2) * q_W0_2 ∨
+          2 ^ (S_end + 10 * L_end2) * q_Wend_2 =
+            3 ^ (S_end + 10 * L_start2) * q_W0_2 + 19 * q_Acc) :
+    let E_2_1 := S_end + 10 * L_end1
+    let E_3_1 := S_end + 10 * L_start1
+    let Δ_start := 10 * (L_start2 - L_start1)
+    let Δ_end := 10 * (L_end2 - L_end1)
+    (2 ^ E_2_1 ∣ (3 ^ Δ_start * q_W0_2 - q_W0_1) ∨
+     2 ^ E_2_1 ∣ (q_W0_1 + 3 ^ Δ_start * q_W0_2)) ∧
+    (3 ^ E_3_1 ∣ (2 ^ Δ_end * q_Wend_2 - q_Wend_1) ∨
+     3 ^ E_3_1 ∣ (q_Wend_1 + 2 ^ Δ_end * q_Wend_2)) ∧
+    2 ^ E_2_1 ≤ 3 ^ Δ_start * q_W0_2 + q_W0_1 ∧
+    3 ^ E_3_1 ≤ 2 ^ Δ_end * q_Wend_2 + q_Wend_1 := by
+  intro E_2_1 E_3_1 Δ_start Δ_end
+  set E_2_2 := S_end + 10 * L_end2
+  set E_3_2 := S_end + 10 * L_start2
+  have hE2_split : E_2_2 = E_2_1 + Δ_end := by dsimp [E_2_2, E_2_1, Δ_end]; omega
+  have hE3_split : E_3_2 = E_3_1 + Δ_start := by dsimp [E_3_2, E_3_1, Δ_start]; omega
+  have hp2_2 : 2 ^ E_2_2 * q_Wend_2 = 2 ^ E_2_1 * (2 ^ Δ_end * q_Wend_2) := by
+    rw [hE2_split, Nat.pow_add]; ring
+  have hp3_2 : 3 ^ E_3_2 * q_W0_2 = 3 ^ E_3_1 * (3 ^ Δ_start * q_W0_2) := by
+    rw [hE3_split, Nat.pow_add]; ring
+  have hcop : Nat.Coprime (2 ^ E_2_1) (3 ^ E_3_1) :=
+    Nat.Coprime.pow _ _ (by decide : Nat.Coprime 2 3)
+  have hX_sub_pos : 1 ≤ 3 ^ Δ_start * q_W0_2 - q_W0_1 := by
+    have hm_lt : 3 ^ E_3_1 * q_W0_1 < 3 ^ E_3_1 * (3 ^ Δ_start * q_W0_2) := by
+      rw [← hp3_2]; exact hlt
+    have hlt_inner : q_W0_1 < 3 ^ Δ_start * q_W0_2 :=
+      Nat.lt_of_mul_lt_mul_left hm_lt
+    exact Nat.sub_pos_of_lt hlt_inner
+  rcases h1 with h1_l | h1_r <;> rcases h2 with h2_l | h2_r
+  · -- Case (+, +): subtract h1_l from h2_l
+    have hY_lt : 2 ^ E_2_1 * q_Wend_1 < 2 ^ E_2_2 * q_Wend_2 := by
+      linarith only [h1_l, h2_l, hlt]
+    have hY_lt_inner : q_Wend_1 < 2 ^ Δ_end * q_Wend_2 := by
+      rw [hp2_2] at hY_lt
+      exact Nat.lt_of_mul_lt_mul_left hY_lt
+    have hY_sub_pos : 1 ≤ 2 ^ Δ_end * q_Wend_2 - q_Wend_1 := Nat.sub_pos_of_lt hY_lt_inner
+    have hhom :
+        2 ^ E_2_1 * (2 ^ Δ_end * q_Wend_2 - q_Wend_1) =
+          3 ^ E_3_1 * (3 ^ Δ_start * q_W0_2 - q_W0_1) := by
+      have hs2 :
+          2 ^ E_2_1 * (2 ^ Δ_end * q_Wend_2 - q_Wend_1) + 2 ^ E_2_1 * q_Wend_1 =
+            2 ^ E_2_2 * q_Wend_2 := by
+        rw [← Nat.mul_add, Nat.sub_add_cancel (le_of_lt hY_lt_inner), ← hp2_2]
+      have hs3 :
+          3 ^ E_3_1 * (3 ^ Δ_start * q_W0_2 - q_W0_1) + 3 ^ E_3_1 * q_W0_1 =
+            3 ^ E_3_2 * q_W0_2 := by
+        rw [← Nat.mul_add, Nat.sub_add_cancel (by omega), ← hp3_2]
+      linarith only [h1_l, h2_l, hs2, hs3]
+    have hd2 : 2 ^ E_2_1 ∣ (3 ^ Δ_start * q_W0_2 - q_W0_1) :=
+      hcop.dvd_of_dvd_mul_left ⟨2 ^ Δ_end * q_Wend_2 - q_Wend_1, hhom.symm⟩
+    have hd3 : 3 ^ E_3_1 ∣ (2 ^ Δ_end * q_Wend_2 - q_Wend_1) :=
+      hcop.symm.dvd_of_dvd_mul_left ⟨3 ^ Δ_start * q_W0_2 - q_W0_1, hhom⟩
+    rcases hd2 with ⟨kX, hkX⟩
+    have hkX_pos : 1 ≤ kX := by
+      rcases Nat.eq_zero_or_pos kX with rfl | hp
+      · rw [Nat.mul_zero] at hkX; linarith only [hkX, hX_sub_pos]
+      · exact hp
+    have hbX : 2 ^ E_2_1 ≤ 3 ^ Δ_start * q_W0_2 - q_W0_1 := by
+      rw [hkX]; exact Nat.le_mul_of_pos_right _ hkX_pos
+    rcases hd3 with ⟨kY, hkY⟩
+    have hkY_pos : 1 ≤ kY := by
+      rcases Nat.eq_zero_or_pos kY with rfl | hp
+      · rw [Nat.mul_zero] at hkY; linarith only [hkY, hY_sub_pos]
+      · exact hp
+    have hbY : 3 ^ E_3_1 ≤ 2 ^ Δ_end * q_Wend_2 - q_Wend_1 := by
+      rw [hkY]; exact Nat.le_mul_of_pos_right _ hkY_pos
+    exact ⟨Or.inl ⟨kX, hkX⟩, Or.inl ⟨kY, hkY⟩, by omega, by omega⟩
+  · -- Case (+, -): add h1_l and h2_r
+    have hhom :
+        2 ^ E_2_1 * (q_Wend_1 + 2 ^ Δ_end * q_Wend_2) =
+          3 ^ E_3_1 * (q_W0_1 + 3 ^ Δ_start * q_W0_2) := by
+      have hs2 :
+          2 ^ E_2_1 * (q_Wend_1 + 2 ^ Δ_end * q_Wend_2) =
+            2 ^ E_2_1 * q_Wend_1 + 2 ^ E_2_2 * q_Wend_2 := by
+        rw [Nat.mul_add, ← hp2_2]
+      have hs3 :
+          3 ^ E_3_1 * (q_W0_1 + 3 ^ Δ_start * q_W0_2) =
+            3 ^ E_3_1 * q_W0_1 + 3 ^ E_3_2 * q_W0_2 := by
+        rw [Nat.mul_add, ← hp3_2]
+      linarith only [h1_l, h2_r, hs2, hs3]
+    have hd2 : 2 ^ E_2_1 ∣ (q_W0_1 + 3 ^ Δ_start * q_W0_2) :=
+      hcop.dvd_of_dvd_mul_left ⟨q_Wend_1 + 2 ^ Δ_end * q_Wend_2, hhom.symm⟩
+    have hd3 : 3 ^ E_3_1 ∣ (q_Wend_1 + 2 ^ Δ_end * q_Wend_2) :=
+      hcop.symm.dvd_of_dvd_mul_left ⟨q_W0_1 + 3 ^ Δ_start * q_W0_2, hhom⟩
+    rcases hd2 with ⟨kX, hkX⟩
+    have hkX_pos : 1 ≤ kX := by
+      rcases Nat.eq_zero_or_pos kX with rfl | hp
+      · rw [Nat.mul_zero] at hkX; omega
+      · exact hp
+    have hbX : 2 ^ E_2_1 ≤ q_W0_1 + 3 ^ Δ_start * q_W0_2 := by
+      rw [hkX]; exact Nat.le_mul_of_pos_right _ hkX_pos
+    rcases hd3 with ⟨kY, hkY⟩
+    have hkY_pos : 1 ≤ kY := by
+      rcases Nat.eq_zero_or_pos kY with rfl | hp
+      · rw [Nat.mul_zero] at hkY; omega
+      · exact hp
+    have hbY : 3 ^ E_3_1 ≤ q_Wend_1 + 2 ^ Δ_end * q_Wend_2 := by
+      rw [hkY]; exact Nat.le_mul_of_pos_right _ hkY_pos
+    exact ⟨Or.inr ⟨kX, hkX⟩, Or.inr ⟨kY, hkY⟩, by omega, by omega⟩
+  · -- Case (-, +): add h1_r and h2_l
+    have hhom :
+        2 ^ E_2_1 * (q_Wend_1 + 2 ^ Δ_end * q_Wend_2) =
+          3 ^ E_3_1 * (q_W0_1 + 3 ^ Δ_start * q_W0_2) := by
+      have hs2 :
+          2 ^ E_2_1 * (q_Wend_1 + 2 ^ Δ_end * q_Wend_2) =
+            2 ^ E_2_1 * q_Wend_1 + 2 ^ E_2_2 * q_Wend_2 := by
+        rw [Nat.mul_add, ← hp2_2]
+      have hs3 :
+          3 ^ E_3_1 * (q_W0_1 + 3 ^ Δ_start * q_W0_2) =
+            3 ^ E_3_1 * q_W0_1 + 3 ^ E_3_2 * q_W0_2 := by
+        rw [Nat.mul_add, ← hp3_2]
+      linarith only [h1_r, h2_l, hs2, hs3]
+    have hd2 : 2 ^ E_2_1 ∣ (q_W0_1 + 3 ^ Δ_start * q_W0_2) :=
+      hcop.dvd_of_dvd_mul_left ⟨q_Wend_1 + 2 ^ Δ_end * q_Wend_2, hhom.symm⟩
+    have hd3 : 3 ^ E_3_1 ∣ (q_Wend_1 + 2 ^ Δ_end * q_Wend_2) :=
+      hcop.symm.dvd_of_dvd_mul_left ⟨q_W0_1 + 3 ^ Δ_start * q_W0_2, hhom⟩
+    rcases hd2 with ⟨kX, hkX⟩
+    have hkX_pos : 1 ≤ kX := by
+      rcases Nat.eq_zero_or_pos kX with rfl | hp
+      · rw [Nat.mul_zero] at hkX; omega
+      · exact hp
+    have hbX : 2 ^ E_2_1 ≤ q_W0_1 + 3 ^ Δ_start * q_W0_2 := by
+      rw [hkX]; exact Nat.le_mul_of_pos_right _ hkX_pos
+    rcases hd3 with ⟨kY, hkY⟩
+    have hkY_pos : 1 ≤ kY := by
+      rcases Nat.eq_zero_or_pos kY with rfl | hp
+      · rw [Nat.mul_zero] at hkY; omega
+      · exact hp
+    have hbY : 3 ^ E_3_1 ≤ q_Wend_1 + 2 ^ Δ_end * q_Wend_2 := by
+      rw [hkY]; exact Nat.le_mul_of_pos_right _ hkY_pos
+    exact ⟨Or.inr ⟨kX, hkX⟩, Or.inr ⟨kY, hkY⟩, by omega, by omega⟩
+  · -- Case (-, -): subtract h1_r from h2_r
+    have hY_lt : 2 ^ E_2_1 * q_Wend_1 < 2 ^ E_2_2 * q_Wend_2 := by
+      linarith only [h1_r, h2_r, hlt]
+    have hY_lt_inner : q_Wend_1 < 2 ^ Δ_end * q_Wend_2 := by
+      rw [hp2_2] at hY_lt
+      exact Nat.lt_of_mul_lt_mul_left hY_lt
+    have hY_sub_pos : 1 ≤ 2 ^ Δ_end * q_Wend_2 - q_Wend_1 := Nat.sub_pos_of_lt hY_lt_inner
+    have hhom :
+        2 ^ E_2_1 * (2 ^ Δ_end * q_Wend_2 - q_Wend_1) =
+          3 ^ E_3_1 * (3 ^ Δ_start * q_W0_2 - q_W0_1) := by
+      have hs2 :
+          2 ^ E_2_1 * (2 ^ Δ_end * q_Wend_2 - q_Wend_1) + 2 ^ E_2_1 * q_Wend_1 =
+            2 ^ E_2_2 * q_Wend_2 := by
+        rw [← Nat.mul_add, Nat.sub_add_cancel (le_of_lt hY_lt_inner), ← hp2_2]
+      have hs3 :
+          3 ^ E_3_1 * (3 ^ Δ_start * q_W0_2 - q_W0_1) + 3 ^ E_3_1 * q_W0_1 =
+            3 ^ E_3_2 * q_W0_2 := by
+        rw [← Nat.mul_add, Nat.sub_add_cancel (by omega), ← hp3_2]
+      linarith only [h1_r, h2_r, hs2, hs3]
+    have hd2 : 2 ^ E_2_1 ∣ (3 ^ Δ_start * q_W0_2 - q_W0_1) :=
+      hcop.dvd_of_dvd_mul_left ⟨2 ^ Δ_end * q_Wend_2 - q_Wend_1, hhom.symm⟩
+    have hd3 : 3 ^ E_3_1 ∣ (2 ^ Δ_end * q_Wend_2 - q_Wend_1) :=
+      hcop.symm.dvd_of_dvd_mul_left ⟨3 ^ Δ_start * q_W0_2 - q_W0_1, hhom⟩
+    rcases hd2 with ⟨kX, hkX⟩
+    have hkX_pos : 1 ≤ kX := by
+      rcases Nat.eq_zero_or_pos kX with rfl | hp
+      · rw [Nat.mul_zero] at hkX; linarith only [hkX, hX_sub_pos]
+      · exact hp
+    have hbX : 2 ^ E_2_1 ≤ 3 ^ Δ_start * q_W0_2 - q_W0_1 := by
+      rw [hkX]; exact Nat.le_mul_of_pos_right _ hkX_pos
+    rcases hd3 with ⟨kY, hkY⟩
+    have hkY_pos : 1 ≤ kY := by
+      rcases Nat.eq_zero_or_pos kY with rfl | hp
+      · rw [Nat.mul_zero] at hkY; linarith only [hkY, hY_sub_pos]
+      · exact hp
+    have hbY : 3 ^ E_3_1 ≤ 2 ^ Δ_end * q_Wend_2 - q_Wend_1 := by
+      rw [hkY]; exact Nat.le_mul_of_pos_right _ hkY_pos
+    exact ⟨Or.inl ⟨kX, hkX⟩, Or.inl ⟨kY, hkY⟩, by omega, by omega⟩
+
+/-!
+## Section 135: Pure `(2, 3)`-Power State Lower Bounds & 32-Bit Boosted Archimedean Cutoffs from Double-Boundary Defect Cancellation
+
+What happens when we combine Section 134's restored inequalities
+  `2 ^ (S_end + 10 * L_end1) ≤ 3 ^ Δ_start * q_W0_2 + q_W0_1 < 2 * 3 ^ Δ_start * q_W0_2`
+and
+  `3 ^ (S_end + 10 * L_start1) ≤ 2 ^ Δ_end * q_Wend_2 + q_Wend_1 < 2 * 2 ^ Δ_end * q_Wend_2`
+with `16,243,286,400 * q_W0_2 ≤ W_0'_2` and `16,243,286,400 * q_Wend_2 ≤ W (M + 1)`
+(where `16,243,286,400 = 2 * 8,121,643,200` and `2 ^ 32 = 4,294,967,296 ≤ 8,121,643,200`)?
+1. **Pure Power-of-`2` Start-State Lower Bound (`8,121,643,200 * 2 ^ (S_end + 10 * L_end1) < 3 ^ Δ_start * W_0'_2`):**
+   Notice that **zero `3 ^ S_end` factor appears on the RHS**! When `L_start1 = L_start2`,
+   `2 ^ (S_end + 10 * L_end1 + 32) < W_0'_2` directly!
+2. **Pure Power-of-`3` End-State Lower Bound (`8,121,643,200 * 3 ^ (S_end + 10 * L_start1) < 2 ^ Δ_end * W (M + 1)`):**
+   Notice that **zero `2 ^ S_end` factor appears on the RHS**!
+   Consequently, whenever `W (M + 1) < 2 ^ W_end`, for every `2 ^ (p' + q') ≤ 3 ^ q'` (`1 ≤ q'`):
+     `(p' + q') * (S_end + 10 * L_start1) + 10 * q' * L_end1 + 32 * q' < 10 * q' * L_2 (M + 1) + q' * W_end`,
+   and at `(p', q') = (7, 12)`:
+     `19 * (S_end + 10 * L_start1) + 120 * L_end1 + 384 < 120 * L_2 (M + 1) + 12 * W_end`!
+3. **Global 32-Bit Boosted Archimedean Cutoff (`27 * (S_end + 10 * L_start1) + 170 * L_end1 + 544 < 10 * S_M + 270 * L_2 0 + 17 * W_0`):**
+   Combining `8121643200 * 3 ^ (S_end + 10 * L_start1) < 2 ^ Δ_end * W (M + 1)` with the origin
+   master identity `2 ^ (S_M + 10 * L_2 (M + 1)) * W (M + 1) < 3 ^ (S_M + 10 * L_2 0) * 2 ^ W_0`
+   cancels `3 ^ (S_end + 10 * L_start1)` and forces:
+     `(p + q) * (S_end + 10 * L_start1) + 10 * q * L_end1 + 32 * q < p * S_M + 10 * (p + q) * L_2 0 + q * W_0`!
+-/
+
+/-- **Pure `(2, 3)`-Power State Lower Bounds & 32-Bit Boosted Archimedean Cutoffs:**
+When `3 ^ (S_end + 10 * L_start1) < 2 * 2 ^ (10 * (L_2 (M + 1) - L_end1)) * q_Wend_2` and
+`16243286400 * q_Wend_2 ≤ W (M + 1)`:
+1. `8121643200 * 3 ^ (S_end + 10 * L_start1) < 2 ^ (10 * (L_2 (M + 1) - L_end1)) * W (M + 1)`,
+2. Locally (`W (M + 1) < 2 ^ W_end`), `19 * (S_end + 10 * L_start1) + 120 * L_end1 + 384 < 120 * L_2 (M + 1) + 12 * W_end`,
+3. Globally (`W 0 < 2 ^ W_0`), `27 * (S_end + 10 * L_start1) + 170 * L_end1 + 544 < 10 * S_M + 270 * L_2 0 + 17 * W_0`! -/
+theorem dense_core_double_boundary_four_window_pure_power_state_bounds_and_cutoff
+    {W L_2 L_1 : ℕ → ℕ} {M W_0 S_end L_start1 L_end1 q_Wend_2 : ℕ}
+    (hW0_lt : W 0 < 2 ^ W_0)
+    (hL1_0 : 1 ≤ L_1 0)
+    (hrec : ∀ n ≤ M,
+      2 ^ (7 * L_1 n + 10 * L_2 (n + 1)) * W (n + 1) +
+        19 * ((3 ^ (7 * L_1 n) - 2 ^ (7 * L_1 n)) / 2059) =
+        3 ^ (10 * L_2 n + 7 * L_1 n) * W n)
+    (hLe_le : L_end1 ≤ L_2 (M + 1))
+    (hS_le : S_end + 10 * L_start1 ≤ waveInteriorExp L_2 L_1 M + 10 * L_2 0)
+    (h3_lt :
+      3 ^ (S_end + 10 * L_start1) <
+        2 * (2 ^ (10 * (L_2 (M + 1) - L_end1)) * q_Wend_2))
+    (hW_bound : 16243286400 * q_Wend_2 ≤ W (M + 1)) :
+    let S_M := waveInteriorExp L_2 L_1 M
+    let E_3_1 := S_end + 10 * L_start1
+    let Δ_end := 10 * (L_2 (M + 1) - L_end1)
+    -- 1. Pure power-of-3 lower bound on W(M + 1) (with zero 2 ^ S_end factor on RHS):
+    8121643200 * 3 ^ E_3_1 < 2 ^ Δ_end * W (M + 1) ∧
+    -- 2. Local pure-power-of-3 cutoff whenever W(M + 1) < 2 ^ W_end (weight p' + q' = 19 on S_end!):
+    (∀ W_end : ℕ, W (M + 1) < 2 ^ W_end →
+      (∀ p' q' : ℕ, 1 ≤ q' → 2 ^ (p' + q') ≤ 3 ^ q' →
+        (p' + q') * E_3_1 + 10 * q' * L_end1 + 32 * q' <
+          10 * q' * L_2 (M + 1) + q' * W_end) ∧
+      19 * E_3_1 + 120 * L_end1 + 384 < 120 * L_2 (M + 1) + 12 * W_end) ∧
+    -- 3. Global 32-bit boosted Archimedean cutoff from W(0) < 2 ^ W_0 (weight p + q = 27 on S_end + 10 * L_start1!):
+    (∀ p q : ℕ, 1 ≤ q → 3 ^ q ≤ 2 ^ (p + q) →
+      (p + q) * E_3_1 + 10 * q * L_end1 + 32 * q <
+        p * S_M + 10 * (p + q) * L_2 0 + q * W_0) ∧
+    27 * E_3_1 + 170 * L_end1 + 544 < 10 * S_M + 270 * L_2 0 + 17 * W_0 := by
+  intro S_M E_3_1 Δ_end
+  have hpure3 : 8121643200 * 3 ^ E_3_1 < 2 ^ Δ_end * W (M + 1) := by
+    have hm1 :
+        8121643200 * 3 ^ E_3_1 <
+          8121643200 * (2 * (2 ^ Δ_end * q_Wend_2)) :=
+      Nat.mul_lt_mul_of_pos_left h3_lt (by decide)
+    have hm2 :
+        8121643200 * (2 * (2 ^ Δ_end * q_Wend_2)) =
+          2 ^ Δ_end * (16243286400 * q_Wend_2) := by ring
+    have hm3 :
+        2 ^ Δ_end * (16243286400 * q_Wend_2) ≤ 2 ^ Δ_end * W (M + 1) :=
+      Nat.mul_le_mul_left _ hW_bound
+    rw [hm2] at hm1
+    exact lt_of_lt_of_le hm1 hm3
+  have hlocal :
+      ∀ W_end : ℕ, W (M + 1) < 2 ^ W_end →
+        (∀ p' q' : ℕ, 1 ≤ q' → 2 ^ (p' + q') ≤ 3 ^ q' →
+          (p' + q') * E_3_1 + 10 * q' * L_end1 + 32 * q' <
+            10 * q' * L_2 (M + 1) + q' * W_end) ∧
+        19 * E_3_1 + 120 * L_end1 + 384 < 120 * L_2 (M + 1) + 12 * W_end := by
+    intro W_end hW_lt
+    have hpq' :
+        ∀ p' q' : ℕ, 1 ≤ q' → 2 ^ (p' + q') ≤ 3 ^ q' →
+          (p' + q') * E_3_1 + 10 * q' * L_end1 + 32 * q' <
+            10 * q' * L_2 (M + 1) + q' * W_end := by
+      intro p' q' hq' hpq'_le
+      have h2_32_lt : 2 ^ 32 * 3 ^ E_3_1 < 2 ^ (Δ_end + W_end) := by
+        have h1 : 2 ^ 32 * 3 ^ E_3_1 ≤ 8121643200 * 3 ^ E_3_1 :=
+          Nat.mul_le_mul_right (3 ^ E_3_1) (by decide : 2 ^ 32 ≤ 8121643200)
+        have h2 : 2 ^ Δ_end * W (M + 1) < 2 ^ Δ_end * 2 ^ W_end :=
+          Nat.mul_lt_mul_of_pos_left hW_lt (Nat.pow_pos (by decide))
+        rw [Nat.pow_add 2 Δ_end W_end]
+        exact lt_of_le_of_lt h1 (lt_trans hpure3 h2)
+      have hpow_q' : (2 ^ 32 * 3 ^ E_3_1) ^ q' < (2 ^ (Δ_end + W_end)) ^ q' :=
+        pow_lt_pow_of_lt h2_32_lt hq'
+      have h3_ge : 2 ^ ((p' + q') * E_3_1) ≤ (3 ^ E_3_1) ^ q' := by
+        calc 2 ^ ((p' + q') * E_3_1)
+            = (2 ^ (p' + q')) ^ E_3_1 := Nat.pow_mul 2 (p' + q') E_3_1
+          _ ≤ (3 ^ q') ^ E_3_1 := Nat.pow_le_pow_left hpq'_le E_3_1
+          _ = 3 ^ (q' * E_3_1) := (Nat.pow_mul 3 q' E_3_1).symm
+          _ = 3 ^ (E_3_1 * q') := by rw [Nat.mul_comm q' E_3_1]
+          _ = (3 ^ E_3_1) ^ q' := Nat.pow_mul 3 E_3_1 q'
+      have hlhs_ge : 2 ^ (32 * q' + (p' + q') * E_3_1) ≤ (2 ^ 32 * 3 ^ E_3_1) ^ q' := by
+        calc 2 ^ (32 * q' + (p' + q') * E_3_1)
+            = 2 ^ (32 * q') * 2 ^ ((p' + q') * E_3_1) := Nat.pow_add 2 _ _
+          _ = (2 ^ 32) ^ q' * 2 ^ ((p' + q') * E_3_1) := by rw [Nat.pow_mul 2 32 q']
+          _ ≤ (2 ^ 32) ^ q' * (3 ^ E_3_1) ^ q' := Nat.mul_le_mul_left _ h3_ge
+          _ = (2 ^ 32 * 3 ^ E_3_1) ^ q' := (Nat.mul_pow (2 ^ 32) (3 ^ E_3_1) q').symm
+      have hrhs_eq : (2 ^ (Δ_end + W_end)) ^ q' = 2 ^ (q' * (Δ_end + W_end)) := by
+        rw [← Nat.pow_mul 2 (Δ_end + W_end) q', Nat.mul_comm (Δ_end + W_end) q']
+      have hpow2_lt : 2 ^ (32 * q' + (p' + q') * E_3_1) < 2 ^ (q' * (Δ_end + W_end)) := by
+        rw [← hrhs_eq]
+        exact lt_of_le_of_lt hlhs_ge hpow_q'
+      have hexp_lt : 32 * q' + (p' + q') * E_3_1 < q' * (Δ_end + W_end) := by
+        refine Nat.lt_of_not_le (fun hge => ?_)
+        have hp_ge : 2 ^ (q' * (Δ_end + W_end)) ≤ 2 ^ (32 * q' + (p' + q') * E_3_1) :=
+          Nat.pow_le_pow_right (by decide) hge
+        omega
+      have hΔ_expand :
+          q' * (Δ_end + W_end) + 10 * q' * L_end1 =
+            10 * q' * L_2 (M + 1) + q' * W_end := by
+        have h1 : (Δ_end + W_end) + 10 * L_end1 = 10 * L_2 (M + 1) + W_end := by
+          dsimp [Δ_end]; omega
+        calc q' * (Δ_end + W_end) + 10 * q' * L_end1
+            = q' * ((Δ_end + W_end) + 10 * L_end1) := by ring
+          _ = q' * (10 * L_2 (M + 1) + W_end) := by rw [h1]
+          _ = 10 * q' * L_2 (M + 1) + q' * W_end := by ring
+      linarith only [hexp_lt, hΔ_expand]
+    have h7_12 := hpq' 7 12 (by decide) (by decide : 2 ^ (7 + 12) ≤ 3 ^ 12)
+    exact ⟨hpq', by linarith only [h7_12]⟩
+  -- Global cutoff from W(0) < 2 ^ W_0:
+  have hAcc_pos : 1 ≤ waveInteriorAcc L_2 L_1 M :=
+    waveInteriorAcc_pos L_2 L_1 hL1_0 M
+  have hm :=
+    (dense_core_symmetric_multi_wave_master_identity_and_boundary_independence.2
+      W L_2 L_1 M hrec).1
+  change 2 ^ S_M * (2 ^ (10 * L_2 (M + 1)) * W (M + 1)) + 19 * waveInteriorAcc L_2 L_1 M =
+      3 ^ S_M * (3 ^ (10 * L_2 0) * W 0) at hm
+  have hp2_M :
+      2 ^ (S_M + 10 * L_2 (M + 1)) * W (M + 1) =
+        2 ^ S_M * (2 ^ (10 * L_2 (M + 1)) * W (M + 1)) := by
+    rw [Nat.pow_add]; ring
+  have hp3_M :
+      3 ^ (S_M + 10 * L_2 0) * W 0 = 3 ^ S_M * (3 ^ (10 * L_2 0) * W 0) := by
+    rw [Nat.pow_add]; ring
+  have hup_2W0 :
+      2 ^ (S_M + 10 * L_2 (M + 1)) * W (M + 1) < 3 ^ (S_M + 10 * L_2 0) * 2 ^ W_0 := by
+    have hup_W0 : 2 ^ (S_M + 10 * L_2 (M + 1)) * W (M + 1) < 3 ^ (S_M + 10 * L_2 0) * W 0 := by
+      linarith only [hm, hp2_M, hp3_M, hAcc_pos]
+    exact lt_trans hup_W0 (Nat.mul_lt_mul_of_pos_left hW0_lt (Nat.pow_pos (by decide)))
+  have hcancel_2W0 :
+      8121643200 * 2 ^ (S_M + 10 * L_end1) <
+        3 ^ (S_M + 10 * L_2 0 - E_3_1) * 2 ^ W_0 := by
+    have hm_lhs :
+        2 ^ (S_M + 10 * L_end1) * (8121643200 * 3 ^ E_3_1) <
+          2 ^ (S_M + 10 * L_end1) * (2 ^ Δ_end * W (M + 1)) :=
+      Nat.mul_lt_mul_of_pos_left hpure3 (Nat.pow_pos (by decide))
+    have hlhs_eq :
+        2 ^ (S_M + 10 * L_end1) * (8121643200 * 3 ^ E_3_1) =
+          3 ^ E_3_1 * (8121643200 * 2 ^ (S_M + 10 * L_end1)) := by ring
+    have hmid_eq :
+        2 ^ (S_M + 10 * L_end1) * (2 ^ Δ_end * W (M + 1)) =
+          2 ^ (S_M + 10 * L_2 (M + 1)) * W (M + 1) := by
+      have hexp : (S_M + 10 * L_end1) + Δ_end = S_M + 10 * L_2 (M + 1) := by
+        dsimp [Δ_end]; omega
+      calc 2 ^ (S_M + 10 * L_end1) * (2 ^ Δ_end * W (M + 1))
+          = (2 ^ (S_M + 10 * L_end1) * 2 ^ Δ_end) * W (M + 1) := by ring
+        _ = 2 ^ (S_M + 10 * L_2 (M + 1)) * W (M + 1) := by rw [← Nat.pow_add, hexp]
+    have hrhs_eq :
+        3 ^ (S_M + 10 * L_2 0) * 2 ^ W_0 =
+          3 ^ E_3_1 * (3 ^ (S_M + 10 * L_2 0 - E_3_1) * 2 ^ W_0) := by
+      set E_rem := S_M + 10 * L_2 0 - E_3_1
+      have hexp : S_M + 10 * L_2 0 = E_3_1 + E_rem := by dsimp [E_rem]; omega
+      calc 3 ^ (S_M + 10 * L_2 0) * 2 ^ W_0
+          = (3 ^ E_3_1 * 3 ^ E_rem) * 2 ^ W_0 := by rw [hexp, Nat.pow_add]
+        _ = 3 ^ E_3_1 * (3 ^ E_rem * 2 ^ W_0) := by ring
+    rw [hlhs_eq, hmid_eq] at hm_lhs
+    have hlt_mul :
+        3 ^ E_3_1 * (8121643200 * 2 ^ (S_M + 10 * L_end1)) <
+          3 ^ E_3_1 * (3 ^ (S_M + 10 * L_2 0 - E_3_1) * 2 ^ W_0) := by
+      rw [← hrhs_eq]
+      exact lt_trans hm_lhs hup_2W0
+    exact Nat.lt_of_mul_lt_mul_left hlt_mul
+  have hpq :
+      ∀ p q : ℕ, 1 ≤ q → 3 ^ q ≤ 2 ^ (p + q) →
+        (p + q) * E_3_1 + 10 * q * L_end1 + 32 * q <
+          p * S_M + 10 * (p + q) * L_2 0 + q * W_0 := by
+    intro p q hq hpq_le
+    set E_lhs := S_M + 10 * L_end1
+    set E_3 := S_M + 10 * L_2 0 - E_3_1
+    have h2_32_lt : 2 ^ 32 * 2 ^ E_lhs < 3 ^ E_3 * 2 ^ W_0 := by
+      have h1 : 2 ^ 32 * 2 ^ E_lhs ≤ 8121643200 * 2 ^ E_lhs :=
+        Nat.mul_le_mul_right (2 ^ E_lhs) (by decide : 2 ^ 32 ≤ 8121643200)
+      exact lt_of_le_of_lt h1 hcancel_2W0
+    have hpow_q : (2 ^ 32 * 2 ^ E_lhs) ^ q < (3 ^ E_3 * 2 ^ W_0) ^ q :=
+      pow_lt_pow_of_lt h2_32_lt hq
+    have hlhs_eq : 2 ^ (q * E_lhs + 32 * q) = (2 ^ 32 * 2 ^ E_lhs) ^ q := by
+      calc 2 ^ (q * E_lhs + 32 * q)
+          = 2 ^ (32 * q) * 2 ^ (q * E_lhs) := by rw [Nat.add_comm, Nat.pow_add]
+        _ = (2 ^ 32) ^ q * (2 ^ E_lhs) ^ q := by
+            rw [Nat.pow_mul 2 32 q, Nat.mul_comm q E_lhs, Nat.pow_mul 2 E_lhs q]
+        _ = (2 ^ 32 * 2 ^ E_lhs) ^ q := (Nat.mul_pow (2 ^ 32) (2 ^ E_lhs) q).symm
+    have h3_le : (3 ^ E_3) ^ q ≤ 2 ^ ((p + q) * E_3) := by
+      calc (3 ^ E_3) ^ q
+          = 3 ^ (E_3 * q) := (Nat.pow_mul 3 E_3 q).symm
+        _ = 3 ^ (q * E_3) := by rw [Nat.mul_comm E_3 q]
+        _ = (3 ^ q) ^ E_3 := Nat.pow_mul 3 q E_3
+        _ ≤ (2 ^ (p + q)) ^ E_3 := Nat.pow_le_pow_left hpq_le E_3
+        _ = 2 ^ ((p + q) * E_3) := (Nat.pow_mul 2 (p + q) E_3).symm
+    have hrhs_le : (3 ^ E_3 * 2 ^ W_0) ^ q ≤ 2 ^ ((p + q) * E_3 + q * W_0) := by
+      calc (3 ^ E_3 * 2 ^ W_0) ^ q
+          = (3 ^ E_3) ^ q * (2 ^ W_0) ^ q := Nat.mul_pow (3 ^ E_3) (2 ^ W_0) q
+        _ ≤ 2 ^ ((p + q) * E_3) * (2 ^ W_0) ^ q := Nat.mul_le_mul_right _ h3_le
+        _ = 2 ^ ((p + q) * E_3) * 2 ^ (W_0 * q) := by rw [← Nat.pow_mul 2 W_0 q]
+        _ = 2 ^ ((p + q) * E_3) * 2 ^ (q * W_0) := by rw [Nat.mul_comm W_0 q]
+        _ = 2 ^ ((p + q) * E_3 + q * W_0) := (Nat.pow_add 2 _ _).symm
+    have hpow2_lt : 2 ^ (q * E_lhs + 32 * q) < 2 ^ ((p + q) * E_3 + q * W_0) := by
+      rw [hlhs_eq]
+      exact lt_of_lt_of_le hpow_q hrhs_le
+    have hexp_lt : q * E_lhs + 32 * q < (p + q) * E_3 + q * W_0 := by
+      refine Nat.lt_of_not_le (fun hge => ?_)
+      have hp_ge : 2 ^ ((p + q) * E_3 + q * W_0) ≤ 2 ^ (q * E_lhs + 32 * q) :=
+        Nat.pow_le_pow_right (by decide) hge
+      omega
+    have hE3_expand :
+        (p + q) * E_3 + (p + q) * E_3_1 = (p + q) * S_M + 10 * (p + q) * L_2 0 := by
+      have h1 : E_3 + E_3_1 = S_M + 10 * L_2 0 := by dsimp [E_3, E_3_1]; omega
+      calc (p + q) * E_3 + (p + q) * E_3_1
+          = (p + q) * (E_3 + E_3_1) := (Nat.mul_add (p + q) E_3 E_3_1).symm
+        _ = (p + q) * (S_M + 10 * L_2 0) := by rw [h1]
+        _ = (p + q) * S_M + 10 * (p + q) * L_2 0 := by ring
+    have hElhs_expand : q * E_lhs = q * S_M + 10 * q * L_end1 := by dsimp [E_lhs]; ring
+    have hSM_split : (p + q) * S_M = p * S_M + q * S_M := Nat.add_mul p q S_M
+    linarith only [hexp_lt, hE3_expand, hElhs_expand, hSM_split]
+  have h10_17 := hpq 10 17 (by decide) (by decide : 3 ^ 17 ≤ 2 ^ (10 + 17))
+  exact ⟨hpure3, hlocal, hpq, by linarith only [h10_17]⟩
+
+/-!
+## Section 136: Trillion-Suppressed Defect Palette Pigeonhole Cutoff Across `C + 1` Double-Boundary-Locked Anagram Pairs
+
+By Section 131, every double-boundary-locked anagram pair of interior step-sum `S_end` has its
+reduced defect `q_Acc` bounded by:
+  `33,444,926,697,600 * q_Acc < 3 ^ S_end`,
+meaning `q_Acc` lies in `{0, 1, ..., 3 ^ S_end / 33444926697600}` (at most
+`C_pal := 3 ^ S_end / 33444926697600 + 1` values, shrunk by a factor of `33.44` trillion!).
+Whenever `C + 1` double-boundary-locked anagram pairs draw their unsigned reduced defects `q_Acc i`
+from a palette of size `≤ C` (`defectIdx : Fin (C + 1) → Fin C`), Pigeonhole guarantees two pairs
+`i < j` with `q_Acc i = q_Acc j` (in any of the 4 sign combinations!), triggering Section 134 and
+Section 135's 32-bit boosted cutoffs!
+-/
+
+/-- **Trillion-Suppressed Defect Palette Pigeonhole Cutoff Across `C + 1` Double-Boundary-Locked Anagram Pairs:**
+Whenever `C + 1` double-boundary-locked anagram pairs of interior step-sum `S_end` draw their
+unsigned reduced defects `q_Acc i` from a palette of size `≤ C`, at least two pairs `i < j` collide
+in `q_Acc`, restoring `3 ^ (S_end + 10 * L_start i) ≤ 2 ^ (10 * (L_end j - L_end i)) * q_Wend j + q_Wend i`
+and forcing both the local `(p' + q') = 19` pure-power cutoff and the global `(p + q) = 27`
+32-bit boosted Archimedean cutoff! -/
+theorem dense_core_trillion_suppressed_defect_palette_pigeonhole_cutoff
+    {W L_2 L_1 : ℕ → ℕ} {C S_end W_0 : ℕ}
+    (L_start L_end q_W0 q_Wend q_Acc M_end : Fin (C + 1) → ℕ)
+    (defectIdx : Fin (C + 1) → Fin C)
+    (hW0_lt : W 0 < 2 ^ W_0)
+    (hL1_0 : 1 ≤ L_1 0)
+    (hrec : ∀ n : ℕ,
+      2 ^ (7 * L_1 n + 10 * L_2 (n + 1)) * W (n + 1) +
+        19 * ((3 ^ (7 * L_1 n) - 2 ^ (7 * L_1 n)) / 2059) =
+        3 ^ (10 * L_2 n + 7 * L_1 n) * W n)
+    (hLs_mono : Monotone L_start)
+    (hLe_mono : Monotone L_end)
+    (hLend_eq : ∀ i, L_end i = L_2 (M_end i + 1))
+    (hW0_strict : StrictMono (fun i => 3 ^ (S_end + 10 * L_start i) * q_W0 i))
+    (hWend_strict : StrictMono (fun i => 2 ^ (10 * L_end i) * q_Wend i))
+    (hqW0_pos : ∀ i, 1 ≤ q_W0 i)
+    (hqWend_pos : ∀ i, 1 ≤ q_Wend i)
+    (hsyz : ∀ i,
+      2 ^ (S_end + 10 * L_end i) * q_Wend i + 19 * q_Acc i =
+        3 ^ (S_end + 10 * L_start i) * q_W0 i ∨
+      2 ^ (S_end + 10 * L_end i) * q_Wend i =
+        3 ^ (S_end + 10 * L_start i) * q_W0 i + 19 * q_Acc i)
+    (hW_bound : ∀ i, 16243286400 * q_Wend i ≤ W (M_end i + 1))
+    (hS_le : ∀ i j, i < j →
+      S_end + 10 * L_start i ≤ waveInteriorExp L_2 L_1 (M_end j) + 10 * L_2 0)
+    (hpalette : ∀ i j, defectIdx i = defectIdx j → q_Acc i = q_Acc j) :
+    ∃ i j : Fin (C + 1),
+      i < j ∧
+      q_Acc i = q_Acc j ∧
+      8121643200 * 3 ^ (S_end + 10 * L_start i) <
+        2 ^ (10 * (L_2 (M_end j + 1) - L_end i)) * W (M_end j + 1) ∧
+      (∀ W_end : ℕ, W (M_end j + 1) < 2 ^ W_end →
+        19 * (S_end + 10 * L_start i) + 120 * L_end i + 384 <
+          120 * L_2 (M_end j + 1) + 12 * W_end) ∧
+      27 * (S_end + 10 * L_start i) + 170 * L_end i + 544 <
+        10 * waveInteriorExp L_2 L_1 (M_end j) + 270 * L_2 0 + 17 * W_0 := by
+  have hnot_inj : ¬Function.Injective defectIdx := by
+    intro hinj
+    have hcard := Fintype.card_le_of_injective defectIdx hinj
+    simp only [Fintype.card_fin] at hcard
+    omega
+  rw [Function.Injective] at hnot_inj
+  push_neg at hnot_inj
+  rcases hnot_inj with ⟨a, b, hab_eq, hab_ne⟩
+  have hij_ex : ∃ i j : Fin (C + 1), i < j ∧ defectIdx i = defectIdx j := by
+    rcases lt_trichotomy a b with hlt | rfl | hgt
+    · exact ⟨a, b, hlt, hab_eq⟩
+    · exact absurd rfl hab_ne
+    · exact ⟨b, a, hgt, hab_eq.symm⟩
+  rcases hij_ex with ⟨i, j, hij, hdef_eq⟩
+  have hqAcc_eq : q_Acc i = q_Acc j := hpalette i j hdef_eq
+  have hsyz_i := hsyz i
+  have hsyz_j := hsyz j
+  rw [← hqAcc_eq] at hsyz_j
+  have hLs_ij : L_start i ≤ L_start j := hLs_mono (le_of_lt hij)
+  have hLe_ij : L_end i ≤ L_end j := hLe_mono (le_of_lt hij)
+  have hW0_lt_ij :
+      3 ^ (S_end + 10 * L_start i) * q_W0 i < 3 ^ (S_end + 10 * L_start j) * q_W0 j :=
+    hW0_strict hij
+  have h134 :=
+    dense_core_double_boundary_sign_blind_four_window_defect_cancellation
+      hLs_ij hLe_ij (hqW0_pos i) (hqWend_pos i) hW0_lt_ij hsyz_i hsyz_j
+  have hWend_lt_ij :
+      2 ^ (10 * L_end i) * q_Wend i < 2 ^ (10 * L_end j) * q_Wend j :=
+    hWend_strict hij
+  have hWend_inner_lt :
+      q_Wend i < 2 ^ (10 * (L_end j - L_end i)) * q_Wend j := by
+    have hexp : 10 * L_end j = 10 * L_end i + 10 * (L_end j - L_end i) := by omega
+    have hsplit :
+        2 ^ (10 * L_end j) * q_Wend j =
+          2 ^ (10 * L_end i) * (2 ^ (10 * (L_end j - L_end i)) * q_Wend j) := by
+      rw [hexp, Nat.pow_add]; ring
+    rw [hsplit] at hWend_lt_ij
+    exact Nat.lt_of_mul_lt_mul_left hWend_lt_ij
+  have h3_lt_2 :
+      3 ^ (S_end + 10 * L_start i) <
+        2 * (2 ^ (10 * (L_2 (M_end j + 1) - L_end i)) * q_Wend j) := by
+    have hbY := h134.2.2.2
+    rw [hLend_eq j] at hbY hWend_inner_lt
+    omega
+  have hLe_j : L_end i ≤ L_2 (M_end j + 1) := by rw [← hLend_eq j]; exact hLe_ij
+  have h135 :=
+    dense_core_double_boundary_four_window_pure_power_state_bounds_and_cutoff
+      hW0_lt hL1_0 (fun n _ => hrec n) hLe_j (hS_le i j hij) h3_lt_2 (hW_bound j)
+  exact ⟨i, j, hij, hqAcc_eq, h135.1, fun W_end hlt => (h135.2.1 W_end hlt).2, h135.2.2.2⟩
+
+/-!
+## Section 137: Two-Block Junction-Locked Simultaneous Anagram Mandatory Terminal State Growth (`119*(N_1 + N_2) + 422` and `119*N_2 + 635`)
+
+Combining **Section 121 Part 2** (Two-Block Junction-Locked Simultaneous Anagram Pigeonhole across
+`B * ((17*N_1 + 7)*(B - 1) + 1) * ((17*N_2 + 7)*(B - 1) + 1) + 1` windows) with:
+- **Section 130 Part 1 & Part 2** at the matching internal junction `m(k) := r(k) + N_1 + 1`
+  (`L_2(m i) = L_2(m j)`), and
+- **Section 127** across the full concatenated `(N_1 + 1 + N_2)`-wave anagram
+  (`S_tot = S_1 + 10 * L_2(m i) + S_2 ≥ (17 * N_1 + 7) + 10 + (17 * N_2 + 7) = 17 * (N_1 + N_2) + 24`),
+proves that in any bounded-run Dense Core trajectory (`1 ≤ L_1(n), L_2(n) ≤ B`), among any
+`B * C_{N_1} * C_{N_2} + 1` strictly increasing window positions `r(0) < ... < r(C)`, there ALWAYS
+exist `i < j` that simultaneously satisfy:
+1. `16,243,286,400 ∣ (W(r j + N_1 + 1) - W(r i + N_1 + 1))` at the internal junction,
+2. Both `119 * (N_1 + N_2) + 432 < 120 * B + 12 * W_end` (from the full concatenated block) and
+   `119 * N_2 + 635 < 120 * B + 12 * W_end` (from the junction-boosted second block) whenever
+   `W(r j + N_1 + 1 + N_2 + 1) < 2 ^ W_end`, and
+3. `2 ^ W_end ≤ W(r j + N_1 + 1 + N_2 + 1)` whenever `120 * B + 12 * W_end ≤ 119 * (N_1 + N_2) + 432`
+   or `120 * B + 12 * W_end ≤ 119 * N_2 + 635`!
+-/
+
+/-- **Two-Block Junction-Locked Simultaneous Anagram Mandatory Terminal State Growth:**
+In any bounded-run Dense Core trajectory (`1 ≤ L_1(n), L_2(n) ≤ B`), among any
+`B * ((17*N_1 + 7)*(B - 1) + 1) * ((17*N_2 + 7)*(B - 1) + 1) + 1` strictly increasing window
+positions `r(0) < ... < r(C)`, there ALWAYS exist `i < j` with matching Block-1 step-sums, matching
+internal junction `2`-runs `L_2(r i + N_1 + 1) = L_2(r j + N_1 + 1)`, matching Block-2 step-sums,
+and matching total `(N_1 + 1 + N_2)`-wave step-sums such that:
+1. `16243286400 ∣ (W(r j + N_1 + 1) - W(r i + N_1 + 1))`,
+2. `119 * (N_1 + N_2) + 432 < 120 * B + 12 * W_end` and `119 * N_2 + 635 < 120 * B + 12 * W_end`
+   whenever `W(r j + N_1 + 1 + N_2 + 1) < 2 ^ W_end`, and
+3. `2 ^ W_end ≤ W(r j + N_1 + 1 + N_2 + 1)` whenever
+   `120 * B + 12 * W_end ≤ 119 * (N_1 + N_2) + 432`! -/
+theorem dense_core_two_block_junction_locked_pigeonhole_mandatory_terminal_growth
+    {W U L_2 L_1 : ℕ → ℕ} (N_1 N_2 B : ℕ)
+    (r : Fin (B * ((17 * N_1 + 7) * (B - 1) + 1) * ((17 * N_2 + 7) * (B - 1) + 1) + 1) → ℕ)
+    (hB : 1 ≤ B)
+    (hW_pos : ∀ n : ℕ, 1 ≤ W n)
+    (hU_pos : ∀ n : ℕ, 1 ≤ U n)
+    (hL1 : ∀ n : ℕ, 1 ≤ L_1 n ∧ L_1 n ≤ B)
+    (hL2 : ∀ n : ℕ, 1 ≤ L_2 n ∧ L_2 n ≤ B)
+    (hr_strict : StrictMono r)
+    (h21 : ∀ n : ℕ, 58025 * 2 ^ (7 * L_1 n) * U n + 19 = (2059 * 3 ^ (10 * L_2 n)) * W n)
+    (h12 : ∀ n : ℕ, 58025 * 3 ^ (7 * L_1 n) * U n + 19 = (2059 * 2 ^ (10 * L_2 (n + 1))) * W (n + 1))
+    (hrec : ∀ n : ℕ,
+      2 ^ (7 * L_1 n + 10 * L_2 (n + 1)) * W (n + 1) +
+        19 * ((3 ^ (7 * L_1 n) - 2 ^ (7 * L_1 n)) / 2059) =
+        3 ^ (10 * L_2 n + 7 * L_1 n) * W n) :
+    ∃ i j : Fin (B * ((17 * N_1 + 7) * (B - 1) + 1) * ((17 * N_2 + 7) * (B - 1) + 1) + 1),
+      i < j ∧
+      L_2 (r i + N_1 + 1) = L_2 (r j + N_1 + 1) ∧
+      waveInteriorExp (fun t => L_2 (r i + t)) (fun t => L_1 (r i + t)) N_1 =
+        waveInteriorExp (fun t => L_2 (r j + t)) (fun t => L_1 (r j + t)) N_1 ∧
+      waveInteriorExp (fun t => L_2 (r i + N_1 + 1 + t)) (fun t => L_1 (r i + N_1 + 1 + t)) N_2 =
+        waveInteriorExp (fun t => L_2 (r j + N_1 + 1 + t)) (fun t => L_1 (r j + N_1 + 1 + t)) N_2 ∧
+      waveInteriorExp (fun t => L_2 (r i + t)) (fun t => L_1 (r i + t)) (N_1 + 1 + N_2) =
+        waveInteriorExp (fun t => L_2 (r j + t)) (fun t => L_1 (r j + t)) (N_1 + 1 + N_2) ∧
+      16243286400 ∣ (W (r j + N_1 + 1) - W (r i + N_1 + 1)) ∧
+      (∀ W_end : ℕ, W (r j + N_1 + 1 + N_2 + 1) < 2 ^ W_end →
+        119 * (N_1 + N_2) + 432 < 120 * B + 12 * W_end ∧
+        119 * N_2 + 635 < 120 * B + 12 * W_end) ∧
+      (∀ W_end : ℕ, 120 * B + 12 * W_end ≤ 119 * (N_1 + N_2) + 432 →
+        2 ^ W_end ≤ W (r j + N_1 + 1 + N_2 + 1)) := by
+  obtain ⟨i, j, hij, hL_eq, hS1_eq, hS2_eq, hStot_eq⟩ :=
+    dense_core_bounded_run_boundary_locked_and_two_block_anagram_pigeonhole.2
+      L_2 L_1 N_1 N_2 B r hB hL1 hL2
+  have hrij : r i < r j := hr_strict hij
+  set m_i := r i + N_1 + 1
+  set m_j := r j + N_1 + 1
+  have hm_lt : m_i < m_j := by dsimp [m_i, m_j]; omega
+  let W_mi := fun t => W (m_i + t)
+  let L_2_mi := fun t => L_2 (m_i + t)
+  let L_1_mi := fun t => L_1 (m_i + t)
+  let W_mj := fun t => W (m_j + t)
+  let L_2_mj := fun t => L_2 (m_j + t)
+  let L_1_mj := fun t => L_1 (m_j + t)
+  have hX_m_lt : scaledWaveX W L_2 m_i < scaledWaveX W L_2 m_j := by
+    set m_gap := m_j - m_i - 1
+    have hgap : m_i + (m_gap + 1) = m_j := by omega
+    have hrec_g :
+        ∀ n ≤ m_gap,
+          2 ^ (7 * L_1_mi n + 10 * L_2_mi (n + 1)) * W_mi (n + 1) +
+            19 * ((3 ^ (7 * L_1_mi n) - 2 ^ (7 * L_1_mi n)) / 2059) =
+            3 ^ (10 * L_2_mi n + 7 * L_1_mi n) * W_mi n := by
+      intro n _
+      dsimp [W_mi, L_2_mi, L_1_mi]
+      have hidx : m_i + (n + 1) = m_i + n + 1 := by omega
+      rw [hidx]; exact hrec (m_i + n)
+    have hout0_g : 58025 * 2 ^ (7 * L_1_mi 0) * U m_i + 19 = 2059 * scaledWaveX W_mi L_2_mi 0 := by
+      dsimp [scaledWaveX, W_mi, L_2_mi, L_1_mi]
+      have h := h21 m_i
+      linarith only [h]
+    have hinN_g :
+        58025 * 3 ^ (7 * L_1_mi m_gap) * U (m_i + m_gap) + 19 =
+          2059 * scaledWaveY W_mi L_2_mi (m_gap + 1) := by
+      dsimp [scaledWaveY, W_mi, L_2_mi, L_1_mi]
+      have hidx : m_i + (m_gap + 1) = m_i + m_gap + 1 := by omega
+      rw [hidx]
+      have h := h12 (m_i + m_gap)
+      linarith only [h]
+    have h102_g :=
+      dense_core_scaled_wave_strict_interleaving_and_universal_crt_locks.1
+        W_mi L_2_mi L_1_mi m_gap (U m_i) (U (m_i + m_gap))
+        (hW_pos m_i) (by dsimp [W_mi]; rw [hgap]; exact hW_pos m_j) (hU_pos m_i)
+        (hL2 m_i).1 (by dsimp [L_2_mi]; rw [hgap]; exact (hL2 m_j).1)
+        (fun t _ => (hL1 (m_i + t)).1) hrec_g hout0_g hinN_g
+    have h := h102_g.2.2.2.2
+    dsimp [scaledWaveX, W_mi, L_2_mi] at h
+    rw [hgap] at h
+    exact h
+  have hout_mi : 58025 * 2 ^ (7 * L_1 m_i) * U m_i + 19 = 2059 * scaledWaveX W L_2 m_i := by
+    dsimp [scaledWaveX]; linarith only [h21 m_i]
+  have hout_mj : 58025 * 2 ^ (7 * L_1 m_j) * U m_j + 19 = 2059 * scaledWaveX W L_2 m_j := by
+    dsimp [scaledWaveX]; linarith only [h21 m_j]
+  have hin_mi :
+      58025 * 3 ^ (7 * L_1 (m_i - 1)) * U (m_i - 1) + 19 = 2059 * scaledWaveY W L_2 m_i := by
+    dsimp [scaledWaveY]
+    have hidx : (m_i - 1) + 1 = m_i := by dsimp [m_i]
+    have h := h12 (m_i - 1)
+    rw [hidx] at h
+    linarith only [h]
+  have hin_mj :
+      58025 * 3 ^ (7 * L_1 (m_j - 1)) * U (m_j - 1) + 19 = 2059 * scaledWaveY W L_2 m_j := by
+    dsimp [scaledWaveY]
+    have hidx : (m_j - 1) + 1 = m_j := by dsimp [m_j]
+    have h := h12 (m_j - 1)
+    rw [hidx] at h
+    linarith only [h]
+  have h130_1 :=
+    dense_core_same_run_junction_16243286400_sieve_and_bidirectional_cutoffs.1
+      (hL1 m_i).1 (hL1 m_j).1 (hL1 (m_i - 1)).1 (hL1 (m_j - 1)).1
+      hL_eq hX_m_lt hout_mi hout_mj hin_mi hin_mj
+  have hdvd_Wm : 16243286400 ∣ (W m_j - W m_i) := h130_1.2.1
+  have hX_m_ge :
+      16243286400 * 3 ^ (10 * L_2_mi 0) ≤ scaledWaveX W_mj L_2_mj 0 - scaledWaveX W_mi L_2_mi 0 :=
+    h130_1.2.2.2.2.1
+  have hrec_mi :
+      ∀ n ≤ N_2,
+        2 ^ (7 * L_1_mi n + 10 * L_2_mi (n + 1)) * W_mi (n + 1) +
+          19 * ((3 ^ (7 * L_1_mi n) - 2 ^ (7 * L_1_mi n)) / 2059) =
+          3 ^ (10 * L_2_mi n + 7 * L_1_mi n) * W_mi n := by
+    intro n _
+    dsimp [W_mi, L_2_mi, L_1_mi]
+    have hidx : m_i + (n + 1) = m_i + n + 1 := by omega
+    rw [hidx]; exact hrec (m_i + n)
+  have hrec_mj :
+      ∀ n ≤ N_2,
+        2 ^ (7 * L_1_mj n + 10 * L_2_mj (n + 1)) * W_mj (n + 1) +
+          19 * ((3 ^ (7 * L_1_mj n) - 2 ^ (7 * L_1_mj n)) / 2059) =
+          3 ^ (10 * L_2_mj n + 7 * L_1_mj n) * W_mj n := by
+    intro n _
+    dsimp [W_mj, L_2_mj, L_1_mj]
+    have hidx : m_j + (n + 1) = m_j + n + 1 := by omega
+    rw [hidx]; exact hrec (m_j + n)
+  have h130_2 :=
+    dense_core_same_run_junction_16243286400_sieve_and_bidirectional_cutoffs.2.1
+      (fun t _ => (hL1 (m_j + t)).1) hrec_mi hrec_mj hS2_eq hX_m_ge
+  -- Also apply Section 127 across the full concatenated (N_1 + 1 + N_2)-wave block:
+  set N_tot := N_1 + 1 + N_2
+  let W_i := fun t => W (r i + t)
+  let L_2_i := fun t => L_2 (r i + t)
+  let L_1_i := fun t => L_1 (r i + t)
+  let W_j := fun t => W (r j + t)
+  let L_2_j := fun t => L_2 (r j + t)
+  let L_1_j := fun t => L_1 (r j + t)
+  have hX_0_lt : scaledWaveX W_i L_2_i 0 < scaledWaveX W_j L_2_j 0 := by
+    set m_gap := r j - r i - 1
+    have hgap : r i + (m_gap + 1) = r j := by omega
+    have hrec_g :
+        ∀ n ≤ m_gap,
+          2 ^ (7 * L_1_i n + 10 * L_2_i (n + 1)) * W_i (n + 1) +
+            19 * ((3 ^ (7 * L_1_i n) - 2 ^ (7 * L_1_i n)) / 2059) =
+            3 ^ (10 * L_2_i n + 7 * L_1_i n) * W_i n := by
+      intro n _
+      dsimp [W_i, L_2_i, L_1_i]
+      have hidx : r i + (n + 1) = r i + n + 1 := by omega
+      rw [hidx]; exact hrec (r i + n)
+    have hout0_g : 58025 * 2 ^ (7 * L_1_i 0) * U (r i) + 19 = 2059 * scaledWaveX W_i L_2_i 0 := by
+      dsimp [scaledWaveX, W_i, L_2_i, L_1_i]
+      have h := h21 (r i)
+      linarith only [h]
+    have hinN_g :
+        58025 * 3 ^ (7 * L_1_i m_gap) * U (r i + m_gap) + 19 =
+          2059 * scaledWaveY W_i L_2_i (m_gap + 1) := by
+      dsimp [scaledWaveY, W_i, L_2_i, L_1_i]
+      have hidx : r i + (m_gap + 1) = r i + m_gap + 1 := by omega
+      rw [hidx]
+      have h := h12 (r i + m_gap)
+      linarith only [h]
+    have h102_g :=
+      dense_core_scaled_wave_strict_interleaving_and_universal_crt_locks.1
+        W_i L_2_i L_1_i m_gap (U (r i)) (U (r i + m_gap))
+        (hW_pos (r i)) (by dsimp [W_i]; rw [hgap]; exact hW_pos (r j)) (hU_pos (r i))
+        (hL2 (r i)).1 (by dsimp [L_2_i]; rw [hgap]; exact (hL2 (r j)).1)
+        (fun t _ => (hL1 (r i + t)).1) hrec_g hout0_g hinN_g
+    have h := h102_g.2.2.2.2
+    dsimp [scaledWaveX, W_i, L_2_i, W_j, L_2_j] at h ⊢
+    rw [hgap] at h
+    exact h
+  have hY_end_lt : scaledWaveY W_i L_2_i (N_tot + 1) < scaledWaveY W_j L_2_j (N_tot + 1) := by
+    set m_gap := r j - r i - 1
+    have hgap : (r i + (N_tot + 1)) + (m_gap + 1) = r j + (N_tot + 1) := by omega
+    let W_s := fun t => W (r i + (N_tot + 1) + t)
+    let L_2_s := fun t => L_2 (r i + (N_tot + 1) + t)
+    let L_1_s := fun t => L_1 (r i + (N_tot + 1) + t)
+    have hrec_s :
+        ∀ n ≤ m_gap,
+          2 ^ (7 * L_1_s n + 10 * L_2_s (n + 1)) * W_s (n + 1) +
+            19 * ((3 ^ (7 * L_1_s n) - 2 ^ (7 * L_1_s n)) / 2059) =
+            3 ^ (10 * L_2_s n + 7 * L_1_s n) * W_s n := by
+      intro n _
+      dsimp [W_s, L_2_s, L_1_s]
+      have hidx : r i + (N_tot + 1) + (n + 1) = r i + (N_tot + 1) + n + 1 := by omega
+      rw [hidx]; exact hrec (r i + (N_tot + 1) + n)
+    have hout0_s :
+        58025 * 2 ^ (7 * L_1_s 0) * U (r i + (N_tot + 1)) + 19 = 2059 * scaledWaveX W_s L_2_s 0 := by
+      dsimp [scaledWaveX, W_s, L_2_s, L_1_s]
+      have h := h21 (r i + (N_tot + 1))
+      linarith only [h]
+    have hinN_s :
+        58025 * 3 ^ (7 * L_1_s m_gap) * U (r i + (N_tot + 1) + m_gap) + 19 =
+          2059 * scaledWaveY W_s L_2_s (m_gap + 1) := by
+      dsimp [scaledWaveY, W_s, L_2_s, L_1_s]
+      have hidx : r i + (N_tot + 1) + (m_gap + 1) = r i + (N_tot + 1) + m_gap + 1 := by omega
+      rw [hidx]
+      have h := h12 (r i + (N_tot + 1) + m_gap)
+      linarith only [h]
+    have h102_s :=
+      dense_core_scaled_wave_strict_interleaving_and_universal_crt_locks.1
+        W_s L_2_s L_1_s m_gap (U (r i + (N_tot + 1))) (U (r i + (N_tot + 1) + m_gap))
+        (hW_pos (r i + (N_tot + 1)))
+        (by dsimp [W_s]; rw [hgap]; exact hW_pos (r j + (N_tot + 1)))
+        (hU_pos (r i + (N_tot + 1)))
+        (hL2 (r i + (N_tot + 1))).1
+        (by dsimp [L_2_s]; rw [hgap]; exact (hL2 (r j + (N_tot + 1))).1)
+        (fun t _ => (hL1 (r i + (N_tot + 1) + t)).1) hrec_s hout0_s hinN_s
+    have h := h102_s.2.2.2.1
+    dsimp [scaledWaveY, W_s, L_2_s, W_i, L_2_i, W_j, L_2_j] at h ⊢
+    rw [hgap] at h
+    exact h
+  have hrec_i_tot :
+      ∀ n ≤ N_tot,
+        2 ^ (7 * L_1_i n + 10 * L_2_i (n + 1)) * W_i (n + 1) +
+          19 * ((3 ^ (7 * L_1_i n) - 2 ^ (7 * L_1_i n)) / 2059) =
+          3 ^ (10 * L_2_i n + 7 * L_1_i n) * W_i n := by
+    intro n _
+    dsimp [W_i, L_2_i, L_1_i]
+    have hidx : r i + (n + 1) = r i + n + 1 := by omega
+    rw [hidx]; exact hrec (r i + n)
+  have hrec_j_tot :
+      ∀ n ≤ N_tot,
+        2 ^ (7 * L_1_j n + 10 * L_2_j (n + 1)) * W_j (n + 1) +
+          19 * ((3 ^ (7 * L_1_j n) - 2 ^ (7 * L_1_j n)) / 2059) =
+          3 ^ (10 * L_2_j n + 7 * L_1_j n) * W_j n := by
+    intro n _
+    dsimp [W_j, L_2_j, L_1_j]
+    have hidx : r j + (n + 1) = r j + n + 1 := by omega
+    rw [hidx]; exact hrec (r j + n)
+  have hout_i : 58025 * 2 ^ (7 * L_1_i 0) * U (r i) + 19 = 2059 * scaledWaveX W_i L_2_i 0 := by
+    dsimp [W_i, L_2_i, L_1_i, scaledWaveX]; linarith only [h21 (r i)]
+  have hout_j : 58025 * 2 ^ (7 * L_1_j 0) * U (r j) + 19 = 2059 * scaledWaveX W_j L_2_j 0 := by
+    dsimp [W_j, L_2_j, L_1_j, scaledWaveX]; linarith only [h21 (r j)]
+  have hin_i_tot :
+      58025 * 3 ^ (7 * L_1_i N_tot) * U (r i + N_tot) + 19 =
+        2059 * scaledWaveY W_i L_2_i (N_tot + 1) := by
+    dsimp [W_i, L_2_i, L_1_i, scaledWaveY]
+    have hidx : r i + (N_tot + 1) = r i + N_tot + 1 := by omega
+    rw [hidx]
+    have h := h12 (r i + N_tot)
+    linarith only [h]
+  have hin_j_tot :
+      58025 * 3 ^ (7 * L_1_j N_tot) * U (r j + N_tot) + 19 =
+        2059 * scaledWaveY W_j L_2_j (N_tot + 1) := by
+    dsimp [W_j, L_2_j, L_1_j, scaledWaveY]
+    have hidx : r j + (N_tot + 1) = r j + N_tot + 1 := by omega
+    rw [hidx]
+    have h := h12 (r j + N_tot)
+    linarith only [h]
+  have h127 :=
+    dense_core_unconditional_abelian_anagram_scaled_jump_and_terminal_growth
+      (fun t _ => (hL1 (r i + t)).1) (fun t _ => (hL1 (r j + t)).1)
+      hrec_i_tot hrec_j_tot hStot_eq hX_0_lt hY_end_lt hout_i hout_j hin_i_tot hin_j_tot
+  have hS_tot_min : 17 * N_tot + 7 ≤ waveInteriorExp L_2_i L_1_i N_tot :=
+    waveInteriorExp_ge_seventeen_mul_add_seven L_2_i L_1_i N_tot
+      (fun t _ => (hL1 (r i + t)).1) (fun t _ => (hL2 (r i + (t + 1))).1)
+  have hS2_min : 17 * N_2 + 7 ≤ waveInteriorExp L_2_mi L_1_mi N_2 :=
+    waveInteriorExp_ge_seventeen_mul_add_seven L_2_mi L_1_mi N_2
+      (fun t _ => (hL1 (m_i + t)).1) (fun t _ => (hL2 (m_i + (t + 1))).1)
+  have hidx_end_mj : m_j + (N_2 + 1) = r j + N_1 + 1 + N_2 + 1 := by dsimp [m_j]; omega
+  have hidx_end_rj : r j + (N_tot + 1) = r j + N_1 + 1 + N_2 + 1 := by dsimp [N_tot]; omega
+  have hcut_both :
+      ∀ W_end : ℕ, W (r j + N_1 + 1 + N_2 + 1) < 2 ^ W_end →
+        119 * (N_1 + N_2) + 432 < 120 * B + 12 * W_end ∧
+        119 * N_2 + 635 < 120 * B + 12 * W_end := by
+    intro W_end hW_lt
+    have hW_mj_lt : W_mj (N_2 + 1) < 2 ^ W_end := by
+      dsimp [W_mj]; rw [hidx_end_mj]; exact hW_lt
+    have hW_rj_lt : W_j (N_tot + 1) < 2 ^ W_end := by
+      dsimp [W_j]; rw [hidx_end_rj]; exact hW_lt
+    have hc_tot := (h127.2.2.2.2.2.1 W_end hW_rj_lt).2
+    have hc_2 := (h130_2.2.2 W_end hW_mj_lt).2
+    dsimp [L_2_j] at hc_tot
+    dsimp [L_2_mi, L_2_mj] at hc_2
+    rw [hidx_end_rj] at hc_tot
+    rw [hidx_end_mj] at hc_2
+    have hL2_B : L_2 (r j + N_1 + 1 + N_2 + 1) ≤ B := (hL2 (r j + N_1 + 1 + N_2 + 1)).2
+    have hL2_mi_pos : 1 ≤ L_2 (m_i + 0) := (hL2 (m_i + 0)).1
+    have h7_tot : 7 * (17 * N_tot + 7) ≤ 7 * waveInteriorExp L_2_i L_1_i N_tot :=
+      Nat.mul_le_mul_left 7 hS_tot_min
+    have h7_2 : 7 * (17 * N_2 + 7) ≤ 7 * waveInteriorExp L_2_mi L_1_mi N_2 :=
+      Nat.mul_le_mul_left 7 hS2_min
+    have hNtot_id : 7 * (17 * N_tot + 7) + 264 = 119 * (N_1 + N_2) + 432 := by
+      dsimp [N_tot]; ring
+    exact ⟨by linarith only [hc_tot, hL2_B, h7_tot, hNtot_id],
+      by linarith only [hc_2, hL2_B, hL2_mi_pos, h7_2]⟩
+  have hcontra_both :
+      ∀ W_end : ℕ, 120 * B + 12 * W_end ≤ 119 * (N_1 + N_2) + 432 →
+        2 ^ W_end ≤ W (r j + N_1 + 1 + N_2 + 1) := by
+    intro W_end hle
+    refine Nat.le_of_not_lt (fun hlt => ?_)
+    have hc := (hcut_both W_end hlt).1
+    omega
+  exact ⟨i, j, hij, hL_eq, hS1_eq, hS2_eq, hStot_eq, hdvd_Wm, hcut_both, hcontra_both⟩
+
 end Mahler.DubickasExtension
+
 
 
 
