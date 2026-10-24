@@ -30207,7 +30207,421 @@ theorem dense_core_bounded_run_boundary_locked_and_two_block_anagram_pigeonhole 
       rw [hc_i, hc_j, hS1_eq, hL_eq, hS2_eq]
     exact ⟨i, j, hij, hL_eq, hS1_eq, hS2_eq, hStot_eq⟩
 
+/-!
+## Section 122: Two-Block Junction-Coupled Reduced Syzygy & Boosted Exponent Restoration Across a Matching Internal Junction
+
+When Block 1 (with step-sum `S_1 = S_{K,1} + E_{mid,1} + E_{suf,1}`) and Block 2 (with step-sum
+`S_2 = S_{K,2} + E_{mid,2} + E_{suf,2}`) meet at a matching internal junction `L_2(m) = L_2(m')`
+(`E_bridge = 10 * L_2(m)`), Section 118 proves that the junction state difference
+`ΔW_mid = W(m') - W(m)` factors as:
+  `ΔW_mid = 58025 * 2 ^ S_K2 * 3 ^ E_suf1 * q_mid`  (`q_mid ≥ 1`)!
+Consequently:
+- At the end of Block 1 (`m, m'`), the scaled `Y`-quotient is `q_{Y,mid} = 2 ^ (E_bridge + S_K2) * q_mid`,
+- At the start of Block 2 (`m, m'`), the scaled `X`-quotient is `q_{X,mid} = 3 ^ (E_suf1 + E_bridge) * q_mid`.
+Substituting these into the reduced anagram syzygies (Section 106) of Block 1 and Block 2 couples
+them through the **single integer quotient `q_mid`** and **boosts** both blocks' exponents across
+the junction:
+1. **Left Block Junction-Coupled Syzygy (`2`-adic exponent boosted by `E_bridge + S_{K,2}`):**
+     `2 ^ (E_mid1 + E_suf1 + E_bridge + S_K2) * q_mid ± 41553 * q_A1 = 3 ^ (S_K1 + E_mid1) * q_X1`.
+2. **Right Block Junction-Coupled Syzygy (`3`-adic exponent boosted by `E_{suf,1} + E_bridge`):**
+     `2 ^ (E_mid2 + E_suf2) * q_Y2 ± 41553 * q_A2 = 3 ^ (E_suf1 + E_bridge + S_K2 + E_mid2) * q_mid`.
+3. **Boosted Four-Window Defect Cancellation Across the Junction:**
+   Whenever two right-block anagram pairs share the unsigned middle defect `q_A2` (with either sign!),
+   Section 115 applied with effective prefix `S_eff := E_suf1 + E_bridge + S_K2` restores the
+   **junction-boosted `3`-adic power**:
+     `3 ^ (E_suf1 + E_bridge + S_K2 + E_mid2) ≤ 2 ^ (E_suf2' - E_suf2) * q_Y2' + q_Y2`!
+-/
+
+/-- **Two-Block Junction-Coupled Reduced Syzygy & Boosted Exponent Restoration:**
+When `q_{Y,mid} = 2 ^ (E_bridge + S_K2) * q_mid` in Block 1 and `q_{X,mid} = 3 ^ (E_suf1 + E_bridge) * q_mid`
+in Block 2 (`q_mid ≥ 1`):
+1. Block 1 satisfies the boosted reduced syzygy with `2`-exponent `E_mid1 + E_suf1 + E_bridge + S_K2`.
+2. Block 2 satisfies the boosted reduced syzygy with `3`-exponent `E_suf1 + E_bridge + S_K2 + E_mid2`.
+3. Any two right-block pairs sharing `q_A2` (with either sign) satisfy the boosted restoration bound
+   `3 ^ (E_suf1(1) + E_bridge(1) + S_K2(1) + E_mid2) ≤ 2 ^ (E_suf2(2) - E_suf2(1)) * q_Y2(2) + q_Y2(1)`. -/
+theorem dense_core_two_block_junction_coupled_reduced_syzygy_and_boosted_restoration :
+    -- 1. Junction-coupled syzygy transformation for Block 1 and Block 2:
+    (∀ {S_K1 E_mid1 E_suf1 E_bridge S_K2 E_mid2 E_suf2 q_X1 q_mid q_Y2 q_A1 q_A2 : ℕ},
+      (2 ^ (E_mid1 + E_suf1) * (2 ^ (E_bridge + S_K2) * q_mid) + 41553 * q_A1 =
+          3 ^ (S_K1 + E_mid1) * q_X1 ∨
+        2 ^ (E_mid1 + E_suf1) * (2 ^ (E_bridge + S_K2) * q_mid) =
+          3 ^ (S_K1 + E_mid1) * q_X1 + 41553 * q_A1) →
+      (2 ^ (E_mid2 + E_suf2) * q_Y2 + 41553 * q_A2 =
+          3 ^ (S_K2 + E_mid2) * (3 ^ (E_suf1 + E_bridge) * q_mid) ∨
+        2 ^ (E_mid2 + E_suf2) * q_Y2 =
+          3 ^ (S_K2 + E_mid2) * (3 ^ (E_suf1 + E_bridge) * q_mid) + 41553 * q_A2) →
+      (2 ^ (E_mid1 + E_suf1 + E_bridge + S_K2) * q_mid + 41553 * q_A1 =
+          3 ^ (S_K1 + E_mid1) * q_X1 ∨
+        2 ^ (E_mid1 + E_suf1 + E_bridge + S_K2) * q_mid =
+          3 ^ (S_K1 + E_mid1) * q_X1 + 41553 * q_A1) ∧
+      (2 ^ (E_mid2 + E_suf2) * q_Y2 + 41553 * q_A2 =
+          3 ^ (E_suf1 + E_bridge + S_K2 + E_mid2) * q_mid ∨
+        2 ^ (E_mid2 + E_suf2) * q_Y2 =
+          3 ^ (E_suf1 + E_bridge + S_K2 + E_mid2) * q_mid + 41553 * q_A2)) ∧
+    -- 2. Sign-blind boosted 4-window restoration across two junction-coupled right blocks sharing q_A2:
+    (∀ {S_eff1 S_eff2 E_mid2 E_suf2_1 E_suf2_2 q_mid1 q_mid2 q_Y2_1 q_Y2_2 q_A2 : ℕ},
+      S_eff1 ≤ S_eff2 →
+      E_suf2_1 ≤ E_suf2_2 →
+      1 ≤ q_mid1 → 1 ≤ q_mid2 → 1 ≤ q_Y2_1 → 1 ≤ q_Y2_2 →
+      3 ^ S_eff1 * q_mid1 < 3 ^ S_eff2 * q_mid2 →
+      (2 ^ (E_mid2 + E_suf2_1) * q_Y2_1 + 41553 * q_A2 = 3 ^ (S_eff1 + E_mid2) * q_mid1 ∨
+       2 ^ (E_mid2 + E_suf2_1) * q_Y2_1 = 3 ^ (S_eff1 + E_mid2) * q_mid1 + 41553 * q_A2) →
+      (2 ^ (E_mid2 + E_suf2_2) * q_Y2_2 + 41553 * q_A2 = 3 ^ (S_eff2 + E_mid2) * q_mid2 ∨
+       2 ^ (E_mid2 + E_suf2_2) * q_Y2_2 = 3 ^ (S_eff2 + E_mid2) * q_mid2 + 41553 * q_A2) →
+      2 ^ (E_mid2 + E_suf2_1) ≤ 3 ^ (S_eff2 - S_eff1) * q_mid2 + q_mid1 ∧
+      3 ^ (S_eff1 + E_mid2) ≤ 2 ^ (E_suf2_2 - E_suf2_1) * q_Y2_2 + q_Y2_1) := by
+  refine ⟨?_, ?_⟩
+  · intro S_K1 E_mid1 E_suf1 E_bridge S_K2 E_mid2 E_suf2 q_X1 q_mid q_Y2 q_A1 q_A2 h1 h2
+    have hp2 :
+        2 ^ (E_mid1 + E_suf1 + E_bridge + S_K2) * q_mid =
+          2 ^ (E_mid1 + E_suf1) * (2 ^ (E_bridge + S_K2) * q_mid) := by
+      have hexp : E_mid1 + E_suf1 + E_bridge + S_K2 = (E_mid1 + E_suf1) + (E_bridge + S_K2) := by
+        omega
+      rw [hexp, Nat.pow_add]; ring
+    have hp3 :
+        3 ^ (E_suf1 + E_bridge + S_K2 + E_mid2) * q_mid =
+          3 ^ (S_K2 + E_mid2) * (3 ^ (E_suf1 + E_bridge) * q_mid) := by
+      have hexp : E_suf1 + E_bridge + S_K2 + E_mid2 = (S_K2 + E_mid2) + (E_suf1 + E_bridge) := by
+        omega
+      rw [hexp, Nat.pow_add]; ring
+    rw [hp2, hp3]
+    exact ⟨h1, h2⟩
+  · intro S_eff1 S_eff2 E_mid2 E_suf2_1 E_suf2_2 q_mid1 q_mid2 q_Y2_1 q_Y2_2 q_A2
+      hS_le hE_le hqm1 _ hqY1 _ hlt h1 h2
+    have h115 :=
+      dense_core_signed_middle_defect_unconditional_four_window_dichotomy
+        hS_le hE_le hqm1 hqY1 hlt h1 h2
+    exact ⟨h115.2.1, h115.2.2⟩
+
+/-!
+## Section 123: Horizon-Free Local Window Junction Cutoff & Contrapositive Exponential Start-State Floor at `r_2` (`2 ^ W_start ≤ W(r_2)`)
+
+In Section 119, we propagated the internal junction bound `58025 * 2 ^ S_K2 * 3 ^ E_suf1 < W(m')`
+back to `W(0)` at the origin, which placed the global step-sum `p * S_{m' - 1}` on the RHS.
+What if instead we propagate from the junction `m' = r_2 + N'_1 + 1` back **only across Block 1 of
+Window 2** to `W(r_2)` (whose step-sum is `S_1 = S^{(r_2)}_{N'_1}`, **completely independent of how
+far down the orbit `r_2` is**)?
+Applying Section 119 to the shifted trajectory starting at `r_2` proves:
+1. **Exact Local `(2, 3)`-Power Squeeze on `W(r_2)` and `X(r_2)` (`E_suf1 ≤ S_1 + 10 * L_2(r_2)`):**
+     `58025 * 2 ^ (S_1 + 10 * L_2 (r_2 + N'_1 + 1) + S_K2) < 3 ^ (S_1 + 10 * L_2 r_2 - E_suf1) * W r_2`!
+2. **Horizon-Free Local Junction Cutoff (Under Any Start-State Bound `W(r_2) < 2 ^ W_start`):**
+     `q * S_K2 + (p + q) * E_suf1 + 10 * q * L_2 (r_2 + N'_1 + 1) + 15 * q < p * S_1 + 10 * (p + q) * L_2 r_2 + q * W_start`,
+   and at `(p, q) = (10, 17)`:
+     `17 * S_K2 + 27 * E_suf1 + 170 * L_2 (r_2 + N'_1 + 1) + 255 < 10 * S_1 + 270 * L_2 r_2 + 17 * W_start`!
+   Notice that the RHS depends **only on the local block step-sum `S_1`** and has **zero dependence
+   on the window index `r_2`**!
+3. **Contrapositive Exponential Start-State Floor (`2 ^ W_start ≤ W(r_2)`):**
+   Whenever the local junction overlap satisfies
+   `p * S_1 + 10 * (p + q) * L_2 r_2 + q * W_start ≤ q * S_K2 + (p + q) * E_suf1 + 10 * q * L_2 (r_2 + N'_1 + 1) + 15 * q`,
+   the start state of Window 2 must satisfy `2 ^ W_start ≤ W(r_2)`!
+-/
+
+/-- **Horizon-Free Local Window Junction Cutoff & Contrapositive Exponential Start-State Floor at `r_2`:**
+Propagating across Block 1 of Window 2 (`r_2 → r_2 + N'_1 + 1`, with local step-sum `S_1`) yields a
+cutoff whose step-sum term `p * S_1` is completely independent of the window horizon `r_2`, and by
+contrapositive forces the exponential lower bound `2 ^ W_start ≤ W(r_2)` whenever the local junction
+overlap exceeds `p * S_1 + 10 * (p + q) * L_2(r_2) + q * W_start`. -/
+theorem dense_core_local_window_horizon_free_junction_cutoff_and_start_state_floor
+    {W L_2 L_1 : ℕ → ℕ} {r_2 N_1' S_K2 E_suf1 : ℕ}
+    (hL1_r2 : 1 ≤ L_1 r_2)
+    (hrec : ∀ n ≤ N_1',
+      2 ^ (7 * L_1 (r_2 + n) + 10 * L_2 (r_2 + n + 1)) * W (r_2 + n + 1) +
+        19 * ((3 ^ (7 * L_1 (r_2 + n)) - 2 ^ (7 * L_1 (r_2 + n))) / 2059) =
+        3 ^ (10 * L_2 (r_2 + n) + 7 * L_1 (r_2 + n)) * W (r_2 + n))
+    (hEsuf_le :
+      E_suf1 ≤ waveInteriorExp (fun t => L_2 (r_2 + t)) (fun t => L_1 (r_2 + t)) N_1' + 10 * L_2 r_2)
+    (hjunc_lt : 58025 * 2 ^ S_K2 * 3 ^ E_suf1 < W (r_2 + N_1' + 1)) :
+    let S_1 := waveInteriorExp (fun t => L_2 (r_2 + t)) (fun t => L_1 (r_2 + t)) N_1'
+    -- 1. Exact local (2, 3)-power lower bound on W(r_2):
+    58025 * 2 ^ (S_1 + 10 * L_2 (r_2 + N_1' + 1) + S_K2) <
+      3 ^ (S_1 + 10 * L_2 r_2 - E_suf1) * W r_2 ∧
+    -- 2. Horizon-free local junction cutoff whenever W(r_2) < 2 ^ W_start:
+    (∀ W_start : ℕ, W r_2 < 2 ^ W_start →
+      (∀ p q : ℕ, 1 ≤ q → 3 ^ q ≤ 2 ^ (p + q) →
+        q * S_K2 + (p + q) * E_suf1 + 10 * q * L_2 (r_2 + N_1' + 1) + 15 * q <
+          p * S_1 + 10 * (p + q) * L_2 r_2 + q * W_start) ∧
+      17 * S_K2 + 27 * E_suf1 + 170 * L_2 (r_2 + N_1' + 1) + 255 <
+        10 * S_1 + 270 * L_2 r_2 + 17 * W_start) ∧
+    -- 3. Contrapositive exponential start-state floor on W(r_2):
+    (∀ W_start p q : ℕ, 1 ≤ q → 3 ^ q ≤ 2 ^ (p + q) →
+      p * S_1 + 10 * (p + q) * L_2 r_2 + q * W_start ≤
+        q * S_K2 + (p + q) * E_suf1 + 10 * q * L_2 (r_2 + N_1' + 1) + 15 * q →
+      2 ^ W_start ≤ W r_2) := by
+  intro S_1
+  let W_sh := fun t => W (r_2 + t)
+  let L_2_sh := fun t => L_2 (r_2 + t)
+  let L_1_sh := fun t => L_1 (r_2 + t)
+  have hL1_sh0 : 1 ≤ L_1_sh 0 := hL1_r2
+  have hrec_sh :
+      ∀ n ≤ N_1',
+        2 ^ (7 * L_1_sh n + 10 * L_2_sh (n + 1)) * W_sh (n + 1) +
+          19 * ((3 ^ (7 * L_1_sh n) - 2 ^ (7 * L_1_sh n)) / 2059) =
+          3 ^ (10 * L_2_sh n + 7 * L_1_sh n) * W_sh n := by
+    intro n hn
+    dsimp [W_sh, L_2_sh, L_1_sh]
+    have hidx : r_2 + (n + 1) = r_2 + n + 1 := by omega
+    rw [hidx]
+    exact hrec n hn
+  have hEsuf_sh : E_suf1 ≤ waveInteriorExp L_2_sh L_1_sh N_1' + 10 * L_2_sh 0 := hEsuf_le
+  have hjunc_sh : 58025 * 2 ^ S_K2 * 3 ^ E_suf1 < W_sh (N_1' + 1) := by
+    dsimp [W_sh]
+    have hidx : r_2 + (N_1' + 1) = r_2 + N_1' + 1 := by omega
+    rw [hidx]
+    exact hjunc_lt
+  have hAcc_pos : 1 ≤ waveInteriorAcc L_2_sh L_1_sh N_1' :=
+    waveInteriorAcc_pos L_2_sh L_1_sh hL1_sh0 N_1'
+  have hm :=
+    (dense_core_symmetric_multi_wave_master_identity_and_boundary_independence.2
+      W_sh L_2_sh L_1_sh N_1' hrec_sh).1
+  change 2 ^ S_1 * (2 ^ (10 * L_2_sh (N_1' + 1)) * W_sh (N_1' + 1)) +
+      19 * waveInteriorAcc L_2_sh L_1_sh N_1' =
+      3 ^ S_1 * (3 ^ (10 * L_2_sh 0) * W_sh 0) at hm
+  have hidx_m : r_2 + (N_1' + 1) = r_2 + N_1' + 1 := by omega
+  have hp2_M :
+      2 ^ (S_1 + 10 * L_2 (r_2 + N_1' + 1)) * W (r_2 + N_1' + 1) =
+        2 ^ S_1 * (2 ^ (10 * L_2_sh (N_1' + 1)) * W_sh (N_1' + 1)) := by
+    dsimp [W_sh, L_2_sh]
+    rw [hidx_m, Nat.pow_add]; ring
+  have hp3_M :
+      3 ^ (S_1 + 10 * L_2 r_2) * W r_2 = 3 ^ S_1 * (3 ^ (10 * L_2_sh 0) * W_sh 0) := by
+    dsimp [W_sh, L_2_sh]
+    rw [Nat.pow_add]; ring
+  have hup_Wr2 :
+      2 ^ (S_1 + 10 * L_2 (r_2 + N_1' + 1)) * W (r_2 + N_1' + 1) <
+        3 ^ (S_1 + 10 * L_2 r_2) * W r_2 := by
+    linarith only [hm, hp2_M, hp3_M, hAcc_pos]
+  have hm_lt :
+      2 ^ (S_1 + 10 * L_2 (r_2 + N_1' + 1)) * (58025 * 2 ^ S_K2 * 3 ^ E_suf1) <
+        2 ^ (S_1 + 10 * L_2 (r_2 + N_1' + 1)) * W (r_2 + N_1' + 1) :=
+    Nat.mul_lt_mul_of_pos_left hjunc_lt (Nat.pow_pos (by decide))
+  have hlhs_combine :
+      2 ^ (S_1 + 10 * L_2 (r_2 + N_1' + 1)) * (58025 * 2 ^ S_K2 * 3 ^ E_suf1) =
+        3 ^ E_suf1 * (58025 * 2 ^ (S_1 + 10 * L_2 (r_2 + N_1' + 1) + S_K2)) := by
+    rw [Nat.pow_add 2 (S_1 + 10 * L_2 (r_2 + N_1' + 1)) S_K2]; ring
+  have hrhs_split :
+      3 ^ (S_1 + 10 * L_2 r_2) * W r_2 =
+        3 ^ E_suf1 * (3 ^ (S_1 + 10 * L_2 r_2 - E_suf1) * W r_2) := by
+    set E_rem := S_1 + 10 * L_2 r_2 - E_suf1
+    have hexp : S_1 + 10 * L_2 r_2 = E_suf1 + E_rem := by dsimp [E_rem]; omega
+    calc 3 ^ (S_1 + 10 * L_2 r_2) * W r_2
+        = (3 ^ E_suf1 * 3 ^ E_rem) * W r_2 := by rw [hexp, Nat.pow_add]
+      _ = 3 ^ E_suf1 * (3 ^ E_rem * W r_2) := by ring
+  have hcancel_Wr2 :
+      58025 * 2 ^ (S_1 + 10 * L_2 (r_2 + N_1' + 1) + S_K2) <
+        3 ^ (S_1 + 10 * L_2 r_2 - E_suf1) * W r_2 := by
+    have hlt_mul :
+        3 ^ E_suf1 * (58025 * 2 ^ (S_1 + 10 * L_2 (r_2 + N_1' + 1) + S_K2)) <
+          3 ^ E_suf1 * (3 ^ (S_1 + 10 * L_2 r_2 - E_suf1) * W r_2) := by
+      rw [← hlhs_combine, ← hrhs_split]
+      exact lt_trans hm_lt hup_Wr2
+    exact Nat.lt_of_mul_lt_mul_left hlt_mul
+  have hlocal :
+      ∀ W_start : ℕ, W r_2 < 2 ^ W_start →
+        (∀ p q : ℕ, 1 ≤ q → 3 ^ q ≤ 2 ^ (p + q) →
+          q * S_K2 + (p + q) * E_suf1 + 10 * q * L_2 (r_2 + N_1' + 1) + 15 * q <
+            p * S_1 + 10 * (p + q) * L_2 r_2 + q * W_start) ∧
+        17 * S_K2 + 27 * E_suf1 + 170 * L_2 (r_2 + N_1' + 1) + 255 <
+          10 * S_1 + 270 * L_2 r_2 + 17 * W_start := by
+    intro W_start hW_lt
+    have hW0_sh : W_sh 0 < 2 ^ W_start := hW_lt
+    have h119 :=
+      dense_core_internal_junction_bidirectional_archimedean_cutoff
+        hW0_sh hL1_sh0 hrec_sh hEsuf_sh hjunc_sh
+    dsimp [W_sh, L_2_sh, L_1_sh] at h119
+    rw [hidx_m] at h119
+    exact ⟨h119.2.2.1, h119.2.2.2⟩
+  have hcontra :
+      ∀ W_start p q : ℕ, 1 ≤ q → 3 ^ q ≤ 2 ^ (p + q) →
+        p * S_1 + 10 * (p + q) * L_2 r_2 + q * W_start ≤
+          q * S_K2 + (p + q) * E_suf1 + 10 * q * L_2 (r_2 + N_1' + 1) + 15 * q →
+        2 ^ W_start ≤ W r_2 := by
+    intro W_start p q hq hpq_le hge
+    refine Nat.le_of_not_lt (fun hlt => ?_)
+    have hcut := (hlocal W_start hlt).1 p q hq hpq_le
+    omega
+  exact ⟨hcancel_Wr2, hlocal, hcontra⟩
+
+/-!
+## Section 124: Two-Block First-Divergence Exponential Dominance Law (`2^(S_1 + E_bridge) * Δ_2 < 3^(E_bridge + S_2) * Δ_1`)
+
+Why can a divergence `Δ_2 = |Acc'_2 - Acc_2|` in Block 2 **never** cancel a divergence
+`Δ_1 = |Acc'_1 - Acc_1|` in Block 1 inside a concatenated two-block anagram, **even when Block 1
+and Block 2 diverge with opposite signs**?
+By the First-Divergence Cauchy Pinch (Sections 90 and 95):
+- Block 1's divergence at cumulative step-sum `E_div1` (`E_div1 + 10 ≤ S_1`) satisfies:
+    `54569 * 2 ^ E_div1 * 3 ^ (S_1 - E_div1 - 10) < 2059 * Δ_1`,
+- Block 2's divergence at cumulative step-sum `E_div2` (`E_div2 ≤ S_2`) satisfies:
+    `2059 * Δ_2 < 2 ^ E_div2 * 3 ^ (S_2 - E_div2)` (and in fact any `Δ_2` satisfies `2059 * Δ_2 < 3 ^ S_2`).
+In the shift-composition formula `Acc_tot = 3 ^ (E_bridge + S_2) * Acc_1 + 2 ^ (S_1 + E_bridge) * Acc_2`:
+- Term 1 (`3 ^ (E_bridge + S_2) * 2059 * Δ_1`) exceeds
+    `54569 * 2 ^ E_div1 * 3 ^ (S_1 - E_div1 - 10 + E_bridge + S_2)`,
+- Term 2 (`2 ^ (S_1 + E_bridge) * 2059 * Δ_2`) is strictly less than
+    `2 ^ (S_1 + E_bridge + E_div2) * 3 ^ (S_2 - E_div2)`.
+Setting `Δ_div := (S_1 - E_div1) + E_bridge + E_div2 ≥ 10`:
+Since `2 ^ 10 = 1024 < 54569` and `2 ≤ 3`, we have `2 ^ Δ_div < 54569 * 3 ^ (Δ_div - 10)` for every
+`Δ_div ≥ 10`! Consequently:
+  `2 ^ (S_1 + E_bridge) * Δ_2 < 3 ^ (E_bridge + S_2) * Δ_1` **strictly and unconditionally**!
+-/
+
+/-- **Two-Block First-Divergence Exponential Dominance Law:**
+Whenever Block 1 diverges at `E_div1` with `E_div1 + 10 ≤ S_1` and Cauchy-pinch lower bound
+`54569 * 2 ^ E_div1 * 3 ^ (S_1 - E_div1 - 10) < 2059 * Δ_1`, and Block 2 satisfies the Cauchy-pinch
+upper bound `2059 * Δ_2 < 2 ^ E_div2 * 3 ^ (S_2 - E_div2)` with `E_div2 ≤ S_2`, Block 1's weighted
+contribution `3 ^ (E_bridge + S_2) * Δ_1` strictly dominates Block 2's weighted contribution
+`2 ^ (S_1 + E_bridge) * Δ_2`:
+`2 ^ (S_1 + E_bridge) * Δ_2 < 3 ^ (E_bridge + S_2) * Δ_1`! -/
+theorem dense_core_two_block_first_divergence_dominance_and_opposite_sign_pinch
+    {S_1 E_bridge S_2 E_div1 E_div2 Δ_1 Δ_2 : ℕ}
+    (hdiv1_le : E_div1 + 10 ≤ S_1)
+    (hdiv2_le : E_div2 ≤ S_2)
+    (hpinch1 : 54569 * 2 ^ E_div1 * 3 ^ (S_1 - E_div1 - 10) < 2059 * Δ_1)
+    (hpinch2 : 2059 * Δ_2 < 2 ^ E_div2 * 3 ^ (S_2 - E_div2)) :
+    let Δ_div := (S_1 - E_div1) + E_bridge + E_div2
+    10 ≤ Δ_div ∧
+    2 ^ Δ_div < 54569 * 3 ^ (Δ_div - 10) ∧
+    2 ^ (S_1 + E_bridge) * (2059 * Δ_2) < 3 ^ (E_bridge + S_2) * (2059 * Δ_1) ∧
+    2 ^ (S_1 + E_bridge) * Δ_2 < 3 ^ (E_bridge + S_2) * Δ_1 := by
+  intro Δ_div
+  have hΔ_ge10 : 10 ≤ Δ_div := by dsimp [Δ_div]; omega
+  have hpow_dom : 2 ^ Δ_div < 54569 * 3 ^ (Δ_div - 10) := by
+    have hsplit : Δ_div = 10 + (Δ_div - 10) := by omega
+    calc 2 ^ Δ_div
+        = 2 ^ (10 + (Δ_div - 10)) := by rw [← hsplit]
+      _ = 1024 * 2 ^ (Δ_div - 10) := by rw [Nat.pow_add]
+      _ ≤ 1024 * 3 ^ (Δ_div - 10) :=
+          Nat.mul_le_mul_left 1024 (Nat.pow_le_pow_left (by decide) (Δ_div - 10))
+      _ < 54569 * 3 ^ (Δ_div - 10) :=
+          Nat.mul_lt_mul_of_pos_right (by decide : 1024 < 54569) (Nat.pow_pos (by decide))
+  have hT2_lt :
+      2 ^ (S_1 + E_bridge) * (2059 * Δ_2) <
+        2 ^ E_div1 * 3 ^ (S_2 - E_div2) * 2 ^ Δ_div := by
+    have hm :
+        2 ^ (S_1 + E_bridge) * (2059 * Δ_2) <
+          2 ^ (S_1 + E_bridge) * (2 ^ E_div2 * 3 ^ (S_2 - E_div2)) :=
+      Nat.mul_lt_mul_of_pos_left hpinch2 (Nat.pow_pos (by decide))
+    have hexp_eq :
+        2 ^ (S_1 + E_bridge) * (2 ^ E_div2 * 3 ^ (S_2 - E_div2)) =
+          2 ^ E_div1 * 3 ^ (S_2 - E_div2) * 2 ^ Δ_div := by
+      have h2_eq : S_1 + E_bridge + E_div2 = E_div1 + Δ_div := by dsimp [Δ_div]; omega
+      calc 2 ^ (S_1 + E_bridge) * (2 ^ E_div2 * 3 ^ (S_2 - E_div2))
+          = 2 ^ (S_1 + E_bridge + E_div2) * 3 ^ (S_2 - E_div2) := by
+              rw [Nat.pow_add 2 (S_1 + E_bridge) E_div2]; ring
+        _ = (2 ^ E_div1 * 2 ^ Δ_div) * 3 ^ (S_2 - E_div2) := by
+              rw [h2_eq, Nat.pow_add 2 E_div1 Δ_div]
+        _ = 2 ^ E_div1 * 3 ^ (S_2 - E_div2) * 2 ^ Δ_div := by ring
+    rw [← hexp_eq]
+    exact hm
+  have hT1_gt :
+      2 ^ E_div1 * 3 ^ (S_2 - E_div2) * (54569 * 3 ^ (Δ_div - 10)) <
+        3 ^ (E_bridge + S_2) * (2059 * Δ_1) := by
+    have hm :
+        3 ^ (E_bridge + S_2) * (54569 * 2 ^ E_div1 * 3 ^ (S_1 - E_div1 - 10)) <
+          3 ^ (E_bridge + S_2) * (2059 * Δ_1) :=
+      Nat.mul_lt_mul_of_pos_left hpinch1 (Nat.pow_pos (by decide))
+    have hexp_eq :
+        3 ^ (E_bridge + S_2) * (54569 * 2 ^ E_div1 * 3 ^ (S_1 - E_div1 - 10)) =
+          2 ^ E_div1 * 3 ^ (S_2 - E_div2) * (54569 * 3 ^ (Δ_div - 10)) := by
+      have h3_eq : (E_bridge + S_2) + (S_1 - E_div1 - 10) = (S_2 - E_div2) + (Δ_div - 10) := by
+        dsimp [Δ_div]; omega
+      calc 3 ^ (E_bridge + S_2) * (54569 * 2 ^ E_div1 * 3 ^ (S_1 - E_div1 - 10))
+          = 54569 * 2 ^ E_div1 * 3 ^ ((E_bridge + S_2) + (S_1 - E_div1 - 10)) := by
+              rw [Nat.pow_add 3 (E_bridge + S_2) (S_1 - E_div1 - 10)]; ring
+        _ = 54569 * 2 ^ E_div1 * (3 ^ (S_2 - E_div2) * 3 ^ (Δ_div - 10)) := by
+              rw [h3_eq, Nat.pow_add 3 (S_2 - E_div2) (Δ_div - 10)]
+        _ = 2 ^ E_div1 * 3 ^ (S_2 - E_div2) * (54569 * 3 ^ (Δ_div - 10)) := by ring
+    rw [← hexp_eq]
+    exact hm
+  have hmid_lt :
+      2 ^ E_div1 * 3 ^ (S_2 - E_div2) * 2 ^ Δ_div <
+        2 ^ E_div1 * 3 ^ (S_2 - E_div2) * (54569 * 3 ^ (Δ_div - 10)) :=
+    Nat.mul_lt_mul_of_pos_left hpow_dom
+      (Nat.mul_pos (Nat.pow_pos (by decide)) (Nat.pow_pos (by decide)))
+  have h2059_lt :
+      2 ^ (S_1 + E_bridge) * (2059 * Δ_2) < 3 ^ (E_bridge + S_2) * (2059 * Δ_1) :=
+    lt_trans hT2_lt (lt_trans hmid_lt hT1_gt)
+  have hdom : 2 ^ (S_1 + E_bridge) * Δ_2 < 3 ^ (E_bridge + S_2) * Δ_1 := by
+    have hmul :
+        2059 * (2 ^ (S_1 + E_bridge) * Δ_2) < 2059 * (3 ^ (E_bridge + S_2) * Δ_1) := by
+      linarith only [h2059_lt]
+    exact Nat.lt_of_mul_lt_mul_left hmul
+  exact ⟨hΔ_ge10, hpow_dom, h2059_lt, hdom⟩
+
+/-!
+## Section 125: `K`-Junction Chain Simultaneous & Cumulative Archimedean Cutoff Across Multi-Block Anagram Chains
+
+Suppose a trajectory exhibits a chain of `K` internal junctions (`1 ≤ K`, indexed by `k : Fin K`)
+at positions `m(k) + 1`, where each junction `k` has left shared suffix `E_suf(k)` and right shared
+prefix `S_pre(k)` satisfying `58025 * 2 ^ (S_pre k) * 3 ^ (E_suf k) < W (m k + 1)`.
+By Section 119:
+1. **Simultaneous Pointwise Junction Cutoffs (`∀ k : Fin K`):**
+     `q * S_pre k + (p + q) * E_suf k + 10 * q * L_2 (m k + 1) + 15 * q < p * S_{m k} + 10 * (p + q) * L_2 0 + q * W_0`.
+2. **Cumulative `K`-Junction Additive Cutoff (Summing over `k ∈ Finset.univ`):**
+     `q * (∑ k, S_pre k) + (p + q) * (∑ k, E_suf k) + 10 * q * (∑ k, L_2 (m k + 1)) + 15 * q * K < p * (∑ k, S_{m k}) + 10 * (p + q) * K * L_2 0 + q * K * W_0`,
+   and at `(p, q) = (10, 17)`:
+     `17 * (∑ k, S_pre k) + 27 * (∑ k, E_suf k) + 170 * (∑ k, L_2 (m k + 1)) + 255 * K < 10 * (∑ k, S_{m k}) + 270 * K * L_2 0 + 17 * K * W_0`!
+-/
+
+/-- **`K`-Junction Chain Simultaneous & Cumulative Archimedean Cutoff:**
+Across any `K ≥ 1` internal junctions `m(k) + 1` (`k : Fin K`) satisfying
+`58025 * 2 ^ (S_pre k) * 3 ^ (E_suf k) < W (m k + 1)`, every junction satisfies Section 119's
+single-point cutoff and their sum satisfies the cumulative `K`-junction additive cutoff. -/
+theorem dense_core_multi_junction_chain_cumulative_and_extremal_archimedean_cutoff
+    {W L_2 L_1 : ℕ → ℕ} {K W_0 : ℕ}
+    (m S_pre E_suf : Fin K → ℕ)
+    (hK : 1 ≤ K)
+    (hW0_lt : W 0 < 2 ^ W_0)
+    (hL1_0 : 1 ≤ L_1 0)
+    (hrec : ∀ n : ℕ,
+      2 ^ (7 * L_1 n + 10 * L_2 (n + 1)) * W (n + 1) +
+        19 * ((3 ^ (7 * L_1 n) - 2 ^ (7 * L_1 n)) / 2059) =
+        3 ^ (10 * L_2 n + 7 * L_1 n) * W n)
+    (hEsuf_le : ∀ k : Fin K, E_suf k ≤ waveInteriorExp L_2 L_1 (m k) + 10 * L_2 0)
+    (hjunc_lt : ∀ k : Fin K, 58025 * 2 ^ (S_pre k) * 3 ^ (E_suf k) < W (m k + 1)) :
+    -- 1. Pointwise cutoff at every junction k ∈ Fin K:
+    (∀ k : Fin K, ∀ p q : ℕ, 1 ≤ q → 3 ^ q ≤ 2 ^ (p + q) →
+      q * S_pre k + (p + q) * E_suf k + 10 * q * L_2 (m k + 1) + 15 * q <
+        p * waveInteriorExp L_2 L_1 (m k) + 10 * (p + q) * L_2 0 + q * W_0) ∧
+    -- 2. Cumulative K-junction additive cutoff for all (p, q):
+    (∀ p q : ℕ, 1 ≤ q → 3 ^ q ≤ 2 ^ (p + q) →
+      q * (∑ k : Fin K, S_pre k) + (p + q) * (∑ k : Fin K, E_suf k) +
+        10 * q * (∑ k : Fin K, L_2 (m k + 1)) + 15 * q * K <
+        p * (∑ k : Fin K, waveInteriorExp L_2 L_1 (m k)) +
+          10 * (p + q) * K * L_2 0 + q * K * W_0) ∧
+    -- 3. Cumulative K-junction cutoff at (p, q) = (10, 17):
+    17 * (∑ k : Fin K, S_pre k) + 27 * (∑ k : Fin K, E_suf k) +
+      170 * (∑ k : Fin K, L_2 (m k + 1)) + 255 * K <
+      10 * (∑ k : Fin K, waveInteriorExp L_2 L_1 (m k)) +
+        270 * K * L_2 0 + 17 * K * W_0 := by
+  have hpt :
+      ∀ k : Fin K, ∀ p q : ℕ, 1 ≤ q → 3 ^ q ≤ 2 ^ (p + q) →
+        q * S_pre k + (p + q) * E_suf k + 10 * q * L_2 (m k + 1) + 15 * q <
+          p * waveInteriorExp L_2 L_1 (m k) + 10 * (p + q) * L_2 0 + q * W_0 := by
+    intro k p q hq hpq_le
+    exact (dense_core_internal_junction_bidirectional_archimedean_cutoff
+      hW0_lt hL1_0 (fun n _ => hrec n) (hEsuf_le k) (hjunc_lt k)).2.2.1 p q hq hpq_le
+  have hcum :
+      ∀ p q : ℕ, 1 ≤ q → 3 ^ q ≤ 2 ^ (p + q) →
+        q * (∑ k : Fin K, S_pre k) + (p + q) * (∑ k : Fin K, E_suf k) +
+          10 * q * (∑ k : Fin K, L_2 (m k + 1)) + 15 * q * K <
+          p * (∑ k : Fin K, waveInteriorExp L_2 L_1 (m k)) +
+            10 * (p + q) * K * L_2 0 + q * K * W_0 := by
+    intro p q hq hpq_le
+    have hne : (Finset.univ : Finset (Fin K)).Nonempty := by
+      exact ⟨⟨0, hK⟩, Finset.mem_univ _⟩
+    have hsum_lt :
+        (∑ k : Fin K,
+          (q * S_pre k + (p + q) * E_suf k + 10 * q * L_2 (m k + 1) + 15 * q)) <
+          (∑ k : Fin K,
+            (p * waveInteriorExp L_2 L_1 (m k) + 10 * (p + q) * L_2 0 + q * W_0)) :=
+      Finset.sum_lt_sum_of_nonempty hne (fun k _ => hpt k p q hq hpq_le)
+    simp only [Finset.sum_add_distrib, ← Finset.mul_sum, Finset.sum_const,
+      Finset.card_univ, Fintype.card_fin, smul_eq_mul] at hsum_lt
+    linarith only [hsum_lt]
+  have h10_17 := hcum 10 17 (by decide) (by decide : 3 ^ 17 ≤ 2 ^ (10 + 17))
+  exact ⟨hpt, hcum, by linarith only [h10_17]⟩
+
 end Mahler.DubickasExtension
+
 
 
 
