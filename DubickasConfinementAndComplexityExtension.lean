@@ -34972,7 +34972,312 @@ theorem dense_core_doubly_super_reduced_qA_double_star_band_and_44_step_floor :
         h_le hq_le h1_low h2_high
     exact ⟨h148_2.1, fun hle26 => h148_2.2 (by linarith only [hle26])⟩
 
+/-!
+## Section 154: Universal One-Wave Sliding-Window Step-Sum Conservation & Accumulator Transfer Law (`r → r + 1`)
+
+How does an `(N + 1)`-wave window starting at index `1` (`S^{(1)}_N`, `Acc^{(1)}_N`) relate to the
+`(N + 1)`-wave window starting at index `0` (`S^{(0)}_N`, `Acc^{(0)}_N`) along the **same**
+trajectory?
+Their union is the `(N + 2)`-wave block `[0 .. N + 1]`, which decomposes in **two ways**:
+1. **Left-First Split (`1 + (N + 1)`, via `waveInteriorExp_shift_comp L_2 L_1 0 N` and `waveInteriorAcc_shift_comp L_2 L_1 0 N`):**
+     `S_{N+1} = (7 * L_1 0 + 10 * L_2 1) + S^{(1)}_N`,
+     `Acc_{N+1} = 3 ^ (10 * L_2 1 + S^{(1)}_N) * Q(L_1 0) + 2 ^ (7 * L_1 0 + 10 * L_2 1) * Acc^{(1)}_N`.
+2. **Right-Last Split (`(N + 1) + 1`, by definition of `waveInteriorExp` and `waveInteriorAcc` at `N + 1`):**
+     `S_{N+1} = S^{(0)}_N + (10 * L_2 (N + 1) + 7 * L_1 (N + 1))`,
+     `Acc_{N+1} = 3 ^ (10 * L_2 (N + 1) + 7 * L_1 (N + 1)) * Acc^{(0)}_N + 2 ^ (S^{(0)}_N + 10 * L_2 (N + 1)) * Q(L_1 (N + 1))`.
+Equating these two decompositions yields the **Universal One-Wave Sliding-Window Transfer Law**:
+  `2 ^ (7 * L_1 0 + 10 * L_2 1) * Acc^{(1)}_N + 3 ^ (10 * L_2 1 + S^{(1)}_N) * Q(L_1 0) = 3 ^ (10 * L_2 (N + 1) + 7 * L_1 (N + 1)) * Acc^{(0)}_N + 2 ^ (S^{(0)}_N + 10 * L_2 (N + 1)) * Q(L_1 (N + 1))`!
+Notice that **none of the `2*N - 1` shared interior runs `(L_1(1 .. N), L_2(2 .. N))` appear in
+the coefficients or boundary terms of this equation**!
+-/
+
+/-- **Universal One-Wave Sliding-Window Step-Sum Conservation & Accumulator Transfer Law (`0 → 1`):**
+For any run sequences `L_2, L_1 : ℕ → ℕ` and any window horizon `N ∈ ℕ`:
+1. `(7 * L_1 0 + 10 * L_2 1) + S^{(1)}_N = S^{(0)}_N + (10 * L_2 (N + 1) + 7 * L_1 (N + 1))`.
+2. `2 ^ (7 * L_1 0 + 10 * L_2 1) * Acc^{(1)}_N + 3 ^ (10 * L_2 1 + S^{(1)}_N) * Q(L_1 0) = 3 ^ (10 * L_2 (N + 1) + 7 * L_1 (N + 1)) * Acc^{(0)}_N + 2 ^ (S^{(0)}_N + 10 * L_2 (N + 1)) * Q(L_1 (N + 1))`! -/
+theorem dense_core_one_wave_sliding_window_step_sum_and_accumulator_transfer
+    (L_2 L_1 : ℕ → ℕ) (N : ℕ) :
+    let S_0 := waveInteriorExp L_2 L_1 N
+    let S_1 := waveInteriorExp (fun t => L_2 (1 + t)) (fun t => L_1 (1 + t)) N
+    let Acc_0 := waveInteriorAcc L_2 L_1 N
+    let Acc_1 := waveInteriorAcc (fun t => L_2 (1 + t)) (fun t => L_1 (1 + t)) N
+    let Q_0 := (3 ^ (7 * L_1 0) - 2 ^ (7 * L_1 0)) / 2059
+    let Q_N1 := (3 ^ (7 * L_1 (N + 1)) - 2 ^ (7 * L_1 (N + 1))) / 2059
+    (7 * L_1 0 + 10 * L_2 1) + S_1 = S_0 + (10 * L_2 (N + 1) + 7 * L_1 (N + 1)) ∧
+    2 ^ (7 * L_1 0 + 10 * L_2 1) * Acc_1 + 3 ^ (10 * L_2 1 + S_1) * Q_0 =
+      3 ^ (10 * L_2 (N + 1) + 7 * L_1 (N + 1)) * Acc_0 +
+        2 ^ (S_0 + 10 * L_2 (N + 1)) * Q_N1 := by
+  intro S_0 S_1 Acc_0 Acc_1 Q_0 Q_N1
+  have h1N : 0 + 1 + N = N + 1 := by omega
+  have hfun2 : (fun t => L_2 (0 + 1 + t)) = (fun t => L_2 (1 + t)) := rfl
+  have hfun1 : (fun t => L_1 (0 + 1 + t)) = (fun t => L_1 (1 + t)) := rfl
+  have hS_comp := waveInteriorExp_shift_comp L_2 L_1 0 N
+  rw [h1N, hfun2, hfun1] at hS_comp
+  change S_0 + (10 * L_2 (N + 1) + 7 * L_1 (N + 1)) =
+    7 * L_1 0 + 10 * L_2 1 + S_1 at hS_comp
+  have hAcc_comp := waveInteriorAcc_shift_comp L_2 L_1 0 N
+  rw [h1N, hfun2, hfun1] at hAcc_comp
+  change 3 ^ (10 * L_2 (N + 1) + 7 * L_1 (N + 1)) * Acc_0 +
+      2 ^ (S_0 + 10 * L_2 (N + 1)) * Q_N1 =
+    3 ^ (10 * L_2 1 + S_1) * Q_0 + 2 ^ (7 * L_1 0 + 10 * L_2 1) * Acc_1 at hAcc_comp
+  exact ⟨hS_comp.symm, by linarith only [hAcc_comp]⟩
+
+/-!
+## Section 155: Homogeneous Sliding-Window Defect Propagation & Shift-Invariant Quotient Law (`2^E_out * Δ_1 = 3^E_in * Δ_0`)
+
+What happens when we apply Section 154's One-Wave Sliding-Window Transfer Law to **two anagram
+windows** `(L_2, L_1)` and `(L'_2, L'_1)` (`S^{(0)}_N = S'^{(0)}_N = S_0`) whose leaving wave on
+the left (`L_1 0 = L'_1 0`, `L_2 1 = L'_2 1`) and entering wave on the right
+(`L_2 (N + 1) = L'_2 (N + 1)`, `L_1 (N + 1) = L'_1 (N + 1)`) match?
+1. **Automatic Step-Sum Anagram Preservation Under Sliding (`S^{(1)}_N = S'^{(1)}_N`):**
+   By Section 154 Part 1, the shifted windows at index `1` automatically have the exact same
+   interior step-sum `S^{(1)}_N = S'^{(1)}_N`!
+2. **Exact Cancellation of Both Boundary Carry Terms & Homogeneous Defect Propagation:**
+   Because `L_1 0 = L'_1 0`, `L_2 1 = L'_2 1`, `L_2 (N + 1) = L'_2 (N + 1)`, `L_1 (N + 1) = L'_1 (N + 1)`,
+   `S^{(0)}_N = S'^{(0)}_N`, and `S^{(1)}_N = S'^{(1)}_N`, both inhomogeneous boundary carry terms
+   `3 ^ (10 * L_2 1 + S_1) * Q(L_1 0)` and `2 ^ (S_0 + 10 * L_2 (N + 1)) * Q(L_1 (N + 1))` are
+   **100% identical** in both windows and cancel out upon subtraction!
+   This leaves the **exact homogeneous sliding-window defect propagation equation** (for
+   `Acc_0 ≤ Acc'_0`):
+     `2 ^ (7 * L_1 0 + 10 * L_2 1) * (Acc'_1 - Acc_1) = 3 ^ (10 * L_2 (N + 1) + 7 * L_1 (N + 1)) * (Acc'_0 - Acc_0)`!
+3. **Shift-Invariant Quotient `q_slide`:**
+   By Coprime Euclid's Lemma (`gcd(2 ^ E_out, 3 ^ E_in) = 1`), there exists a single shift-invariant
+   integer `q_slide` such that:
+     `Acc'_0 - Acc_0 = 2 ^ (7 * L_1 0 + 10 * L_2 1) * q_slide`  and
+     `Acc'_1 - Acc_1 = 3 ^ (10 * L_2 (N + 1) + 7 * L_1 (N + 1)) * q_slide`!
+-/
+
+/-- **Homogeneous Sliding-Window Defect Propagation & Shift-Invariant Quotient Law:**
+Whenever two `(N + 1)`-wave anagrams (`S_0 = S'_0`) have matching leaving wave
+(`L_1 0 = L'_1 0`, `L_2 1 = L'_2 1`) and matching entering wave
+(`L_2 (N + 1) = L'_2 (N + 1)`, `L_1 (N + 1) = L'_1 (N + 1)`):
+1. The shifted windows at index `1` are also anagrams (`S_1 = S'_1`).
+2. `Acc_0 ≤ Acc'_0 ↔ Acc_1 ≤ Acc'_1`, and when `Acc_0 ≤ Acc'_0`:
+   `2 ^ (7 * L_1 0 + 10 * L_2 1) * (Acc'_1 - Acc_1) = 3 ^ (10 * L_2 (N + 1) + 7 * L_1 (N + 1)) * (Acc'_0 - Acc_0)`.
+3. There exists a shift-invariant integer `q_slide` such that
+   `Acc'_0 - Acc_0 = 2 ^ (7 * L_1 0 + 10 * L_2 1) * q_slide` and
+   `Acc'_1 - Acc_1 = 3 ^ (10 * L_2 (N + 1) + 7 * L_1 (N + 1)) * q_slide`! -/
+theorem dense_core_sliding_window_anagram_homogeneous_defect_propagation
+    (L_2 L_1 L_2' L_1' : ℕ → ℕ) (N : ℕ)
+    (hS0_eq : waveInteriorExp L_2 L_1 N = waveInteriorExp L_2' L_1' N)
+    (hL1_0 : L_1 0 = L_1' 0)
+    (hL2_1 : L_2 1 = L_2' 1)
+    (hL2_N1 : L_2 (N + 1) = L_2' (N + 1))
+    (hL1_N1 : L_1 (N + 1) = L_1' (N + 1)) :
+    let S_1 := waveInteriorExp (fun t => L_2 (1 + t)) (fun t => L_1 (1 + t)) N
+    let S_1' := waveInteriorExp (fun t => L_2' (1 + t)) (fun t => L_1' (1 + t)) N
+    let Acc_0 := waveInteriorAcc L_2 L_1 N
+    let Acc_0' := waveInteriorAcc L_2' L_1' N
+    let Acc_1 := waveInteriorAcc (fun t => L_2 (1 + t)) (fun t => L_1 (1 + t)) N
+    let Acc_1' := waveInteriorAcc (fun t => L_2' (1 + t)) (fun t => L_1' (1 + t)) N
+    let E_out := 7 * L_1 0 + 10 * L_2 1
+    let E_in := 10 * L_2 (N + 1) + 7 * L_1 (N + 1)
+    S_1 = S_1' ∧
+    (Acc_0 ≤ Acc_0' →
+      Acc_1 ≤ Acc_1' ∧
+      2 ^ E_out * (Acc_1' - Acc_1) = 3 ^ E_in * (Acc_0' - Acc_0) ∧
+      2 ^ E_out ∣ (Acc_0' - Acc_0) ∧
+      3 ^ E_in ∣ (Acc_1' - Acc_1) ∧
+      ∃ q_slide : ℕ,
+        Acc_0' - Acc_0 = 2 ^ E_out * q_slide ∧
+        Acc_1' - Acc_1 = 3 ^ E_in * q_slide) := by
+  intro S_1 S_1' Acc_0 Acc_0' Acc_1 Acc_1' E_out E_in
+  have h154 := dense_core_one_wave_sliding_window_step_sum_and_accumulator_transfer L_2 L_1 N
+  have h154' := dense_core_one_wave_sliding_window_step_sum_and_accumulator_transfer L_2' L_1' N
+  have hS_A := h154.1
+  have hS_B := h154'.1
+  rw [← hS0_eq, ← hL1_0, ← hL2_1, ← hL2_N1, ← hL1_N1] at hS_B
+  have hS1_eq : S_1 = S_1' := by linarith only [hS_A, hS_B]
+  refine ⟨hS1_eq, ?_⟩
+  intro hAcc0_le
+  have hAcc_A := h154.2
+  have hAcc_B := h154'.2
+  change 2 ^ E_out * Acc_1 +
+      3 ^ (10 * L_2 1 + S_1) * ((3 ^ (7 * L_1 0) - 2 ^ (7 * L_1 0)) / 2059) =
+    3 ^ E_in * Acc_0 +
+      2 ^ (waveInteriorExp L_2 L_1 N + 10 * L_2 (N + 1)) *
+        ((3 ^ (7 * L_1 (N + 1)) - 2 ^ (7 * L_1 (N + 1))) / 2059) at hAcc_A
+  change 2 ^ (7 * L_1' 0 + 10 * L_2' 1) * Acc_1' +
+      3 ^ (10 * L_2' 1 + S_1') * ((3 ^ (7 * L_1' 0) - 2 ^ (7 * L_1' 0)) / 2059) =
+    3 ^ (10 * L_2' (N + 1) + 7 * L_1' (N + 1)) * Acc_0' +
+      2 ^ (waveInteriorExp L_2' L_1' N + 10 * L_2' (N + 1)) *
+        ((3 ^ (7 * L_1' (N + 1)) - 2 ^ (7 * L_1' (N + 1))) / 2059) at hAcc_B
+  rw [← hS0_eq, ← hS1_eq, ← hL1_0, ← hL2_1, ← hL2_N1, ← hL1_N1] at hAcc_B
+  change 2 ^ E_out * Acc_1' +
+      3 ^ (10 * L_2 1 + S_1) * ((3 ^ (7 * L_1 0) - 2 ^ (7 * L_1 0)) / 2059) =
+    3 ^ E_in * Acc_0' +
+      2 ^ (waveInteriorExp L_2 L_1 N + 10 * L_2 (N + 1)) *
+        ((3 ^ (7 * L_1 (N + 1)) - 2 ^ (7 * L_1 (N + 1))) / 2059) at hAcc_B
+  have hm0_le : 3 ^ E_in * Acc_0 ≤ 3 ^ E_in * Acc_0' := Nat.mul_le_mul_left _ hAcc0_le
+  have hm1_le : 2 ^ E_out * Acc_1 ≤ 2 ^ E_out * Acc_1' := by
+    linarith only [hAcc_A, hAcc_B, hm0_le]
+  have hAcc1_le : Acc_1 ≤ Acc_1' :=
+    Nat.le_of_mul_le_mul_left hm1_le (Nat.pow_pos (by decide))
+  have hhom : 2 ^ E_out * (Acc_1' - Acc_1) = 3 ^ E_in * (Acc_0' - Acc_0) := by
+    have hs1 : 2 ^ E_out * (Acc_1' - Acc_1) + 2 ^ E_out * Acc_1 = 2 ^ E_out * Acc_1' := by
+      rw [← Nat.mul_add, Nat.sub_add_cancel hAcc1_le]
+    have hs0 : 3 ^ E_in * (Acc_0' - Acc_0) + 3 ^ E_in * Acc_0 = 3 ^ E_in * Acc_0' := by
+      rw [← Nat.mul_add, Nat.sub_add_cancel hAcc0_le]
+    linarith only [hAcc_A, hAcc_B, hs1, hs0]
+  have hcop : Nat.Coprime (2 ^ E_out) (3 ^ E_in) :=
+    Nat.Coprime.pow _ _ (by decide : Nat.Coprime 2 3)
+  have hd2 : 2 ^ E_out ∣ (Acc_0' - Acc_0) :=
+    hcop.dvd_of_dvd_mul_left ⟨Acc_1' - Acc_1, hhom.symm⟩
+  have hd3 : 3 ^ E_in ∣ (Acc_1' - Acc_1) :=
+    hcop.symm.dvd_of_dvd_mul_left ⟨Acc_0' - Acc_0, hhom⟩
+  rcases hd2 with ⟨q_slide, hq_slide0⟩
+  have hq_slide1 : Acc_1' - Acc_1 = 3 ^ E_in * q_slide := by
+    have hm : 2 ^ E_out * (Acc_1' - Acc_1) = 2 ^ E_out * (3 ^ E_in * q_slide) := by
+      rw [hhom, hq_slide0]; ring
+    exact Nat.eq_of_mul_eq_mul_left (Nat.pow_pos (by decide)) hm
+  exact ⟨hAcc1_le, hhom, ⟨q_slide, hq_slide0⟩, hd3, q_slide, hq_slide0, hq_slide1⟩
+
+/-!
+## Section 156: General Multi-Wave Sliding-Window Shift-Duality & Commutation Theorem (`0 ↔ d + 1` Along a Single Trajectory!)
+
+Now consider two `(N + 1)`-wave windows starting at index `0` (`S^{(0)}_N`, `Acc^{(0)}_N`) and at
+index `d + 1` (`S^{(d+1)}_N`, `Acc^{(d+1)}_N`) along the **same** trajectory `(L_2, L_1)` for
+**any** `N, d ∈ ℕ` (whether `d < N` so the windows overlap, or `d ≥ N`)!
+Because `(d + 1) + N = (N + 1) + d`, the `(N + 1 + d)`-wave block `[0 .. N + 1 + d]` decomposes in
+**two dual ways** via `waveInteriorExp_shift_comp` and `waveInteriorAcc_shift_comp`:
+1. **Split at `d + 1` (`waveInteriorAcc_shift_comp L_2 L_1 d N`):**
+     `S_{N+1+d} = S_d + 10 * L_2 (d + 1) + S^{(d+1)}_N`,
+     `Acc_{N+1+d} = 3 ^ (10 * L_2 (d + 1) + S^{(d+1)}_N) * Acc_d + 2 ^ (S_d + 10 * L_2 (d + 1)) * Acc^{(d+1)}_N`.
+2. **Split at `N + 1` (`waveInteriorAcc_shift_comp L_2 L_1 N d`):**
+     `S_{N+1+d} = S^{(0)}_N + 10 * L_2 (N + 1) + S^{(N+1)}_d`,
+     `Acc_{N+1+d} = 3 ^ (10 * L_2 (N + 1) + S^{(N+1)}_d) * Acc^{(0)}_N + 2 ^ (S^{(0)}_N + 10 * L_2 (N + 1)) * Acc^{(N+1)}_d`.
+Equating these two splits proves the **General Multi-Wave Sliding-Window Shift-Duality Theorem**:
+- **Step-Sum Duality:** Window `0` and Window `d + 1` of length `N + 1` are anagrams
+  (`S^{(0)}_N = S^{(d+1)}_N = S_N`) **if and only if** the leaving `(d + 1)`-wave prefix and the
+  entering `(d + 1)`-wave suffix satisfy:
+    `S_d + 10 * L_2 (d + 1) = 10 * L_2 (N + 1) + S^{(N+1)}_d`  (`=: E_slide`)!
+- **Accumulator Shift-Duality:**
+    `2 ^ E_slide * Acc^{(d+1)}_N + 3 ^ (10 * L_2 (d + 1) + S_N) * Acc_d = 3 ^ E_slide * Acc^{(0)}_N + 2 ^ (S_N + 10 * L_2 (N + 1)) * Acc^{(N+1)}_d`!
+-/
+
+/-- **General Multi-Wave Sliding-Window Shift-Duality & Commutation Theorem (`0 ↔ d + 1`):**
+For any run sequences `L_2, L_1 : ℕ → ℕ` and any `N, d ∈ ℕ`:
+1. `S_d + 10 * L_2 (d + 1) + S^{(d+1)}_N = S^{(0)}_N + 10 * L_2 (N + 1) + S^{(N+1)}_d`.
+2. `S^{(0)}_N = S^{(d+1)}_N ↔ S_d + 10 * L_2 (d + 1) = 10 * L_2 (N + 1) + S^{(N+1)}_d`.
+3. `2 ^ (S_d + 10 * L_2 (d + 1)) * Acc^{(d+1)}_N + 3 ^ (10 * L_2 (d + 1) + S^{(d+1)}_N) * Acc_d = 3 ^ (10 * L_2 (N + 1) + S^{(N+1)}_d) * Acc^{(0)}_N + 2 ^ (S^{(0)}_N + 10 * L_2 (N + 1)) * Acc^{(N+1)}_d`! -/
+theorem dense_core_multi_wave_sliding_window_shift_duality_and_commutation
+    (L_2 L_1 : ℕ → ℕ) (N d : ℕ) :
+    let S_0_N := waveInteriorExp L_2 L_1 N
+    let S_d1_N := waveInteriorExp (fun t => L_2 (d + 1 + t)) (fun t => L_1 (d + 1 + t)) N
+    let S_0_d := waveInteriorExp L_2 L_1 d
+    let S_N1_d := waveInteriorExp (fun t => L_2 (N + 1 + t)) (fun t => L_1 (N + 1 + t)) d
+    let Acc_0_N := waveInteriorAcc L_2 L_1 N
+    let Acc_d1_N := waveInteriorAcc (fun t => L_2 (d + 1 + t)) (fun t => L_1 (d + 1 + t)) N
+    let Acc_0_d := waveInteriorAcc L_2 L_1 d
+    let Acc_N1_d := waveInteriorAcc (fun t => L_2 (N + 1 + t)) (fun t => L_1 (N + 1 + t)) d
+    S_0_d + 10 * L_2 (d + 1) + S_d1_N = S_0_N + 10 * L_2 (N + 1) + S_N1_d ∧
+    (S_0_N = S_d1_N ↔ S_0_d + 10 * L_2 (d + 1) = 10 * L_2 (N + 1) + S_N1_d) ∧
+    2 ^ (S_0_d + 10 * L_2 (d + 1)) * Acc_d1_N + 3 ^ (10 * L_2 (d + 1) + S_d1_N) * Acc_0_d =
+      3 ^ (10 * L_2 (N + 1) + S_N1_d) * Acc_0_N + 2 ^ (S_0_N + 10 * L_2 (N + 1)) * Acc_N1_d := by
+  intro S_0_N S_d1_N S_0_d S_N1_d Acc_0_N Acc_d1_N Acc_0_d Acc_N1_d
+  have hidx : d + 1 + N = N + 1 + d := by omega
+  have hS_1 := waveInteriorExp_shift_comp L_2 L_1 d N
+  have hS_2 := waveInteriorExp_shift_comp L_2 L_1 N d
+  rw [hidx] at hS_1
+  have hS_comm : S_0_d + 10 * L_2 (d + 1) + S_d1_N = S_0_N + 10 * L_2 (N + 1) + S_N1_d := by
+    change waveInteriorExp L_2 L_1 (N + 1 + d) = S_0_d + 10 * L_2 (d + 1) + S_d1_N at hS_1
+    change waveInteriorExp L_2 L_1 (N + 1 + d) = S_0_N + 10 * L_2 (N + 1) + S_N1_d at hS_2
+    linarith only [hS_1, hS_2]
+  have hS_iff : S_0_N = S_d1_N ↔ S_0_d + 10 * L_2 (d + 1) = 10 * L_2 (N + 1) + S_N1_d := by
+    constructor <;> intro h <;> linarith only [hS_comm, h]
+  have hAcc_1 := waveInteriorAcc_shift_comp L_2 L_1 d N
+  have hAcc_2 := waveInteriorAcc_shift_comp L_2 L_1 N d
+  rw [hidx] at hAcc_1
+  change waveInteriorAcc L_2 L_1 (N + 1 + d) =
+    3 ^ (10 * L_2 (d + 1) + S_d1_N) * Acc_0_d + 2 ^ (S_0_d + 10 * L_2 (d + 1)) * Acc_d1_N at hAcc_1
+  change waveInteriorAcc L_2 L_1 (N + 1 + d) =
+    3 ^ (10 * L_2 (N + 1) + S_N1_d) * Acc_0_N + 2 ^ (S_0_N + 10 * L_2 (N + 1)) * Acc_N1_d at hAcc_2
+  exact ⟨hS_comm, hS_iff, by linarith only [hAcc_1, hAcc_2]⟩
+
+/-!
+## Section 157: Overlapping Anagram Windows Shared-Core Decomposition Theorem (`N = d + 1 + m_ov`)
+
+When two `(N + 1)`-wave windows starting at index `0` and index `d + 1` along a trajectory
+**overlap** (`N = d + 1 + m_ov`, where the shared overlap `[d + 1 .. N]` has `m_ov + 1` waves,
+step-sum `S_ov := S^{(d+1)}_{m_ov}`, and accumulator `Acc_ov := Acc^{(d+1)}_{m_ov}`):
+1. **Window `0` Decomposition (`[0 .. d]` + Shared Overlap `[d + 1 .. N]`):**
+     `S^{(0)}_N = (S_d + 10 * L_2 (d + 1)) + S_ov`,
+     `Acc^{(0)}_N = 3 ^ (10 * L_2 (d + 1) + S_ov) * Acc_d + 2 ^ (S_d + 10 * L_2 (d + 1)) * Acc_ov`!
+2. **Window `d + 1` Decomposition (Shared Overlap `[d + 1 .. N]` + `[N + 1 .. N + 1 + d]`):**
+     `S^{(d+1)}_N = S_ov + (10 * L_2 (N + 1) + S^{(N+1)}_d)`,
+     `Acc^{(d+1)}_N = 3 ^ (10 * L_2 (N + 1) + S^{(N+1)}_d) * Acc_ov + 2 ^ (S_ov + 10 * L_2 (N + 1)) * Acc^{(N+1)}_d`!
+3. **Exact Shared-Core Difference Identity (When `S^{(0)}_N = S^{(d+1)}_N`, so `E_slide := S_d + 10*L_2(d+1) = 10*L_2(N+1) + S^{(N+1)}_d`):**
+   Both `Acc^{(0)}_N` and `Acc^{(d+1)}_N` contain the **exact same overlap accumulator `Acc_ov`**,
+   multiplied by `2 ^ E_slide` in `Acc^{(0)}_N` and by `3 ^ E_slide` in `Acc^{(d+1)}_N`:
+     `Acc^{(d+1)}_N + 3 ^ (10 * L_2 (d + 1) + S_ov) * Acc_d = Acc^{(0)}_N + (3 ^ E_slide - 2 ^ E_slide) * Acc_ov + 2 ^ (S_ov + 10 * L_2 (N + 1)) * Acc^{(N+1)}_d`!
+-/
+
+/-- **Overlapping Anagram Windows Shared-Core Decomposition Theorem (`N = d + 1 + m_ov`):**
+Whenever `N = d + 1 + m_ov`, both `Acc^{(0)}_N` and `Acc^{(d+1)}_N` decompose through the **exact
+same shared overlap accumulator** `Acc_ov = Acc^{(d+1)}_{m_ov}`, and when `S^{(0)}_N = S^{(d+1)}_N`
+(`E_slide = S_d + 10 * L_2 (d + 1) = 10 * L_2 (N + 1) + S^{(N+1)}_d`), they satisfy:
+`Acc^{(d+1)}_N + 3 ^ (10 * L_2 (d + 1) + S_ov) * Acc_d = Acc^{(0)}_N + (3 ^ E_slide - 2 ^ E_slide) * Acc_ov + 2 ^ (S_ov + 10 * L_2 (N + 1)) * Acc^{(N+1)}_d`! -/
+theorem dense_core_overlapping_anagram_windows_shared_core_decomposition
+    (L_2 L_1 : ℕ → ℕ) (d m_ov : ℕ) :
+    let N := d + 1 + m_ov
+    let S_0_N := waveInteriorExp L_2 L_1 N
+    let S_d1_N := waveInteriorExp (fun t => L_2 (d + 1 + t)) (fun t => L_1 (d + 1 + t)) N
+    let S_d := waveInteriorExp L_2 L_1 d
+    let S_ov := waveInteriorExp (fun t => L_2 (d + 1 + t)) (fun t => L_1 (d + 1 + t)) m_ov
+    let S_N1_d := waveInteriorExp (fun t => L_2 (N + 1 + t)) (fun t => L_1 (N + 1 + t)) d
+    let Acc_0_N := waveInteriorAcc L_2 L_1 N
+    let Acc_d1_N := waveInteriorAcc (fun t => L_2 (d + 1 + t)) (fun t => L_1 (d + 1 + t)) N
+    let Acc_d := waveInteriorAcc L_2 L_1 d
+    let Acc_ov := waveInteriorAcc (fun t => L_2 (d + 1 + t)) (fun t => L_1 (d + 1 + t)) m_ov
+    let Acc_N1_d := waveInteriorAcc (fun t => L_2 (N + 1 + t)) (fun t => L_1 (N + 1 + t)) d
+    let E_slide := S_d + 10 * L_2 (d + 1)
+    -- 1. Window 0 decomposition into [0 .. d] + shared overlap [d + 1 .. N]:
+    S_0_N = E_slide + S_ov ∧
+    Acc_0_N = 3 ^ (10 * L_2 (d + 1) + S_ov) * Acc_d + 2 ^ E_slide * Acc_ov ∧
+    -- 2. Window (d + 1) decomposition into shared overlap [d + 1 .. N] + [N + 1 .. N + 1 + d]:
+    S_d1_N = S_ov + 10 * L_2 (N + 1) + S_N1_d ∧
+    Acc_d1_N =
+      3 ^ (10 * L_2 (N + 1) + S_N1_d) * Acc_ov + 2 ^ (S_ov + 10 * L_2 (N + 1)) * Acc_N1_d ∧
+    -- 3. Shared-core difference identity when Window 0 and Window (d + 1) are anagrams:
+    (S_0_N = S_d1_N →
+      10 * L_2 (N + 1) + S_N1_d = E_slide ∧
+      Acc_d1_N + 3 ^ (10 * L_2 (d + 1) + S_ov) * Acc_d =
+        Acc_0_N + (3 ^ E_slide - 2 ^ E_slide) * Acc_ov +
+          2 ^ (S_ov + 10 * L_2 (N + 1)) * Acc_N1_d) := by
+  intro N S_0_N S_d1_N S_d S_ov S_N1_d Acc_0_N Acc_d1_N Acc_d Acc_ov Acc_N1_d E_slide
+  have hS0 := waveInteriorExp_shift_comp L_2 L_1 d m_ov
+  have hAcc0 := waveInteriorAcc_shift_comp L_2 L_1 d m_ov
+  let L_2_sh := fun t => L_2 (d + 1 + t)
+  let L_1_sh := fun t => L_1 (d + 1 + t)
+  have hIdx_N : m_ov + 1 + d = N := by dsimp [N]; omega
+  have hS_sh := waveInteriorExp_shift_comp L_2_sh L_1_sh m_ov d
+  have hAcc_sh := waveInteriorAcc_shift_comp L_2_sh L_1_sh m_ov d
+  have hfun_L2 : (fun t => L_2_sh (m_ov + 1 + t)) = (fun t => L_2 (N + 1 + t)) := by
+    funext t; dsimp [L_2_sh, N]; congr 1; omega
+  have hfun_L1 : (fun t => L_1_sh (m_ov + 1 + t)) = (fun t => L_1 (N + 1 + t)) := by
+    funext t; dsimp [L_1_sh, N]; congr 1; omega
+  have hmid_L2 : L_2_sh (m_ov + 1) = L_2 (N + 1) := rfl
+  rw [hIdx_N, hfun_L2, hfun_L1, hmid_L2] at hS_sh hAcc_sh
+  change S_d1_N = S_ov + 10 * L_2 (N + 1) + S_N1_d at hS_sh
+  change Acc_d1_N =
+    3 ^ (10 * L_2 (N + 1) + S_N1_d) * Acc_ov + 2 ^ (S_ov + 10 * L_2 (N + 1)) * Acc_N1_d at hAcc_sh
+  refine ⟨hS0, hAcc0, hS_sh, hAcc_sh, ?_⟩
+  intro hS_eq
+  have hE_eq : 10 * L_2 (N + 1) + S_N1_d = E_slide := by
+    dsimp [E_slide] at hS0 ⊢
+    linarith only [hS_eq, hS0, hS_sh]
+  have hAcc_d1_E :
+      Acc_d1_N = 3 ^ E_slide * Acc_ov + 2 ^ (S_ov + 10 * L_2 (N + 1)) * Acc_N1_d := by
+    rw [← hE_eq]; exact hAcc_sh
+  have hp2_le_3 : 2 ^ E_slide * Acc_ov ≤ 3 ^ E_slide * Acc_ov :=
+    Nat.mul_le_mul_right Acc_ov (Nat.pow_le_pow_left (by decide) E_slide)
+  have hsub_ov :
+      (3 ^ E_slide - 2 ^ E_slide) * Acc_ov + 2 ^ E_slide * Acc_ov = 3 ^ E_slide * Acc_ov := by
+    rw [← Nat.add_mul, Nat.sub_add_cancel (Nat.pow_le_pow_left (by decide) E_slide)]
+  exact ⟨hE_eq, by linarith only [hAcc0, hAcc_d1_E, hsub_ov]⟩
+
 end Mahler.DubickasExtension
+
 
 
 
