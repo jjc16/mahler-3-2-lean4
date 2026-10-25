@@ -36872,6 +36872,791 @@ theorem dense_core_two_window_sliding_block_match_defect_propagation_and_syzygy_
     exact Nat.eq_of_mul_eq_mul_left hP2_pos hmul
   exact ⟨hSd1_eq, hAccd1_le, hhom, q_slide_d, hq0, hq1⟩
 
+/-!
+## Section 170: Two-Window Sliding Block-Match Coupled Reduced Syzygy & Full-Exponent Restoration (`2^E_full * q_W_end + 19 * q_slide_d = 3^E_full * q_W_0`)
+
+We now couple Section 169's Two-Window Sliding Block-Match Defect Propagation with Section 167's
+Double Master Identity across two `(N + 1)`-wave anagram windows `(W, L_2, L_1)` and
+`(W', L'_2, L'_1)` (`S^{(0)}_N = S'^{(0)}_N = S_0`, `Acc^{(0)}_N ≤ Acc'^{(0)}_N`):
+1. **Simultaneous Start and End `(d + 1)`-Wave State-Difference Factorizations:**
+   Because both windows share the `(d + 1)`-wave block on `[0 .. d + 1]` AND on
+   `[N + 1 .. N + 1 + d + 1]` (by the sliding block-match plus terminal `2`-run match
+   `L_2 (N + 1 + d + 1) = L_2 (d + 1)` and `L'_2 (N + 1 + d + 1) = L'_2 (d + 1)`):
+   - On `[0 .. d + 1]`, for `W 0 ≤ W' 0`, we have `W (d + 1) ≤ W' (d + 1)` and there exists
+     `q_W_0 : ℕ` such that:
+       `W' 0 - W 0 = 2 ^ (S_d + 10 * L_2 (d + 1)) * q_W_0`  and
+       `W' (d + 1) - W (d + 1) = 3 ^ (S_d + 10 * L_2 0) * q_W_0`!
+   - On `[N + 1 .. N + 1 + d + 1]`, for `W (N + 1) ≤ W' (N + 1)`, we have
+     `W (N + 1 + d + 1) ≤ W' (N + 1 + d + 1)` and there exists `q_W_end : ℕ` such that:
+       `W' (N + 1) - W (N + 1) = 2 ^ (S_d + 10 * L_2 (d + 1)) * q_W_end`  and
+       `W' (N + 1 + d + 1) - W (N + 1 + d + 1) = 3 ^ (S_d + 10 * L_2 0) * q_W_end`!
+2. **Full-Exponent Restoration in the Sliding-Reduced Syzygy:**
+   In standard shared-prefix reduction, dividing Window `0`'s syzygy by `2 ^ (S_d + 10 * L_2 (d + 1))`
+   reduces the `2`-exponent on `W' (N + 1) - W (N + 1)` from `E_full` down to
+   `E_full - (S_d + 10 * L_2 (d + 1))`.
+   Here, because `W' (N + 1) - W (N + 1) = 2 ^ (S_d + 10 * L_2 (d + 1)) * q_W_end` replenishes the
+   exact factor `2 ^ (S_d + 10 * L_2 (d + 1))` (and symmetrically at `d + 1`,
+   `W' (N + 1 + d + 1) - W (N + 1 + d + 1) = 3 ^ (S_d + 10 * L_2 0) * q_W_end` replenishes
+   `3 ^ (S_d + 10 * L_2 0)`), dividing by `2 ^ (S_d + 10 * L_2 (d + 1))` restores the **full
+   `(N + 1)`-wave exponent `E_full = S_0 + 10 * L_2 0` on BOTH state quotients**:
+     `2 ^ E_full * q_W_end + 19 * q_slide_d = 3 ^ E_full * q_W_0`!
+-/
+
+/-- **Two-Window Sliding Block-Match Coupled Reduced Syzygy & Full-Exponent Restoration:**
+Under the hypotheses of Section 169 plus `L_2 (N + 1 + d + 1) = L_2 (d + 1)`,
+`L'_2 (N + 1 + d + 1) = L'_2 (d + 1)`, `W 0 ≤ W' 0`, and `W (N + 1) ≤ W' (N + 1)`:
+There exist `q_W_0, q_W_end, q_slide_d : ℕ` such that:
+1. `W' 0 - W 0 = 2 ^ (S_d + 10 * L_2 (d + 1)) * q_W_0` and
+   `W' (d + 1) - W (d + 1) = 3 ^ (S_d + 10 * L_2 0) * q_W_0`,
+2. `W' (N + 1) - W (N + 1) = 2 ^ (S_d + 10 * L_2 (d + 1)) * q_W_end` and
+   `W' (N + 1 + d + 1) - W (N + 1 + d + 1) = 3 ^ (S_d + 10 * L_2 0) * q_W_end`,
+3. `Acc'^{(0)}_N - Acc^{(0)}_N = 2 ^ (S_d + 10 * L_2 (d + 1)) * q_slide_d` and
+   `Acc'^{(d + 1)}_N - Acc^{(d + 1)}_N = 3 ^ (S_d + 10 * L_2 0) * q_slide_d`, and
+4. `2 ^ E_full * q_W_end + 19 * q_slide_d = 3 ^ E_full * q_W_0`! -/
+theorem dense_core_two_window_sliding_block_match_coupled_reduced_syzygy
+    (W W' L_2 L_1 L_2' L_1' : ℕ → ℕ) (N d : ℕ)
+    (hrec : ∀ k : ℕ,
+      2 ^ (7 * L_1 k + 10 * L_2 (k + 1)) * W (k + 1) +
+        19 * ((3 ^ (7 * L_1 k) - 2 ^ (7 * L_1 k)) / 2059) =
+        3 ^ (7 * L_1 k + 10 * L_2 k) * W k)
+    (hrec' : ∀ k : ℕ,
+      2 ^ (7 * L_1' k + 10 * L_2' (k + 1)) * W' (k + 1) +
+        19 * ((3 ^ (7 * L_1' k) - 2 ^ (7 * L_1' k)) / 2059) =
+        3 ^ (7 * L_1' k + 10 * L_2' k) * W' k)
+    (hS0_eq : waveInteriorExp L_2 L_1 N = waveInteriorExp L_2' L_1' N)
+    (hAcc0_le : waveInteriorAcc L_2 L_1 N ≤ waveInteriorAcc L_2' L_1' N)
+    (hL2_shared : ∀ t ≤ d + 1, L_2' t = L_2 t)
+    (hL1_shared : ∀ t ≤ d, L_1' t = L_1 t)
+    (hL2_block : ∀ t ≤ d, L_2 (N + 1 + t) = L_2 t)
+    (hL1_block : ∀ t ≤ d, L_1 (N + 1 + t) = L_1 t)
+    (hL2_block' : ∀ t ≤ d, L_2' (N + 1 + t) = L_2' t)
+    (hL1_block' : ∀ t ≤ d, L_1' (N + 1 + t) = L_1' t)
+    (hL2_end : L_2 (N + 1 + d + 1) = L_2 (d + 1))
+    (hL2_end' : L_2' (N + 1 + d + 1) = L_2' (d + 1))
+    (hW0_le : W 0 ≤ W' 0)
+    (hWN1_le : W (N + 1) ≤ W' (N + 1)) :
+    let S_0 := waveInteriorExp L_2 L_1 N
+    let S_d := waveInteriorExp L_2 L_1 d
+    let E_full := S_0 + 10 * L_2 0
+    let Acc_0 := waveInteriorAcc L_2 L_1 N
+    let Acc_0' := waveInteriorAcc L_2' L_1' N
+    let Acc_d1 := waveInteriorAcc (fun t => L_2 (d + 1 + t)) (fun t => L_1 (d + 1 + t)) N
+    let Acc_d1' := waveInteriorAcc (fun t => L_2' (d + 1 + t)) (fun t => L_1' (d + 1 + t)) N
+    W (d + 1) ≤ W' (d + 1) ∧
+    W (N + 1 + d + 1) ≤ W' (N + 1 + d + 1) ∧
+    ∃ q_W_0 q_W_end q_slide_d : ℕ,
+      W' 0 - W 0 = 2 ^ (S_d + 10 * L_2 (d + 1)) * q_W_0 ∧
+      W' (d + 1) - W (d + 1) = 3 ^ (S_d + 10 * L_2 0) * q_W_0 ∧
+      W' (N + 1) - W (N + 1) = 2 ^ (S_d + 10 * L_2 (d + 1)) * q_W_end ∧
+      W' (N + 1 + d + 1) - W (N + 1 + d + 1) = 3 ^ (S_d + 10 * L_2 0) * q_W_end ∧
+      Acc_0' - Acc_0 = 2 ^ (S_d + 10 * L_2 (d + 1)) * q_slide_d ∧
+      Acc_d1' - Acc_d1 = 3 ^ (S_d + 10 * L_2 0) * q_slide_d ∧
+      2 ^ E_full * q_W_end + 19 * q_slide_d = 3 ^ E_full * q_W_0 := by
+  intro S_0 S_d E_full Acc_0 Acc_0' Acc_d1 Acc_d1'
+  have h169 :=
+    dense_core_two_window_sliding_block_match_defect_propagation_and_syzygy_boost
+      W W' L_2 L_1 L_2' L_1' N d hrec hrec' hS0_eq hAcc0_le
+      hL2_shared hL1_shared hL2_block hL1_block hL2_block' hL1_block'
+  rcases h169.2.2.2 with ⟨q_slide_d, hq_slide0, hq_slide1⟩
+  have h167 :=
+    dense_core_multi_wave_block_match_homogeneous_state_shift_and_super_sieve
+      W L_2 L_1 N d hrec hL2_block hL1_block hL2_end
+  have h167' :=
+    dense_core_multi_wave_block_match_homogeneous_state_shift_and_super_sieve
+      W' L_2' L_1' N d hrec' hL2_block' hL1_block' hL2_end'
+  have hL2_0 : L_2' 0 = L_2 0 := hL2_shared 0 (Nat.zero_le _)
+  have hL2_d1 : L_2' (d + 1) = L_2 (d + 1) := hL2_shared (d + 1) le_rfl
+  have hE_full_eq : waveInteriorExp L_2' L_1' N + 10 * L_2' 0 = E_full := by
+    dsimp [E_full]; rw [← hS0_eq, hL2_0]
+  have hm0 : 2 ^ E_full * W (N + 1) + 19 * Acc_0 = 3 ^ E_full * W 0 := h167.1.1
+  have hm0' : 2 ^ E_full * W' (N + 1) + 19 * Acc_0' = 3 ^ E_full * W' 0 := by
+    have h := h167'.1.1
+    change 2 ^ (waveInteriorExp L_2' L_1' N + 10 * L_2' 0) * W' (N + 1) + 19 * Acc_0' =
+      3 ^ (waveInteriorExp L_2' L_1' N + 10 * L_2' 0) * W' 0 at h
+    rw [hE_full_eq] at h
+    exact h
+  have hbind_shared :=
+    dense_core_symmetric_multi_wave_master_identity_and_boundary_independence.1
+      L_2' L_1' L_2 L_1 d
+      hL1_shared
+      (fun t ht => hL2_shared (t + 1) (Nat.le_succ_of_le (Nat.succ_le_of_lt ht)))
+  have hSd_eq : waveInteriorExp L_2' L_1' d = S_d := hbind_shared.1
+  have hAccd_eq : waveInteriorAcc L_2' L_1' d = waveInteriorAcc L_2 L_1 d := hbind_shared.2
+  have hrec_0_d : ∀ n ≤ d,
+      2 ^ (7 * L_1 n + 10 * L_2 (n + 1)) * W (n + 1) +
+        19 * ((3 ^ (7 * L_1 n) - 2 ^ (7 * L_1 n)) / 2059) =
+        3 ^ (10 * L_2 n + 7 * L_1 n) * W n := by
+    intro n _; rw [Nat.add_comm (10 * L_2 n) (7 * L_1 n)]; exact hrec n
+  have hrec_0_d' : ∀ n ≤ d,
+      2 ^ (7 * L_1' n + 10 * L_2' (n + 1)) * W' (n + 1) +
+        19 * ((3 ^ (7 * L_1' n) - 2 ^ (7 * L_1' n)) / 2059) =
+        3 ^ (10 * L_2' n + 7 * L_1' n) * W' n := by
+    intro n _; rw [Nat.add_comm (10 * L_2' n) (7 * L_1' n)]; exact hrec' n
+  have hmd_0 :=
+    (dense_core_symmetric_multi_wave_master_identity_and_boundary_independence.2
+      W L_2 L_1 d hrec_0_d).1
+  have hmd_0' :=
+    (dense_core_symmetric_multi_wave_master_identity_and_boundary_independence.2
+      W' L_2' L_1' d hrec_0_d').1
+  change 2 ^ S_d * (2 ^ (10 * L_2 (d + 1)) * W (d + 1)) + 19 * waveInteriorAcc L_2 L_1 d =
+    3 ^ S_d * (3 ^ (10 * L_2 0) * W 0) at hmd_0
+  change 2 ^ (waveInteriorExp L_2' L_1' d) * (2 ^ (10 * L_2' (d + 1)) * W' (d + 1)) +
+      19 * waveInteriorAcc L_2' L_1' d =
+    3 ^ (waveInteriorExp L_2' L_1' d) * (3 ^ (10 * L_2' 0) * W' 0) at hmd_0'
+  rw [hSd_eq, hL2_d1, hAccd_eq, hL2_0] at hmd_0'
+  set P2 := 2 ^ (S_d + 10 * L_2 (d + 1))
+  set P3 := 3 ^ (S_d + 10 * L_2 0)
+  have hP2_pos : 0 < P2 := Nat.pos_of_ne_zero (by positivity)
+  have hp2_mul : ∀ X : ℕ, 2 ^ S_d * (2 ^ (10 * L_2 (d + 1)) * X) = P2 * X := by
+    intro X; dsimp [P2]; rw [Nat.pow_add]; ring
+  have hp3_mul : ∀ X : ℕ, 3 ^ S_d * (3 ^ (10 * L_2 0) * X) = P3 * X := by
+    intro X; dsimp [P3]; rw [Nat.pow_add]; ring
+  rw [hp2_mul (W (d + 1)), hp3_mul (W 0)] at hmd_0
+  rw [hp2_mul (W' (d + 1)), hp3_mul (W' 0)] at hmd_0'
+  have hP3_W0_le : P3 * W 0 ≤ P3 * W' 0 := Nat.mul_le_mul_left P3 hW0_le
+  have hP2_Wd1_le : P2 * W (d + 1) ≤ P2 * W' (d + 1) := by
+    linarith only [hmd_0, hmd_0', hP3_W0_le]
+  have hWd1_le : W (d + 1) ≤ W' (d + 1) := Nat.le_of_mul_le_mul_left hP2_Wd1_le hP2_pos
+  have hsub_W0 : P3 * (W' 0 - W 0) + P3 * W 0 = P3 * W' 0 := by
+    rw [← Nat.mul_add, Nat.sub_add_cancel hW0_le]
+  have hsub_Wd1 : P2 * (W' (d + 1) - W (d + 1)) + P2 * W (d + 1) = P2 * W' (d + 1) := by
+    rw [← Nat.mul_add, Nat.sub_add_cancel hWd1_le]
+  have hhom_0 : P2 * (W' (d + 1) - W (d + 1)) = P3 * (W' 0 - W 0) := by
+    linarith only [hmd_0, hmd_0', hsub_W0, hsub_Wd1]
+  have hcop : Nat.Coprime P2 P3 :=
+    (Nat.Coprime.pow_left (S_d + 10 * L_2 (d + 1)) (by decide : Nat.Coprime 2 3)).pow_right
+      (S_d + 10 * L_2 0)
+  have hdvd_W0 : P2 ∣ (W' 0 - W 0) :=
+    hcop.dvd_of_dvd_mul_left ⟨W' (d + 1) - W (d + 1), hhom_0.symm⟩
+  rcases hdvd_W0 with ⟨q_W_0, hqW0⟩
+  have hqWd1 : W' (d + 1) - W (d + 1) = P3 * q_W_0 := by
+    have hmul : P2 * (W' (d + 1) - W (d + 1)) = P2 * (P3 * q_W_0) := by
+      rw [hhom_0, hqW0]; ring
+    exact Nat.eq_of_mul_eq_mul_left hP2_pos hmul
+  have h166 :=
+    dense_core_multi_wave_block_match_sliding_core_elimination_and_bridge
+      W L_2 L_1 N d hrec hL2_block hL1_block
+  have h166' :=
+    dense_core_multi_wave_block_match_sliding_core_elimination_and_bridge
+      W' L_2' L_1' N d hrec' hL2_block' hL1_block'
+  have hbridge := h166.2.2.2.2
+  have hbridge' := h166'.2.2.2.2
+  change 2 ^ (waveInteriorExp L_2' L_1' d + 10 * L_2' (d + 1)) * W' (d + 1) +
+      3 ^ (waveInteriorExp L_2' L_1' d + 10 * L_2' 0) * W' (N + 1) =
+    2 ^ (waveInteriorExp L_2' L_1' d + 10 * L_2' (N + 1 + d + 1)) * W' (N + 1 + d + 1) +
+      3 ^ (waveInteriorExp L_2' L_1' d + 10 * L_2' 0) * W' 0 at hbridge'
+  rw [hL2_end] at hbridge
+  rw [hL2_end', hSd_eq, hL2_d1, hL2_0] at hbridge'
+  change P2 * W (d + 1) + P3 * W (N + 1) = P2 * W (N + 1 + d + 1) + P3 * W 0 at hbridge
+  change P2 * W' (d + 1) + P3 * W' (N + 1) = P2 * W' (N + 1 + d + 1) + P3 * W' 0 at hbridge'
+  have hP3_WN1_le : P3 * W (N + 1) ≤ P3 * W' (N + 1) := Nat.mul_le_mul_left P3 hWN1_le
+  have hP2_WNd1_le : P2 * W (N + 1 + d + 1) ≤ P2 * W' (N + 1 + d + 1) := by
+    linarith only [hbridge, hbridge', hhom_0, hsub_W0, hsub_Wd1, hP3_WN1_le]
+  have hWNd1_le : W (N + 1 + d + 1) ≤ W' (N + 1 + d + 1) :=
+    Nat.le_of_mul_le_mul_left hP2_WNd1_le hP2_pos
+  have hsub_WN1 : P3 * (W' (N + 1) - W (N + 1)) + P3 * W (N + 1) = P3 * W' (N + 1) := by
+    rw [← Nat.mul_add, Nat.sub_add_cancel hWN1_le]
+  have hsub_WNd1 :
+      P2 * (W' (N + 1 + d + 1) - W (N + 1 + d + 1)) + P2 * W (N + 1 + d + 1) =
+        P2 * W' (N + 1 + d + 1) := by
+    rw [← Nat.mul_add, Nat.sub_add_cancel hWNd1_le]
+  have hhom_N1 :
+      P2 * (W' (N + 1 + d + 1) - W (N + 1 + d + 1)) = P3 * (W' (N + 1) - W (N + 1)) := by
+    linarith only [hbridge, hbridge', hhom_0, hsub_W0, hsub_Wd1, hsub_WN1, hsub_WNd1]
+  have hdvd_WN1 : P2 ∣ (W' (N + 1) - W (N + 1)) :=
+    hcop.dvd_of_dvd_mul_left ⟨W' (N + 1 + d + 1) - W (N + 1 + d + 1), hhom_N1.symm⟩
+  rcases hdvd_WN1 with ⟨q_W_end, hqWend⟩
+  have hqWNd1 : W' (N + 1 + d + 1) - W (N + 1 + d + 1) = P3 * q_W_end := by
+    have hmul : P2 * (W' (N + 1 + d + 1) - W (N + 1 + d + 1)) = P2 * (P3 * q_W_end) := by
+      rw [hhom_N1, hqWend]; ring
+    exact Nat.eq_of_mul_eq_mul_left hP2_pos hmul
+  have hsyz_raw :
+      2 ^ E_full * (W' (N + 1) - W (N + 1)) + 19 * (Acc_0' - Acc_0) =
+        3 ^ E_full * (W' 0 - W 0) := by
+    have hs1 : 2 ^ E_full * (W' (N + 1) - W (N + 1)) + 2 ^ E_full * W (N + 1) =
+        2 ^ E_full * W' (N + 1) := by
+      rw [← Nat.mul_add, Nat.sub_add_cancel hWN1_le]
+    have hs2 : 19 * (Acc_0' - Acc_0) + 19 * Acc_0 = 19 * Acc_0' := by
+      rw [← Nat.mul_add, Nat.sub_add_cancel hAcc0_le]
+    have hs3 : 3 ^ E_full * (W' 0 - W 0) + 3 ^ E_full * W 0 = 3 ^ E_full * W' 0 := by
+      rw [← Nat.mul_add, Nat.sub_add_cancel hW0_le]
+    linarith only [hm0, hm0', hs1, hs2, hs3]
+  have hsyz_mul :
+      P2 * (2 ^ E_full * q_W_end + 19 * q_slide_d) = P2 * (3 ^ E_full * q_W_0) := by
+    calc
+      P2 * (2 ^ E_full * q_W_end + 19 * q_slide_d) =
+          2 ^ E_full * (P2 * q_W_end) + 19 * (P2 * q_slide_d) := by ring
+      _ = 2 ^ E_full * (W' (N + 1) - W (N + 1)) + 19 * (Acc_0' - Acc_0) := by
+          rw [← hqWend, ← hq_slide0]
+      _ = 3 ^ E_full * (W' 0 - W 0) := hsyz_raw
+      _ = 3 ^ E_full * (P2 * q_W_0) := by rw [hqW0]
+      _ = P2 * (3 ^ E_full * q_W_0) := by ring
+  have hsyz_red : 2 ^ E_full * q_W_end + 19 * q_slide_d = 3 ^ E_full * q_W_0 :=
+    Nat.eq_of_mul_eq_mul_left hP2_pos hsyz_mul
+  exact ⟨hWd1_le, hWNd1_le, q_W_0, q_W_end, q_slide_d,
+    hqW0, hqWd1, hqWend, hqWNd1, hq_slide0, hq_slide1, hsyz_red⟩
+
+/-!
+## Section 171: Boosted `3`-Adic Sliding Syzygy (`3^{E_full + S_d + 10 L_2(0)}`) & Compounded Step-Sum + Sliding Forward Cutoff
+
+Multiplying Section 170's full-exponent reduced syzygy
+  `2 ^ E_full * q_W_end + 19 * q_slide_d = 3 ^ E_full * q_W_0`
+by `3 ^ (S_d + 10 * L_2 0)` and substituting
+  `W' (N + 1 + d + 1) - W (N + 1 + d + 1) = 3 ^ (S_d + 10 * L_2 0) * q_W_end`  and
+  `Acc'^{(d + 1)}_N - Acc^{(d + 1)}_N = 3 ^ (S_d + 10 * L_2 0) * q_slide_d`
+yields a remarkable **asymmetric `(2^E_full, 3^{E_full + S_d + 10 L_2(0)})` syzygy**:
+1. **Boosted `3`-Adic Syzygy at `N + 1 + d + 1`:**
+     `2 ^ E_full * (W' (N + 1 + d + 1) - W (N + 1 + d + 1)) + 19 * (Acc'^{(d + 1)}_N - Acc^{(d + 1)}_N) = 3 ^ (E_full + S_d + 10 * L_2 0) * q_W_0`!
+   Notice that the `2`-exponent on the LHS is only `E_full = S_0 + 10 * L_2 0`, whereas the
+   `3`-exponent on the RHS is **`E_full + S_d + 10 * L_2 0 = S_0 + S_d + 20 * L_2 0`**!
+2. **Exponential Lower Bound with Compounded `S_0 + S_d` Exponent:**
+   Since `19 * (Acc'^{(d + 1)}_N - Acc^{(d + 1)}_N) ≤ 19 * Acc'^{(d + 1)}_N < 3 ^ S^{(d + 1)}_N ≤ 3 ^ E_full`
+   and `q_W_0 ≥ 1` (whenever `W 0 < W' 0`):
+     `(3 ^ (S_d + 10 * L_2 0) - 1) * 3 ^ E_full < 2 ^ E_full * (W' (N + 1 + d + 1) - W (N + 1 + d + 1)) ≤ 2 ^ E_full * W' (N + 1 + d + 1)`!
+3. **Compounded Step-Sum + Sliding Forward Cutoff (`7 S_0 + 19 S_d + 260 L_2(0) < 12 W_end + 19`):**
+   Using `3 ^ (S_d + 10 * L_2 0 - 1) ≤ 3 ^ (S_d + 10 * L_2 0) - 1`, we obtain:
+     `3 ^ (E_full + S_d + 10 * L_2 0 - 1) < 2 ^ E_full * W' (N + 1 + d + 1)`,
+   so whenever `W' (N + 1 + d + 1) < 2 ^ W_end`, at `(p', q') = (7, 12)` (`2 ^ 19 ≤ 3 ^ 12`):
+     `7 * S_0 + 19 * S_d + 260 * L_2 0 < 12 * W_end + 19`
+   (with **zero** `120 * L'_2(end)` penalty on the right-hand side!)!
+-/
+
+/-- **Boosted `3`-Adic Sliding Syzygy & Compounded Step-Sum + Sliding Forward Cutoff:**
+Under the hypotheses of Section 170 with `W 0 < W' 0` and `19 * Acc'^{(d + 1)}_N < 3 ^ E_full`:
+1. `2 ^ E_full * (W' (N + 1 + d + 1) - W (N + 1 + d + 1)) + 19 * (Acc'^{(d + 1)}_N - Acc^{(d + 1)}_N) = 3 ^ (E_full + S_d + 10 * L_2 0) * q_W_0` for some `q_W_0 ≥ 1`,
+2. `(3 ^ (S_d + 10 * L_2 0) - 1) * 3 ^ E_full < 2 ^ E_full * (W' (N + 1 + d + 1) - W (N + 1 + d + 1))`, and
+3. Whenever `1 ≤ S_d + 10 * L_2 0` and `W' (N + 1 + d + 1) < 2 ^ W_end`:
+   - `3 ^ (E_full + S_d + 10 * L_2 0 - 1) < 2 ^ (E_full + W_end)`, and
+   - `7 * S_0 + 19 * S_d + 260 * L_2 0 < 12 * W_end + 19`! -/
+theorem dense_core_two_window_sliding_block_match_boosted_three_adic_syzygy_and_cutoff
+    (W W' L_2 L_1 L_2' L_1' : ℕ → ℕ) (N d : ℕ)
+    (hrec : ∀ k : ℕ,
+      2 ^ (7 * L_1 k + 10 * L_2 (k + 1)) * W (k + 1) +
+        19 * ((3 ^ (7 * L_1 k) - 2 ^ (7 * L_1 k)) / 2059) =
+        3 ^ (7 * L_1 k + 10 * L_2 k) * W k)
+    (hrec' : ∀ k : ℕ,
+      2 ^ (7 * L_1' k + 10 * L_2' (k + 1)) * W' (k + 1) +
+        19 * ((3 ^ (7 * L_1' k) - 2 ^ (7 * L_1' k)) / 2059) =
+        3 ^ (7 * L_1' k + 10 * L_2' k) * W' k)
+    (hS0_eq : waveInteriorExp L_2 L_1 N = waveInteriorExp L_2' L_1' N)
+    (hAcc0_le : waveInteriorAcc L_2 L_1 N ≤ waveInteriorAcc L_2' L_1' N)
+    (hL2_shared : ∀ t ≤ d + 1, L_2' t = L_2 t)
+    (hL1_shared : ∀ t ≤ d, L_1' t = L_1 t)
+    (hL2_block : ∀ t ≤ d, L_2 (N + 1 + t) = L_2 t)
+    (hL1_block : ∀ t ≤ d, L_1 (N + 1 + t) = L_1 t)
+    (hL2_block' : ∀ t ≤ d, L_2' (N + 1 + t) = L_2' t)
+    (hL1_block' : ∀ t ≤ d, L_1' (N + 1 + t) = L_1' t)
+    (hL2_end : L_2 (N + 1 + d + 1) = L_2 (d + 1))
+    (hL2_end' : L_2' (N + 1 + d + 1) = L_2' (d + 1))
+    (hW0_lt : W 0 < W' 0)
+    (hWN1_le : W (N + 1) ≤ W' (N + 1))
+    (hAcc_d1_bound :
+      19 * waveInteriorAcc (fun t => L_2' (d + 1 + t)) (fun t => L_1' (d + 1 + t)) N <
+        3 ^ (waveInteriorExp L_2 L_1 N + 10 * L_2 0)) :
+    let S_0 := waveInteriorExp L_2 L_1 N
+    let S_d := waveInteriorExp L_2 L_1 d
+    let E_full := S_0 + 10 * L_2 0
+    let Acc_d1 := waveInteriorAcc (fun t => L_2 (d + 1 + t)) (fun t => L_1 (d + 1 + t)) N
+    let Acc_d1' := waveInteriorAcc (fun t => L_2' (d + 1 + t)) (fun t => L_1' (d + 1 + t)) N
+    (∃ q_W_0 : ℕ,
+      1 ≤ q_W_0 ∧
+      2 ^ E_full * (W' (N + 1 + d + 1) - W (N + 1 + d + 1)) + 19 * (Acc_d1' - Acc_d1) =
+        3 ^ (E_full + S_d + 10 * L_2 0) * q_W_0) ∧
+    (3 ^ (S_d + 10 * L_2 0) - 1) * 3 ^ E_full <
+      2 ^ E_full * (W' (N + 1 + d + 1) - W (N + 1 + d + 1)) ∧
+    (1 ≤ S_d + 10 * L_2 0 →
+      ∀ W_end : ℕ, W' (N + 1 + d + 1) < 2 ^ W_end →
+        3 ^ (E_full + S_d + 10 * L_2 0 - 1) < 2 ^ (E_full + W_end) ∧
+        7 * S_0 + 19 * S_d + 260 * L_2 0 < 12 * W_end + 19) := by
+  intro S_0 S_d E_full Acc_d1 Acc_d1'
+  have h170 :=
+    dense_core_two_window_sliding_block_match_coupled_reduced_syzygy
+      W W' L_2 L_1 L_2' L_1' N d hrec hrec' hS0_eq hAcc0_le
+      hL2_shared hL1_shared hL2_block hL1_block hL2_block' hL1_block'
+      hL2_end hL2_end' (Nat.le_of_lt hW0_lt) hWN1_le
+  rcases h170.2.2 with ⟨q_W_0, q_W_end, q_slide_d, hqW0, _hqWd1, _hqWend, hqWNd1,
+    _hq_slide0, hq_slide1, hsyz_red⟩
+  have hqW0_pos : 1 ≤ q_W_0 := by
+    rcases Nat.eq_zero_or_pos q_W_0 with rfl | hpos
+    · rw [Nat.mul_zero] at hqW0; omega
+    · exact hpos
+  set P3 := 3 ^ (S_d + 10 * L_2 0)
+  have hboost :
+      2 ^ E_full * (W' (N + 1 + d + 1) - W (N + 1 + d + 1)) + 19 * (Acc_d1' - Acc_d1) =
+        3 ^ (E_full + S_d + 10 * L_2 0) * q_W_0 := by
+    have hmul :
+        P3 * (2 ^ E_full * q_W_end + 19 * q_slide_d) = P3 * (3 ^ E_full * q_W_0) :=
+      congrArg (P3 * ·) hsyz_red
+    have hlhs :
+        P3 * (2 ^ E_full * q_W_end + 19 * q_slide_d) =
+          2 ^ E_full * (P3 * q_W_end) + 19 * (P3 * q_slide_d) := by ring
+    have hrhs :
+        P3 * (3 ^ E_full * q_W_0) = 3 ^ (E_full + S_d + 10 * L_2 0) * q_W_0 := by
+      dsimp [P3]; rw [Nat.pow_add]; ring
+    rw [hlhs, hrhs, ← hqWNd1, ← hq_slide1] at hmul
+    exact hmul
+  have hAcc_diff_lt : 19 * (Acc_d1' - Acc_d1) < 3 ^ E_full :=
+    lt_of_le_of_lt (Nat.mul_le_mul_left 19 (Nat.sub_le _ _)) hAcc_d1_bound
+  have hP3_pos : 1 ≤ P3 := Nat.one_le_pow _ 3 (by decide)
+  have hP3_E :
+      P3 * 3 ^ E_full ≤ 3 ^ (E_full + S_d + 10 * L_2 0) * q_W_0 := by
+    have hp : P3 * 3 ^ E_full = 3 ^ (E_full + S_d + 10 * L_2 0) := by
+      dsimp [P3]; rw [Nat.pow_add]; ring
+    rw [hp]
+    exact Nat.le_mul_of_pos_right _ hqW0_pos
+  have hsub_P3 : (P3 - 1) * 3 ^ E_full + 3 ^ E_full = P3 * 3 ^ E_full := by
+    have h1 : (P3 - 1) * 3 ^ E_full + 1 * 3 ^ E_full = (P3 - 1 + 1) * 3 ^ E_full := by
+      rw [← Nat.add_mul]
+    rw [Nat.sub_add_cancel hP3_pos] at h1
+    linarith only [h1]
+  have hlow_bound :
+      (P3 - 1) * 3 ^ E_full < 2 ^ E_full * (W' (N + 1 + d + 1) - W (N + 1 + d + 1)) := by
+    linarith only [hboost, hAcc_diff_lt, hP3_E, hsub_P3]
+  refine ⟨⟨q_W_0, hqW0_pos, hboost⟩, hlow_bound, fun hSd_pos W_end hWend_lt => ?_⟩
+  have h3_sub_ge : 3 ^ (S_d + 10 * L_2 0 - 1) ≤ P3 - 1 := by
+    dsimp [P3]
+    have hsplit : S_d + 10 * L_2 0 = (S_d + 10 * L_2 0 - 1) + 1 :=
+      (Nat.sub_add_cancel hSd_pos).symm
+    have hpow : 3 ^ (S_d + 10 * L_2 0) = 3 * 3 ^ (S_d + 10 * L_2 0 - 1) := by
+      conv_lhs => rw [hsplit]
+      ring
+    have hpos : 1 ≤ 3 ^ (S_d + 10 * L_2 0 - 1) := Nat.one_le_pow _ 3 (by decide)
+    omega
+  have hpow3_low :
+      3 ^ (E_full + S_d + 10 * L_2 0 - 1) ≤ (P3 - 1) * 3 ^ E_full := by
+    have hsplit :
+        E_full + S_d + 10 * L_2 0 - 1 = (S_d + 10 * L_2 0 - 1) + E_full := by omega
+    rw [hsplit, Nat.pow_add]
+    exact Nat.mul_le_mul_right (3 ^ E_full) h3_sub_ge
+  have hE2_pos : 0 < 2 ^ E_full := Nat.pos_of_ne_zero (by positivity)
+  have hdiff_lt_pow : W' (N + 1 + d + 1) - W (N + 1 + d + 1) < 2 ^ W_end :=
+    lt_of_le_of_lt (Nat.sub_le _ _) hWend_lt
+  have hpow_tot :
+      3 ^ (E_full + S_d + 10 * L_2 0 - 1) < 2 ^ (E_full + W_end) := by
+    have hstep1 := lt_of_le_of_lt hpow3_low hlow_bound
+    have hstep2 :
+        2 ^ E_full * (W' (N + 1 + d + 1) - W (N + 1 + d + 1)) < 2 ^ (E_full + W_end) := by
+      rw [Nat.pow_add 2 E_full W_end]
+      exact Nat.mul_lt_mul_of_pos_left hdiff_lt_pow hE2_pos
+    exact lt_trans hstep1 hstep2
+  have h19_12 : 2 ^ 19 ≤ 3 ^ 12 := by decide
+  have hpow12 :
+      (3 ^ (E_full + S_d + 10 * L_2 0 - 1)) ^ 12 < (2 ^ (E_full + W_end)) ^ 12 :=
+    Nat.pow_lt_pow_left hpow_tot (by decide)
+  have hlhs12 :
+      (2 ^ 19) ^ (E_full + S_d + 10 * L_2 0 - 1) ≤
+        (3 ^ (E_full + S_d + 10 * L_2 0 - 1)) ^ 12 := by
+    have hrew :
+        (3 ^ (E_full + S_d + 10 * L_2 0 - 1)) ^ 12 =
+          (3 ^ 12) ^ (E_full + S_d + 10 * L_2 0 - 1) := by
+      rw [← Nat.pow_mul, ← Nat.pow_mul, Nat.mul_comm _ 12]
+    rw [hrew]
+    exact Nat.pow_le_pow_left h19_12 _
+  have hpow2_ineq :
+      2 ^ (19 * (E_full + S_d + 10 * L_2 0 - 1)) < 2 ^ (12 * (E_full + W_end)) := by
+    have h1 :
+        (2 ^ 19) ^ (E_full + S_d + 10 * L_2 0 - 1) =
+          2 ^ (19 * (E_full + S_d + 10 * L_2 0 - 1)) := by
+      rw [← Nat.pow_mul]
+    have h2 :
+        (2 ^ (E_full + W_end)) ^ 12 = 2 ^ (12 * (E_full + W_end)) := by
+      rw [← Nat.pow_mul, Nat.mul_comm _ 12]
+    rw [← h1, ← h2]
+    exact lt_of_le_of_lt hlhs12 hpow12
+  have hexp_lt :
+      19 * (E_full + S_d + 10 * L_2 0 - 1) < 12 * (E_full + W_end) :=
+    (Nat.pow_lt_pow_iff_right (by decide : 1 < 2)).mp hpow2_ineq
+  have hlin : 7 * S_0 + 19 * S_d + 260 * L_2 0 < 12 * W_end + 19 := by
+    have hge1 : 1 ≤ E_full + S_d + 10 * L_2 0 := by omega
+    have hsub19 :
+        19 * (E_full + S_d + 10 * L_2 0 - 1) + 19 =
+          19 * S_0 + 19 * S_d + 380 * L_2 0 := by
+      have hd :
+          19 * (E_full + S_d + 10 * L_2 0 - 1) + 19 * 1 =
+            19 * (E_full + S_d + 10 * L_2 0) := by
+        rw [← Nat.mul_add, Nat.sub_add_cancel hge1]
+      dsimp [E_full] at hd
+      linarith only [hd]
+    have hrhs12 : 12 * (E_full + W_end) = 12 * S_0 + 120 * L_2 0 + 12 * W_end := by
+      dsimp [E_full]; ring
+    linarith only [hexp_lt, hsub19, hrhs12]
+  exact ⟨hpow_tot, hlin⟩
+
+/-!
+## Section 172: Two-Window Sliding Block-Match `16,243,286,400` Super-Reduced Syzygy & `(S_d + 10 L_2(d+1) + 28)` Defect-Zero Floor
+
+When we combine Section 170's Coupled Sliding-Reduced Syzygy with Section 130's `16,243,286,400`
+Same-Run Junction Super-Sieve across the matching boundary `2`-runs (`L'_2 0 = L_2 0`,
+`L'_2 (d + 1) = L_2 (d + 1)`, `L'_2 (N + 1) = L_2 (N + 1)`, `L'_2 (N + 1 + d + 1) = L_2 (N + 1 + d + 1)`):
+1. **Super-Factorization of Both Endpoint State Quotients:**
+   Since `16243286400 ∣ (W' 0 - W 0)`, `16243286400 ∣ (W' (d + 1) - W (d + 1))`,
+   `16243286400 ∣ (W' (N + 1) - W (N + 1))`, and `16243286400 ∣ (W' (N + 1 + d + 1) - W (N + 1 + d + 1))`,
+   canceling `16,243,286,400` in the homogeneous `(d + 1)`-wave equations on `[0 .. d + 1]` and
+   `[N + 1 .. N + 1 + d + 1]` proves `16243286400 ∣ q_W_0` (`q_W_0 = 16243286400 * q_super_0`) and
+   `16243286400 ∣ q_W_end` (`q_W_end = 16243286400 * q_super_end`)!
+2. **Super-Factorization of the Shift-Invariant Accumulator Quotient `q_slide_d`:**
+   In `2 ^ E_full * q_W_end + 19 * q_slide_d = 3 ^ E_full * q_W_0`, since `16243286400` divides both
+   `q_W_end` and `q_W_0` and `gcd(16243286400, 19) = 1`, `16,243,286,400` divides `q_slide_d`
+   (`q_slide_d = 16243286400 * q_super_slide`), yielding:
+     `Acc'^{(0)}_N - Acc^{(0)}_N = 16243286400 * 2 ^ (S_d + 10 * L_2 (d + 1)) * q_super_slide`,
+     `Acc'^{(d + 1)}_N - Acc^{(d + 1)}_N = 16243286400 * 3 ^ (S_d + 10 * L_2 0) * q_super_slide`, and
+     `2 ^ E_full * q_super_end + 19 * q_super_slide = 3 ^ E_full * q_super_0`!
+3. **Sliding Trillion-Fold Defect Suppression & `(S_d + 10 L_2(d+1) + 28)` Defect-Zero Floor:**
+   Whenever `2059 * Acc'^{(d + 1)}_N < 3 ^ S^{(d + 1)}_N`:
+     `33444926697600 * 3 ^ (S_d + 10 * L_2 0) * q_super_slide < 3 ^ S^{(d + 1)}_N`,
+   and since `3 ^ 28 < 33444926697600` and `S^{(d + 1)}_N + 10 * L_2 (d + 1) = S_0 + 10 * L_2 0`,
+   whenever `S_0 ≤ S_d + 10 * L_2 (d + 1) + 28`, we are forced to have `q_super_slide = 0`
+   (`Acc'^{(0)}_N = Acc^{(0)}_N` and `Acc'^{(d + 1)}_N = Acc^{(d + 1)}_N`)!
+-/
+
+/-- **Two-Window Sliding Block-Match `16,243,286,400` Super-Reduced Syzygy & Defect-Zero Floor:**
+Under the hypotheses of Section 170 plus `16243286400` divisibility at the four matching junctions
+`0`, `d + 1`, `N + 1`, and `N + 1 + d + 1`, and `2059 * Acc'^{(d + 1)}_N < 3 ^ S^{(d + 1)}_N`:
+There exist `q_super_0, q_super_end, q_super_slide : ℕ` such that:
+1. `W' 0 - W 0 = 16243286400 * 2 ^ (S_d + 10 * L_2 (d + 1)) * q_super_0` and
+   `W' (d + 1) - W (d + 1) = 16243286400 * 3 ^ (S_d + 10 * L_2 0) * q_super_0`,
+2. `W' (N + 1) - W (N + 1) = 16243286400 * 2 ^ (S_d + 10 * L_2 (d + 1)) * q_super_end` and
+   `W' (N + 1 + d + 1) - W (N + 1 + d + 1) = 16243286400 * 3 ^ (S_d + 10 * L_2 0) * q_super_end`,
+3. `Acc'^{(0)}_N - Acc^{(0)}_N = 16243286400 * 2 ^ (S_d + 10 * L_2 (d + 1)) * q_super_slide` and
+   `Acc'^{(d + 1)}_N - Acc^{(d + 1)}_N = 16243286400 * 3 ^ (S_d + 10 * L_2 0) * q_super_slide`,
+4. `2 ^ E_full * q_super_end + 19 * q_super_slide = 3 ^ E_full * q_super_0`,
+5. `33444926697600 * 3 ^ (S_d + 10 * L_2 0) * q_super_slide < 3 ^ S^{(d + 1)}_N`, and
+6. If `S_0 ≤ S_d + 10 * L_2 (d + 1) + 28`, then `q_super_slide = 0`! -/
+theorem dense_core_two_window_sliding_block_match_16243286400_super_reduced_syzygy
+    (W W' L_2 L_1 L_2' L_1' : ℕ → ℕ) (N d : ℕ)
+    (hrec : ∀ k : ℕ,
+      2 ^ (7 * L_1 k + 10 * L_2 (k + 1)) * W (k + 1) +
+        19 * ((3 ^ (7 * L_1 k) - 2 ^ (7 * L_1 k)) / 2059) =
+        3 ^ (7 * L_1 k + 10 * L_2 k) * W k)
+    (hrec' : ∀ k : ℕ,
+      2 ^ (7 * L_1' k + 10 * L_2' (k + 1)) * W' (k + 1) +
+        19 * ((3 ^ (7 * L_1' k) - 2 ^ (7 * L_1' k)) / 2059) =
+        3 ^ (7 * L_1' k + 10 * L_2' k) * W' k)
+    (hS0_eq : waveInteriorExp L_2 L_1 N = waveInteriorExp L_2' L_1' N)
+    (hAcc0_le : waveInteriorAcc L_2 L_1 N ≤ waveInteriorAcc L_2' L_1' N)
+    (hL2_shared : ∀ t ≤ d + 1, L_2' t = L_2 t)
+    (hL1_shared : ∀ t ≤ d, L_1' t = L_1 t)
+    (hL2_block : ∀ t ≤ d, L_2 (N + 1 + t) = L_2 t)
+    (hL1_block : ∀ t ≤ d, L_1 (N + 1 + t) = L_1 t)
+    (hL2_block' : ∀ t ≤ d, L_2' (N + 1 + t) = L_2' t)
+    (hL1_block' : ∀ t ≤ d, L_1' (N + 1 + t) = L_1' t)
+    (hL2_end : L_2 (N + 1 + d + 1) = L_2 (d + 1))
+    (hL2_end' : L_2' (N + 1 + d + 1) = L_2' (d + 1))
+    (hW0_le : W 0 ≤ W' 0)
+    (hWN1_le : W (N + 1) ≤ W' (N + 1))
+    (hdvd_0 : 16243286400 ∣ (W' 0 - W 0))
+    (hdvd_d1 : 16243286400 ∣ (W' (d + 1) - W (d + 1)))
+    (hdvd_N1 : 16243286400 ∣ (W' (N + 1) - W (N + 1)))
+    (hdvd_Nd1 : 16243286400 ∣ (W' (N + 1 + d + 1) - W (N + 1 + d + 1)))
+    (hAcc_d1_band :
+      2059 * waveInteriorAcc (fun t => L_2' (d + 1 + t)) (fun t => L_1' (d + 1 + t)) N <
+        3 ^ waveInteriorExp (fun t => L_2 (d + 1 + t)) (fun t => L_1 (d + 1 + t)) N) :
+    let S_0 := waveInteriorExp L_2 L_1 N
+    let S_d := waveInteriorExp L_2 L_1 d
+    let S_d1 := waveInteriorExp (fun t => L_2 (d + 1 + t)) (fun t => L_1 (d + 1 + t)) N
+    let E_full := S_0 + 10 * L_2 0
+    let Acc_0 := waveInteriorAcc L_2 L_1 N
+    let Acc_0' := waveInteriorAcc L_2' L_1' N
+    let Acc_d1 := waveInteriorAcc (fun t => L_2 (d + 1 + t)) (fun t => L_1 (d + 1 + t)) N
+    let Acc_d1' := waveInteriorAcc (fun t => L_2' (d + 1 + t)) (fun t => L_1' (d + 1 + t)) N
+    ∃ q_super_0 q_super_end q_super_slide : ℕ,
+      W' 0 - W 0 = 16243286400 * 2 ^ (S_d + 10 * L_2 (d + 1)) * q_super_0 ∧
+      W' (d + 1) - W (d + 1) = 16243286400 * 3 ^ (S_d + 10 * L_2 0) * q_super_0 ∧
+      W' (N + 1) - W (N + 1) = 16243286400 * 2 ^ (S_d + 10 * L_2 (d + 1)) * q_super_end ∧
+      W' (N + 1 + d + 1) - W (N + 1 + d + 1) = 16243286400 * 3 ^ (S_d + 10 * L_2 0) * q_super_end ∧
+      Acc_0' - Acc_0 = 16243286400 * 2 ^ (S_d + 10 * L_2 (d + 1)) * q_super_slide ∧
+      Acc_d1' - Acc_d1 = 16243286400 * 3 ^ (S_d + 10 * L_2 0) * q_super_slide ∧
+      2 ^ E_full * q_super_end + 19 * q_super_slide = 3 ^ E_full * q_super_0 ∧
+      33444926697600 * 3 ^ (S_d + 10 * L_2 0) * q_super_slide < 3 ^ S_d1 ∧
+      (S_0 ≤ S_d + 10 * L_2 (d + 1) + 28 → q_super_slide = 0) := by
+  intro S_0 S_d S_d1 E_full Acc_0 Acc_0' Acc_d1 Acc_d1'
+  have h170 :=
+    dense_core_two_window_sliding_block_match_coupled_reduced_syzygy
+      W W' L_2 L_1 L_2' L_1' N d hrec hrec' hS0_eq hAcc0_le
+      hL2_shared hL1_shared hL2_block hL1_block hL2_block' hL1_block'
+      hL2_end hL2_end' hW0_le hWN1_le
+  rcases h170.2.2 with ⟨q_W_0, q_W_end, q_slide_d, hqW0, hqWd1, hqWend, hqWNd1,
+    hq_slide0, hq_slide1, hsyz_red⟩
+  set P2 := 2 ^ (S_d + 10 * L_2 (d + 1))
+  set P3 := 3 ^ (S_d + 10 * L_2 0)
+  have hP2_pos : 0 < P2 := Nat.pos_of_ne_zero (by positivity)
+  have hM_pos : 0 < 16243286400 := by decide
+  have hcop : Nat.Coprime P2 P3 :=
+    (Nat.Coprime.pow_left (S_d + 10 * L_2 (d + 1)) (by decide : Nat.Coprime 2 3)).pow_right
+      (S_d + 10 * L_2 0)
+  rcases hdvd_0 with ⟨k_0, hk0⟩
+  rcases hdvd_d1 with ⟨k_d1, hkd1⟩
+  have hhom_0 : P2 * (W' (d + 1) - W (d + 1)) = P3 * (W' 0 - W 0) := by
+    rw [hqWd1, hqW0]; ring
+  have hmul_0 : 16243286400 * (P2 * k_d1) = 16243286400 * (P3 * k_0) := by
+    calc
+      16243286400 * (P2 * k_d1) = P2 * (16243286400 * k_d1) := by ring
+      _ = P2 * (W' (d + 1) - W (d + 1)) := by rw [← hkd1]
+      _ = P3 * (W' 0 - W 0) := hhom_0
+      _ = P3 * (16243286400 * k_0) := by rw [← hk0]
+      _ = 16243286400 * (P3 * k_0) := by ring
+  have hk0_eq : P2 * k_d1 = P3 * k_0 := Nat.eq_of_mul_eq_mul_left hM_pos hmul_0
+  have hdvd_k0 : P2 ∣ k_0 := hcop.dvd_of_dvd_mul_left ⟨k_d1, hk0_eq.symm⟩
+  rcases hdvd_k0 with ⟨q_super_0, hq_k0⟩
+  have hW0_super : W' 0 - W 0 = 16243286400 * P2 * q_super_0 := by
+    rw [hk0, hq_k0]; ring
+  have hqW0_super : q_W_0 = 16243286400 * q_super_0 := by
+    have hm : P2 * q_W_0 = P2 * (16243286400 * q_super_0) := by
+      calc
+        P2 * q_W_0 = W' 0 - W 0 := hqW0.symm
+        _ = 16243286400 * P2 * q_super_0 := hW0_super
+        _ = P2 * (16243286400 * q_super_0) := by ring
+    exact Nat.eq_of_mul_eq_mul_left hP2_pos hm
+  have hWd1_super : W' (d + 1) - W (d + 1) = 16243286400 * P3 * q_super_0 := by
+    rw [hqWd1, hqW0_super]; ring
+  rcases hdvd_N1 with ⟨k_N1, hkN1⟩
+  rcases hdvd_Nd1 with ⟨k_Nd1, hkNd1⟩
+  have hhom_N1 :
+      P2 * (W' (N + 1 + d + 1) - W (N + 1 + d + 1)) = P3 * (W' (N + 1) - W (N + 1)) := by
+    rw [hqWNd1, hqWend]; ring
+  have hmul_N1 : 16243286400 * (P2 * k_Nd1) = 16243286400 * (P3 * k_N1) := by
+    calc
+      16243286400 * (P2 * k_Nd1) = P2 * (16243286400 * k_Nd1) := by ring
+      _ = P2 * (W' (N + 1 + d + 1) - W (N + 1 + d + 1)) := by rw [← hkNd1]
+      _ = P3 * (W' (N + 1) - W (N + 1)) := hhom_N1
+      _ = P3 * (16243286400 * k_N1) := by rw [← hkN1]
+      _ = 16243286400 * (P3 * k_N1) := by ring
+  have hkN1_eq : P2 * k_Nd1 = P3 * k_N1 := Nat.eq_of_mul_eq_mul_left hM_pos hmul_N1
+  have hdvd_kN1 : P2 ∣ k_N1 := hcop.dvd_of_dvd_mul_left ⟨k_Nd1, hkN1_eq.symm⟩
+  rcases hdvd_kN1 with ⟨q_super_end, hq_kN1⟩
+  have hWN1_super : W' (N + 1) - W (N + 1) = 16243286400 * P2 * q_super_end := by
+    rw [hkN1, hq_kN1]; ring
+  have hqWend_super : q_W_end = 16243286400 * q_super_end := by
+    have hm : P2 * q_W_end = P2 * (16243286400 * q_super_end) := by
+      calc
+        P2 * q_W_end = W' (N + 1) - W (N + 1) := hqWend.symm
+        _ = 16243286400 * P2 * q_super_end := hWN1_super
+        _ = P2 * (16243286400 * q_super_end) := by ring
+    exact Nat.eq_of_mul_eq_mul_left hP2_pos hm
+  have hWNd1_super : W' (N + 1 + d + 1) - W (N + 1 + d + 1) = 16243286400 * P3 * q_super_end := by
+    rw [hqWNd1, hqWend_super]; ring
+  have hdvd_19_slide : 16243286400 ∣ 19 * q_slide_d := by
+    have hd_lhs : 16243286400 ∣ 2 ^ E_full * q_W_end :=
+      ⟨2 ^ E_full * q_super_end, by rw [hqWend_super]; ring⟩
+    have hd_rhs : 16243286400 ∣ 3 ^ E_full * q_W_0 :=
+      ⟨3 ^ E_full * q_super_0, by rw [hqW0_super]; ring⟩
+    rw [← hsyz_red] at hd_rhs
+    exact (Nat.dvd_add_iff_right hd_lhs).mpr hd_rhs
+  have hcop19 : Nat.Coprime 16243286400 19 := by decide
+  have hdvd_slide : 16243286400 ∣ q_slide_d := hcop19.dvd_of_dvd_mul_left hdvd_19_slide
+  rcases hdvd_slide with ⟨q_super_slide, hq_slide_super⟩
+  have hAcc0_super : Acc_0' - Acc_0 = 16243286400 * P2 * q_super_slide := by
+    rw [hq_slide0, hq_slide_super]; ring
+  have hAccd1_super : Acc_d1' - Acc_d1 = 16243286400 * P3 * q_super_slide := by
+    rw [hq_slide1, hq_slide_super]; ring
+  have hsyz_super_mul :
+      16243286400 * (2 ^ E_full * q_super_end + 19 * q_super_slide) =
+        16243286400 * (3 ^ E_full * q_super_0) := by
+    have h := hsyz_red
+    rw [hqWend_super, hq_slide_super, hqW0_super] at h
+    linarith only [h]
+  have hsyz_super : 2 ^ E_full * q_super_end + 19 * q_super_slide = 3 ^ E_full * q_super_0 :=
+    Nat.eq_of_mul_eq_mul_left hM_pos hsyz_super_mul
+  have hsupp_bound : 33444926697600 * P3 * q_super_slide < 3 ^ S_d1 := by
+    have hsub_le : Acc_d1' - Acc_d1 ≤ Acc_d1' := Nat.sub_le _ _
+    have hm_le : 2059 * (Acc_d1' - Acc_d1) ≤ 2059 * Acc_d1' :=
+      Nat.mul_le_mul_left 2059 hsub_le
+    rw [hAccd1_super] at hm_le
+    have hprod :
+        2059 * (16243286400 * P3 * q_super_slide) =
+          33444926697600 * P3 * q_super_slide := by ring
+    rw [hprod] at hm_le
+    exact lt_of_le_of_lt hm_le hAcc_d1_band
+  have h166 :=
+    dense_core_multi_wave_block_match_sliding_core_elimination_and_bridge
+      W L_2 L_1 N d hrec hL2_block hL1_block
+  have hE_rel : 10 * L_2 (d + 1) + S_d1 = S_0 + 10 * L_2 0 := h166.2.2.1
+  have hfloor : S_0 ≤ S_d + 10 * L_2 (d + 1) + 28 → q_super_slide = 0 := by
+    intro hle28
+    have hSd1_le : S_d1 ≤ S_d + 10 * L_2 0 + 28 := by linarith only [hE_rel, hle28]
+    rcases Nat.eq_zero_or_pos q_super_slide with h0 | hpos
+    · exact h0
+    · have hmin_q : 33444926697600 * P3 ≤ 33444926697600 * P3 * q_super_slide :=
+        Nat.le_mul_of_pos_right _ hpos
+      have hpow_le : 3 ^ S_d1 ≤ 3 ^ (S_d + 10 * L_2 0 + 28) :=
+        Nat.pow_le_pow_right (by decide) hSd1_le
+      have hpow_split : 3 ^ (S_d + 10 * L_2 0 + 28) = 3 ^ 28 * P3 := by
+        dsimp [P3]; ring
+      have hP3_pos : 0 < P3 := Nat.pos_of_ne_zero (by positivity)
+      have h28_P3 : 3 ^ 28 * P3 < 33444926697600 * P3 :=
+        Nat.mul_lt_mul_of_pos_right three_pow_28_lt_33444926697600 hP3_pos
+      rw [hpow_split] at hpow_le
+      have hlt_self : 33444926697600 * P3 < 33444926697600 * P3 :=
+        lt_of_le_of_lt hmin_q (lt_of_lt_of_le hsupp_bound (le_trans hpow_le (le_of_lt h28_P3)))
+      exact absurd hlt_self (lt_irrefl _)
+  exact ⟨q_super_0, q_super_end, q_super_slide,
+    hW0_super, hWd1_super, hWN1_super, hWNd1_super,
+    hAcc0_super, hAccd1_super, hsyz_super, hsupp_bound, hfloor⟩
+
+/-!
+## Section 173: Abelian Block-Match Sliding Exponent Invariance & Linear-in-`d` Bounded-Run Pigeonhole (`B^2 * ((17*d + 7)*(B - 1) + 1) + 1` Positions!)
+
+Notice a profound structural fact in Section 156 Part 1:
+  `S_d + 10 * L_2 (d + 1) + S^{(d + 1)}_N = S^{(0)}_N + 10 * L_2 (N + 1) + S^{(N + 1)}_d`.
+To obtain full-wave exponent invariance `S^{(d + 1)}_N + 10 * L_2 (d + 1) = S^{(0)}_N + 10 * L_2 0 = E_full`
+and the symmetric double master identities at `0` and `d + 1`, we do **NOT** need the `(d + 1)`-wave
+blocks at `0` and `N + 1` to match word-for-word on every individual run!
+We ONLY need the **double-boundary-locked abelian block match**:
+  `L_2 (N + 1) = L_2 0`,  `L_2 (N + 1 + d + 1) = L_2 (d + 1)`,  and  `S^{(N + 1)}_d = S^{(0)}_d`!
+And how many positions along a bounded-run orbit (`1 ≤ L_1(t), L_2(t) ≤ B`) are needed to guarantee
+such a double-boundary-locked abelian `(d + 1)`-wave block match?
+Not `B ^ (2 * d + 3)` (exponential in `d`), but ONLY
+  `B * B * ((17 * d + 7) * (B - 1) + 1) + 1`
+positions—which is **LINEAR in `d`**!
+-/
+
+/-- **Abelian Block-Match Sliding Exponent Invariance & Linear-in-`d` Bounded-Run Pigeonhole:**
+1. Whenever `L_2 (N + 1) = L_2 0`, `L_2 (N + 1 + d + 1) = L_2 (d + 1)`, and `S^{(N + 1)}_d = S^{(0)}_d`:
+   - `10 * L_2 (d + 1) + S^{(d + 1)}_N = S^{(0)}_N + 10 * L_2 0 =: E_full`, and
+   - Both Window `0` and Window `d + 1` satisfy symmetric master equations with the exact same
+     exponent `E_full` on all four state terms:
+     `2 ^ E_full * W (N + 1) + 19 * Acc^{(0)}_N = 3 ^ E_full * W 0` and
+     `2 ^ E_full * W (N + 1 + d + 1) + 19 * Acc^{(d + 1)}_N = 3 ^ E_full * W (d + 1)`.
+2. In any bounded-run orbit (`1 ≤ L_1(t), L_2(t) ≤ B`), among **any**
+   `B * B * ((17 * d + 7) * (B - 1) + 1) + 1` strictly increasing positions `n(0) < ... < n(M)`,
+   there ALWAYS exist `i < j` (`r = n i`, `N = n j - n i - 1`, `n j = r + N + 1`) such that:
+   - `L_2 r = L_2 (r + N + 1)`,
+   - `L_2 (r + d + 1) = L_2 (r + N + 1 + d + 1)`,
+   - `S^{(r)}_d = S^{(r + N + 1)}_d`, and
+   - `S^{(r + d + 1)}_N + 10 * L_2 (r + d + 1) = S^{(r)}_N + 10 * L_2 r`! -/
+theorem dense_core_abelian_block_match_sliding_invariance_and_pigeonhole :
+    (∀ (W L_2 L_1 : ℕ → ℕ) (N d : ℕ),
+      (∀ k : ℕ,
+        2 ^ (7 * L_1 k + 10 * L_2 (k + 1)) * W (k + 1) +
+          19 * ((3 ^ (7 * L_1 k) - 2 ^ (7 * L_1 k)) / 2059) =
+          3 ^ (7 * L_1 k + 10 * L_2 k) * W k) →
+      L_2 (N + 1) = L_2 0 →
+      L_2 (N + 1 + d + 1) = L_2 (d + 1) →
+      waveInteriorExp (fun t => L_2 (N + 1 + t)) (fun t => L_1 (N + 1 + t)) d =
+        waveInteriorExp L_2 L_1 d →
+      let S_0 := waveInteriorExp L_2 L_1 N
+      let S_d1 := waveInteriorExp (fun t => L_2 (d + 1 + t)) (fun t => L_1 (d + 1 + t)) N
+      let E_full := S_0 + 10 * L_2 0
+      let Acc_0 := waveInteriorAcc L_2 L_1 N
+      let Acc_d1 := waveInteriorAcc (fun t => L_2 (d + 1 + t)) (fun t => L_1 (d + 1 + t)) N
+      S_d1 + 10 * L_2 (d + 1) = E_full ∧
+      2 ^ E_full * W (N + 1) + 19 * Acc_0 = 3 ^ E_full * W 0 ∧
+      2 ^ E_full * W (N + 1 + d + 1) + 19 * Acc_d1 = 3 ^ E_full * W (d + 1)) ∧
+    (∀ (L_2 L_1 : ℕ → ℕ) (d B : ℕ)
+      (n : Fin (B * B * ((17 * d + 7) * (B - 1) + 1) + 1) → ℕ),
+      1 ≤ B →
+      (∀ t : ℕ, 1 ≤ L_1 t ∧ L_1 t ≤ B) →
+      (∀ t : ℕ, 1 ≤ L_2 t ∧ L_2 t ≤ B) →
+      StrictMono n →
+      ∃ i j : Fin (B * B * ((17 * d + 7) * (B - 1) + 1) + 1),
+        i < j ∧
+        let r := n i
+        let N := n j - n i - 1
+        L_2 r = L_2 (r + N + 1) ∧
+        L_2 (r + d + 1) = L_2 (r + N + 1 + d + 1) ∧
+        waveInteriorExp (fun t => L_2 (r + t)) (fun t => L_1 (r + t)) d =
+          waveInteriorExp (fun t => L_2 (r + N + 1 + t)) (fun t => L_1 (r + N + 1 + t)) d ∧
+        waveInteriorExp (fun t => L_2 (r + d + 1 + t)) (fun t => L_1 (r + d + 1 + t)) N +
+          10 * L_2 (r + d + 1) =
+          waveInteriorExp (fun t => L_2 (r + t)) (fun t => L_1 (r + t)) N + 10 * L_2 r) := by
+  refine ⟨?_, ?_⟩
+  · intro W L_2 L_1 N d hrec hL2_0 hL2_end hSd_eq S_0 S_d1 E_full Acc_0 Acc_d1
+    have h156 :=
+      (dense_core_multi_wave_sliding_window_shift_duality_and_commutation L_2 L_1 N d).1
+    change waveInteriorExp L_2 L_1 d + 10 * L_2 (d + 1) + S_d1 =
+      S_0 + 10 * L_2 (N + 1) +
+        waveInteriorExp (fun t => L_2 (N + 1 + t)) (fun t => L_1 (N + 1 + t)) d at h156
+    rw [hL2_0, hSd_eq] at h156
+    have hE_eq : S_d1 + 10 * L_2 (d + 1) = E_full := by
+      dsimp [E_full]; omega
+    have hrec_0_N : ∀ n ≤ N,
+        2 ^ (7 * L_1 n + 10 * L_2 (n + 1)) * W (n + 1) +
+          19 * ((3 ^ (7 * L_1 n) - 2 ^ (7 * L_1 n)) / 2059) =
+          3 ^ (10 * L_2 n + 7 * L_1 n) * W n := by
+      intro n _; rw [Nat.add_comm (10 * L_2 n) (7 * L_1 n)]; exact hrec n
+    have hm0 :=
+      (dense_core_symmetric_multi_wave_master_identity_and_boundary_independence.2
+        W L_2 L_1 N hrec_0_N).1
+    change 2 ^ S_0 * (2 ^ (10 * L_2 (N + 1)) * W (N + 1)) + 19 * Acc_0 =
+      3 ^ S_0 * (3 ^ (10 * L_2 0) * W 0) at hm0
+    rw [hL2_0] at hm0
+    have hp2_0 : 2 ^ S_0 * (2 ^ (10 * L_2 0) * W (N + 1)) = 2 ^ E_full * W (N + 1) := by
+      dsimp [E_full]; rw [Nat.pow_add]; ring
+    have hp3_0 : 3 ^ S_0 * (3 ^ (10 * L_2 0) * W 0) = 3 ^ E_full * W 0 := by
+      dsimp [E_full]; rw [Nat.pow_add]; ring
+    rw [hp2_0, hp3_0] at hm0
+    let W_d1 := fun t => W (d + 1 + t)
+    let L_2_d1 := fun t => L_2 (d + 1 + t)
+    let L_1_d1 := fun t => L_1 (d + 1 + t)
+    have hrec_d1_N : ∀ n ≤ N,
+        2 ^ (7 * L_1_d1 n + 10 * L_2_d1 (n + 1)) * W_d1 (n + 1) +
+          19 * ((3 ^ (7 * L_1_d1 n) - 2 ^ (7 * L_1_d1 n)) / 2059) =
+          3 ^ (10 * L_2_d1 n + 7 * L_1_d1 n) * W_d1 n := by
+      intro n _
+      dsimp [W_d1, L_2_d1, L_1_d1]
+      have hidx : d + 1 + (n + 1) = (d + 1 + n) + 1 := by omega
+      rw [hidx, Nat.add_comm (10 * L_2 (d + 1 + n)) (7 * L_1 (d + 1 + n))]
+      exact hrec (d + 1 + n)
+    have hmd1 :=
+      (dense_core_symmetric_multi_wave_master_identity_and_boundary_independence.2
+        W_d1 L_2_d1 L_1_d1 N hrec_d1_N).1
+    change 2 ^ S_d1 * (2 ^ (10 * L_2 (d + 1 + (N + 1))) * W (d + 1 + (N + 1))) + 19 * Acc_d1 =
+      3 ^ S_d1 * (3 ^ (10 * L_2 (d + 1 + 0)) * W (d + 1 + 0)) at hmd1
+    have hidx0 : d + 1 + 0 = d + 1 := Nat.add_zero (d + 1)
+    have hidxN1 : d + 1 + (N + 1) = N + 1 + d + 1 := by omega
+    rw [hidx0, hidxN1, hL2_end] at hmd1
+    have hp2_d1 :
+        2 ^ S_d1 * (2 ^ (10 * L_2 (d + 1)) * W (N + 1 + d + 1)) =
+          2 ^ E_full * W (N + 1 + d + 1) := by
+      rw [← hE_eq, Nat.pow_add]; ring
+    have hp3_d1 :
+        3 ^ S_d1 * (3 ^ (10 * L_2 (d + 1)) * W (d + 1)) =
+          3 ^ E_full * W (d + 1) := by
+      rw [← hE_eq, Nat.pow_add]; ring
+    rw [hp2_d1, hp3_d1] at hmd1
+    exact ⟨hE_eq, hm0, hmd1⟩
+  · intro L_2 L_1 d B n hB hL1 hL2 hn_strict
+    rcases dense_core_bounded_run_double_boundary_locked_anagram_pigeonhole
+      L_2 L_1 d B n hB hL1 hL2 with ⟨i, j, hij, hL2_ij, hL2d1_ij, hSd_ij⟩
+    have hnij : n i < n j := hn_strict hij
+    set r := n i
+    set N := n j - n i - 1
+    have hnj_eq : r + N + 1 = n j := by dsimp [r, N]; omega
+    have hnj_d1 : r + N + 1 + d + 1 = n j + d + 1 := by omega
+    have hL2_r : L_2 r = L_2 (r + N + 1) := by rw [hnj_eq]; exact hL2_ij
+    have hL2_rd1 : L_2 (r + d + 1) = L_2 (r + N + 1 + d + 1) := by
+      rw [hnj_d1]; exact hL2d1_ij
+    have hfun2 : (fun t => L_2 (r + N + 1 + t)) = (fun t => L_2 (n j + t)) := by
+      funext t; rw [hnj_eq]
+    have hfun1 : (fun t => L_1 (r + N + 1 + t)) = (fun t => L_1 (n j + t)) := by
+      funext t; rw [hnj_eq]
+    have hSd_r :
+        waveInteriorExp (fun t => L_2 (r + t)) (fun t => L_1 (r + t)) d =
+          waveInteriorExp (fun t => L_2 (r + N + 1 + t)) (fun t => L_1 (r + N + 1 + t)) d := by
+      rw [hfun2, hfun1]; exact hSd_ij
+    let L_2_r := fun t => L_2 (r + t)
+    let L_1_r := fun t => L_1 (r + t)
+    have h156_r :=
+      (dense_core_multi_wave_sliding_window_shift_duality_and_commutation L_2_r L_1_r N d).1
+    have hf2_d1 : (fun t => L_2_r (d + 1 + t)) = (fun t => L_2 (r + d + 1 + t)) := by
+      funext t; dsimp [L_2_r]; congr 1; omega
+    have hf1_d1 : (fun t => L_1_r (d + 1 + t)) = (fun t => L_1 (r + d + 1 + t)) := by
+      funext t; dsimp [L_1_r]; congr 1; omega
+    have hf2_N1 : (fun t => L_2_r (N + 1 + t)) = (fun t => L_2 (r + N + 1 + t)) := by
+      funext t; dsimp [L_2_r]; congr 1; omega
+    have hf1_N1 : (fun t => L_1_r (N + 1 + t)) = (fun t => L_1 (r + N + 1 + t)) := by
+      funext t; dsimp [L_1_r]; congr 1; omega
+    change waveInteriorExp L_2_r L_1_r d + 10 * L_2_r (d + 1) +
+        waveInteriorExp (fun t => L_2_r (d + 1 + t)) (fun t => L_1_r (d + 1 + t)) N =
+      waveInteriorExp L_2_r L_1_r N + 10 * L_2_r (N + 1) +
+        waveInteriorExp (fun t => L_2_r (N + 1 + t)) (fun t => L_1_r (N + 1 + t)) d at h156_r
+    rw [hf2_d1, hf1_d1, hf2_N1, hf1_N1] at h156_r
+    dsimp [L_2_r, L_1_r] at h156_r
+    have hr_d1 : r + (d + 1) = r + d + 1 := by omega
+    have hr_N1 : r + (N + 1) = r + N + 1 := by omega
+    rw [hr_d1, hr_N1, ← hL2_r, ← hSd_r] at h156_r
+    exact ⟨i, j, hij, hL2_r, hL2_rd1, hSd_r, by linarith only [h156_r]⟩
+
 end Mahler.DubickasExtension
 
 
