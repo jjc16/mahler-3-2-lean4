@@ -38299,6 +38299,461 @@ theorem dense_core_general_d_wave_explicit_minimum_floor_and_horizon_cutoff
     fun W_mid hlt330 => ⟨by linarith only [hlow330, hlt330], by linarith only [hlow330, hlt330, h7_S0]⟩,
     fun W_mid hlt320 => ⟨by linarith only [hlow320, hlt320], by linarith only [hlow320, hlt320, h7_S0]⟩⟩
 
+/-!
+## Section 178: `d ≤ N`-Free `W(0)`-Referenced Multi-Wave Sliding Cutoff & Net `+10 S_d` Gain (Valid Even When `d > N`!)
+
+In Section 168, we bounded `W (d + 1)` via `2 ^ (S_0 + 10 * L_2 0 + 33) < 3 ^ (S_0 - S_d) * W (d + 1)`,
+which required `d ≤ N` (`S_d ≤ S_0`) so that `S_0 - S_d` would not truncate in `ℕ`.
+What happens if we step back from `W (d + 1)` to the window's own start state `W 0` using the
+`(d + 1)`-wave master inequality
+  `2 ^ (S_d + 10 * L_2 (d + 1)) * W (d + 1) ≤ 3 ^ (S_d + 10 * L_2 0) * W 0`?
+1. From Section 167 (which requires **zero** `d ≤ N` hypothesis!):
+   - `2 ^ E_full * W (N + 1 + d + 1) ≤ 3 ^ E_full * W (d + 1)` (`E_full = S_0 + 10 * L_2 0`), and
+   - `2 ^ 33 * 3 ^ (S_d + 10 * L_2 0) < W (N + 1 + d + 1)`.
+2. Multiplying `2 ^ 33 * 3 ^ (S_d + 10 * L_2 0) < W (N + 1 + d + 1)` by `2 ^ E_full * 2 ^ (S_d + 10 * L_2 (d + 1))`
+   and chaining with the two master inequalities yields:
+     `2 ^ (S_0 + S_d + 10 * L_2 0 + 10 * L_2 (d + 1) + 33) * 3 ^ (S_d + 10 * L_2 0) < 3 ^ (S_0 + 10 * L_2 0) * 3 ^ (S_d + 10 * L_2 0) * W 0`.
+3. Canceling the common factor `3 ^ (S_d + 10 * L_2 0) > 0` from both sides leaves the
+   **`d ≤ N`-Free `W(0)`-Referenced Exponential Inequality**:
+     `2 ^ (S_0 + S_d + 10 * L_2 0 + 10 * L_2 (d + 1) + 33) < 3 ^ (S_0 + 10 * L_2 0) * W 0`
+   **for ALL `N, d ∈ ℕ`—including when `d > N` (`S_d > S_0`)!**
+4. Whenever `W 0 < 2 ^ W_0`:
+   - For every `(p, q)` with `1 ≤ p` and `3 ^ p ≤ 2 ^ q`:
+       `p * S_d + 10 * p * L_2 (d + 1) + 33 * p + p * (S_0 + 10 * L_2 0) < q * (S_0 + 10 * L_2 0) + p * W_0`,
+   - At `(p, q) = (10, 17)`:
+       `10 * S_d + 100 * L_2 (d + 1) + 330 < 7 * S_0 + 70 * L_2 0 + 10 * W_0`!
+-/
+
+/-- **`d ≤ N`-Free `W(0)`-Referenced Multi-Wave Sliding Cutoff & Net `+10 S_d` Gain:**
+Under the hypotheses of Section 167 (or Section 174 when `S_d ≤ 28`), for **any** `N, d ∈ ℕ`
+(with **no** requirement that `d ≤ N`):
+1. `2 ^ (S_0 + S_d + 10 * L_2 0 + 10 * L_2 (d + 1) + 33) < 3 ^ (S_0 + 10 * L_2 0) * W 0`,
+2. Whenever `W 0 < 2 ^ W_0`:
+   - For every `(p, q)` with `1 ≤ p` and `3 ^ p ≤ 2 ^ q`,
+     `p * S_d + 10 * p * L_2 (d + 1) + 33 * p + p * (S_0 + 10 * L_2 0) < q * (S_0 + 10 * L_2 0) + p * W_0`, and
+   - At `(10, 17)`: `10 * S_d + 100 * L_2 (d + 1) + 330 < 7 * S_0 + 70 * L_2 0 + 10 * W_0`, and
+3. Whenever `7 * S_0 + 70 * L_2 0 + 10 * W_0 ≤ 10 * S_d + 100 * L_2 (d + 1) + 330`, we have
+   `2 ^ W_0 ≤ W 0`! -/
+theorem dense_core_horizon_free_d_gt_N_start_state_sliding_cutoff
+    (W L_2 L_1 : ℕ → ℕ) (N d : ℕ)
+    (hrec : ∀ k : ℕ,
+      2 ^ (7 * L_1 k + 10 * L_2 (k + 1)) * W (k + 1) +
+        19 * ((3 ^ (7 * L_1 k) - 2 ^ (7 * L_1 k)) / 2059) =
+        3 ^ (7 * L_1 k + 10 * L_2 k) * W k)
+    (hL2_block : ∀ t ≤ d, L_2 (N + 1 + t) = L_2 t)
+    (hL1_block : ∀ t ≤ d, L_1 (N + 1 + t) = L_1 t)
+    (hL2_end : L_2 (N + 1 + d + 1) = L_2 (d + 1))
+    (hW0_lt : W 0 < W (N + 1))
+    (hdvd_0 : 16243286400 ∣ (W (N + 1) - W 0))
+    (hdvd_d1 : 16243286400 ∣ (W (N + 1 + d + 1) - W (d + 1))) :
+    let S_0 := waveInteriorExp L_2 L_1 N
+    let S_d := waveInteriorExp L_2 L_1 d
+    2 ^ (S_0 + S_d + 10 * L_2 0 + 10 * L_2 (d + 1) + 33) <
+      3 ^ (S_0 + 10 * L_2 0) * W 0 ∧
+    (∀ W_0 : ℕ, W 0 < 2 ^ W_0 →
+      (∀ p q : ℕ, 1 ≤ p → 3 ^ p ≤ 2 ^ q →
+        p * S_d + 10 * p * L_2 (d + 1) + 33 * p + p * (S_0 + 10 * L_2 0) <
+          q * (S_0 + 10 * L_2 0) + p * W_0) ∧
+      10 * S_d + 100 * L_2 (d + 1) + 330 < 7 * S_0 + 70 * L_2 0 + 10 * W_0) ∧
+    (∀ W_0 : ℕ, 7 * S_0 + 70 * L_2 0 + 10 * W_0 ≤ 10 * S_d + 100 * L_2 (d + 1) + 330 →
+      2 ^ W_0 ≤ W 0) := by
+  intro S_0 S_d
+  have h167 :=
+    dense_core_multi_wave_block_match_homogeneous_state_shift_and_super_sieve
+      W L_2 L_1 N d hrec hL2_block hL1_block hL2_end
+  set E_full := S_0 + 10 * L_2 0
+  have hm_d1 := h167.1.2
+  have hsuper := h167.2.2 hW0_lt hdvd_0 hdvd_d1
+  have hpow3_lt : 2 ^ 33 * 3 ^ (S_d + 10 * L_2 0) < W (N + 1 + d + 1) := hsuper.2.2
+  clear hdvd_0 hdvd_d1 hsuper h167
+  have hrec_0_d : ∀ n ≤ d,
+      2 ^ (7 * L_1 n + 10 * L_2 (n + 1)) * W (n + 1) +
+        19 * ((3 ^ (7 * L_1 n) - 2 ^ (7 * L_1 n)) / 2059) =
+        3 ^ (10 * L_2 n + 7 * L_1 n) * W n := by
+    intro n _; rw [Nat.add_comm (10 * L_2 n) (7 * L_1 n)]; exact hrec n
+  have hm_0_d :=
+    (dense_core_symmetric_multi_wave_master_identity_and_boundary_independence.2
+      W L_2 L_1 d hrec_0_d).1
+  change 2 ^ S_d * (2 ^ (10 * L_2 (d + 1)) * W (d + 1)) + 19 * waveInteriorAcc L_2 L_1 d =
+    3 ^ S_d * (3 ^ (10 * L_2 0) * W 0) at hm_0_d
+  have hp2_d : 2 ^ S_d * (2 ^ (10 * L_2 (d + 1)) * W (d + 1)) =
+      2 ^ (S_d + 10 * L_2 (d + 1)) * W (d + 1) := by
+    rw [Nat.pow_add]; ring
+  have hp3_d : 3 ^ S_d * (3 ^ (10 * L_2 0) * W 0) =
+      3 ^ (S_d + 10 * L_2 0) * W 0 := by
+    rw [Nat.pow_add]; ring
+  rw [hp2_d, hp3_d] at hm_0_d
+  have hmd_le : 2 ^ (S_d + 10 * L_2 (d + 1)) * W (d + 1) ≤ 3 ^ (S_d + 10 * L_2 0) * W 0 := by
+    linarith only [hm_0_d]
+  have hmd1_le : 2 ^ E_full * W (N + 1 + d + 1) ≤ 3 ^ E_full * W (d + 1) := by
+    linarith only [hm_d1]
+  have hE2_pos : 0 < 2 ^ E_full := Nat.pos_of_ne_zero (by positivity)
+  have hstep1 :
+      2 ^ E_full * (2 ^ 33 * 3 ^ (S_d + 10 * L_2 0)) < 3 ^ E_full * W (d + 1) :=
+    lt_of_lt_of_le (Nat.mul_lt_mul_of_pos_left hpow3_lt hE2_pos) hmd1_le
+  set P2 := 2 ^ (S_d + 10 * L_2 (d + 1))
+  set P3 := 3 ^ (S_d + 10 * L_2 0)
+  have hP2_pos : 0 < P2 := Nat.pos_of_ne_zero (by positivity)
+  have hstep2 :
+      P2 * (2 ^ E_full * (2 ^ 33 * P3)) < P2 * (3 ^ E_full * W (d + 1)) :=
+    Nat.mul_lt_mul_of_pos_left hstep1 hP2_pos
+  have hstep3 :
+      P2 * (3 ^ E_full * W (d + 1)) ≤ (3 ^ E_full * W 0) * P3 := by
+    have h1 : P2 * (3 ^ E_full * W (d + 1)) = 3 ^ E_full * (P2 * W (d + 1)) := by ring
+    have h2 : (3 ^ E_full * W 0) * P3 = 3 ^ E_full * (P3 * W 0) := by ring
+    rw [h1, h2]
+    exact Nat.mul_le_mul_left (3 ^ E_full) hmd_le
+  have htot_mul :
+      2 ^ (S_0 + S_d + 10 * L_2 0 + 10 * L_2 (d + 1) + 33) * P3 <
+        (3 ^ E_full * W 0) * P3 := by
+    have hlhs :
+        P2 * (2 ^ E_full * (2 ^ 33 * P3)) =
+          2 ^ (S_0 + S_d + 10 * L_2 0 + 10 * L_2 (d + 1) + 33) * P3 := by
+      dsimp [P2, E_full]; ring
+    rw [← hlhs]
+    exact lt_of_lt_of_le hstep2 hstep3
+  have hcancel_P3 :
+      2 ^ (S_0 + S_d + 10 * L_2 0 + 10 * L_2 (d + 1) + 33) < 3 ^ E_full * W 0 :=
+    Nat.lt_of_mul_lt_mul_right htot_mul
+  have hcut_0 :
+      ∀ W_0 : ℕ, W 0 < 2 ^ W_0 →
+        (∀ p q : ℕ, 1 ≤ p → 3 ^ p ≤ 2 ^ q →
+          p * S_d + 10 * p * L_2 (d + 1) + 33 * p + p * E_full <
+            q * E_full + p * W_0) ∧
+        10 * S_d + 100 * L_2 (d + 1) + 330 < 7 * S_0 + 70 * L_2 0 + 10 * W_0 := by
+    intro W_0 hW0_pow
+    have hpq :
+        ∀ p q : ℕ, 1 ≤ p → 3 ^ p ≤ 2 ^ q →
+          p * S_d + 10 * p * L_2 (d + 1) + 33 * p + p * E_full <
+            q * E_full + p * W_0 := by
+      intro p q hp h32
+      set A := S_0 + S_d + 10 * L_2 0 + 10 * L_2 (d + 1) + 33
+      have h3E_pos : 0 < 3 ^ E_full := Nat.pos_of_ne_zero (by positivity)
+      have hstep_W0 : 2 ^ A < 3 ^ E_full * 2 ^ W_0 :=
+        lt_trans hcancel_P3 (Nat.mul_lt_mul_of_pos_left hW0_pow h3E_pos)
+      have hp_ne : p ≠ 0 := Nat.ne_of_gt hp
+      have hpow_p : (2 ^ A) ^ p < (3 ^ E_full * 2 ^ W_0) ^ p :=
+        Nat.pow_lt_pow_left hstep_W0 hp_ne
+      have hlhs_p : (2 ^ A) ^ p = 2 ^ (p * A) := by
+        rw [← Nat.pow_mul, Nat.mul_comm _ p]
+      have hrhs_p :
+          (3 ^ E_full * 2 ^ W_0) ^ p = (3 ^ p) ^ E_full * 2 ^ (p * W_0) := by
+        rw [Nat.mul_pow, ← Nat.pow_mul, ← Nat.pow_mul, ← Nat.pow_mul,
+          Nat.mul_comm E_full p, Nat.mul_comm W_0 p]
+      have h32_pow : (3 ^ p) ^ E_full ≤ (2 ^ q) ^ E_full :=
+        Nat.pow_le_pow_left h32 _
+      have h2q_pow :
+          (2 ^ q) ^ E_full * 2 ^ (p * W_0) = 2 ^ (q * E_full + p * W_0) := by
+        rw [← Nat.pow_mul, ← Nat.pow_add]
+      have hpow2_tot : 2 ^ (p * A) < 2 ^ (q * E_full + p * W_0) := by
+        rw [hlhs_p, hrhs_p] at hpow_p
+        exact lt_of_lt_of_le hpow_p (by
+          rw [← h2q_pow]
+          exact Nat.mul_le_mul_right _ h32_pow)
+      have hexp_lt : p * A < q * E_full + p * W_0 :=
+        (Nat.pow_lt_pow_iff_right (by decide : 1 < 2)).mp hpow2_tot
+      have hp_expand :
+          p * A = p * S_d + 10 * p * L_2 (d + 1) + 33 * p + p * E_full := by
+        dsimp [A, E_full]; ring
+      linarith only [hexp_lt, hp_expand]
+    have h10_17 := hpq 10 17 (by decide) (by decide : 3 ^ 10 ≤ 2 ^ 17)
+    have h10_17_flat :
+        10 * S_d + 100 * L_2 (d + 1) + 330 < 7 * S_0 + 70 * L_2 0 + 10 * W_0 := by
+      dsimp [E_full] at h10_17
+      linarith only [h10_17]
+    exact ⟨hpq, h10_17_flat⟩
+  have hcontra :
+      ∀ W_0 : ℕ, 7 * S_0 + 70 * L_2 0 + 10 * W_0 ≤ 10 * S_d + 100 * L_2 (d + 1) + 330 →
+        2 ^ W_0 ≤ W 0 := by
+    intro W_0 hle
+    refine Nat.le_of_not_lt (fun hlt => ?_)
+    have hc := (hcut_0 W_0 hlt).2
+    linarith only [hle, hc]
+  exact ⟨hcancel_P3, hcut_0, hcontra⟩
+
+/-!
+## Section 179: `d ≤ N`-Free `W(0)`-Referenced 4-Window Abelian Block-Match Sliding Cutoff (Valid for Arbitrary `N, d ∈ ℕ`!)
+
+Similarly, in Section 175 (4-Window Abelian Block Carry Cancellation), stepping back from `W (d + 1)`
+to `W 0` using `2 ^ (S_d + 10 * L_2 (d + 1)) * W (d + 1) ≤ 3 ^ (S_d + 10 * L_2 0) * W 0` removes
+the `d ≤ N` hypothesis completely!
+For **every** `N, d ∈ ℕ` (including `d > N` and `S_d > 28`), whenever
+`L_2 (N + 1) = L_2 0`, `L_2 (N + 1 + d + 1) = L_2 (d + 1)`, `S^{(N + 1)}_d = S^{(0)}_d =: S_d`, and
+`8121643200 * 3 ^ (S_d + 10 * L_2 0) < W (N + 1 + d + 1)`:
+1. `2 ^ (S_0 + S_d + 10 * L_2 0 + 10 * L_2 (d + 1) + 32) < 3 ^ (S_0 + 10 * L_2 0) * W 0`,
+2. Whenever `W 0 < 2 ^ W_0`:
+     `10 * S_d + 100 * L_2 (d + 1) + 320 < 7 * S_0 + 70 * L_2 0 + 10 * W_0`, and
+3. Whenever `7 * S_0 + 70 * L_2 0 + 10 * W_0 ≤ 10 * S_d + 100 * L_2 (d + 1) + 320`, we have
+     `2 ^ W_0 ≤ W 0`!
+-/
+
+/-- **`d ≤ N`-Free `W(0)`-Referenced 4-Window Abelian Block-Match Sliding Cutoff:**
+For **every** `N, d ∈ ℕ` (requiring **no** `d ≤ N` hypothesis), under the abelian block match
+`L_2 (N + 1) = L_2 0`, `L_2 (N + 1 + d + 1) = L_2 (d + 1)`, `S^{(N + 1)}_d = S^{(0)}_d =: S_d`,
+and `8121643200 * 3 ^ (S_d + 10 * L_2 0) < W (N + 1 + d + 1)`:
+1. `2 ^ (S_0 + S_d + 10 * L_2 0 + 10 * L_2 (d + 1) + 32) < 3 ^ (S_0 + 10 * L_2 0) * W 0`,
+2. Whenever `W 0 < 2 ^ W_0`:
+   - For every `(p, q)` with `1 ≤ p` and `3 ^ p ≤ 2 ^ q`,
+     `p * S_d + 10 * p * L_2 (d + 1) + 32 * p + p * (S_0 + 10 * L_2 0) < q * (S_0 + 10 * L_2 0) + p * W_0`, and
+   - At `(10, 17)`: `10 * S_d + 100 * L_2 (d + 1) + 320 < 7 * S_0 + 70 * L_2 0 + 10 * W_0`, and
+3. Whenever `7 * S_0 + 70 * L_2 0 + 10 * W_0 ≤ 10 * S_d + 100 * L_2 (d + 1) + 320`, we have
+   `2 ^ W_0 ≤ W 0`! -/
+theorem dense_core_horizon_free_d_gt_N_four_window_abelian_start_state_cutoff
+    (W L_2 L_1 : ℕ → ℕ) (N d : ℕ)
+    (hrec : ∀ k : ℕ,
+      2 ^ (7 * L_1 k + 10 * L_2 (k + 1)) * W (k + 1) +
+        19 * ((3 ^ (7 * L_1 k) - 2 ^ (7 * L_1 k)) / 2059) =
+        3 ^ (7 * L_1 k + 10 * L_2 k) * W k)
+    (hL2_0 : L_2 (N + 1) = L_2 0)
+    (hL2_end : L_2 (N + 1 + d + 1) = L_2 (d + 1))
+    (hSd_eq :
+      waveInteriorExp (fun t => L_2 (N + 1 + t)) (fun t => L_1 (N + 1 + t)) d =
+        waveInteriorExp L_2 L_1 d)
+    (hpure3 :
+      8121643200 * 3 ^ (waveInteriorExp L_2 L_1 d + 10 * L_2 0) < W (N + 1 + d + 1)) :
+    let S_0 := waveInteriorExp L_2 L_1 N
+    let S_d := waveInteriorExp L_2 L_1 d
+    2 ^ (S_0 + S_d + 10 * L_2 0 + 10 * L_2 (d + 1) + 32) <
+      3 ^ (S_0 + 10 * L_2 0) * W 0 ∧
+    (∀ W_0 : ℕ, W 0 < 2 ^ W_0 →
+      (∀ p q : ℕ, 1 ≤ p → 3 ^ p ≤ 2 ^ q →
+        p * S_d + 10 * p * L_2 (d + 1) + 32 * p + p * (S_0 + 10 * L_2 0) <
+          q * (S_0 + 10 * L_2 0) + p * W_0) ∧
+      10 * S_d + 100 * L_2 (d + 1) + 320 < 7 * S_0 + 70 * L_2 0 + 10 * W_0) ∧
+    (∀ W_0 : ℕ, 7 * S_0 + 70 * L_2 0 + 10 * W_0 ≤ 10 * S_d + 100 * L_2 (d + 1) + 320 →
+      2 ^ W_0 ≤ W 0) := by
+  intro S_0 S_d
+  have h173 :=
+    dense_core_abelian_block_match_sliding_invariance_and_pigeonhole.1
+      W L_2 L_1 N d hrec hL2_0 hL2_end hSd_eq
+  set E_full := S_0 + 10 * L_2 0
+  have hm_d1 := h173.2.2
+  have h32 : 2 ^ 32 < 8121643200 := by
+    have h16 : 2 ^ 16 = 65536 := by decide
+    have hsplit : 2 ^ 32 = 2 ^ 16 * 2 ^ 16 := by ring
+    rw [hsplit, h16]
+    decide
+  have hP3_pos : 0 < 3 ^ (S_d + 10 * L_2 0) := Nat.pos_of_ne_zero (by positivity)
+  have hpow3_lt : 2 ^ 32 * 3 ^ (S_d + 10 * L_2 0) < W (N + 1 + d + 1) :=
+    lt_trans (Nat.mul_lt_mul_of_pos_right h32 hP3_pos) hpure3
+  clear hpure3 h32 h173
+  have hrec_0_d : ∀ n ≤ d,
+      2 ^ (7 * L_1 n + 10 * L_2 (n + 1)) * W (n + 1) +
+        19 * ((3 ^ (7 * L_1 n) - 2 ^ (7 * L_1 n)) / 2059) =
+        3 ^ (10 * L_2 n + 7 * L_1 n) * W n := by
+    intro n _; rw [Nat.add_comm (10 * L_2 n) (7 * L_1 n)]; exact hrec n
+  have hm_0_d :=
+    (dense_core_symmetric_multi_wave_master_identity_and_boundary_independence.2
+      W L_2 L_1 d hrec_0_d).1
+  change 2 ^ S_d * (2 ^ (10 * L_2 (d + 1)) * W (d + 1)) + 19 * waveInteriorAcc L_2 L_1 d =
+    3 ^ S_d * (3 ^ (10 * L_2 0) * W 0) at hm_0_d
+  have hp2_d : 2 ^ S_d * (2 ^ (10 * L_2 (d + 1)) * W (d + 1)) =
+      2 ^ (S_d + 10 * L_2 (d + 1)) * W (d + 1) := by
+    rw [Nat.pow_add]; ring
+  have hp3_d : 3 ^ S_d * (3 ^ (10 * L_2 0) * W 0) =
+      3 ^ (S_d + 10 * L_2 0) * W 0 := by
+    rw [Nat.pow_add]; ring
+  rw [hp2_d, hp3_d] at hm_0_d
+  have hmd_le : 2 ^ (S_d + 10 * L_2 (d + 1)) * W (d + 1) ≤ 3 ^ (S_d + 10 * L_2 0) * W 0 := by
+    linarith only [hm_0_d]
+  have hmd1_le : 2 ^ E_full * W (N + 1 + d + 1) ≤ 3 ^ E_full * W (d + 1) := by
+    linarith only [hm_d1]
+  have hE2_pos : 0 < 2 ^ E_full := Nat.pos_of_ne_zero (by positivity)
+  have hstep1 :
+      2 ^ E_full * (2 ^ 32 * 3 ^ (S_d + 10 * L_2 0)) < 3 ^ E_full * W (d + 1) :=
+    lt_of_lt_of_le (Nat.mul_lt_mul_of_pos_left hpow3_lt hE2_pos) hmd1_le
+  set P2 := 2 ^ (S_d + 10 * L_2 (d + 1))
+  set P3 := 3 ^ (S_d + 10 * L_2 0)
+  have hP2_pos : 0 < P2 := Nat.pos_of_ne_zero (by positivity)
+  have hstep2 :
+      P2 * (2 ^ E_full * (2 ^ 32 * P3)) < P2 * (3 ^ E_full * W (d + 1)) :=
+    Nat.mul_lt_mul_of_pos_left hstep1 hP2_pos
+  have hstep3 :
+      P2 * (3 ^ E_full * W (d + 1)) ≤ (3 ^ E_full * W 0) * P3 := by
+    have h1 : P2 * (3 ^ E_full * W (d + 1)) = 3 ^ E_full * (P2 * W (d + 1)) := by ring
+    have h2 : (3 ^ E_full * W 0) * P3 = 3 ^ E_full * (P3 * W 0) := by ring
+    rw [h1, h2]
+    exact Nat.mul_le_mul_left (3 ^ E_full) hmd_le
+  have htot_mul :
+      2 ^ (S_0 + S_d + 10 * L_2 0 + 10 * L_2 (d + 1) + 32) * P3 <
+        (3 ^ E_full * W 0) * P3 := by
+    have hlhs :
+        P2 * (2 ^ E_full * (2 ^ 32 * P3)) =
+          2 ^ (S_0 + S_d + 10 * L_2 0 + 10 * L_2 (d + 1) + 32) * P3 := by
+      dsimp [P2, E_full]; ring
+    rw [← hlhs]
+    exact lt_of_lt_of_le hstep2 hstep3
+  have hcancel_P3 :
+      2 ^ (S_0 + S_d + 10 * L_2 0 + 10 * L_2 (d + 1) + 32) < 3 ^ E_full * W 0 :=
+    Nat.lt_of_mul_lt_mul_right htot_mul
+  have hcut_0 :
+      ∀ W_0 : ℕ, W 0 < 2 ^ W_0 →
+        (∀ p q : ℕ, 1 ≤ p → 3 ^ p ≤ 2 ^ q →
+          p * S_d + 10 * p * L_2 (d + 1) + 32 * p + p * E_full <
+            q * E_full + p * W_0) ∧
+        10 * S_d + 100 * L_2 (d + 1) + 320 < 7 * S_0 + 70 * L_2 0 + 10 * W_0 := by
+    intro W_0 hW0_pow
+    have hpq :
+        ∀ p q : ℕ, 1 ≤ p → 3 ^ p ≤ 2 ^ q →
+          p * S_d + 10 * p * L_2 (d + 1) + 32 * p + p * E_full <
+            q * E_full + p * W_0 := by
+      intro p q hp h32_pq
+      set A := S_0 + S_d + 10 * L_2 0 + 10 * L_2 (d + 1) + 32
+      have h3E_pos : 0 < 3 ^ E_full := Nat.pos_of_ne_zero (by positivity)
+      have hstep_W0 : 2 ^ A < 3 ^ E_full * 2 ^ W_0 :=
+        lt_trans hcancel_P3 (Nat.mul_lt_mul_of_pos_left hW0_pow h3E_pos)
+      have hp_ne : p ≠ 0 := Nat.ne_of_gt hp
+      have hpow_p : (2 ^ A) ^ p < (3 ^ E_full * 2 ^ W_0) ^ p :=
+        Nat.pow_lt_pow_left hstep_W0 hp_ne
+      have hlhs_p : (2 ^ A) ^ p = 2 ^ (p * A) := by
+        rw [← Nat.pow_mul, Nat.mul_comm _ p]
+      have hrhs_p :
+          (3 ^ E_full * 2 ^ W_0) ^ p = (3 ^ p) ^ E_full * 2 ^ (p * W_0) := by
+        rw [Nat.mul_pow, ← Nat.pow_mul, ← Nat.pow_mul, ← Nat.pow_mul,
+          Nat.mul_comm E_full p, Nat.mul_comm W_0 p]
+      have h32_pow : (3 ^ p) ^ E_full ≤ (2 ^ q) ^ E_full :=
+        Nat.pow_le_pow_left h32_pq _
+      have h2q_pow :
+          (2 ^ q) ^ E_full * 2 ^ (p * W_0) = 2 ^ (q * E_full + p * W_0) := by
+        rw [← Nat.pow_mul, ← Nat.pow_add]
+      have hpow2_tot : 2 ^ (p * A) < 2 ^ (q * E_full + p * W_0) := by
+        rw [hlhs_p, hrhs_p] at hpow_p
+        exact lt_of_lt_of_le hpow_p (by
+          rw [← h2q_pow]
+          exact Nat.mul_le_mul_right _ h32_pow)
+      have hexp_lt : p * A < q * E_full + p * W_0 :=
+        (Nat.pow_lt_pow_iff_right (by decide : 1 < 2)).mp hpow2_tot
+      have hp_expand :
+          p * A = p * S_d + 10 * p * L_2 (d + 1) + 32 * p + p * E_full := by
+        dsimp [A, E_full]; ring
+      linarith only [hexp_lt, hp_expand]
+    have h10_17 := hpq 10 17 (by decide) (by decide : 3 ^ 10 ≤ 2 ^ 17)
+    have h10_17_flat :
+        10 * S_d + 100 * L_2 (d + 1) + 320 < 7 * S_0 + 70 * L_2 0 + 10 * W_0 := by
+      dsimp [E_full] at h10_17
+      linarith only [h10_17]
+    exact ⟨hpq, h10_17_flat⟩
+  have hcontra :
+      ∀ W_0 : ℕ, 7 * S_0 + 70 * L_2 0 + 10 * W_0 ≤ 10 * S_d + 100 * L_2 (d + 1) + 320 →
+        2 ^ W_0 ≤ W 0 := by
+    intro W_0 hle
+    refine Nat.le_of_not_lt (fun hlt => ?_)
+    have hc := (hcut_0 W_0 hlt).2
+    linarith only [hle, hc]
+  exact ⟨hcancel_P3, hcut_0, hcontra⟩
+
+/-!
+## Section 180: Exact `Finset.range` Run-Sum Decomposition of `waveInteriorExp` & `E_full`
+
+We now prove the exact closed-form `Finset.range` run-sum decomposition of `waveInteriorExp` and
+the full-wave exponent `E_full = waveInteriorExp L_2 L_1 N + 10 * L_2 0` for every `N ∈ ℕ`:
+1. **Interior Step-Sum Decomposition:**
+     `waveInteriorExp L_2 L_1 N = 7 * (∑ t ∈ Finset.range (N + 1), L_1 t) + 10 * (∑ t ∈ Finset.range N, L_2 (t + 1))`!
+2. **Full-Wave Exponent Symmetric Sum:**
+     `waveInteriorExp L_2 L_1 N + 10 * L_2 0 = 7 * (∑ t ∈ Finset.range (N + 1), L_1 t) + 10 * (∑ t ∈ Finset.range (N + 1), L_2 t)`!
+-/
+
+/-- **Exact `Finset.range` Run-Sum Decomposition of `waveInteriorExp` & `E_full`:**
+For every `L_2, L_1 : ℕ → ℕ` and every `N : ℕ`:
+1. `waveInteriorExp L_2 L_1 N = 7 * (Finset.sum (Finset.range (N + 1)) L_1) + 10 * (Finset.sum (Finset.range N) (fun t => L_2 (t + 1)))`, and
+2. `waveInteriorExp L_2 L_1 N + 10 * L_2 0 = 7 * (Finset.sum (Finset.range (N + 1)) L_1) + 10 * (Finset.sum (Finset.range (N + 1)) L_2)`. -/
+theorem dense_core_waveInteriorExp_exact_finset_run_sum_decomposition
+    (L_2 L_1 : ℕ → ℕ) (N : ℕ) :
+    waveInteriorExp L_2 L_1 N =
+      7 * (Finset.sum (Finset.range (N + 1)) L_1) +
+        10 * (Finset.sum (Finset.range N) (fun t => L_2 (t + 1))) ∧
+    waveInteriorExp L_2 L_1 N + 10 * L_2 0 =
+      7 * (Finset.sum (Finset.range (N + 1)) L_1) +
+        10 * (Finset.sum (Finset.range (N + 1)) L_2) := by
+  have h1 :
+      waveInteriorExp L_2 L_1 N =
+        7 * (Finset.sum (Finset.range (N + 1)) L_1) +
+          10 * (Finset.sum (Finset.range N) (fun t => L_2 (t + 1))) := by
+    induction N with
+    | zero =>
+      simp [waveInteriorExp]
+    | succ k ih =>
+      dsimp [waveInteriorExp]
+      rw [ih, Finset.sum_range_succ L_1 (k + 1),
+        Finset.sum_range_succ (fun t => L_2 (t + 1)) k]
+      ring
+  have h2 :
+      waveInteriorExp L_2 L_1 N + 10 * L_2 0 =
+        7 * (Finset.sum (Finset.range (N + 1)) L_1) +
+          10 * (Finset.sum (Finset.range (N + 1)) L_2) := by
+    have hsum_L2 :
+        Finset.sum (Finset.range (N + 1)) L_2 =
+          Finset.sum (Finset.range N) (fun t => L_2 (t + 1)) + L_2 0 :=
+      Finset.sum_range_succ' L_2 N
+    rw [h1, hsum_L2]
+    ring
+  exact ⟨h1, h2⟩
+
+/-!
+## Section 181: No-Repeat Pigeonhole Permutation Run-Sum Cap (`S_0 + 10 L_2(0) ≤ 7 Σ_1 + 10 Σ_2`) & Boosted `+170 L_2(0)` Cutoff
+
+By Section 180 Part 2, the full-wave exponent `E_full = S_0 + 10 * L_2 0` is the exact symmetric
+sum over `[0 .. N]`:
+  `S_0 + 10 * L_2 0 = 7 * (∑ t ∈ Finset.range (N + 1), L_1 t) + 10 * (∑ t ∈ Finset.range (N + 1), L_2 t)`.
+Whenever a collision-free window of `N + 1` waves visits distinct Pigeonhole buckets whose total
+`1`-run sum is at most `Σ_1` (`∑ t ∈ Finset.range (N + 1), L_1 t ≤ Σ_1`) and whose total `2`-run
+sum is at most `Σ_2` (`∑ t ∈ Finset.range (N + 1), L_2 t ≤ Σ_2`):
+1. **Exact Full-Exponent Cap & Negative `L_2(0)` Compensation in `S_0`:**
+     `S_0 + 10 * L_2 0 ≤ 7 * Σ_1 + 10 * Σ_2`
+   (so `7 * S_0 + 70 * L_2 0 ≤ 49 * Σ_1 + 70 * Σ_2`!).
+2. **Boosted `+170 * L_2 0` Coefficient in the `W(d + 1)`-Referenced Cutoffs (Sections 168, 174 & 175):**
+   Adding `70 * L_2 0` to both sides of `100 * L_2 0 + 17 * S_d + 330 < 7 * S_0 + 10 * W_mid` and
+   using `7 * S_0 + 70 * L_2 0 ≤ 49 * Σ_1 + 70 * Σ_2` boosts the `L_2 0` coefficient from `+100` to
+   **`+170`**:
+     `170 * L_2 0 + 17 * S_d + 330 < 49 * Σ_1 + 70 * Σ_2 + 10 * W_mid`
+   (and for the maximal collision-free `B = 2` wave-triple permutation where `N = 7`, `Σ_1 = 12`,
+   `Σ_2 = 12`, `49 * 12 + 70 * 12 = 1428`:
+     `170 * L_2 0 + 17 * S_d + 330 < 1428 + 10 * W_mid`!).
+3. **Direct Run-Sum Cap in the `W(0)`-Referenced Cutoffs (Sections 178 & 179):**
+   Substituting `7 * S_0 + 70 * L_2 0 ≤ 49 * Σ_1 + 70 * Σ_2` directly into Section 178's
+   `10 * S_d + 100 * L_2 (d + 1) + 330 < 7 * S_0 + 70 * L_2 0 + 10 * W_0` yields:
+     `10 * S_d + 100 * L_2 (d + 1) + 330 < 49 * Σ_1 + 70 * Σ_2 + 10 * W_0`!
+-/
+
+/-- **No-Repeat Pigeonhole Permutation Run-Sum Cap & Boosted `+170 L_2(0)` Cutoff:**
+Whenever `Finset.sum (Finset.range (N + 1)) L_1 ≤ Σ_1` and
+`Finset.sum (Finset.range (N + 1)) L_2 ≤ Σ_2`:
+1. `S_0 + 10 * L_2 0 ≤ 7 * Σ_1 + 10 * Σ_2` and `7 * S_0 + 70 * L_2 0 ≤ 49 * Σ_1 + 70 * Σ_2`,
+2. Whenever `100 * L_2 0 + 17 * S_d + 330 < 7 * S_0 + 10 * W_mid` (Sections 168 / 174):
+   `170 * L_2 0 + 17 * S_d + 330 < 49 * Σ_1 + 70 * Σ_2 + 10 * W_mid`
+   (and for `Σ_1 ≤ 12, Σ_2 ≤ 12`: `170 * L_2 0 + 17 * S_d + 330 < 1428 + 10 * W_mid`), and
+3. Whenever `10 * S_d + 100 * L_2 (d + 1) + 330 < 7 * S_0 + 70 * L_2 0 + 10 * W_0` (Section 178):
+   `10 * S_d + 100 * L_2 (d + 1) + 330 < 49 * Σ_1 + 70 * Σ_2 + 10 * W_0`! -/
+theorem dense_core_no_repeat_permutation_step_sum_cap_and_boosted_L20_cutoff
+    (L_2 L_1 : ℕ → ℕ) (N d Sum_1 Sum_2 : ℕ)
+    (hSum1 : Finset.sum (Finset.range (N + 1)) L_1 ≤ Sum_1)
+    (hSum2 : Finset.sum (Finset.range (N + 1)) L_2 ≤ Sum_2) :
+    let S_0 := waveInteriorExp L_2 L_1 N
+    let S_d := waveInteriorExp L_2 L_1 d
+    (S_0 + 10 * L_2 0 ≤ 7 * Sum_1 + 10 * Sum_2 ∧
+     7 * S_0 + 70 * L_2 0 ≤ 49 * Sum_1 + 70 * Sum_2) ∧
+    (∀ W_mid : ℕ, 100 * L_2 0 + 17 * S_d + 330 < 7 * S_0 + 10 * W_mid →
+      170 * L_2 0 + 17 * S_d + 330 < 49 * Sum_1 + 70 * Sum_2 + 10 * W_mid ∧
+      (Sum_1 ≤ 12 → Sum_2 ≤ 12 →
+        170 * L_2 0 + 17 * S_d + 330 < 1428 + 10 * W_mid)) ∧
+    (∀ W_0 : ℕ, 10 * S_d + 100 * L_2 (d + 1) + 330 < 7 * S_0 + 70 * L_2 0 + 10 * W_0 →
+      10 * S_d + 100 * L_2 (d + 1) + 330 < 49 * Sum_1 + 70 * Sum_2 + 10 * W_0) := by
+  intro S_0 S_d
+  have h180 := (dense_core_waveInteriorExp_exact_finset_run_sum_decomposition L_2 L_1 N).2
+  change S_0 + 10 * L_2 0 =
+    7 * (Finset.sum (Finset.range (N + 1)) L_1) +
+      10 * (Finset.sum (Finset.range (N + 1)) L_2) at h180
+  have hcap : S_0 + 10 * L_2 0 ≤ 7 * Sum_1 + 10 * Sum_2 := by
+    linarith only [h180, hSum1, hSum2]
+  have hcap7 : 7 * S_0 + 70 * L_2 0 ≤ 49 * Sum_1 + 70 * Sum_2 := by
+    linarith only [hcap]
+  refine ⟨⟨hcap, hcap7⟩, fun W_mid hlt_mid => ?_, fun W_0 hlt_0 => ?_⟩
+  · have hboost : 170 * L_2 0 + 17 * S_d + 330 < 49 * Sum_1 + 70 * Sum_2 + 10 * W_mid := by
+      linarith only [hlt_mid, hcap7]
+    refine ⟨hboost, fun h12_1 h12_2 => ?_⟩
+    linarith only [hboost, h12_1, h12_2]
+  · linarith only [hlt_0, hcap7]
+
 end Mahler.DubickasExtension
 
 
