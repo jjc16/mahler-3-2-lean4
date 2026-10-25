@@ -492,6 +492,7 @@ example (m : ℕ) :
 #print axioms Mahler.DubickasExtension.dense_core_horizon_free_d_gt_N_four_window_abelian_start_state_cutoff
 #print axioms Mahler.DubickasExtension.dense_core_waveInteriorExp_exact_finset_run_sum_decomposition
 #print axioms Mahler.DubickasExtension.dense_core_no_repeat_permutation_step_sum_cap_and_boosted_L20_cutoff
+#print axioms Mahler.DubickasExtension.mahler_dense_core_complete_reduction_and_sliding_syzygy_capstone
 
 #print axioms Mahler.DubickasExtension.dubBaseCarry_eq_fract_linear
 #print axioms Mahler.DubickasExtension.dubBaseY_multi_step_carry_identity
