@@ -34495,7 +34495,485 @@ theorem dense_core_four_window_non_colliding_qA_residual_82_million_compression
     exact hm
   exact ⟨h1403, h82M, lt_of_lt_of_le h82M hle_Emid⟩
 
+/-!
+## Section 150: `2 ^ E_run`-Shrunk Pure `3`-Adic Palette Pigeonhole Theorem for the Super-Reduced Defect `q_A_star`
+
+Combining Section 147's super-reduced syzygy
+  `2 ^ (E_mid - E_run + E_suf) * q_Y ± 41553 * q_A_star = 3 ^ (S_K + E_mid) * q_X_star`
+with Section 148's pure power-of-`3` band
+  `54569 * P_3 < 261288489825 * q_A_star < 59049 * P_3`  (`P_3 := 3 ^ (E_mid - E_run - 10)`),
+we define the **pure `3`-adic band floor and palette size**:
+  `q_star_min := (54569 * P_3) / 261288489825 + 1`,
+  `C_star_band := (896 * P_3) / 52257697965 + 1`!
+Notice that `C_star_band` is **`2 ^ E_run ≥ 1024` times smaller** than Section 146's `C_band`, and
+equals `1` for every `E_mid ≤ E_run + 26`!
+Among **any** `C_star_band + 1` anagram pairs in the `(E_mid, E_run)`-band, Pigeonhole forces two
+pairs `i < j` to satisfy `q_A_star i = q_A_star j`, restoring both
+`2 ^ (E_mid - E_run + E_suf i) ≤ 3 ^ (S_K j - S_K i) * q_X_star j + q_X_star i` and
+`3 ^ (S_K i + E_mid) ≤ 2 ^ (E_suf j - E_suf i) * q_Y j + q_Y i`!
+-/
+
+/-- **`2 ^ E_run`-Shrunk Pure `3`-Adic Palette Pigeonhole Theorem for `q_A_star`:**
+For `P_3 = 3 ^ (E_mid - E_run - 10)`, `q_star_min = (54569 * P_3) / 261288489825 + 1`, and
+`C_star_band = (896 * P_3) / 52257697965 + 1`:
+1. Every `q_A_star` in `(54569 * P_3, 59049 * P_3)` satisfies `q_star_min ≤ q_A_star` and
+   `q_A_star - q_star_min < C_star_band`.
+2. Among any `C_star_band + 1` super-reduced anagram pairs (`E_run ≤ E_mid`), there always exist
+   `i < j` with `q_A_star i = q_A_star j`, restoring
+   `2 ^ (E_mid - E_run + E_suf i) ≤ 3 ^ (S_K j - S_K i) * q_X_star j + q_X_star i` and
+   `3 ^ (S_K i + E_mid) ≤ 2 ^ (E_suf j - E_suf i) * q_Y j + q_Y i`! -/
+theorem dense_core_super_reduced_qA_star_explicit_pure_three_adic_palette_pigeonhole
+    (E_mid E_run : ℕ) (hrun_le : E_run ≤ E_mid) :
+    let P_3 := 3 ^ (E_mid - E_run - 10)
+    let q_star_min := (54569 * P_3) / 261288489825 + 1
+    let C_star_band := (896 * P_3) / 52257697965 + 1
+    -- 1. Explicit Fin C_star_band embedding of every q_A_star:
+    (∀ q_A_star : ℕ,
+      54569 * P_3 < 261288489825 * q_A_star →
+      261288489825 * q_A_star < 59049 * P_3 →
+      q_star_min ≤ q_A_star ∧ q_A_star - q_star_min < C_star_band) ∧
+    -- 2. Unconditional Pigeonhole collision across any C_star_band + 1 pairs:
+    (∀ (S_K E_suf q_X_star q_Y q_A_star : Fin (C_star_band + 1) → ℕ),
+      Monotone S_K →
+      Monotone E_suf →
+      StrictMono (fun i => 3 ^ (S_K i + E_run) * q_X_star i) →
+      (∀ i, 1 ≤ q_X_star i) →
+      (∀ i, 1 ≤ q_Y i) →
+      (∀ i, 54569 * P_3 < 261288489825 * q_A_star i ∧
+            261288489825 * q_A_star i < 59049 * P_3) →
+      (∀ i,
+        2 ^ (E_mid - E_run + E_suf i) * q_Y i + 41553 * q_A_star i =
+          3 ^ (S_K i + E_mid) * q_X_star i ∨
+        2 ^ (E_mid - E_run + E_suf i) * q_Y i =
+          3 ^ (S_K i + E_mid) * q_X_star i + 41553 * q_A_star i) →
+      ∃ i j : Fin (C_star_band + 1),
+        i < j ∧
+        q_A_star i = q_A_star j ∧
+        2 ^ (E_mid - E_run + E_suf i) ≤ 3 ^ (S_K j - S_K i) * q_X_star j + q_X_star i ∧
+        3 ^ (S_K i + E_mid) ≤ 2 ^ (E_suf j - E_suf i) * q_Y j + q_Y i) := by
+  intro P_3 q_star_min C_star_band
+  have hembed :
+      ∀ q_A_star : ℕ,
+        54569 * P_3 < 261288489825 * q_A_star →
+        261288489825 * q_A_star < 59049 * P_3 →
+        q_star_min ≤ q_A_star ∧ q_A_star - q_star_min < C_star_band := by
+    intro q_A_star hlow hhigh
+    set D := 261288489825
+    have hD_pos : 0 < D := by decide
+    have hdiv_lt : (54569 * P_3) / D < q_A_star := by
+      rw [Nat.div_lt_iff_lt_mul hD_pos, Nat.mul_comm q_A_star D]
+      exact hlow
+    have hqmin_le : q_star_min ≤ q_A_star := hdiv_lt
+    have hqmin_gt : 54569 * P_3 < D * q_star_min := by
+      have hmod : D * ((54569 * P_3) / D) + (54569 * P_3) % D = 54569 * P_3 :=
+        Nat.div_add_mod (54569 * P_3) D
+      have hrem_lt : (54569 * P_3) % D < D := Nat.mod_lt (54569 * P_3) hD_pos
+      have hd_mul : D * q_star_min = D * ((54569 * P_3) / D) + D := by
+        dsimp [q_star_min, D]; ring
+      linarith only [hmod, hrem_lt, hd_mul]
+    have hdiff_D : D * (q_A_star - q_star_min) < 4480 * P_3 := by
+      have hadd : D * (q_A_star - q_star_min) + D * q_star_min = D * q_A_star := by
+        rw [← Nat.mul_add, Nat.sub_add_cancel hqmin_le]
+      have h59 : 59049 * P_3 = 4480 * P_3 + 54569 * P_3 := by ring
+      linarith only [hhigh, hqmin_gt, hadd, h59]
+    have hdiff_52 : 52257697965 * (q_A_star - q_star_min) < 896 * P_3 := by
+      have hm5 : 5 * (52257697965 * (q_A_star - q_star_min)) < 5 * (896 * P_3) := by
+        have h1 : 5 * (52257697965 * (q_A_star - q_star_min)) = D * (q_A_star - q_star_min) := by
+          dsimp [D]; ring
+        have h2 : 5 * (896 * P_3) = 4480 * P_3 := by ring
+        rw [h1, h2]; exact hdiff_D
+      exact Nat.lt_of_mul_lt_mul_left hm5
+    have hlt_C : q_A_star - q_star_min < C_star_band := by
+      set D5 := 52257697965
+      have hD5_pos : 0 < D5 := by decide
+      have hle_div : q_A_star - q_star_min ≤ (896 * P_3) / D5 := by
+        rw [Nat.le_div_iff_mul_le hD5_pos, Nat.mul_comm _ D5]
+        exact le_of_lt hdiff_52
+      exact Nat.lt_succ_of_le hle_div
+    exact ⟨hqmin_le, hlt_C⟩
+  refine ⟨hembed, ?_⟩
+  intro S_K E_suf q_X_star q_Y q_A_star hSK_mono hEsuf_mono hX_strict hqX_pos hqY_pos hband hsyz
+  let bandIdx : Fin (C_star_band + 1) → Fin C_star_band := fun i =>
+    ⟨q_A_star i - q_star_min, (hembed (q_A_star i) (hband i).1 (hband i).2).2⟩
+  have hnot_inj : ¬Function.Injective bandIdx := by
+    intro hinj
+    have hcard := Fintype.card_le_of_injective bandIdx hinj
+    simp only [Fintype.card_fin] at hcard
+    exact Nat.not_succ_le_self C_star_band hcard
+  rw [Function.Injective] at hnot_inj
+  push_neg at hnot_inj
+  rcases hnot_inj with ⟨a, b, hab_eq, hab_ne⟩
+  have hij_ex : ∃ i j : Fin (C_star_band + 1), i < j ∧ bandIdx i = bandIdx j := by
+    rcases lt_trichotomy a b with hlt | rfl | hgt
+    · exact ⟨a, b, hlt, hab_eq⟩
+    · exact absurd rfl hab_ne
+    · exact ⟨b, a, hgt, hab_eq.symm⟩
+  rcases hij_ex with ⟨i, j, hij, hidx_eq⟩
+  have hval_eq : (bandIdx i).1 = (bandIdx j).1 := congrArg Fin.val hidx_eq
+  dsimp [bandIdx] at hval_eq
+  have hi_ge : q_star_min ≤ q_A_star i := (hembed (q_A_star i) (hband i).1 (hband i).2).1
+  have hj_ge : q_star_min ≤ q_A_star j := (hembed (q_A_star j) (hband j).1 (hband j).2).1
+  have hqA_eq : q_A_star i = q_A_star j := by
+    have h1 : (q_A_star i - q_star_min) + q_star_min = q_A_star i := Nat.sub_add_cancel hi_ge
+    have h2 : (q_A_star j - q_star_min) + q_star_min = q_A_star j := Nat.sub_add_cancel hj_ge
+    linarith only [hval_eq, h1, h2]
+  -- Apply Section 115 with effective middle E_mid_eff := E_mid - E_run and effective prefix S_K_eff := S_K + E_run:
+  set E_mid_eff := E_mid - E_run
+  set S_K_eff : Fin (C_star_band + 1) → ℕ := fun k => S_K k + E_run
+  have hSK_eff_ij : S_K_eff i ≤ S_K_eff j := Nat.add_le_add_right (hSK_mono (le_of_lt hij)) E_run
+  have hSK_eff_sub : S_K_eff j - S_K_eff i = S_K j - S_K i := by
+    dsimp [S_K_eff]
+    exact Nat.add_sub_add_right (S_K j) E_run (S_K i)
+  have hsum_eff : ∀ k, S_K_eff k + E_mid_eff = S_K k + E_mid := by
+    intro k
+    dsimp [S_K_eff, E_mid_eff]
+    have h : E_run + (E_mid - E_run) = E_mid := Nat.add_sub_of_le hrun_le
+    linarith only [h]
+  have hsyz_i := hsyz i
+  have hsyz_j := hsyz j
+  rw [← hsum_eff i] at hsyz_i
+  rw [← hqA_eq, ← hsum_eff j] at hsyz_j
+  have h115 :=
+    dense_core_signed_middle_defect_unconditional_four_window_dichotomy
+      hSK_eff_ij (hEsuf_mono (le_of_lt hij))
+      (hqX_pos i) (hqY_pos i) (hX_strict hij) hsyz_i hsyz_j
+  have hb1 := h115.2.1
+  have hb2 := h115.2.2
+  rw [hSK_eff_sub] at hb1
+  rw [hsum_eff i] at hb2
+  exact ⟨i, j, hij, hqA_eq, hb1, hb2⟩
+
+/-!
+## Section 151: Right-Endpoint Additive Cancellation & Extra `3 ^ (7*L_1(m+1) + 10*min(L_2(m+1), L'_2(m'+1)))` Factorization Law
+
+Look at the right endpoint `(J, J') = (m + 1, m' + 1)` of the middle disagreement block (immediately
+before the shared `D`-wave suffix begins), where `S_{m+1} = S'_{m'+1}`:
+When `L_1(m + 1) = L'_1(m' + 1)` (so the last disagreement occurs at the `2`-run `L_2(m + 1)` vs
+`L'_2(m' + 1)` rather than at `L_1(m + 1)`):
+1. **Pre-Terminal Step-Sum Identity:**
+   Since `S_m + 10 * L_2(m + 1) + 7 * L_1(m + 1) = S_{m+1} = S'_{m'+1} = S'_{m'} + 10 * L'_2(m' + 1) + 7 * L_1(m + 1)`,
+   canceling `7 * L_1(m + 1)` gives:
+     `S_m + 10 * L_2(m + 1) = S'_{m'} + 10 * L'_2(m' + 1)`!
+2. **Exact Cancellation of the Terminal Additive Term in `waveInteriorAcc`:**
+   In `Acc_{m+1} = 3 ^ (10 * L_2(m+1) + 7 * L_1(m+1)) * Acc_m + 2 ^ (S_m + 10 * L_2(m+1)) * Q(L_1(m+1))`
+   and `Acc'_{m'+1} = 3 ^ (10 * L'_2(m'+1) + 7 * L'_1(m'+1)) * Acc'_{m'} + 2 ^ (S'_{m'} + 10 * L'_2(m'+1)) * Q(L'_1(m'+1))`,
+   the second terms are **100% identical** and cancel out of `|Acc'_{m'+1} - Acc_{m+1}|`!
+3. **Extra `3 ^ (7*L_1(m+1) + 10*L_2(m+1))` Divisibility (`L_2(m+1) ≤ L'_2(m'+1)`):**
+   Factoring out `3 ^ (7 * L_1(m + 1) + 10 * L_2(m + 1))` from the remaining first terms proves:
+     `3 ^ (7 * L_1(m + 1) + 10 * L_2(m + 1)) ∣ (Acc_{m+1} - Acc'_{m'+1})`  and
+     `3 ^ (7 * L_1(m + 1) + 10 * L_2(m + 1)) ∣ (Acc'_{m'+1} - Acc_{m+1})`!
+-/
+
+/-- **Right-Endpoint Additive Cancellation & Extra `3 ^ (7*L_1(m+1) + 10*L_2(m+1))` Factorization Law:**
+Whenever `S_{m+1} = S'_{m'+1}`, `L_1(m + 1) = L'_1(m' + 1)`, and `L_2(m + 1) ≤ L'_2(m' + 1)`:
+1. `S_m + 10 * L_2(m + 1) = S'_{m'} + 10 * L'_2(m' + 1)`,
+2. The terminal additive terms of `Acc_{m+1}` and `Acc'_{m'+1}` cancel identically, and
+3. `3 ^ (7 * L_1(m + 1) + 10 * L_2(m + 1))` divides both `Acc_{m+1} - Acc'_{m'+1}` (when
+   `Acc'_{m'+1} ≤ Acc_{m+1}`) and `Acc'_{m'+1} - Acc_{m+1}` (when `Acc_{m+1} ≤ Acc'_{m'+1}`)! -/
+theorem dense_core_right_endpoint_same_L1_additive_cancellation_and_three_pow_factorization
+    (L_2 L_1 L_2' L_1' : ℕ → ℕ) (m m' : ℕ)
+    (hS_eq : waveInteriorExp L_2 L_1 (m + 1) = waveInteriorExp L_2' L_1' (m' + 1))
+    (hL1_eq : L_1 (m + 1) = L_1' (m' + 1))
+    (hL2_le : L_2 (m + 1) ≤ L_2' (m' + 1)) :
+    let S_m := waveInteriorExp L_2 L_1 m
+    let S_m' := waveInteriorExp L_2' L_1' m'
+    let Acc_m1 := waveInteriorAcc L_2 L_1 (m + 1)
+    let Acc_m1' := waveInteriorAcc L_2' L_1' (m' + 1)
+    S_m + 10 * L_2 (m + 1) = S_m' + 10 * L_2' (m' + 1) ∧
+    (Acc_m1' ≤ Acc_m1 →
+      3 ^ (7 * L_1 (m + 1) + 10 * L_2 (m + 1)) ∣ (Acc_m1 - Acc_m1')) ∧
+    (Acc_m1 ≤ Acc_m1' →
+      3 ^ (7 * L_1 (m + 1) + 10 * L_2 (m + 1)) ∣ (Acc_m1' - Acc_m1)) := by
+  intro S_m S_m' Acc_m1 Acc_m1'
+  have hS_step :
+      (S_m + 10 * L_2 (m + 1)) + 7 * L_1 (m + 1) =
+        (S_m' + 10 * L_2' (m' + 1)) + 7 * L_1 (m + 1) := by
+    change S_m + (10 * L_2 (m + 1) + 7 * L_1 (m + 1)) =
+      S_m' + (10 * L_2' (m' + 1) + 7 * L_1' (m' + 1)) at hS_eq
+    rw [← hL1_eq] at hS_eq
+    linarith only [hS_eq]
+  have hSm_eq : S_m + 10 * L_2 (m + 1) = S_m' + 10 * L_2' (m' + 1) :=
+    Nat.add_right_cancel hS_step
+  set Q := (3 ^ (7 * L_1 (m + 1)) - 2 ^ (7 * L_1 (m + 1))) / 2059
+  set T_add := 2 ^ (S_m + 10 * L_2 (m + 1)) * Q
+  set Acc_m := waveInteriorAcc L_2 L_1 m
+  set Acc_m' := waveInteriorAcc L_2' L_1' m'
+  set E_base := 7 * L_1 (m + 1) + 10 * L_2 (m + 1)
+  set ΔL := 10 * (L_2' (m' + 1) - L_2 (m + 1))
+  have hAcc1_def : Acc_m1 = 3 ^ E_base * Acc_m + T_add := by
+    change 3 ^ (10 * L_2 (m + 1) + 7 * L_1 (m + 1)) * Acc_m + T_add =
+      3 ^ E_base * Acc_m + T_add
+    have hexp : 10 * L_2 (m + 1) + 7 * L_1 (m + 1) = E_base := by dsimp [E_base]; omega
+    rw [hexp]
+  have hAcc2_def : Acc_m1' = 3 ^ E_base * (3 ^ ΔL * Acc_m') + T_add := by
+    change 3 ^ (10 * L_2' (m' + 1) + 7 * L_1' (m' + 1)) * Acc_m' +
+      2 ^ (S_m' + 10 * L_2' (m' + 1)) *
+        ((3 ^ (7 * L_1' (m' + 1)) - 2 ^ (7 * L_1' (m' + 1))) / 2059) =
+      3 ^ E_base * (3 ^ ΔL * Acc_m') + T_add
+    rw [← hL1_eq, ← hSm_eq]
+    have hexp : 10 * L_2' (m' + 1) + 7 * L_1 (m + 1) = E_base + ΔL := by
+      dsimp [E_base, ΔL]; omega
+    rw [hexp, Nat.pow_add 3 E_base ΔL]
+    ring
+  refine ⟨hSm_eq, ?_, ?_⟩
+  · intro hle
+    have hle_inner : 3 ^ ΔL * Acc_m' ≤ Acc_m := by
+      have hm : 3 ^ E_base * (3 ^ ΔL * Acc_m') ≤ 3 ^ E_base * Acc_m := by
+        linarith only [hle, hAcc1_def, hAcc2_def]
+      exact Nat.le_of_mul_le_mul_left hm (Nat.pow_pos (by decide))
+    refine ⟨Acc_m - 3 ^ ΔL * Acc_m', ?_⟩
+    have hsub :
+        3 ^ E_base * (Acc_m - 3 ^ ΔL * Acc_m') + 3 ^ E_base * (3 ^ ΔL * Acc_m') =
+          3 ^ E_base * Acc_m := by
+      rw [← Nat.mul_add, Nat.sub_add_cancel hle_inner]
+    apply Nat.sub_eq_of_eq_add
+    linarith only [hAcc1_def, hAcc2_def, hsub]
+  · intro hle
+    have hle_inner : Acc_m ≤ 3 ^ ΔL * Acc_m' := by
+      have hm : 3 ^ E_base * Acc_m ≤ 3 ^ E_base * (3 ^ ΔL * Acc_m') := by
+        linarith only [hle, hAcc1_def, hAcc2_def]
+      exact Nat.le_of_mul_le_mul_left hm (Nat.pow_pos (by decide))
+    refine ⟨3 ^ ΔL * Acc_m' - Acc_m, ?_⟩
+    have hsub :
+        3 ^ E_base * (3 ^ ΔL * Acc_m' - Acc_m) + 3 ^ E_base * Acc_m =
+          3 ^ E_base * (3 ^ ΔL * Acc_m') := by
+      rw [← Nat.mul_add, Nat.sub_add_cancel hle_inner]
+    apply Nat.sub_eq_of_eq_add
+    linarith only [hAcc1_def, hAcc2_def, hsub]
+
+/-!
+## Section 152: Bidirectional Super-Reduction of `(q_X, q_Y, q_A)` via Left-Endpoint `2 ^ E_run` and Right-Endpoint `3 ^ E_tail` Extraction
+
+Combining Section 147 (left-endpoint `2 ^ (S_K + E_run) ∣ dAcc`) with Section 151 (right-endpoint
+`3 ^ (E_suf + 7 + E_tail) ∣ dAcc`, where `E_tail = (7 * L_1(J) - 7) + 10 * min(L_2(J), L'_2(J'))`
+when `L_1(J) = L'_1(J')`, or `E_tail = 7 * min(L_1(J), L'_1(J')) - 7` when `L_1(J) ≠ L'_1(J')`)
+extracts **both** `2 ^ E_run` and `3 ^ E_tail` from `q_A`:
+1. **`(2 ^ E_run * 3 ^ E_tail) ∣ q_A`** (`q_A = 2 ^ E_run * 3 ^ E_tail * q_A_dstar`),
+2. **`2 ^ E_run ∣ q_X`** (`q_X = 2 ^ E_run * q_X_star`) **and `3 ^ E_tail ∣ q_Y`** (`q_Y = 3 ^ E_tail * q_Y_star`),
+3. **The Doubly Super-Reduced Syzygy (`E_run ≤ E_mid`, `E_tail ≤ E_mid`):**
+     `2 ^ (E_mid - E_run + E_suf) * q_Y_star ± 41553 * q_A_dstar = 3 ^ (S_K + E_mid - E_tail) * q_X_star`!
+-/
+
+/-- **Bidirectional Super-Reduction of `(q_X, q_Y, q_A)`:**
+Whenever `2 ^ (S_K + E_run) ∣ dAcc`, `3 ^ (E_suf + 7 + E_tail) ∣ dAcc`, and
+`dAcc = 58025 * 2 ^ S_K * 3 ^ (E_suf + 7) * q_A` (`E_run ≤ E_mid`, `E_tail ≤ E_mid`):
+1. `(2 ^ E_run * 3 ^ E_tail) ∣ q_A` (`q_A = 2 ^ E_run * 3 ^ E_tail * q_A_dstar`),
+2. `2 ^ E_run ∣ q_X` and `3 ^ E_tail ∣ q_Y`, and
+3. `(q_X_star, q_Y_star, q_A_dstar)` satisfy the doubly super-reduced syzygy
+   `2 ^ (E_mid - E_run + E_suf) * q_Y_star ± 41553 * q_A_dstar = 3 ^ (S_K + E_mid - E_tail) * q_X_star`! -/
+theorem dense_core_bidirectional_middle_endpoint_super_reduction_qA_double_star
+    {S_K E_mid E_suf E_run E_tail dAcc q_X q_Y q_A : ℕ}
+    (hrun_le : E_run ≤ E_mid)
+    (htail_le : E_tail ≤ E_mid)
+    (hd2_div : 2 ^ (S_K + E_run) ∣ dAcc)
+    (hd3_tail : 3 ^ (E_suf + 7 + E_tail) ∣ dAcc)
+    (hdAcc : dAcc = 58025 * 2 ^ S_K * 3 ^ (E_suf + 7) * q_A)
+    (hsyz :
+      2 ^ (E_mid + E_suf) * q_Y + 41553 * q_A = 3 ^ (S_K + E_mid) * q_X ∨
+      2 ^ (E_mid + E_suf) * q_Y = 3 ^ (S_K + E_mid) * q_X + 41553 * q_A) :
+    (2 ^ E_run * 3 ^ E_tail) ∣ q_A ∧
+    2 ^ E_run ∣ q_X ∧
+    3 ^ E_tail ∣ q_Y ∧
+    ∃ q_A_dstar q_X_star q_Y_star : ℕ,
+      q_A = 2 ^ E_run * 3 ^ E_tail * q_A_dstar ∧
+      q_X = 2 ^ E_run * q_X_star ∧
+      q_Y = 3 ^ E_tail * q_Y_star ∧
+      (2 ^ (E_mid - E_run + E_suf) * q_Y_star + 41553 * q_A_dstar =
+          3 ^ (S_K + E_mid - E_tail) * q_X_star ∨
+       2 ^ (E_mid - E_run + E_suf) * q_Y_star =
+          3 ^ (S_K + E_mid - E_tail) * q_X_star + 41553 * q_A_dstar) := by
+  have h147 :=
+    dense_core_first_divergence_two_pow_Erun_divides_qA_and_qX_super_reduction
+      hrun_le hd2_div hdAcc hsyz
+  rcases h147.2.2 with ⟨q_A_star, q_X_star, hqA_star, hqX_star, hsyz_star⟩
+  rcases hd3_tail with ⟨k_3, hk3⟩
+  have hcancel_Esuf :
+      3 ^ (E_suf + 7) * (3 ^ E_tail * k_3) =
+        3 ^ (E_suf + 7) * ((58025 * 2 ^ (S_K + E_run)) * q_A_star) := by
+    have h1 : 3 ^ (E_suf + 7) * (3 ^ E_tail * k_3) = dAcc := by
+      rw [hk3, Nat.pow_add 3 (E_suf + 7) E_tail]; ring
+    have h2 : 3 ^ (E_suf + 7) * ((58025 * 2 ^ (S_K + E_run)) * q_A_star) = dAcc := by
+      rw [hdAcc, hqA_star, Nat.pow_add 2 S_K E_run]; ring
+    rw [h1, h2]
+  have hmul3_eq : 3 ^ E_tail * k_3 = (58025 * 2 ^ (S_K + E_run)) * q_A_star :=
+    Nat.eq_of_mul_eq_mul_left (Nat.pow_pos (by decide)) hcancel_Esuf
+  have hcop3_qA : Nat.Coprime (3 ^ E_tail) (58025 * 2 ^ (S_K + E_run)) :=
+    Nat.Coprime.mul_right
+      (Nat.Coprime.pow_left E_tail (by decide : Nat.Coprime 3 58025))
+      (Nat.Coprime.pow E_tail (S_K + E_run) (by decide : Nat.Coprime 3 2))
+  have hdvd_qA_star : 3 ^ E_tail ∣ q_A_star :=
+    hcop3_qA.dvd_of_dvd_mul_left ⟨k_3, hmul3_eq.symm⟩
+  rcases hdvd_qA_star with ⟨q_A_dstar, hqA_dstar⟩
+  have hqA_full : q_A = 2 ^ E_run * 3 ^ E_tail * q_A_dstar := by
+    rw [hqA_star, hqA_dstar]; ring
+  have hp3_split :
+      3 ^ (S_K + E_mid) * q_X_star =
+        3 ^ E_tail * (3 ^ (S_K + E_mid - E_tail) * q_X_star) := by
+    set E_rem3 := S_K + E_mid - E_tail
+    have hexp : S_K + E_mid = E_tail + E_rem3 := by
+      dsimp [E_rem3]
+      clear hd2_div hdAcc hsyz h147 hqA_star hqX_star hsyz_star hk3
+        hcancel_Esuf hmul3_eq hcop3_qA hqA_dstar hqA_full
+      omega
+    calc 3 ^ (S_K + E_mid) * q_X_star
+        = (3 ^ E_tail * 3 ^ E_rem3) * q_X_star := by rw [hexp, Nat.pow_add]
+      _ = 3 ^ E_tail * (3 ^ E_rem3 * q_X_star) := by ring
+  have hcop3_qY : Nat.Coprime (3 ^ E_tail) (2 ^ (E_mid - E_run + E_suf)) :=
+    Nat.Coprime.pow _ _ (by decide : Nat.Coprime 3 2)
+  rcases hsyz_star with h_l | h_r
+  · have h3_rhs : 3 ^ E_tail ∣ 3 ^ (S_K + E_mid) * q_X_star :=
+      ⟨3 ^ (S_K + E_mid - E_tail) * q_X_star, hp3_split⟩
+    have h3_qA : 3 ^ E_tail ∣ 41553 * q_A_star :=
+      ⟨41553 * q_A_dstar, by rw [hqA_dstar]; ring⟩
+    have h3_lhs : 3 ^ E_tail ∣ 2 ^ (E_mid - E_run + E_suf) * q_Y := by
+      rw [← h_l] at h3_rhs
+      exact (Nat.dvd_add_iff_left h3_qA).mpr h3_rhs
+    have hdvd_qY : 3 ^ E_tail ∣ q_Y := hcop3_qY.dvd_of_dvd_mul_left h3_lhs
+    rcases hdvd_qY with ⟨q_Y_star, hqY_star⟩
+    have hdsuper_mul :
+        3 ^ E_tail * (2 ^ (E_mid - E_run + E_suf) * q_Y_star + 41553 * q_A_dstar) =
+          3 ^ E_tail * (3 ^ (S_K + E_mid - E_tail) * q_X_star) := by
+      have h := h_l
+      rw [hp3_split, hqA_dstar, hqY_star] at h
+      linarith only [h]
+    have hdsuper :
+        2 ^ (E_mid - E_run + E_suf) * q_Y_star + 41553 * q_A_dstar =
+          3 ^ (S_K + E_mid - E_tail) * q_X_star :=
+      Nat.eq_of_mul_eq_mul_left (Nat.pow_pos (by decide)) hdsuper_mul
+    exact ⟨⟨q_A_dstar, hqA_full⟩, h147.2.1, ⟨q_Y_star, hqY_star⟩,
+      q_A_dstar, q_X_star, q_Y_star, hqA_full, hqX_star, hqY_star, Or.inl hdsuper⟩
+  · have h3_lhs : 3 ^ E_tail ∣ 2 ^ (E_mid - E_run + E_suf) * q_Y := by
+      refine ⟨3 ^ (S_K + E_mid - E_tail) * q_X_star + 41553 * q_A_dstar, ?_⟩
+      rw [h_r, hp3_split, hqA_dstar]; ring
+    have hdvd_qY : 3 ^ E_tail ∣ q_Y := hcop3_qY.dvd_of_dvd_mul_left h3_lhs
+    rcases hdvd_qY with ⟨q_Y_star, hqY_star⟩
+    have hdsuper_mul :
+        3 ^ E_tail * (2 ^ (E_mid - E_run + E_suf) * q_Y_star) =
+          3 ^ E_tail * (3 ^ (S_K + E_mid - E_tail) * q_X_star + 41553 * q_A_dstar) := by
+      have h := h_r
+      rw [hp3_split, hqA_dstar, hqY_star] at h
+      linarith only [h]
+    have hdsuper :
+        2 ^ (E_mid - E_run + E_suf) * q_Y_star =
+          3 ^ (S_K + E_mid - E_tail) * q_X_star + 41553 * q_A_dstar :=
+      Nat.eq_of_mul_eq_mul_left (Nat.pow_pos (by decide)) hdsuper_mul
+    exact ⟨⟨q_A_dstar, hqA_full⟩, h147.2.1, ⟨q_Y_star, hqY_star⟩,
+      q_A_dstar, q_X_star, q_Y_star, hqA_full, hqX_star, hqY_star, Or.inr hdsuper⟩
+
+/-!
+## Section 153: Doubly Super-Reduced `q_A_dstar` Pure `3`-Adic Band, the Universal `E_run + E_tail + 24 ≤ E_mid` (`44 ≤ E_mid`) Floor & Unique-`q_A_dstar` Lock Up to `E_run + E_tail + 26`
+
+Substituting `q_A = 2 ^ E_run * 3 ^ E_tail * q_A_dstar` (Section 152) into Section 142's Cauchy-pinch
+band and **canceling `2 ^ E_run * 3 ^ E_tail` from all three parts** (`E_run + E_tail + 10 ≤ E_mid`)
+traps `q_A_dstar` inside the doubly super-reduced pure `3`-adic band:
+  `54569 * 3 ^ (E_mid - E_run - E_tail - 10) < 261288489825 * q_A_dstar < 59049 * 3 ^ (E_mid - E_run - E_tail - 10) = 3 ^ (E_mid - E_run - E_tail)`!
+Consequently:
+1. **Universal `E_run + E_tail + 24 ≤ E_mid` (`44 ≤ E_mid`) Bidirectional Middle Floor:**
+   Since `1 ≤ q_A_dstar` and `3 ^ 23 < 261,288,489,825`, we must have:
+     `E_run + E_tail + 24 ≤ E_mid`  (so **`44 ≤ E_mid`** whenever `10 ≤ E_run` and `10 ≤ E_tail`!)!
+2. **Unique-`q_A_dstar` Lock Up to `E_mid ≤ E_run + E_tail + 26` (`E_mid ≤ 46` at `L = 1`):**
+   For any two pairs with the same `E_mid - E_run - E_tail` (`q_A_dstar1 ≤ q_A_dstar2`):
+     `52,257,697,965 * (q_A_dstar2 - q_A_dstar1) < 896 * 3 ^ (E_mid - E_run - E_tail - 10)`,
+   forcing **`q_A_dstar1 = q_A_dstar2` unconditionally whenever `E_mid ≤ E_run + E_tail + 26`**!
+-/
+
+/-- **Doubly Super-Reduced `q_A_dstar` Pure `3`-Adic Band, Universal `E_run + E_tail + 24 ≤ E_mid` Floor & Unique-`q_A_dstar` Lock:**
+When `q_A = 2 ^ E_run * 3 ^ E_tail * q_A_dstar` in Section 142's band (`E_run + E_tail + 10 ≤ E_mid`):
+1. `54569 * 3 ^ (E_mid - E_run - E_tail - 10) < 261288489825 * q_A_dstar < 3 ^ (E_mid - E_run - E_tail)`,
+2. `E_run + E_tail + 24 ≤ E_mid` (and `44 ≤ E_mid` whenever `10 ≤ E_run` and `10 ≤ E_tail`),
+3. For any two pairs with the same `E_mid - E_run - E_tail` (`q_A_dstar1 ≤ q_A_dstar2`),
+   `q_A_dstar1 = q_A_dstar2` holds unconditionally whenever `E_mid ≤ E_run + E_tail + 26`! -/
+theorem dense_core_doubly_super_reduced_qA_double_star_band_and_44_step_floor :
+    -- 1. Doubly super-reduced band and universal E_run + E_tail + 24 ≤ E_mid floor:
+    (∀ {E_mid E_run E_tail q_A q_A_dstar : ℕ},
+      E_run + E_tail + 10 ≤ E_mid →
+      q_A = 2 ^ E_run * 3 ^ E_tail * q_A_dstar →
+      54569 * 2 ^ E_run * 3 ^ (E_mid - E_run - 10) < 261288489825 * q_A →
+      261288489825 * q_A < 59049 * 2 ^ E_run * 3 ^ (E_mid - E_run - 10) →
+      54569 * 3 ^ (E_mid - E_run - E_tail - 10) < 261288489825 * q_A_dstar ∧
+      261288489825 * q_A_dstar < 59049 * 3 ^ (E_mid - E_run - E_tail - 10) ∧
+      261288489825 * q_A_dstar < 3 ^ (E_mid - E_run - E_tail) ∧
+      E_run + E_tail + 24 ≤ E_mid ∧
+      (10 ≤ E_run → 10 ≤ E_tail → 44 ≤ E_mid)) ∧
+    -- 2. Unique-q_A_dstar lock up to E_mid ≤ E_run + E_tail + 26:
+    (∀ {E_mid E_run E_tail q_A_dstar1 q_A_dstar2 : ℕ},
+      E_run + E_tail + 10 ≤ E_mid →
+      q_A_dstar1 ≤ q_A_dstar2 →
+      54569 * 3 ^ (E_mid - E_run - E_tail - 10) < 261288489825 * q_A_dstar1 →
+      261288489825 * q_A_dstar2 < 59049 * 3 ^ (E_mid - E_run - E_tail - 10) →
+      52257697965 * (q_A_dstar2 - q_A_dstar1) < 896 * 3 ^ (E_mid - E_run - E_tail - 10) ∧
+      (E_mid ≤ E_run + E_tail + 26 → q_A_dstar1 = q_A_dstar2)) := by
+  refine ⟨?_, ?_⟩
+  · intro E_mid E_run E_tail q_A q_A_dstar h_le hqA hlow hhigh
+    set E_eff_run := E_run + E_tail
+    set E_rem := E_mid - E_run - E_tail - 10
+    have hexp_tail : E_mid - E_run - 10 = E_tail + E_rem := by
+      dsimp [E_rem]; clear hqA hlow hhigh; omega
+    have hlhs_eq :
+        54569 * 2 ^ E_run * 3 ^ (E_mid - E_run - 10) =
+          (2 ^ E_run * 3 ^ E_tail) * (54569 * 3 ^ E_rem) := by
+      rw [hexp_tail, Nat.pow_add 3 E_tail E_rem]; ring
+    have hmid_eq :
+        261288489825 * q_A = (2 ^ E_run * 3 ^ E_tail) * (261288489825 * q_A_dstar) := by
+      rw [hqA]; ring
+    have hrhs_eq :
+        59049 * 2 ^ E_run * 3 ^ (E_mid - E_run - 10) =
+          (2 ^ E_run * 3 ^ E_tail) * (59049 * 3 ^ E_rem) := by
+      rw [hexp_tail, Nat.pow_add 3 E_tail E_rem]; ring
+    rw [hlhs_eq, hmid_eq] at hlow
+    rw [hmid_eq, hrhs_eq] at hhigh
+    have hlow_d : 54569 * 3 ^ E_rem < 261288489825 * q_A_dstar :=
+      Nat.lt_of_mul_lt_mul_left hlow
+    have hhigh_d : 261288489825 * q_A_dstar < 59049 * 3 ^ E_rem :=
+      Nat.lt_of_mul_lt_mul_left hhigh
+    have hsub_eff : E_mid - E_run - E_tail = E_mid - E_eff_run := by
+      dsimp [E_eff_run]; exact Nat.sub_sub E_mid E_run E_tail
+    have hrem_eff : E_mid - E_eff_run - 10 = E_rem := by
+      dsimp [E_rem]; rw [hsub_eff]
+    have hrun_eff_le : E_eff_run + 10 ≤ E_mid := h_le
+    have hle10 : 10 ≤ E_mid - E_eff_run := Nat.le_sub_of_add_le' hrun_eff_le
+    have hpow3_eq : 59049 * 3 ^ E_rem = 3 ^ (E_mid - E_run - E_tail) := by
+      have hexp : E_mid - E_run - E_tail = 10 + E_rem := by
+        rw [hsub_eff, ← hrem_eff]
+        exact (Nat.add_sub_of_le hle10).symm
+      rw [hexp, Nat.pow_add 3 10 E_rem]
+    have hhigh_pow3 : 261288489825 * q_A_dstar < 3 ^ (E_mid - E_run - E_tail) := by
+      rw [← hpow3_eq]; exact hhigh_d
+    have hq_pos : 1 ≤ q_A_dstar := by
+      rcases Nat.eq_zero_or_pos q_A_dstar with rfl | hp
+      · rw [Nat.mul_zero] at hlow_d
+        have hp_pos : 1 ≤ 54569 * 3 ^ E_rem :=
+          Nat.mul_pos (by decide) (Nat.pow_pos (by decide))
+        linarith only [hlow_d, hp_pos]
+      · exact hp
+    have h261_lt : 261288489825 < 3 ^ (E_mid - E_run - E_tail) :=
+      lt_of_le_of_lt (Nat.le_mul_of_pos_right _ hq_pos) hhigh_pow3
+    have h24_le : E_run + E_tail + 24 ≤ E_mid := by
+      refine Nat.le_of_not_lt (fun hlt => ?_)
+      have hle23 : E_mid - E_run - E_tail ≤ 23 := by
+        clear h_le hqA hlow hhigh hlhs_eq hmid_eq hrhs_eq hlow_d hhigh_d
+          hpow3_eq hhigh_pow3 h261_lt hexp_tail hsub_eff hrem_eff
+          hrun_eff_le hle10 hq_pos E_rem E_eff_run
+        omega
+      have hp23 : 3 ^ (E_mid - E_run - E_tail) ≤ 3 ^ 23 :=
+        Nat.pow_le_pow_right (by decide) hle23
+      have hlt23 : 261288489825 < 3 ^ 23 := lt_of_lt_of_le h261_lt hp23
+      exact absurd (lt_trans hlt23 three_pow_23_lt_261288489825) (lt_irrefl _)
+    have h44_le : 10 ≤ E_run → 10 ≤ E_tail → 44 ≤ E_mid := by
+      intro h10_r h10_t
+      linarith only [h24_le, h10_r, h10_t]
+    exact ⟨hlow_d, hhigh_d, hhigh_pow3, h24_le, h44_le⟩
+  · intro E_mid E_run E_tail q_A_dstar1 q_A_dstar2 h_le hq_le h1_low h2_high
+    have hsub_eff : E_mid - E_run - E_tail = E_mid - (E_run + E_tail) :=
+      Nat.sub_sub E_mid E_run E_tail
+    rw [hsub_eff] at h1_low h2_high ⊢
+    have h148_2 :=
+      dense_core_super_reduced_qA_star_pure_three_adic_band_and_24_step_post_run_floor.2
+        h_le hq_le h1_low h2_high
+    exact ⟨h148_2.1, fun hle26 => h148_2.2 (by linarith only [hle26])⟩
+
 end Mahler.DubickasExtension
+
 
 
 
