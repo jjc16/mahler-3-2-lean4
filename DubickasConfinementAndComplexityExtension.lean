@@ -33100,7 +33100,495 @@ theorem dense_core_two_block_junction_locked_pigeonhole_mandatory_terminal_growt
     omega
   exact ⟨i, j, hij, hL_eq, hS1_eq, hS2_eq, hStot_eq, hdvd_Wm, hcut_both, hcontra_both⟩
 
+/-!
+## Section 138: Future-Past Decoupled Start-State Cutoff at `M_0 + 1` (With Zero Upper-Bound Restriction on `S_end`!)
+
+In Section 135, we used the **second** coprime divisibility bound of Section 134
+(`3 ^ (S_end + 10 * L_start1) ≤ 2 ^ Δ_end * q_Wend_2 + q_Wend_1`), which bounded the **terminal**
+state `W(M_end + 1)` at the end of Pair 2's second window and required
+`S_end + 10 * L_start1 ≤ S_{M_end} + 10 * L_2 0`.
+Now we use the **first** coprime divisibility bound of Section 134:
+  `2 ^ (S_end + 10 * L_end1) ≤ 3 ^ (10 * (L_start2 - L_start1)) * q_W0_2 + q_W0_1`!
+When `q_W0_1 < 3 ^ (10 * (L_2 (M_0 + 1) - L_start1)) * q_W0_2` and
+`16243286400 * q_W0_2 ≤ W (M_0 + 1)` (at the **start** node `M_0 + 1` of Pair 2's second window!):
+1. **Pure Power-of-`2` Start-State Lower Bound (`8,121,643,200 * 2 ^ (S_end + 10 * L_end1) < 3 ^ Δ_start * W (M_0 + 1)`):**
+   Notice that `W (M_0 + 1)` is the state **before** the window of step-sum `S_end` even begins!
+   When `L_start1 = L_2 (M_0 + 1)`, `8121643200 * 2 ^ (S_end + 10 * L_end1) < W (M_0 + 1)` and
+   `2 ^ (S_end + 10 * L_end1 + 32) < W (M_0 + 1)` directly!
+2. **Global Future-Past Decoupled Cutoff (Requiring ZERO Bound on `S_end` vs `S_{M_0}`!):**
+   Combining (1) with the origin master identity at `M_0 + 1`
+   (`2 ^ (S_{M_0} + 10 * L_2 (M_0 + 1)) * W (M_0 + 1) < 3 ^ (S_{M_0} + 10 * L_2 0) * 2 ^ W_0`)
+   keeps `2 ^ (S_end + 10 * L_end1)` on the LHS with **no `3 ^ S_end` cancellation required**,
+   proving unconditionally for all `3 ^ q ≤ 2 ^ (p + q)` (`1 ≤ q`):
+     `q * (S_end + 10 * L_end1) + 10 * (p + q) * L_start1 + 32 * q < p * S_{M_0} + 10 * p * L_2 (M_0 + 1) + 10 * (p + q) * L_2 0 + q * W_0`,
+   and at `(p, q) = (10, 17)`:
+     `17 * (S_end + 10 * L_end1) + 270 * L_start1 + 544 < 10 * S_{M_0} + 100 * L_2 (M_0 + 1) + 270 * L_2 0 + 17 * W_0`!
+-/
+
+/-- **Future-Past Decoupled Start-State Cutoff at `M_0 + 1` (With Zero Restriction on `S_end`):**
+When `2 ^ (S_end + 10 * L_end1) < 2 * (3 ^ (10 * (L_2 (M_0 + 1) - L_start1)) * q_W0_2)` and
+`16243286400 * q_W0_2 ≤ W (M_0 + 1)` (`L_start1 ≤ L_2 (M_0 + 1)`):
+1. `8121643200 * 2 ^ (S_end + 10 * L_end1) < 3 ^ (10 * (L_2 (M_0 + 1) - L_start1)) * W (M_0 + 1)`,
+2. When `L_start1 = L_2 (M_0 + 1)`, `2 ^ (S_end + 10 * L_end1 + 32) < W (M_0 + 1)`,
+3. Globally (`W 0 < 2 ^ W_0`), with **zero** upper-bound hypothesis on `S_end`,
+   `17 * (S_end + 10 * L_end1) + 270 * L_start1 + 544 < 10 * S_{M_0} + 100 * L_2 (M_0 + 1) + 270 * L_2 0 + 17 * W_0`! -/
+theorem dense_core_double_boundary_future_past_decoupled_start_state_cutoff
+    {W L_2 L_1 : ℕ → ℕ} {M_0 W_0 S_end L_start1 L_end1 q_W0_2 : ℕ}
+    (hW0_lt : W 0 < 2 ^ W_0)
+    (hL1_0 : 1 ≤ L_1 0)
+    (hrec : ∀ n ≤ M_0,
+      2 ^ (7 * L_1 n + 10 * L_2 (n + 1)) * W (n + 1) +
+        19 * ((3 ^ (7 * L_1 n) - 2 ^ (7 * L_1 n)) / 2059) =
+        3 ^ (10 * L_2 n + 7 * L_1 n) * W n)
+    (hLs_le : L_start1 ≤ L_2 (M_0 + 1))
+    (h2_lt :
+      2 ^ (S_end + 10 * L_end1) <
+        2 * (3 ^ (10 * (L_2 (M_0 + 1) - L_start1)) * q_W0_2))
+    (hW_bound : 16243286400 * q_W0_2 ≤ W (M_0 + 1)) :
+    let S_M0 := waveInteriorExp L_2 L_1 M_0
+    let E_2_1 := S_end + 10 * L_end1
+    let Δ_start := 10 * (L_2 (M_0 + 1) - L_start1)
+    -- 1. Pure power-of-2 lower bound on the start state W(M_0 + 1):
+    8121643200 * 2 ^ E_2_1 < 3 ^ Δ_start * W (M_0 + 1) ∧
+    -- 2. Same-start-run direct exponential floor (when L_start1 = L_2(M_0 + 1)):
+    (L_start1 = L_2 (M_0 + 1) →
+      8121643200 * 2 ^ E_2_1 < W (M_0 + 1) ∧
+      2 ^ (E_2_1 + 32) < W (M_0 + 1)) ∧
+    -- 3. Global future-past decoupled cutoff (with zero upper-bound restriction on S_end!):
+    (∀ p q : ℕ, 1 ≤ q → 3 ^ q ≤ 2 ^ (p + q) →
+      q * E_2_1 + 10 * (p + q) * L_start1 + 32 * q <
+        p * S_M0 + 10 * p * L_2 (M_0 + 1) + 10 * (p + q) * L_2 0 + q * W_0) ∧
+    17 * E_2_1 + 270 * L_start1 + 544 <
+      10 * S_M0 + 100 * L_2 (M_0 + 1) + 270 * L_2 0 + 17 * W_0 := by
+  intro S_M0 E_2_1 Δ_start
+  have hpure2 : 8121643200 * 2 ^ E_2_1 < 3 ^ Δ_start * W (M_0 + 1) := by
+    have hm1 :
+        8121643200 * 2 ^ E_2_1 <
+          8121643200 * (2 * (3 ^ Δ_start * q_W0_2)) :=
+      Nat.mul_lt_mul_of_pos_left h2_lt (by decide)
+    have hm2 :
+        8121643200 * (2 * (3 ^ Δ_start * q_W0_2)) =
+          3 ^ Δ_start * (16243286400 * q_W0_2) := by ring
+    have hm3 :
+        3 ^ Δ_start * (16243286400 * q_W0_2) ≤ 3 ^ Δ_start * W (M_0 + 1) :=
+      Nat.mul_le_mul_left _ hW_bound
+    rw [hm2] at hm1
+    exact lt_of_lt_of_le hm1 hm3
+  have hsame_start :
+      L_start1 = L_2 (M_0 + 1) →
+        8121643200 * 2 ^ E_2_1 < W (M_0 + 1) ∧
+        2 ^ (E_2_1 + 32) < W (M_0 + 1) := by
+    intro hLs_eq
+    have hΔ0 : Δ_start = 0 := by dsimp [Δ_start]; omega
+    have h1 : 8121643200 * 2 ^ E_2_1 < W (M_0 + 1) := by
+      have h := hpure2
+      rw [hΔ0, Nat.pow_zero, Nat.one_mul] at h
+      exact h
+    have h2 : 2 ^ (E_2_1 + 32) < W (M_0 + 1) := by
+      have hp32 : 2 ^ (E_2_1 + 32) = 2 ^ 32 * 2 ^ E_2_1 := by
+        rw [Nat.add_comm, Nat.pow_add]
+      have hle : 2 ^ 32 * 2 ^ E_2_1 ≤ 8121643200 * 2 ^ E_2_1 :=
+        Nat.mul_le_mul_right (2 ^ E_2_1) (by decide : 2 ^ 32 ≤ 8121643200)
+      rw [hp32]
+      exact lt_of_le_of_lt hle h1
+    exact ⟨h1, h2⟩
+  have hAcc_pos : 1 ≤ waveInteriorAcc L_2 L_1 M_0 :=
+    waveInteriorAcc_pos L_2 L_1 hL1_0 M_0
+  have hm :=
+    (dense_core_symmetric_multi_wave_master_identity_and_boundary_independence.2
+      W L_2 L_1 M_0 hrec).1
+  change 2 ^ S_M0 * (2 ^ (10 * L_2 (M_0 + 1)) * W (M_0 + 1)) + 19 * waveInteriorAcc L_2 L_1 M_0 =
+      3 ^ S_M0 * (3 ^ (10 * L_2 0) * W 0) at hm
+  have hp2_M0 :
+      2 ^ (S_M0 + 10 * L_2 (M_0 + 1)) * W (M_0 + 1) =
+        2 ^ S_M0 * (2 ^ (10 * L_2 (M_0 + 1)) * W (M_0 + 1)) := by
+    rw [Nat.pow_add]; ring
+  have hp3_M0 :
+      3 ^ (S_M0 + 10 * L_2 0) * W 0 = 3 ^ S_M0 * (3 ^ (10 * L_2 0) * W 0) := by
+    rw [Nat.pow_add]; ring
+  have hup_2W0 :
+      2 ^ (S_M0 + 10 * L_2 (M_0 + 1)) * W (M_0 + 1) < 3 ^ (S_M0 + 10 * L_2 0) * 2 ^ W_0 := by
+    have hup_W0 : 2 ^ (S_M0 + 10 * L_2 (M_0 + 1)) * W (M_0 + 1) < 3 ^ (S_M0 + 10 * L_2 0) * W 0 := by
+      linarith only [hm, hp2_M0, hp3_M0, hAcc_pos]
+    exact lt_trans hup_W0 (Nat.mul_lt_mul_of_pos_left hW0_lt (Nat.pow_pos (by decide)))
+  have hcomb_2W0 :
+      8121643200 * 2 ^ (S_M0 + 10 * L_2 (M_0 + 1) + E_2_1) <
+        3 ^ (S_M0 + 10 * L_2 0 + Δ_start) * 2 ^ W_0 := by
+    have hm1 :
+        2 ^ (S_M0 + 10 * L_2 (M_0 + 1)) * (8121643200 * 2 ^ E_2_1) <
+          2 ^ (S_M0 + 10 * L_2 (M_0 + 1)) * (3 ^ Δ_start * W (M_0 + 1)) :=
+      Nat.mul_lt_mul_of_pos_left hpure2 (Nat.pow_pos (by decide))
+    have hlhs_eq :
+        2 ^ (S_M0 + 10 * L_2 (M_0 + 1)) * (8121643200 * 2 ^ E_2_1) =
+          8121643200 * 2 ^ (S_M0 + 10 * L_2 (M_0 + 1) + E_2_1) := by
+      rw [Nat.pow_add 2 (S_M0 + 10 * L_2 (M_0 + 1)) E_2_1]; ring
+    have hmid_eq :
+        2 ^ (S_M0 + 10 * L_2 (M_0 + 1)) * (3 ^ Δ_start * W (M_0 + 1)) =
+          3 ^ Δ_start * (2 ^ (S_M0 + 10 * L_2 (M_0 + 1)) * W (M_0 + 1)) := by ring
+    have hm2 :
+        3 ^ Δ_start * (2 ^ (S_M0 + 10 * L_2 (M_0 + 1)) * W (M_0 + 1)) <
+          3 ^ Δ_start * (3 ^ (S_M0 + 10 * L_2 0) * 2 ^ W_0) :=
+      Nat.mul_lt_mul_of_pos_left hup_2W0 (Nat.pow_pos (by decide))
+    have hrhs_eq :
+        3 ^ Δ_start * (3 ^ (S_M0 + 10 * L_2 0) * 2 ^ W_0) =
+          3 ^ (S_M0 + 10 * L_2 0 + Δ_start) * 2 ^ W_0 := by
+      rw [Nat.pow_add 3 (S_M0 + 10 * L_2 0) Δ_start]; ring
+    rw [hlhs_eq, hmid_eq] at hm1
+    rw [hrhs_eq] at hm2
+    exact lt_trans hm1 hm2
+  have hpq :
+      ∀ p q : ℕ, 1 ≤ q → 3 ^ q ≤ 2 ^ (p + q) →
+        q * E_2_1 + 10 * (p + q) * L_start1 + 32 * q <
+          p * S_M0 + 10 * p * L_2 (M_0 + 1) + 10 * (p + q) * L_2 0 + q * W_0 := by
+    intro p q hq hpq_le
+    set E_lhs := S_M0 + 10 * L_2 (M_0 + 1) + E_2_1
+    set E_3 := S_M0 + 10 * L_2 0 + Δ_start
+    have h2_32_lt : 2 ^ 32 * 2 ^ E_lhs < 3 ^ E_3 * 2 ^ W_0 := by
+      have h1 : 2 ^ 32 * 2 ^ E_lhs ≤ 8121643200 * 2 ^ E_lhs :=
+        Nat.mul_le_mul_right (2 ^ E_lhs) (by decide : 2 ^ 32 ≤ 8121643200)
+      exact lt_of_le_of_lt h1 hcomb_2W0
+    have hpow_q : (2 ^ 32 * 2 ^ E_lhs) ^ q < (3 ^ E_3 * 2 ^ W_0) ^ q :=
+      pow_lt_pow_of_lt h2_32_lt hq
+    have hlhs_eq : 2 ^ (q * E_lhs + 32 * q) = (2 ^ 32 * 2 ^ E_lhs) ^ q := by
+      calc 2 ^ (q * E_lhs + 32 * q)
+          = 2 ^ (32 * q) * 2 ^ (q * E_lhs) := by rw [Nat.add_comm, Nat.pow_add]
+        _ = (2 ^ 32) ^ q * (2 ^ E_lhs) ^ q := by
+            rw [Nat.pow_mul 2 32 q, Nat.mul_comm q E_lhs, Nat.pow_mul 2 E_lhs q]
+        _ = (2 ^ 32 * 2 ^ E_lhs) ^ q := (Nat.mul_pow (2 ^ 32) (2 ^ E_lhs) q).symm
+    have h3_le : (3 ^ E_3) ^ q ≤ 2 ^ ((p + q) * E_3) := by
+      calc (3 ^ E_3) ^ q
+          = 3 ^ (E_3 * q) := (Nat.pow_mul 3 E_3 q).symm
+        _ = 3 ^ (q * E_3) := by rw [Nat.mul_comm E_3 q]
+        _ = (3 ^ q) ^ E_3 := Nat.pow_mul 3 q E_3
+        _ ≤ (2 ^ (p + q)) ^ E_3 := Nat.pow_le_pow_left hpq_le E_3
+        _ = 2 ^ ((p + q) * E_3) := (Nat.pow_mul 2 (p + q) E_3).symm
+    have hrhs_le : (3 ^ E_3 * 2 ^ W_0) ^ q ≤ 2 ^ ((p + q) * E_3 + q * W_0) := by
+      calc (3 ^ E_3 * 2 ^ W_0) ^ q
+          = (3 ^ E_3) ^ q * (2 ^ W_0) ^ q := Nat.mul_pow (3 ^ E_3) (2 ^ W_0) q
+        _ ≤ 2 ^ ((p + q) * E_3) * (2 ^ W_0) ^ q := Nat.mul_le_mul_right _ h3_le
+        _ = 2 ^ ((p + q) * E_3) * 2 ^ (W_0 * q) := by rw [← Nat.pow_mul 2 W_0 q]
+        _ = 2 ^ ((p + q) * E_3) * 2 ^ (q * W_0) := by rw [Nat.mul_comm W_0 q]
+        _ = 2 ^ ((p + q) * E_3 + q * W_0) := (Nat.pow_add 2 _ _).symm
+    have hpow2_lt : 2 ^ (q * E_lhs + 32 * q) < 2 ^ ((p + q) * E_3 + q * W_0) := by
+      rw [hlhs_eq]
+      exact lt_of_lt_of_le hpow_q hrhs_le
+    have hexp_lt : q * E_lhs + 32 * q < (p + q) * E_3 + q * W_0 := by
+      refine Nat.lt_of_not_le (fun hge => ?_)
+      have hp_ge : 2 ^ ((p + q) * E_3 + q * W_0) ≤ 2 ^ (q * E_lhs + 32 * q) :=
+        Nat.pow_le_pow_right (by decide) hge
+      omega
+    have hE3_expand :
+        (p + q) * E_3 + 10 * (p + q) * L_start1 =
+          p * S_M0 + q * S_M0 + 10 * (p + q) * L_2 0 + 10 * p * L_2 (M_0 + 1) + 10 * q * L_2 (M_0 + 1) := by
+      have h1 : E_3 + 10 * L_start1 = S_M0 + 10 * L_2 0 + 10 * L_2 (M_0 + 1) := by
+        dsimp [E_3, Δ_start]; omega
+      calc (p + q) * E_3 + 10 * (p + q) * L_start1
+          = (p + q) * (E_3 + 10 * L_start1) := by ring
+        _ = (p + q) * (S_M0 + 10 * L_2 0 + 10 * L_2 (M_0 + 1)) := by rw [h1]
+        _ = p * S_M0 + q * S_M0 + 10 * (p + q) * L_2 0 + 10 * p * L_2 (M_0 + 1) + 10 * q * L_2 (M_0 + 1) := by
+            ring
+    have hElhs_expand :
+        q * E_lhs = q * S_M0 + 10 * q * L_2 (M_0 + 1) + q * E_2_1 := by
+      dsimp [E_lhs]; ring
+    linarith only [hexp_lt, hE3_expand, hElhs_expand]
+  have h10_17 := hpq 10 17 (by decide) (by decide : 3 ^ 17 ≤ 2 ^ (10 + 17))
+  exact ⟨hpure2, hsame_start, hpq, by linarith only [h10_17]⟩
+
+/-!
+## Section 139: Pairwise Disjointness of First-Divergence Cauchy Pinch Bands & Strict Antitone Law (`E_div1 < E_div2 ⟹ Δ_2 < Δ_1`)
+
+By Sections 90 and 95, whenever two anagrams of interior step-sum `S_end` first diverge at
+cumulative step-sum `E_div` (`E_div + 10 ≤ S_end`), their accumulator difference `Δ = |Acc' - Acc|`
+is trapped inside the open interval:
+  `I(E_div) := (54569 * 2 ^ E_div * 3 ^ (S_end - E_div - 10),  2 ^ E_div * 3 ^ (S_end - E_div))`.
+Why can two pairs that first diverge at **different** cumulative step-sums `E_div1 ≠ E_div2`
+**never** have the same accumulator difference `Δ_1 = Δ_2` (or the same reduced defect
+`q_Acc1 = q_Acc2`)?
+Because the multiplicative width of each band is `3 ^ 10 / 54569 = 59049 / 54569 ≈ 1.0821`, which
+is **strictly smaller than a single step ratio `3 / 2 = 1.5`** (`59049 * 2 = 118098 < 163707 = 54569 * 3`)!
+Consequently, for **every** `d = E_div2 - E_div1 ≥ 1`:
+  `3 ^ 10 * 2 ^ d < 54569 * 3 ^ d`,
+which forces the upper endpoint of `I(E_div2)` to lie **strictly below** the lower endpoint of
+`I(E_div1)`:
+  `2 ^ E_div2 * 3 ^ (S_end - E_div2) < 54569 * 2 ^ E_div1 * 3 ^ (S_end - E_div1 - 10)`!
+Therefore:
+1. **Strict Antitone Law (`E_div1 < E_div2 ⟹ Δ_2 < Δ_1`):**
+   Earlier first divergences **always** produce strictly larger accumulator differences!
+2. **Unique First-Divergence Identification (`Δ_1 = Δ_2 ⟹ E_div1 = E_div2`):**
+   Equal unsigned accumulator differences (or equal reduced defects `q_Acc1 = q_Acc2`) **must**
+   come from the exact same first-divergence step-sum `E_div1 = E_div2`!
+-/
+
+private lemma pow_two_mul_59049_lt_pow_three_mul_54569 {d : ℕ} (hd : 1 ≤ d) :
+    3 ^ 10 * 2 ^ d < 54569 * 3 ^ d := by
+  have hsplit : d = 1 + (d - 1) := by omega
+  calc 3 ^ 10 * 2 ^ d
+      = 3 ^ 10 * 2 ^ (1 + (d - 1)) := by rw [← hsplit]
+    _ = 118098 * 2 ^ (d - 1) := by rw [Nat.pow_add 2 1 (d - 1)]; ring
+    _ ≤ 118098 * 3 ^ (d - 1) :=
+        Nat.mul_le_mul_left 118098 (Nat.pow_le_pow_left (by decide) (d - 1))
+    _ < 163707 * 3 ^ (d - 1) :=
+        Nat.mul_lt_mul_of_pos_right (by decide : 118098 < 163707) (Nat.pow_pos (by decide))
+    _ = 54569 * (3 ^ 1 * 3 ^ (d - 1)) := by ring
+    _ = 54569 * 3 ^ (1 + (d - 1)) := by rw [← Nat.pow_add 3 1 (d - 1)]
+    _ = 54569 * 3 ^ d := by rw [← hsplit]
+
+/-- **Pairwise Disjointness of First-Divergence Cauchy Pinch Bands & Strict Antitone Law:**
+For any two anagram pairs of interior step-sum `S_end` whose first divergences occur at
+`E_div1` and `E_div2` (`E_div1 + 10 ≤ S_end`, `E_div2 + 10 ≤ S_end`):
+1. If `E_div1 < E_div2`, the entire band `I(E_div2)` lies strictly below `I(E_div1)`, forcing
+   `Δ_2 < Δ_1`.
+2. Consequently, `Δ_1 = Δ_2` implies `E_div1 = E_div2`! -/
+theorem dense_core_first_divergence_band_disjointness_and_strict_antitone_law
+    {S_end E_div1 E_div2 Δ_1 Δ_2 : ℕ}
+    (h1_le : E_div1 + 10 ≤ S_end)
+    (h2_le : E_div2 + 10 ≤ S_end)
+    (hband1_low : 54569 * 2 ^ E_div1 * 3 ^ (S_end - E_div1 - 10) < 2059 * Δ_1)
+    (hband1_high : 2059 * Δ_1 < 2 ^ E_div1 * 3 ^ (S_end - E_div1))
+    (hband2_low : 54569 * 2 ^ E_div2 * 3 ^ (S_end - E_div2 - 10) < 2059 * Δ_2)
+    (hband2_high : 2059 * Δ_2 < 2 ^ E_div2 * 3 ^ (S_end - E_div2)) :
+    (E_div1 < E_div2 →
+      2 ^ E_div2 * 3 ^ (S_end - E_div2) <
+        54569 * 2 ^ E_div1 * 3 ^ (S_end - E_div1 - 10) ∧
+      Δ_2 < Δ_1) ∧
+    (Δ_1 = Δ_2 → E_div1 = E_div2) := by
+  have hantitone :
+      ∀ {a b A B : ℕ},
+        a + 10 ≤ S_end → b + 10 ≤ S_end → a < b →
+        54569 * 2 ^ a * 3 ^ (S_end - a - 10) < 2059 * A →
+        2059 * B < 2 ^ b * 3 ^ (S_end - b) →
+        2 ^ b * 3 ^ (S_end - b) < 54569 * 2 ^ a * 3 ^ (S_end - a - 10) ∧ B < A := by
+    intro a b A B ha hb hab hA_low hB_high
+    set d := b - a
+    have hd : 1 ≤ d := by dsimp [d]; omega
+    have hdom := pow_two_mul_59049_lt_pow_three_mul_54569 hd
+    have hmul_dom :
+        2 ^ a * 3 ^ (S_end - b) * (3 ^ 10 * 2 ^ d) <
+          2 ^ a * 3 ^ (S_end - b) * (54569 * 3 ^ d) :=
+      Nat.mul_lt_mul_of_pos_left hdom
+        (Nat.mul_pos (Nat.pow_pos (by decide)) (Nat.pow_pos (by decide)))
+    have hlhs_eq :
+        2 ^ a * 3 ^ (S_end - b) * (3 ^ 10 * 2 ^ d) =
+          3 ^ 10 * (2 ^ b * 3 ^ (S_end - b)) := by
+      have hb_eq : b = a + d := by dsimp [d]; omega
+      calc 2 ^ a * 3 ^ (S_end - b) * (3 ^ 10 * 2 ^ d)
+          = 3 ^ 10 * ((2 ^ a * 2 ^ d) * 3 ^ (S_end - b)) := by ring
+        _ = 3 ^ 10 * (2 ^ b * 3 ^ (S_end - b)) := by rw [← Nat.pow_add, ← hb_eq]
+    have hrhs_eq :
+        2 ^ a * 3 ^ (S_end - b) * (54569 * 3 ^ d) =
+          3 ^ 10 * (54569 * 2 ^ a * 3 ^ (S_end - a - 10)) := by
+      have h3_eq : (S_end - b) + d = 10 + (S_end - a - 10) := by dsimp [d]; omega
+      calc 2 ^ a * 3 ^ (S_end - b) * (54569 * 3 ^ d)
+          = 54569 * 2 ^ a * (3 ^ (S_end - b) * 3 ^ d) := by ring
+        _ = 54569 * 2 ^ a * 3 ^ ((S_end - b) + d) := by rw [← Nat.pow_add]
+        _ = 54569 * 2 ^ a * (3 ^ 10 * 3 ^ (S_end - a - 10)) := by
+            rw [h3_eq, Nat.pow_add 3 10 (S_end - a - 10)]
+        _ = 3 ^ 10 * (54569 * 2 ^ a * 3 ^ (S_end - a - 10)) := by ring
+    rw [hlhs_eq, hrhs_eq] at hmul_dom
+    have hband_lt :
+        2 ^ b * 3 ^ (S_end - b) < 54569 * 2 ^ a * 3 ^ (S_end - a - 10) :=
+      Nat.lt_of_mul_lt_mul_left hmul_dom
+    have h2059_lt : 2059 * B < 2059 * A :=
+      lt_trans hB_high (lt_trans hband_lt hA_low)
+    exact ⟨hband_lt, Nat.lt_of_mul_lt_mul_left h2059_lt⟩
+  refine ⟨fun hlt => hantitone h1_le h2_le hlt hband1_low hband2_high, ?_⟩
+  intro hΔ_eq
+  rcases lt_trichotomy E_div1 E_div2 with hlt | heq | hgt
+  · have h := (hantitone h1_le h2_le hlt hband1_low hband2_high).2
+    omega
+  · exact heq
+  · have h := (hantitone h2_le h1_le hgt hband2_low hband1_high).2
+    omega
+
+/-!
+## Section 140: The `4,480` Band-Width Squeeze & Single-Value `q_Acc` Lock Within Any First-Divergence Band (`261,288,489,825 * (q_Acc2 - q_Acc1) < 35 * 2 ^ E_div * 3 ^ (S_end - E_div - 10)`)
+
+What if two double-boundary-locked anagram pairs (of interior step-sum `S_end`) first diverge at
+the **same** cumulative step-sum `E_div` (`E_div + 10 ≤ S_end`)?
+Then both `33444926697600 * q_Acc1` and `33444926697600 * q_Acc2` lie inside the **same**
+Cauchy-pinch band:
+  `54569 * 2 ^ E_div * 3 ^ (S_end - E_div - 10) < 33444926697600 * q_Acc < 59049 * 2 ^ E_div * 3 ^ (S_end - E_div - 10)`.
+Notice that the width of this band has leading coefficient:
+  `59,049 - 54,569 = 4,480 = 35 * 128`!
+Therefore, for any `q_Acc1 ≤ q_Acc2` in the same band `I(E_div)`:
+  `33,444,926,697,600 * (q_Acc2 - q_Acc1) < 4,480 * 2 ^ E_div * 3 ^ (S_end - E_div - 10)`,
+and dividing both sides by `128` (`33444926697600 / 128 = 261288489825`):
+  `261,288,489,825 * (q_Acc2 - q_Acc1) < 35 * 2 ^ E_div * 3 ^ (S_end - E_div - 10)`!
+Consequently, whenever `35 * 2 ^ E_div * 3 ^ (S_end - E_div - 10) ≤ 261,288,489,825`, the band
+`I(E_div)` contains **at most one integer value of `q_Acc`**, forcing `q_Acc1 = q_Acc2`
+unconditionally!
+-/
+
+/-- **`4,480` Band-Width Squeeze & Single-Value `q_Acc` Lock Within Any First-Divergence Band:**
+Whenever two double-boundary-locked anagram pairs of interior step-sum `S_end` diverge at the same
+`E_div` (`E_div + 10 ≤ S_end`) with `q_Acc1 ≤ q_Acc2`:
+1. `33444926697600 * (q_Acc2 - q_Acc1) < 4480 * 2 ^ E_div * 3 ^ (S_end - E_div - 10)`,
+2. `261288489825 * (q_Acc2 - q_Acc1) < 35 * 2 ^ E_div * 3 ^ (S_end - E_div - 10)`,
+3. Whenever `35 * 2 ^ E_div * 3 ^ (S_end - E_div - 10) ≤ 261288489825`, `q_Acc1 = q_Acc2`! -/
+theorem dense_core_same_divergence_band_4480_width_squeeze_and_unique_qAcc_lock
+    {S_end E_div q_Acc1 q_Acc2 : ℕ}
+    (hdiv_le : E_div + 10 ≤ S_end)
+    (hq_le : q_Acc1 ≤ q_Acc2)
+    (h1_low : 54569 * 2 ^ E_div * 3 ^ (S_end - E_div - 10) < 33444926697600 * q_Acc1)
+    (h2_high : 33444926697600 * q_Acc2 < 2 ^ E_div * 3 ^ (S_end - E_div)) :
+    33444926697600 * (q_Acc2 - q_Acc1) <
+      4480 * 2 ^ E_div * 3 ^ (S_end - E_div - 10) ∧
+    261288489825 * (q_Acc2 - q_Acc1) <
+      35 * 2 ^ E_div * 3 ^ (S_end - E_div - 10) ∧
+    (35 * 2 ^ E_div * 3 ^ (S_end - E_div - 10) ≤ 261288489825 → q_Acc1 = q_Acc2) := by
+  set E_rem := S_end - E_div - 10
+  set P := 2 ^ E_div * 3 ^ E_rem
+  have h2_high_P : 33444926697600 * q_Acc2 < 59049 * P := by
+    have hle10 : 10 ≤ S_end - E_div := Nat.le_sub_of_add_le' hdiv_le
+    have hexp : S_end - E_div = 10 + E_rem := (Nat.add_sub_of_le hle10).symm
+    have hp3 :
+        2 ^ E_div * 3 ^ (S_end - E_div) = 59049 * P := by
+      dsimp [P]
+      rw [hexp, Nat.pow_add 3 10 E_rem]
+      ring
+    rw [← hp3]; exact h2_high
+  have h1_low_P : 54569 * P < 33444926697600 * q_Acc1 := by
+    have hp : 54569 * 2 ^ E_div * 3 ^ (S_end - E_div - 10) = 54569 * P := by
+      dsimp [P]; ring
+    rw [← hp]; exact h1_low
+  have hdiff_33T : 33444926697600 * (q_Acc2 - q_Acc1) < 4480 * P := by
+    have hadd :
+        33444926697600 * (q_Acc2 - q_Acc1) + 33444926697600 * q_Acc1 =
+          33444926697600 * q_Acc2 := by
+      rw [← Nat.mul_add, Nat.sub_add_cancel hq_le]
+    have h59 : 59049 * P = 4480 * P + 54569 * P := by ring
+    linarith only [h2_high_P, h1_low_P, hadd, h59]
+  have hdiff_261B : 261288489825 * (q_Acc2 - q_Acc1) < 35 * P := by
+    have hmul128 :
+        128 * (261288489825 * (q_Acc2 - q_Acc1)) < 128 * (35 * P) := by
+      have h1 : 128 * (261288489825 * (q_Acc2 - q_Acc1)) = 33444926697600 * (q_Acc2 - q_Acc1) := by
+        ring
+      have h2 : 128 * (35 * P) = 4480 * P := by ring
+      rw [h1, h2]; exact hdiff_33T
+    exact Nat.lt_of_mul_lt_mul_left hmul128
+  have hlock : 35 * P ≤ 261288489825 → q_Acc1 = q_Acc2 := by
+    intro hle
+    have hlt1 : 261288489825 * (q_Acc2 - q_Acc1) < 261288489825 :=
+      lt_of_lt_of_le hdiff_261B hle
+    rcases Nat.eq_zero_or_pos (q_Acc2 - q_Acc1) with h0 | hpos
+    · have hge : q_Acc2 ≤ q_Acc1 := Nat.sub_eq_zero_iff_le.mp h0
+      exact le_antisymm hq_le hge
+    · have hge : 261288489825 ≤ 261288489825 * (q_Acc2 - q_Acc1) :=
+        Nat.le_mul_of_pos_right _ hpos
+      exact absurd (lt_of_le_of_lt hge hlt1) (lt_irrefl _)
+  have hP_eq : 4480 * P = 4480 * 2 ^ E_div * 3 ^ (S_end - E_div - 10) := by dsimp [P]; ring
+  have hP_eq35 : 35 * P = 35 * 2 ^ E_div * 3 ^ (S_end - E_div - 10) := by dsimp [P]; ring
+  rw [hP_eq] at hdiff_33T
+  rw [hP_eq35] at hdiff_261B hlock
+  exact ⟨hdiff_33T, hdiff_261B, hlock⟩
+
+/-!
+## Section 141: Automatic Four-Window Defect Cancellation & Dual Future-Past / Terminal Cutoffs Under Single-Band Confinement
+
+Combining **Section 140** (`35 * 2 ^ E_div * 3 ^ (S_end - E_div - 10) ≤ 261288489825 ⟹ q_Acc1 = q_Acc2`),
+**Section 134** (Sign-Blind 4-Window `19 * q_Acc` Cancellation), **Section 135** (End-State 32-Bit
+Boosted Cutoff), and **Section 138** (Future-Past Decoupled Start-State Cutoff) proves:
+Whenever two double-boundary-locked anagram pairs of interior step-sum `S_end` diverge at the same
+`E_div` with `35 * 2 ^ E_div * 3 ^ (S_end - E_div - 10) ≤ 261288489825`, their reduced defects are
+**automatically equal** (`q_Acc1 = q_Acc2`), triggering both the future-past decoupled start-state
+cutoff at `M_0 + 1` and the terminal pure-power-of-`3` cutoff at `M_end + 1`!
+-/
+
+/-- **Automatic Four-Window Defect Cancellation & Dual Cutoffs Under Single-Band Confinement:**
+Whenever two double-boundary-locked anagram pairs of interior step-sum `S_end` diverge at the same
+`E_div` (`E_div + 10 ≤ S_end`) with `35 * 2 ^ E_div * 3 ^ (S_end - E_div - 10) ≤ 261288489825`:
+1. `q_Acc1 = q_Acc2` holds automatically,
+2. The start state `W(M_0 + 1)` of Pair 2 satisfies the future-past decoupled cutoff
+   `17 * (S_end + 10 * L_end1) + 270 * L_start1 + 544 < 10 * S_{M_0} + 100 * L_2 (M_0 + 1) + 270 * L_2 0 + 17 * W_0`,
+3. The end state `W(M_end + 1)` of Pair 2 satisfies the 32-bit boosted cutoff
+   `27 * (S_end + 10 * L_start1) + 170 * L_end1 + 544 < 10 * S_{M_end} + 270 * L_2 0 + 17 * W_0`! -/
+theorem dense_core_same_divergence_unique_band_four_window_automatic_cutoff
+    {W L_2 L_1 : ℕ → ℕ}
+    {M_0 M_end W_0 S_end E_div L_start1 L_end1 q_W0_1 q_W0_2 q_Wend_1 q_Wend_2 q_Acc1 q_Acc2 : ℕ}
+    (hW0_lt : W 0 < 2 ^ W_0)
+    (hL1_0 : 1 ≤ L_1 0)
+    (hrec : ∀ n : ℕ,
+      2 ^ (7 * L_1 n + 10 * L_2 (n + 1)) * W (n + 1) +
+        19 * ((3 ^ (7 * L_1 n) - 2 ^ (7 * L_1 n)) / 2059) =
+        3 ^ (10 * L_2 n + 7 * L_1 n) * W n)
+    (hdiv_le : E_div + 10 ≤ S_end)
+    (h1_low : 54569 * 2 ^ E_div * 3 ^ (S_end - E_div - 10) < 33444926697600 * q_Acc1)
+    (h1_high : 33444926697600 * q_Acc1 < 2 ^ E_div * 3 ^ (S_end - E_div))
+    (h2_low : 54569 * 2 ^ E_div * 3 ^ (S_end - E_div - 10) < 33444926697600 * q_Acc2)
+    (h2_high : 33444926697600 * q_Acc2 < 2 ^ E_div * 3 ^ (S_end - E_div))
+    (hband_small : 35 * 2 ^ E_div * 3 ^ (S_end - E_div - 10) ≤ 261288489825)
+    (hLs_le : L_start1 ≤ L_2 (M_0 + 1))
+    (hLe_le : L_end1 ≤ L_2 (M_end + 1))
+    (hqW0_pos : 1 ≤ q_W0_1)
+    (hqWend_pos : 1 ≤ q_Wend_1)
+    (hW0_lt_12 : q_W0_1 < 3 ^ (10 * (L_2 (M_0 + 1) - L_start1)) * q_W0_2)
+    (hWend_lt_12 : q_Wend_1 < 2 ^ (10 * (L_2 (M_end + 1) - L_end1)) * q_Wend_2)
+    (hsyz1 :
+      2 ^ (S_end + 10 * L_end1) * q_Wend_1 + 19 * q_Acc1 =
+        3 ^ (S_end + 10 * L_start1) * q_W0_1 ∨
+      2 ^ (S_end + 10 * L_end1) * q_Wend_1 =
+        3 ^ (S_end + 10 * L_start1) * q_W0_1 + 19 * q_Acc1)
+    (hsyz2 :
+      2 ^ (S_end + 10 * L_2 (M_end + 1)) * q_Wend_2 + 19 * q_Acc2 =
+        3 ^ (S_end + 10 * L_2 (M_0 + 1)) * q_W0_2 ∨
+      2 ^ (S_end + 10 * L_2 (M_end + 1)) * q_Wend_2 =
+        3 ^ (S_end + 10 * L_2 (M_0 + 1)) * q_W0_2 + 19 * q_Acc2)
+    (hW0_bound : 16243286400 * q_W0_2 ≤ W (M_0 + 1))
+    (hWend_bound : 16243286400 * q_Wend_2 ≤ W (M_end + 1))
+    (hS_le : S_end + 10 * L_start1 ≤ waveInteriorExp L_2 L_1 M_end + 10 * L_2 0) :
+    q_Acc1 = q_Acc2 ∧
+    8121643200 * 2 ^ (S_end + 10 * L_end1) <
+      3 ^ (10 * (L_2 (M_0 + 1) - L_start1)) * W (M_0 + 1) ∧
+    8121643200 * 3 ^ (S_end + 10 * L_start1) <
+      2 ^ (10 * (L_2 (M_end + 1) - L_end1)) * W (M_end + 1) ∧
+    17 * (S_end + 10 * L_end1) + 270 * L_start1 + 544 <
+      10 * waveInteriorExp L_2 L_1 M_0 + 100 * L_2 (M_0 + 1) + 270 * L_2 0 + 17 * W_0 ∧
+    27 * (S_end + 10 * L_start1) + 170 * L_end1 + 544 <
+      10 * waveInteriorExp L_2 L_1 M_end + 270 * L_2 0 + 17 * W_0 := by
+  have hq_eq : q_Acc1 = q_Acc2 := by
+    rcases Nat.le_total q_Acc1 q_Acc2 with hle | hge
+    · exact (dense_core_same_divergence_band_4480_width_squeeze_and_unique_qAcc_lock
+        hdiv_le hle h1_low h2_high).2.2 hband_small
+    · exact ((dense_core_same_divergence_band_4480_width_squeeze_and_unique_qAcc_lock
+        hdiv_le hge h2_low h1_high).2.2 hband_small).symm
+  rw [← hq_eq] at hsyz2
+  have hW0_pow_lt :
+      3 ^ (S_end + 10 * L_start1) * q_W0_1 < 3 ^ (S_end + 10 * L_2 (M_0 + 1)) * q_W0_2 := by
+    have hsub : L_start1 + (L_2 (M_0 + 1) - L_start1) = L_2 (M_0 + 1) :=
+      Nat.add_sub_of_le hLs_le
+    have hexp :
+        S_end + 10 * L_2 (M_0 + 1) =
+          (S_end + 10 * L_start1) + 10 * (L_2 (M_0 + 1) - L_start1) := by
+      linarith only [hsub]
+    have hsplit :
+        3 ^ (S_end + 10 * L_2 (M_0 + 1)) * q_W0_2 =
+          3 ^ (S_end + 10 * L_start1) * (3 ^ (10 * (L_2 (M_0 + 1) - L_start1)) * q_W0_2) := by
+      rw [hexp, Nat.pow_add]; ring
+    rw [hsplit]
+    exact Nat.mul_lt_mul_of_pos_left hW0_lt_12 (Nat.pow_pos (by decide))
+  have h134 :=
+    dense_core_double_boundary_sign_blind_four_window_defect_cancellation
+      hLs_le hLe_le hqW0_pos hqWend_pos hW0_pow_lt hsyz1 hsyz2
+  have h2_lt_2 :
+      2 ^ (S_end + 10 * L_end1) <
+        2 * (3 ^ (10 * (L_2 (M_0 + 1) - L_start1)) * q_W0_2) := by
+    have hbX := h134.2.2.1
+    linarith only [hbX, hW0_lt_12]
+  have h3_lt_2 :
+      3 ^ (S_end + 10 * L_start1) <
+        2 * (2 ^ (10 * (L_2 (M_end + 1) - L_end1)) * q_Wend_2) := by
+    have hbY := h134.2.2.2
+    linarith only [hbY, hWend_lt_12]
+  have h138 :=
+    dense_core_double_boundary_future_past_decoupled_start_state_cutoff
+      hW0_lt hL1_0 (fun n _ => hrec n) hLs_le h2_lt_2 hW0_bound
+  have h135 :=
+    dense_core_double_boundary_four_window_pure_power_state_bounds_and_cutoff
+      hW0_lt hL1_0 (fun n _ => hrec n) hLe_le hS_le h3_lt_2 hWend_bound
+  exact ⟨hq_eq, h138.1, h135.1, h138.2.2.2, h135.2.2.2⟩
+
 end Mahler.DubickasExtension
+
 
 
 
