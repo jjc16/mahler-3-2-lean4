@@ -1,6 +1,6 @@
-# Mahler $3/2$ Problem — 158-File Lean 4 Formalization (`mahler_demand_a`)
+# Mahler $3/2$ Problem — 166-File Lean 4 Formalization (`mahler_demand_a`)
 
-This repository contains a **158-file (`sorry`-free) Lean 4.19.0 + Mathlib v4.19.0 formalization** of the reduced Mahler $3/2$ dynamical system ($Z$-numbers) and its interval- and union-confinement relaxations ([`MAHLER_FORMALIZATION_PAPER.pdf`](./MAHLER_FORMALIZATION_PAPER.pdf)).
+This repository contains a **166-file (`sorry`-free) Lean 4.19.0 + Mathlib v4.19.0 formalization** of the reduced Mahler $3/2$ dynamical system ($Z$-numbers) and its interval- and union-confinement relaxations ([`MAHLER_FORMALIZATION_PAPER.pdf`](./MAHLER_FORMALIZATION_PAPER.pdf)).
 
 ---
 
@@ -125,7 +125,9 @@ and the new **[Round 3 breakthrough plan](./RESEARCH_PLAN_ARGON_ROUND3_BREAKTHRO
 set out a coverage audit, finite-seed escape targets, a base-6 multiplication-automaton
 route, cross-disciplinary tracks (Part II Sections 11–23), the **Round 1
 Execution Report (Part III Sections 24–26)**, the **Round 2 Execution Report**,
-and the **Round 3 three-track breakthrough roadmap**:
+and the **revised Round 3 roadmap**, including sharper error bounds, an all-block renewal
+formulation, and prioritized natural-seed arithmetic targets. Round 3 remains a research plan,
+not a completed proof; its Part III corrects earlier overstatements and controls the execution order:
 - **Look-Ahead-Free Finite Odd-Count Bridge & Potentials (`ParitySurplusPotentialsAndSafetyGame.lean`):**
   Universal shift-submultiplicativity `signedMargin ε (k + m) ≤ 2^k * signedMargin (shiftStream ε k) m`,
   the unconditional bound `0 < signedMargin ε N → 3 * oddParityCount ε N ≤ N + 3` (`3 * oddCount a_0 N ≤ N + 3`
@@ -173,6 +175,9 @@ and the **Round 3 three-track breakthrough roadmap**:
   simultaneously bounded $(j_r, V_r)$ along strictly increasing boundaries** (`strictMono_boundaries_injective_on_j_and_V`),
   conditional $S$-unit exclusion of bounded odd parts $V_r \le M$, mod-3/mod-9/mod-$6^\ell$ backward sieve
   biconditionals, minimal floor $3 \nmid a^*$, and $\Sigma_1 / \Pi_2$ certificate completeness.
+- **All-Rung Constant of Motion, Sharp $1/27$ Pinning, Exact Companion Bridge, All-Block Renewal System $P_r = 3 b_r + 1$, Smooth $S$-Unit Diversification & Octadic Death-Class Anatomy
+  (`AllRungConstantOfMotionAndDualRemainder.lean`, `ArchimedeanPinningAndMahlerBridge.lean`, `ConsecutiveQuotientGCDAndEffectivePillai.lean`, `ModThreeDeathClassOctadicSieve.lean`, Round 3):**
+  Exact exponent cancellation $E_K + 3 j_0 = S_K + 3 j_K$, single-exponent master identity $2^{S_K} W_K + \widetilde{\Delta}_K = 3^{S_K} W_0$, sharp local and accumulated $27$-slack inequality $0 < 27 \widetilde{\Delta}_K < 3^{S_K} - 2^{S_K}$, universal floor $(2^{S_K} W_K)/3^{S_K} = W_0 - 1$ and strict modular pinning $27((2^d W_M)\bmod 3^d) > 26 \cdot 3^d + 2^d$, optimal bounded-rung Bellman constants $C_H = (3^{H-3}-2^{H-3})/(3^H-2^H)$, real constant of motion $L = \inf_K (2/3)^{S_K} W_K$ with $0 < W_K - L(3/2)^{S_K} < 1/27$ and exact companion bridge $L = \frac{19}{72}\alpha(3/2)^{t_0}$ ($0 < \varepsilon_r < 1/27 \iff 1/3 < f_r < 9/19$), all-block renewal system $P_{r+1} = (3/2)^{s_r} P_r + 1$ with kernel bridge $3 K_N = (3^{T_N} - 2^{T_N}) + A_{0,N}$ and finite escape certificate $2 A_{0,N} \ge 3^{T_N}$, consecutive quotient GCD laws $\gcd(V_r, V_{r+1}) \mid (3^{s_r-3}-2^{s_r-3})$ and $\gcd(Q_r, Q_{r+1}) = 1$, elementary mod-16/mod-5 proof that $2^c + 1 \ne 3^a$ ($c \ge 4$), conditional Pillai and smooth $S$-unit prime-support exclusions, and the `4 : 2 : 1 : 1` octadic triad partition and 8-lift bijection.
 
 ## Acknowledgments
 

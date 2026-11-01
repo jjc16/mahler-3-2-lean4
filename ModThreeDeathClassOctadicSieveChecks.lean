@@ -1,0 +1,27 @@
+import ModThreeDeathClassOctadicSieve
+
+namespace Mahler.Checks
+
+open Mahler.OctadicDeathAnatomy
+
+#check @octadic_triad_exit_partition
+#check @octadic_density_counts
+#check @death_class_avoidance_mod_four_condition
+#check @three_pow_mod_eight_eq_one_or_three
+#check @coincidence_quotient_bijection_mod_eight
+#check @periodicCarryModState
+#check @periodicCarryModStep
+#check @periodic_eq_mod_period
+#check @periodic_parity_forces_eventually_periodic_carry_mod
+#check @raw_power_fract_ne_betaMap_iterate_at_three_fourths
+#check @correlated_diagonal_draw_beats_independent_product_bound
+
+#print axioms octadic_triad_exit_partition
+#print axioms octadic_density_counts
+#print axioms death_class_avoidance_mod_four_condition
+#print axioms coincidence_quotient_bijection_mod_eight
+#print axioms periodic_parity_forces_eventually_periodic_carry_mod
+#print axioms raw_power_fract_ne_betaMap_iterate_at_three_fourths
+#print axioms correlated_diagonal_draw_beats_independent_product_bound
+
+end Mahler.Checks

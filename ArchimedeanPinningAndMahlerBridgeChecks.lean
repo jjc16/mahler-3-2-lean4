@@ -1,0 +1,56 @@
+import ArchimedeanPinningAndMahlerBridge
+
+namespace Mahler.Checks
+
+open Mahler.ArchimedeanPinningAndRenewal
+
+#check @normalizedBoundarySeq
+#check @normalizedBoundarySeq_step_and_prefix
+#check @normalizedBoundarySeq_strictAnti_and_lower_bound
+#check @exists_archimedean_constant_of_motion
+#check @pinning_ceil_and_fract_and_val2_coincidence
+#check @coupling_val_determined_by_L
+#check @pinning_error_eq_boundary_fraction_affine
+#check @sharp_pinning_iff_boundary_fraction_window
+#check @normalized_boundary_limit_eq_scaled_companion
+#check @static_pinning_and_valuation_do_not_supply_orbit_clock
+#check @oddReturnP
+#check @renewalNumerator
+#check @oddReturnP_recurrence_and_strictMono
+#check @oddReturnP_three_adic_transport
+#check @three_mul_blockKernel_eq_pow_diff_add_renewalNumerator
+#check @renewal_prefix_master_identity
+#check @renewal_normalized_prefix_identity
+#check @renewalTail
+#check @renewalTail_recurrence_and_block_companion_iff
+#check @even_seed_reaches_odd_boundary
+#check @minimum_gap_three_real_feasibility_and_ghost
+#check @finite_renewal_escape_certificate
+#check @seed_137_two_five_escape_certificate
+#check @recoveryCapStep
+#check @recoveryCap_two_six_three_three_two_cascade
+#check @extra_bit_prefix_compatibility_and_counterexample
+
+#print axioms normalizedBoundarySeq_step_and_prefix
+#print axioms normalizedBoundarySeq_strictAnti_and_lower_bound
+#print axioms exists_archimedean_constant_of_motion
+#print axioms pinning_ceil_and_fract_and_val2_coincidence
+#print axioms coupling_val_determined_by_L
+#print axioms pinning_error_eq_boundary_fraction_affine
+#print axioms sharp_pinning_iff_boundary_fraction_window
+#print axioms normalized_boundary_limit_eq_scaled_companion
+#print axioms static_pinning_and_valuation_do_not_supply_orbit_clock
+#print axioms oddReturnP_recurrence_and_strictMono
+#print axioms oddReturnP_three_adic_transport
+#print axioms three_mul_blockKernel_eq_pow_diff_add_renewalNumerator
+#print axioms renewal_prefix_master_identity
+#print axioms renewal_normalized_prefix_identity
+#print axioms renewalTail_recurrence_and_block_companion_iff
+#print axioms even_seed_reaches_odd_boundary
+#print axioms minimum_gap_three_real_feasibility_and_ghost
+#print axioms finite_renewal_escape_certificate
+#print axioms seed_137_two_five_escape_certificate
+#print axioms recoveryCap_two_six_three_three_two_cascade
+#print axioms extra_bit_prefix_compatibility_and_counterexample
+
+end Mahler.Checks

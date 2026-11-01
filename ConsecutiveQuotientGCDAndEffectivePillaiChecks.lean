@@ -1,0 +1,32 @@
+import ConsecutiveQuotientGCDAndEffectivePillai
+
+namespace Mahler.Checks
+
+open Mahler.ConsecutiveGCDAndPillai
+
+#check @consecutive_V_gcd_dvd_defectCore
+#check @three_pow_mod_sixteen_eq_one_imp_four_dvd
+#check @three_pow_four_mul_mod_five_and_two_pow_mod_five
+#check @two_pow_add_one_ne_three_pow_of_four_le
+#check @dense_core_consecutive_V_coprime_and_ne
+#check @bounded_V_and_s_rational_pillai_squeeze
+#check @EffectivePillaiHypothesis
+#check @effective_pillai_cutoff_excludes_bounded_V_and_s
+#check @consecutive_oddReturnQ_coprime_and_P_gcd
+#check @three_pow_mul_V_injective
+#check @allLong_normalized_three_term_sunit_nondegenerate_and_injective
+#check @no_infinite_allLong_chain_with_finite_V_prime_support
+#check @no_infinite_oddReturnQ_chain_with_finite_prime_support
+
+#print axioms consecutive_V_gcd_dvd_defectCore
+#print axioms two_pow_add_one_ne_three_pow_of_four_le
+#print axioms dense_core_consecutive_V_coprime_and_ne
+#print axioms bounded_V_and_s_rational_pillai_squeeze
+#print axioms effective_pillai_cutoff_excludes_bounded_V_and_s
+#print axioms consecutive_oddReturnQ_coprime_and_P_gcd
+#print axioms three_pow_mul_V_injective
+#print axioms allLong_normalized_three_term_sunit_nondegenerate_and_injective
+#print axioms no_infinite_allLong_chain_with_finite_V_prime_support
+#print axioms no_infinite_oddReturnQ_chain_with_finite_prime_support
+
+end Mahler.Checks

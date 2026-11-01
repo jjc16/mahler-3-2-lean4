@@ -481,6 +481,34 @@ name = "BoundedOddPartAndThreeAdicSieve"
 [[lean_lib]]
 name = "BoundedOddPartAndThreeAdicSieveChecks"
 
+[[lean_lib]]
+name = "AllRungConstantOfMotionAndDualRemainder"
+
+[[lean_lib]]
+name = "AllRungConstantOfMotionAndDualRemainderChecks"
+
+[[lean_lib]]
+name = "ArchimedeanPinningAndMahlerBridge"
+
+[[lean_lib]]
+name = "ArchimedeanPinningAndMahlerBridgeChecks"
+
+[[lean_lib]]
+name = "ConsecutiveQuotientGCDAndEffectivePillai"
+
+[[lean_lib]]
+name = "ConsecutiveQuotientGCDAndEffectivePillaiChecks"
+
+[[lean_lib]]
+name = "ModThreeDeathClassOctadicSieve"
+
+[[lean_lib]]
+name = "ModThreeDeathClassOctadicSieveChecks"
+
+
+
+
+
 
 
 

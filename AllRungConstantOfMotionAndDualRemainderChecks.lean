@@ -1,0 +1,45 @@
+import AllRungConstantOfMotionAndDualRemainder
+
+namespace Mahler.Checks
+
+open Mahler.AllRungConstantOfMotion
+
+#check @allRungStepSum
+#check @allRungTwoExp
+#check @allRungDefectAcc
+#check @allRungTwoExp_add_three_mul_eq
+#check @allRung_W_recurrence
+#check @allRung_single_exponent_master_identity
+#check @allRung_single_exponent_master_identity_from_V
+#check @twenty_seven_mul_two_pow_le_twenty_six_mul_three_pow
+#check @allRung_local_twentySeven_slack_identity
+#check @allRungDefectAcc_twentySeven_strict_bound
+#check @allRungDefectAcc_pos_and_le_three_pow_sub_two_pow
+#check @all_rung_constant_of_motion_and_dual_remainder
+#check @allRung_tailGap_twentySeven_strict_bound
+#check @allRung_pinning_mod_strict_lower
+#check @allRung_W_strictMono
+#check @bounded_rung_bellman_constant_optimality
+#check @bounded_rung_accumulated_defect_bound
+#check @bounded_rung_bellman_constants_four_five_six
+#check @all_rung_repeated_epoch_window_pq_cutoff
+#check @seed_149_window_1701_base_two_quotient_counterexample
+#check @diagonal_M_eq_K_mod_pinning_counterexample
+
+#print axioms allRungTwoExp_add_three_mul_eq
+#print axioms allRung_W_recurrence
+#print axioms allRung_single_exponent_master_identity
+#print axioms allRung_local_twentySeven_slack_identity
+#print axioms allRungDefectAcc_twentySeven_strict_bound
+#print axioms all_rung_constant_of_motion_and_dual_remainder
+#print axioms allRung_tailGap_twentySeven_strict_bound
+#print axioms allRung_pinning_mod_strict_lower
+#print axioms allRung_W_strictMono
+#print axioms bounded_rung_bellman_constant_optimality
+#print axioms bounded_rung_accumulated_defect_bound
+#print axioms bounded_rung_bellman_constants_four_five_six
+#print axioms all_rung_repeated_epoch_window_pq_cutoff
+#print axioms seed_149_window_1701_base_two_quotient_counterexample
+#print axioms diagonal_M_eq_K_mod_pinning_counterexample
+
+end Mahler.Checks

@@ -1,32 +1,42 @@
-# Research Plan for Argon (Round 3): Breaking Into the Unbounded $V_r \to \infty$ Regime
+# Research Plan for Argon (Round 3): Sharper Bounds, All-Block Renewal, and Natural-Seed Arithmetic
 
 Date: 2026-11-01  
 **Role:** Team Leader & Quality Architect Roadmap (Astra, synthesizing Fable & Argon Rounds 1–2)  
-**Baseline:** `158` Lean 4.19.0 files (`0` `sorry`s, `0` warnings, commit `bd92eb1`)  
+**Reported formal baseline:** `166` Lean 4.19.0 files (`0` `sorry`s, `0` warnings, Round 3 Phases 0–6 formalized)
+
 **Predecessor Plans:** [Round 1 Plan](./RESEARCH_PLAN_ARGON_GENERAL_PROOF.md) · [Round 2 Plan & Report](./RESEARCH_PLAN_ARGON_ROUND2_COMPLETION.md)
+
+**Astra revision notice:** Part III is the current, controlling research plan. It corrects several
+claims in the earlier drafts, sharpens Fable's valid $3/65$ bound to a strict $1/27$ bound, and adds
+an all-block formulation that does not discard short recovery blocks. The corresponding corrections
+have also been made in Parts I and II so that Argon is not asked to prove false statements.
+This revision contains mathematical derivations and exact computational checks, **not new Lean
+formalizations and not a completed proof**. The execution order in Section A8 supersedes both older tables.
 
 ---
 
 ## Executive Brief: Team Leader Priorities & How We Attack the Brick Wall
 
-In Rounds 1 and 2 (`158` Lean 4 files), we eliminated every secondary case of Mahler's $3/2$ problem
-and isolated the exact "brick wall":
-- **Shrinking odd parts ($V_{r+1} < V_r$)** are unconditionally eliminated across all rungs $s_r \ge 4$
-  (`no_infinite_all_rung_sparse_defect_chain`).
-- **Simultaneously bounded $(j_r, V_r)$** are unconditionally eliminated because $(j_r, V_r)$ uniquely
-  determines the strictly increasing boundary $b_r$ (`no_simultaneously_bounded_j_and_V_along_strictMono_boundaries`).
-- **What remains:** The **Unbounded Expanding Regime ($V_r \to \infty$)**, where
+Rounds 1 and 2 established useful exclusions, but **did not eliminate every secondary case**:
+- **Infinite sustained sparse/descent chains** are excluded under the hypotheses of
+  `no_infinite_all_rung_sparse_defect_chain`. This is not an exclusion of arbitrary chains that
+  alternate growth, descent, long exits, and short recoveries.
+- **Simultaneously bounded $(j_r,V_r)$** are excluded along strictly increasing normalized boundaries.
+- **Bounded $V_r$ alone** has a reduction using an external S-unit finiteness hypothesis; its
+  conditional status must remain visible.
+- **Unboundedness does not imply $V_r\to\infty$.** Oscillating chains and the coverage of infinitely
+  many $s=2$ blocks must be accounted for explicitly.
+- In a legitimate **post-long-defect** transition, the equation
   $$2^{\nu_{r+1} + s_r - 3} V_{r+1} = 3^{3 j_r + s_r} V_r - \big(3^{s_r - 3} - 2^{s_r - 3}\big)$$
-  must avoid the **Mod-3 Death Class** ($\nu_{r+1} = 3k + 1 \equiv 1 \pmod 3$, which forces $s = 1$, i.e. `11`)
-  at every epoch $r \in \mathbb{N}$.
+  exposes the valuation death class. The simpler recurrence with $\nu_{r+1}=3j_{r+1}+3$
+  used in Track 1 applies to consecutive long-exit epochs, **not automatically to every survivor**.
 
-As Team Leader, I am imposing **strict discipline** for Round 3:
-1. **No tangents into unformalizable external machinery** (no solenoids, no Haar measure, no unproved
-   ergodic conjectures).
-2. **Invent and formalize new exact algebraic invariants** that retain the finite initial seed $W_0$
-   even when $V_r \to \infty$ and $s_r \ge 4$ vary arbitrarily.
-3. **Execute three strictly prioritized tracks**, ordered from highest immediate unconditional payoff
-   to deepest structural attack on the Mod-3 Death Class:
+The revised discipline is: **prove the coverage bridges, bank the sharp elementary bounds, then
+attack actual natural-seed trajectories using the all-block renewal system**. Do not import a major
+external theorem until its exact hypotheses and useful conclusion have been isolated. Conditional
+arithmetic extensions remain worthwhile, but are not substitutes for the central natural-seed problem.
+
+The original three tracks below remain useful components, subject to Part III's corrections:
    - **Priority 1 (Track 1 — New Mathematical Discovery):** *The Universal All-Rung Constant of Motion
      $\lfloor 2^{S_K} W_K / 3^{S_K} \rfloor = W_0 - 1$ and Multi-Rung Complexity Cutoff for Arbitrary
      Varying $s_r \ge 4$*. (Removes the last $s_r = 4$ $[8/81, 1/2)$ restriction from the multi-step
@@ -52,20 +62,23 @@ Section 28) only worked inside $[8/81, 1/2)$ where every defect had fixed length
 Why did varying $s_r \ge 4$ seem to break the tower? Because at epoch $r$, the 2-adic exponent is
 $c_r = 3 j_{r+1} + s_r$ while the 3-adic exponent is $a_r = 3 j_r + s_r$.
 
-**Here is the new mathematical insight that solves this completely for arbitrary $s_r \ge 4$:**
+**The following normalization removes the exponent mismatch for arbitrary $s_r\ge4$.
+It does not establish that every hypothetical companion has such a chain:**
 1. Let $S_K := \sum_{r=0}^{K-1} (3 j_r + s_r)$ and $E_K := \sum_{r=0}^{K-1} (3 j_{r+1} + s_r)$.
    Even when $s_0, s_1, \dots, s_{K-1} \ge 4$ vary arbitrarily, the $s_r$ terms in $S_K$ and $E_K$
    **cancel identically**:
    $$\boxed{E_K + 3 j_0 = S_K + 3 j_K \qquad (\forall K \in \mathbb{N},\; \forall j_r, s_r : \mathbb{N})!}$$
 2. Define the **affine boundary coordinate**
-   $$W_r := 2^{3 j_r} V_r \qquad \left(\text{so } 19 b_r + 9 = 72 W_r \text{ for all } r \ge 1\right).$$
+   $$W_r := 2^{3 j_r} V_r.$$
+   The bridge $19b_r+9=72W_r$ requires actual post-defect normalization and the correct boundary
+   indices; establish it separately before interpreting an abstract recurrence as an orbit.
    Iterating the single-epoch recurrence $2^{3 j_{r+1} + s_r} V_{r+1} + D_{s_r} = 3^{3 j_r + s_r} V_r$
    ($D_s = 3^{s-3} - 2^{s-3}$) over $K$ epochs and multiplying by $2^{3 j_0}$ absorbs both $2^{3 j_0}$
    and $2^{3 j_K}$ into $W_0$ and $W_K$, yielding the **Single-Exponent All-Rung Master Identity**:
    $$\boxed{2^{S_K} W_K + \widetilde{\Delta}_K = 3^{S_K} W_0,}$$
    where the cumulative all-rung defect $\widetilde{\Delta}_K$ satisfies the clean recurrence:
    $$\widetilde{\Delta}_0 = 0, \qquad \widetilde{\Delta}_{K+1} = 3^{3 j_K + s_K} \widetilde{\Delta}_K + 2^{S_K + 3 j_K} \big(3^{s_K - 3} - 2^{s_K - 3}\big).$$
-3. **The Universal $\frac{1}{27}$-Slack Inequality (`all_rung_defect_acc_lt_three_pow_sub_two_pow`):**
+3. **The coarse accumulated-defect bound (sharpened in Section A1):**
    How large can $\widetilde{\Delta}_K$ grow when $s_K \ge 4$ is arbitrarily large?
    Look at the single-step increment $2^{3 j_K} (3^{s_K - 3} - 2^{s_K - 3})$ with $a_K = 3 j_K + s_K \ge 4$:
    Because $2^{3 j_K} \le 3^{3 j_K}$ and $3^{s_K - 3} - 2^{s_K - 3} < 3^{s_K - 3}$, we have:
@@ -78,9 +91,13 @@ $c_r = 3 j_{r+1} + s_r$ while the 3-adic exponent is $a_r = 3 j_r + s_r$.
    dividing $2^{S_K} W_K + \widetilde{\Delta}_K = 3^{S_K} W_0 = 3^{S_K}(W_0 - 1) + 3^{S_K}$ by $3^{S_K}$
    proves that **even as $W_K \to \infty$ and $s_r \ge 4$ fluctuates wildly**:
    $$\boxed{\left(2^{S_K} W_K\right) / 3^{S_K} = W_0 - 1 \quad\text{and}\quad \left(2^{S_K} W_K\right) \bmod 3^{S_K} = 3^{S_K} - \widetilde{\Delta}_K \qquad (\forall K \ge 1)!}$$
-   And whenever $W_0 < 2^B \le 2^{S_K}$ (once the step sum $S_K$ passes the bit length $B$ of the initial
-   seed), $W_0$ is completely frozen inside the top part:
-   $$W_K = \left\lfloor \frac{3^{S_K} W_0}{2^{S_K}} \right\rfloor \quad\text{and}\quad \widetilde{\Delta}_K = \big(3^{S_K} W_0\big) \bmod 2^{S_K}!$$
+   **Correction: division by $2^{S_K}$ is different.** A small seed
+   $W_0<2^B\le2^{S_K}$ does not imply $\widetilde{\Delta}_K<2^{S_K}$. The always-valid statements are
+   $$\left\lfloor\frac{3^{S_K}W_0}{2^{S_K}}\right\rfloor
+     =W_K+\left\lfloor\frac{\widetilde{\Delta}_K}{2^{S_K}}\right\rfloor,\qquad
+     (3^{S_K}W_0)\bmod2^{S_K}=\widetilde{\Delta}_K\bmod2^{S_K}.$$
+   Only with the extra bound $\widetilde{\Delta}_K<2^{S_K}$ can the last quotient term be deleted.
+   Section A0 gives a counterexample from a genuine finite post-defect orbit, not just a relaxed model.
 
 ### 1.2 Lean 4 deliverables for Track 1 (Module: `AllRungConstantOfMotionAndDualRemainder.lean`)
 
@@ -104,9 +121,12 @@ $c_r = 3 j_{r+1} + s_r$ while the 3-adic exponent is $a_r = 3 j_r + s_r$.
 6. Prove the **All-Rung Repeated Epoch-Window $(p, q)$ Cutoff (`all_rung_repeated_epoch_window_pq_cutoff`)**:
    if an $L$-epoch window of pairs `(j (r + t), s (r + t))` (`0 ≤ t < L`) repeats at `r₁ < r₂` with
    `W r₁ < W r₂`, then subtracting the $L$-step master identities cancels `allRungDefectAcc` identically,
-   forcing `2 ^ S_L ∣ (W r₂ - W r₁)`, `3 ^ S_L ∣ (W (r₂ + L) - W (r₁ + L))`, and for `W 0 < 2 ^ B`
-   and `3 ^ q ≤ 2 ^ (p + q)`:
-   $$q \cdot S_L < p \cdot S_{r_2} + q \cdot B!$$
+   forcing `2 ^ d ∣ (W r₂ - W r₁)` and `3 ^ d ∣ (W (r₂ + L) - W (r₁ + L))`,
+   where $d=\sum_{t<L}(3j_{r_1+t}+s_{r_1+t})$ is the **local repeated-window length**, not
+   necessarily the initial prefix $S_L$. Assuming the full preceding recurrence,
+   `W 0 < 2 ^ B`, **`1 ≤ q`**, and `3 ^ q ≤ 2 ^ (p + q)`, prove
+   $$q\,d < p\,S_{r_2}+q\,B.$$
+   The positive-$q$ guard is necessary; $p=q=0$ would give the false conclusion $0<0$.
 
 ---
 
@@ -131,13 +151,15 @@ Look at the immediate, unconditional consequences of this law:
    - $2^{c_r} < 3^{a_r}$, and
    - $3^{a_r} - 2^{c_r} \le 3^{s_r - 3} - 2^{s_r - 3} < 3^{s_r - 3}$.
 
-### 2.2 Bypassing Dead End 13: Why Baker–Matveev Succeeds When $V_r \le M$ and $s_r \le S_{\max}$
+### 2.2 Bounded coefficients remove one obstruction to a conditional Baker–Matveev cutoff
 
 In `BakerMatveevFramework.lean` (Dead End 13), applying Matveev's theorem to the full orbit equation
 failed because the odd quotient $u(m) \sim (3/2)^{T(m)}$ had logarithmic Weil height growing linearly
 with $T(m)$.
 In stark contrast, when $V_r, V_{r+1} \le M$ are **bounded**, the rational coefficient $V_r / V_{r+1}$
-has **bounded height $\le M = O(1)$**!
+has absolute multiplicative height at most $M$, hence logarithmic height at most $\log M$
+for fixed $M$. This removes the earlier height-growth obstruction, but does not itself supply
+the required effective theorem.
 Specifically, from $3^{a_r} V_r - 2^{c_r} V_{r+1} = D_{s_r}$ with $1 \le V_r, V_{r+1} \le M$ and
 $4 \le s_r \le S_{\max}$:
 $$0 < 3^{a_r} V_r - 2^{c_r} V_{r+1} \le 3^{S_{\max} - 3} - 1 < 3^{S_{\max} - 3},$$
@@ -153,9 +175,12 @@ threshold $C_{\text{Pillai}}(M, S_{\max})$.
    whenever `2^c * V_1 + (3^(s - 3) - 2^(s - 3)) = 3^a * V_0`,
    `Nat.gcd V_0 V_1 ∣ (3^(s - 3) - 2^(s - 3))`.
 2. Prove `dense_core_consecutive_V_coprime_and_ne`:
-   when `s = 4` (`2^c * V_1 + 1 = 3^a * V_0`, `1 ≤ a`), `Nat.Coprime V_0 V_1` and `V_0 ≠ V_1`
-   (unless `V_0 = V_1 = 1` and `3^a - 2^c = 1`, which for `a ≥ 4` is impossible since `(3^a - 1) % 16 ≠ 0`
-   whenever `a % 4 ≠ 0` or by Catalan's theorem).
+   coprimality follows from `2^c * V_1 + 1 = 3^a * V_0`.
+   For nonstationarity add `1 ≤ V_0`, `1 ≤ V_1`, **`4 ≤ a` and `4 ≤ c`**, as in the actual
+   dense-core recurrence. Equality would force $V_0=V_1=1$. Then $3^a-2^c=1$ implies $a$ is even
+   by reduction modulo $8$; write $a=2t$. The factors $(3^t-1)(3^t+1)=2^c$ are powers of two
+   differing by $2$, hence are $2,4$, giving $a=2,c=3$, a contradiction.
+   No Catalan theorem is needed; the former partial mod-$16$ argument was insufficient.
 3. Prove `bounded_V_and_s_rational_pillai_squeeze`:
    for `4 ≤ s_r ≤ S_max` and `1 ≤ V_r1`,
    `0 < (3 : ℚ)^a_r * V_r / ((2 : ℚ)^c_r * V_r1) - 1` and
@@ -227,6 +252,12 @@ Look at that **exact `4 : 2 : 1 : 1` octadic partition** at every 3-bit scale $k
    $\nu_{r+1} = 3k + 1$ **if and only if** $Q_{r, k} \bmod 4 \ne 2$ (i.e. $Q_{r, k}$ is either odd
    or divisible by $4$).
 
+**Scope guards for Track 3:** Assume $X_r>0$ before interpreting its valuation, and establish all
+displayed exact divisions. At $k=0$, $\nu=0$ is not a possible next odd boundary; interpreting the
+four odd classes as legitimate long exits requires $k\ge1$. Actual first-return constraints,
+coprimality, and the mod-$19$ boundary condition must be preserved by any lifted orbit model.
+The eight-lift bijection by itself is an algebraic statement, not a distribution law for one orbit.
+
 ---
 
 ## Execution Order & Verification Gates for Argon (Round 3)
@@ -236,19 +267,18 @@ Look at that **exact `4 : 2 : 1 : 1` octadic partition** at every 3-bit scale $k
 | **Step 1** | `AllRungConstantOfMotionAndDualRemainder.lean` + `...Checks.lean` | `allRungTwoExp_add_three_mul_eq`, `allRung_single_exponent_master_identity`, `allRungDefectAcc_pos_and_le_three_pow_sub_two_pow`, `all_rung_constant_of_motion_and_dual_remainder`, `all_rung_repeated_epoch_window_pq_cutoff` | `lake build` + `warningAsError=true`; `0` `sorry`s, standard axioms. |
 | **Step 2** | `ConsecutiveQuotientGCDAndEffectivePillai.lean` + `...Checks.lean` | `consecutive_V_gcd_dvd_defectCore`, `dense_core_consecutive_V_coprime_and_ne`, `bounded_V_and_s_rational_pillai_squeeze`, `effective_pillai_cutoff_excludes_bounded_V_and_s` | `lake build` + `warningAsError=true`; `0` `sorry`s, standard axioms. |
 | **Step 3** | `ModThreeDeathClassOctadicSieve.lean` + `...Checks.lean` | `octadic_triad_exit_partition`, `coincidence_quotient_bijection_mod_eight`, `death_class_avoidance_mod_four_condition` | `lake build` + `warningAsError=true`; `0` `sorry`s, standard axioms. |
-| **Step 4** | Paper, README, Round 3 Report & GitHub Push | Update `MAHLER_FORMALIZATION_PAPER.md`/`.tex`, `README.md`, `lakefile.toml`, and append Part II execution report to `RESEARCH_PLAN_ARGON_ROUND3_BREAKTHROUGH.md` | Full `lake build` across all targets and `git push origin HEAD`. |
+| **Step 4** | Paper, README, Round 3 Report & GitHub Push | During Argon's execution, update the paper, README and build targets; append the execution report as **Part IV**, after the research additions | Full build and push only after the formalization changes are verified. |
 
 ---
 
 # Part II — Fable's Review, Verification, and Extensions (Round 3)
 
-Date: 2026-11-02  
 **Role:** Creative Review & Quality Architect (Fable / Claude), reviewing Astra's Round 3 plan above.  
 **Status of this part:** Plan only — no Lean written yet; everything below is for Argon to formalize.  
-**Numeric pre-verification:** All new algebraic claims in Sections F2–F3 were checked exactly
-(`fractions.Fraction`) on hundreds of randomly generated genuine integer epoch-chains before being
-written here; see Section F2.8 for the harness and results. The purpose of the numeric pass is *only*
-to stop Argon chasing a false lemma — the Lean proofs remain the source of truth.
+**Audit correction:** The earlier numeric pass checked finite relaxed recurrences, not complete
+legitimate infinite orbit chains, and did not validate the proof-closing claims. Useful inequalities
+survive, but the stronger interpretations in F2.6–F5 have been corrected below. See Part III for the
+new exact checks and the current formalization targets.
 
 ## F0. Headline: Astra's "refining the error bounds" realization, completed
 
@@ -258,16 +288,18 @@ $\widetilde{\Delta}_K$. I have reconstructed and completed that line of reasonin
 better than I expected: the crude bound $\widetilde{\Delta}_K \le 3^{S_K} - 2^{S_K}$ sharpens into a
 **genuine Archimedean constant of motion**. Concretely, the normalized defect
 $\theta_K := \widetilde{\Delta}_K / 3^{S_K}$ is *strictly monotone increasing and convergent*, so the
-real sequence $(2/3)^{S_K} W_K$ converges **downward** to a seed-determined constant
+real sequence $(2/3)^{S_K} W_K$ converges **downward** to a chain-determined constant
 $L \in [W_0 - 1, W_0)$, and every $W_K$ is **pinned to within $3/65$** of the geometric progression
 $L \,(3/2)^{S_K}$. This converts the all-rung constant of motion from a static divisibility fact into a
-**Mahler-type fractional-part law** — exactly the bridge back to the original $\xi (3/2)^n$ question —
-and it couples cleanly to Priority 3's death sieve through a 2-adic valuation constraint. This is the
-most important single addition in Part II and is written up in Section F2.
+**fractional-part law along the selected epoch times**. For a genuine orbit the chain is determined
+by its integer seed; for a freely chosen abstract schedule, the seed alone need not determine $L$.
+Section A1 improves the error to $1/27$, and A2 supplies the exact bridge to the original companion.
+Neither the law nor the valuation constraint alone is a contradiction.
 
 ## F1. Verification of Astra's Priorities 1–3
 
-I checked each headline claim line by line (algebra + exact numeric spot-checks). Verdicts:
+The following algebraic components survive the later audit, with the stated hypotheses.
+This table is not a verification of the entire earlier roadmap:
 
 | Claim | Verdict | Note for Argon |
 | --- | --- | --- |
@@ -287,8 +319,8 @@ I checked each headline claim line by line (algebra + exact numeric spot-checks)
    `allRung_single_exponent_master_identity` from it. Do **not** try to prove the master identity directly
    from the mixed $c_r/a_r$ form — `omega` will choke on the three different exponents.
 2. **P3 honesty.** Rename the headline intuition from "death-class sieve" (sounds like an exclusion) to
-   "death-class **anatomy**." The exclusion power, if any, comes only from coupling with the Archimedean
-   constant $L$ (Section F3), not from the octadic counts alone.
+   "death-class **anatomy**." Exclusion would require additional control of genuine trajectories;
+   rewriting the existing recurrence in terms of $L$ does not provide that control by itself.
 
 ## F2. Completing Astra's error-bound refinement: the Archimedean Constant of Motion $L$ and the $3/65$ Pinning Law
 
@@ -299,7 +331,8 @@ I checked each headline claim line by line (algebra + exact numeric spot-checks)
 
 Astra bounded the cumulative defect by $\widetilde{\Delta}_K \le 3^{S_K} - 2^{S_K}$ and stopped. The
 refinement is to *normalize* it. Define
-$$\theta_K := \frac{\widetilde{\Delta}_K}{3^{S_K}} \in (0,\,1).$$
+$$\theta_K := \frac{\widetilde{\Delta}_K}{3^{S_K}},\qquad
+  \theta_0=0,\quad 0<\theta_K<1\ \text{for }K\ge1.$$
 Dividing the defect recurrence $\widetilde{\Delta}_{K+1} = 3^{a_K}\widetilde{\Delta}_K + 2^{S_K+3 j_K}D_{s_K}$
 by $3^{S_{K+1}} = 3^{a_K}3^{S_K}$ gives a **telescoping increment that is manifestly positive and
 geometrically small**:
@@ -334,13 +367,15 @@ i.e. just below integers. (A lower companion holds too: $W_K - L(3/2)^{S_K} \ge 
 
 The clean statement above uses a real limit, which in Lean needs monotone-convergence machinery. Argon
 should **first** prove the equivalent **purely integer** two-index version, which needs only `Nat`/`Int`
-arithmetic and `Finset.sum`, then (optionally) upgrade to the real $L$. For $M \ge K \ge 1$, put
+arithmetic and `Finset.sum`, then (optionally) upgrade to the real $L$. For **$M>K\ge0$**, put
 $d := S_M - S_K$. The master identity applied between rungs $K$ and $M$ gives the exact **tail-gap**
 $$3^{d} W_K - 2^{d} W_M \;=\; \sum_{m=K}^{M-1} 3^{\,S_M - S_{m+1}}\,2^{\,S_m - S_K + 3 j_m}\,D_{s_m} \;\in\; \mathbb{Z}_{>0},$$
 and the same geometric bound yields the two headline inequalities (both verified numerically, F2.8):
 $$\boxed{0 < 3^{d} W_K - 2^{d} W_M \quad\text{and}\quad 65\,\big(3^{d} W_K - 2^{d} W_M\big) \le 3^{\,d+1}.}$$
 Equivalently, in terms of a bare modular reduction (no subtraction of reals):
-$$\boxed{65\cdot\big((2^{d} W_M)\bmod 3^{d}\big) \;\ge\; 62\cdot 3^{d} \qquad (\forall M \ge K \ge 1,\; d = S_M - S_K).}$$
+$$\boxed{65\cdot\big((2^{d} W_M)\bmod 3^{d}\big) \;\ge\; 62\cdot 3^{d} \qquad (\forall M>K\ge0,\; d = S_M - S_K).}$$
+At $M=K$ the gap and the remainder modulo $1$ are zero, so the asserted positive gap and modular
+lower bound would be false. Section A1 proves the stronger $27$-slack inequalities directly.
 Taking $M \to \infty$ recovers $L$ and the $\{L(3/2)^{S_K}\} \ge 62/65$ corollary. **The integer form is
 unconditional, fully `omega`/`Finset`-friendly, and is the bankable core even if the real-$L$ upgrade is
 deferred.**
@@ -371,7 +406,7 @@ Reuse Astra's `allRungStepSum` (`S`), `allRungDefectAcc` (`Δ̃`), and `W r = 2^
    key lemma is `∑_{i≥0} (16/81)^i = 81/65`, done over `ℚ` with `tsum_geometric_of_lt_one` or a finite
    `Finset.geom_sum` + monotone tail).
 5. `allRung_pinning_mod_lower` — the modular punchline:
-   `65 * ((2^(S M - S K) * W M) % 3^(S M - S K)) ≥ 62 * 3^(S M - S K)` for `M ≥ K ≥ 1`, `∀ r, 4 ≤ s r`.
+   `65 * ((2^(S M - S K) * W M) % 3^(S M - S K)) ≥ 62 * 3^(S M - S K)` for `K < M`, `∀ r, 4 ≤ s r`.
 6. **(Real upgrade, optional but high-value)** `exists_archimedean_constant_of_motion`:
    `∃ L : ℝ, (↑W 0 - 1 ≤ L ∧ L < ↑W 0) ∧ ∀ K, 1 ≤ K → 0 < (↑(W K) - L * (3/2)^(S K)) ∧ (↑(W K) - L * (3/2)^(S K)) ≤ 3/65`.
    Construct `L` as the limit of the antitone bounded sequence `g K = (2/3)^(S K) * W K` via
@@ -383,35 +418,30 @@ Reuse Astra's `allRungStepSum` (`S`), `allRungDefectAcc` (`Δ̃`), and `W r = 2^
 9. `pinning_ceil_identity` — `∀ K ≥ 1, W K = ⌈L * (3/2)^(S K)⌉` (from 6, since the gap is in `(0,1)`).
 10. **Capstone** `archimedean_two_adic_coincidence`: bundle 7 + 8 + 9 into the boxed statement of F2.4.
 
-### F2.6 Expected obstruction and the negative/limitative result to bank
+### F2.6 What the pinning does and does not say
 
-**What this does NOT do (state this explicitly in the paper).** The pinning law is a *rigidity*
-statement about a hypothetical infinite chain; it is **not yet a contradiction**. Two honest gaps:
+The necessary conditions are valid for the all-long recurrence. They are **not a proof-closing
+characterization** when the clock and recurrence are removed.
 
-- **Subsequence, not all $n$.** The constraint $\{L(3/2)^{S_K}\} \ge 62/65$ lives on the sparse boundary
-  set $\{S_K\}$ (gaps $\ge 4$), not on all $n$. Mahler's property is an all-$n$ statement, and
-  $62/65 > 1/2$ would only contradict it if $L$ were literally the orbit's $\xi$ *and* $S_K$ ranged over
-  all survival times. Neither is automatic.
-- **$L$ is only a scalar proxy for $\xi$.** The $2^{3 j_K}$ bookkeeping in $W_K = 2^{3 j_K} V_K$ means
-  $L$ and $\xi$ differ by seed-dependent powers of 2; the fractional-part transfer between them is the
-  missing lemma (F5).
+- If $L$ equalled the original companion, a single selected-time violation of $<1/2$ would suffice;
+  covering every time would not be necessary. But $L$ is a differently scaled number.
+- The exact scale, when $b_r=\operatorname{orbit}(a_0,t_0+S_r)$ and $19b_r+9=72W_r$, is
+  $L=(19/72)\alpha(3/2)^{t_0}$, not an unspecified seed-dependent power of two.
+- The sharper error bound is exactly $1/3<f_r<9/19$ in the original boundary fractional coordinate
+  (Section A2). That interval lies inside the permitted interval, rather than contradicting it.
+- It is false that no real $L$ can have the pinning and valuation properties on an arbitrary infinite
+  sparse set. Section A0 gives an explicit construction even for a fixed sparse clock.
 
-**Bank this as a positive limitative theorem**, not a failure: *"Every infinite all-rung expanding chain
-determines a real constant $L \in [W_0-1, W_0)$ with $\{L(3/2)^{S_K}\} \ge 62/65$ and
-$v_2(\lceil L(3/2)^{S_K}\rceil) \equiv 0 \pmod 3$ for all $K$; conversely, any proof that no real $L$ can
-meet both conditions on an infinite set with gaps $\ge 4$ closes the expanding regime."* This is a
-**clean reduction of the last open case to a single Diophantine property of one real number** — a strictly
-better target than "rule out $V_r \to \infty$." Record it alongside Round 2's `R3.1/R3.2` as `R3.3`.
+Retire the earlier `R3.3` formulation that discarded the actual recurrence. The replacement targets
+in Sections A3–A4 quantify over genuine positive integer trajectories.
 
 ### F2.7 Why this is the right object (sanity, not proof)
 
-By Weyl/Koksma, for Lebesgue-a.e. $L$ the sequence $\{L(3/2)^n\}$ is equidistributed, so clustering in
-$[62/65,1)$ along an infinite subsequence is an **exceptional (measure-zero) condition** — perfectly
-consistent with Mahler's theorem that $Z$-numbers form a null set, and with the known fact that the
-$3/2$-orbit problem is *not* decidable by measure alone. So the pinning law correctly lands $L$ in the
-"thin exceptional set where a counterexample would have to live," which is exactly where the remaining
-fight is. Formalizing the equidistribution remark is **not** required (and Mathlib's Weyl support is thin);
-mention it in prose only.
+**Correction:** Equidistribution implies infinitely many visits to every positive-length interval,
+including $[62/65,1)$. Those visits admit a subsequence with gaps at least four. It does not make
+such subsequence visits exceptional. Likewise, visits of $L(3/2)^n\bmod2$ to $(26/27,1)$ give both
+strong pinning and an odd ceiling. No general equidistribution theorem excludes these relaxed tests.
+The restriction that matters is the **integer-orbit-selected clock with its exact transition law**.
 
 ### F2.8 Numeric pre-verification (already run; reproduce if desired)
 
@@ -419,135 +449,127 @@ Three exact-arithmetic harnesses (Python `fractions.Fraction`) were run before w
 - **200 arbitrary rational chains** ($W_0 \le 50$, $j_r \le 4$, $4 \le s_r \le 9$): master identity,
   $\theta_K \nearrow$, $0 < \theta_K < 1$, $1 \le \widetilde{\Delta}_K \le 3^{S_K}-2^{S_K}$, and
   $g_K \searrow$ — **all hold**.
-- **400 genuine integer chains** (only steps with integer $W_{r+1} \ge 1$ accepted; $L$ estimated from a
+- **400 accepted finite relaxed integer chains** (only steps with integer $W_{r+1} \ge 1$ accepted; $L$ estimated from a
   long $a{=}4$ tail): $0 < W_K - L(3/2)^{S_K} \le 3/65$ and $\{L(3/2)^{S_K}\} \ge 62/65$ — **all hold**.
-- **600 genuine integer chains**, limit-free form: $0 < 3^{d}W_K - 2^{d}W_M$,
+- **600 accepted finite relaxed integer chains**, limit-free form with $M>K$: $0 < 3^{d}W_K - 2^{d}W_M$,
   $65(3^{d}W_K - 2^{d}W_M) \le 3^{d+1}$, and $65\,((2^{d}W_M)\bmod 3^{d}) \ge 62\cdot 3^{d}$ — **all hold**
   (worst observed gap ratio $0.0206 < 3/65 = 0.0462$).
 
 Constants cross-checked: $27\cdot 2^a \le 26\cdot 3^a$ for $a = 1..40$; $\tfrac{1}{1-(2/3)^4} = \tfrac{81}{65}$;
 $\tfrac{1}{27}\cdot\tfrac{81}{65} = \tfrac{3}{65}$.
 
-## F3. The unifying coupling: a seed-determined death-avoidance equation (bridging Priority 1 and Priority 3)
+These are historical sample counts, not counts of distinct infinite trajectories. Positivity and
+integrality of a few $W$ states do not establish `ValidBlockChain`, exact valuations, boundary
+integrality modulo $19$, or continuation forever. Appending a rational tail is only a relaxed
+recurrence experiment. The newer checks in A7 explicitly separate algebraic words from genuine orbits.
 
-This is the creative payoff of F2 and directly answers the summary's call to "couple the frozen top part
-with the death-class sieve." Priority 3 shows the epoch transition is governed by $v_2(X_r)$ where
-$X_r = 3^{a_r}V_r - D_{s_r} = 2^{\nu_{r+1} + s_r - 3}V_{r+1}$, with the **death class** at
-$\nu_{r+1} \equiv 1 \pmod 3$. Section F2 shows the *same* $V_r$ data is pinned to the single real constant
-$L$: $W_r = 2^{3 j_r}V_r = \lceil L(3/2)^{S_r}\rceil$. Eliminating $V_r$ between the two gives a
-**closed, seed-determined recursion in which the only free choice at each epoch is which octadic class to
-fall into, and the Archimedean constant $L$ dictates the admissible 2-adic valuation**:
-$$\boxed{\nu_{r+1} = v_2\!\Big(3^{a_r}\big\lceil L\,(3/2)^{S_r}\big\rceil \cdot 2^{-3 j_r} - D_{s_r}\Big) - (s_r - 3), \qquad \nu_{r+1} \not\equiv 1 \pmod 3 \ \ \forall r.}$$
-The content: $L$ is *frozen by the seed* (F2), yet it must steer every $X_r$ away from the $v_2$-death
-class forever. Two formalizable sub-results, both bankable:
+## F3. The valuation coupling: a useful identity, not an additional exclusion
 
-1. `coupling_val_determined_by_L` — the valuation $\nu_{r+1}$ is a function of $(L, S_r, a_r, s_r, j_r)$
-   alone (no independent freedom in $V_{r+1}$), because $V_{r+1}$ is itself pinned by $L$ at step $r+1$.
-   **Deliverable:** express `death-avoidance for all r` as a single predicate on the pair
-   `(L, (fun r => (j r, s r)))`, i.e. an infinite system of 2-adic congruences in the *one* real unknown $L$.
-2. `coupling_finite_horizon_contradiction_scheme` — the honest conditional closer: *if* one supplies an
-   effective **lower bound for $\{L(3/2)^n\}$ decay** (equivalently an irrationality-measure-type bound for
-   $L$ against the sparse base-$3/2$ progression), the death-avoidance congruences over-determine $L$ past
-   a computable horizon $K_0(W_0)$, contradicting $\{L(3/2)^{S_K}\} \ge 62/65$. State it as
-   `(EffectiveFractionalLowerBound L) → ¬ InfiniteExpandingChain`. This isolates **exactly one** missing
-   analytic input (F5) and formalizes everything around it.
+For a genuine normalized all-long chain, substitute
+$W_r=\lceil L(3/2)^{S_r}\rceil$ into the existing integer recurrence. First prove
+$2^{3j_r}\mid W_r$ and set $V_r=W_r/2^{3j_r}$ by **exact integer division**. Then
+$$X_r=3^{a_r}V_r-D_{s_r}>0,\qquad
+  v_2(X_r)=\nu_{r+1}+s_r-3.$$
+This is a valid reformulation of the same transition. There is no independently choosable
+"octadic class" in an actual trajectory. In an abstract system, both $L$ and an infinite schedule
+are still data until the natural-seed and first-return bridges have been proved.
 
-**Why bother if input (2) is conditional?** Because it converts an open *combinatorial* problem (avoid a
-residue class forever) into an open *Diophantine* problem about **one real number**, and the latter is the
-kind of statement that effective transcendence theory (Baker, Rhin–Viola, Bugeaud) actually targets. Even
-unproven, the reduction is a publishable, Lean-checked structural theorem.
+**Retained deliverable:** `coupling_val_determined_by_L`, with positivity, exact division,
+normalization, and clock hypotheses all explicit. Keep the valuation equation in additive form
+until the lower bound needed to subtract $s_r-3$ has been established.
+
+**Retired deliverable:** the former implication from `EffectiveFractionalLowerBound L`.
+No precise sufficient bound was specified, and a lower bound for a fractional part does not
+contradict an existing lower bound near one. Nor is a general irrationality measure available
+for the unknown $L$. Replace this target with the actual-orbit renewal bridge and the finite
+escape certificate in A3–A4. These have explicit quantifiers and a directly checkable conclusion.
 
 ## F4. Additional creative tracks (prioritized; each with Lean deliverable + obstruction + banked result)
 
 These are lower-priority than F2–F3 but each yields a formalizable negative/limitative result, per the
 team policy that *banked dead ends advance the problem*. Listed in descending expected value.
 
-### F4.1 Skolem–Mahler–Lech route to the aperiodicity obstruction (new proof of an old fact)
-The carry recurrence $C_{m+1} = 3 C_m + 2^m e_m$ (parity word $e$) is a *non-autonomous* linear recurrence.
-**Idea:** homogenize by treating $2^m$ as a second geometric mode, giving the constant-coefficient
-2-variable recurrence $\binom{C_{m+1}}{2^{m+1}} = \begin{psmallmatrix}3 & e_m\\ 0 & 2\end{psmallmatrix}\binom{C_m}{2^m}$.
-*If* the parity word $e$ were eventually periodic, the product matrix is eventually a fixed power, and
-**Skolem–Mahler–Lech** forces the coincidence set $\{m : 3^k \mid C_m\}$ to be eventually periodic (finite
-union of arithmetic progressions). That contradicts the already-proved unconditional complexity slope
-$\ge \log 2/\log(3/2) \approx 1.7095$ for any $a_0 \ge 1$. **Deliverable:**
-`eventuallyPeriodic_parity_imp_false_via_SML` — a *second, independent* proof of the periodic obstruction
-routed through SML/linear-recurrence periodicity. **Obstruction to bank:** for a genuine $Z$-number the
-word is *not* eventually periodic, so SML gives no contradiction on the nose — the autonomous reduction
-only bites on the periodic branch. Mathlib has no SML; formalize the *finite* statement (periodic word
-$\Rightarrow$ periodic coincidence set) by hand via the matrix power, avoiding the full theorem.
+### F4.1 Periodic forcing modulo a fixed modulus: use finite-state reasoning, not SML
 
-### F4.2 Ostrowski / $\beta = 3/2$ digit route for the pinning subsequence
-F2 forces $\{L(3/2)^{S_K}\} \ge 62/65$, i.e. in the greedy $\beta = 3/2$ numeration (already built in
-`BetaShiftThreeHalvesDictionary.lean`) the expansion of $L$ carries the **maximal digit** at every boundary
-position $S_K$. **Deliverable:** `pinning_imp_topDigit_at_boundaries` — the $\beta$-expansion of $L$ has
-digit $= \lfloor \beta \rfloor = 1$ at positions $S_K$ and obeys Parry admissibility elsewhere.
-**Obstruction to bank:** "top digit on a sparse subsequence" pins $L$ only along $\{S_K\}$, not fully; the
-$\beta$-shift top is a single orbit but the sparse constraint is satisfiable — so this is **subsequence
-$\beta$-rigidity, not full rigidity**. Still, it connects $L$ to the non-sofic $S_{3/2}$ structure and may
-combine with F3's valuation congruences. Formalize as a property of `kneadingDigit`/`admissibleResidueFinset`.
+The matrices $\begin{psmallmatrix}3&e_m\\0&2\end{psmallmatrix}$ are not constant unless the forcing
+is controlled. If $e_m$ is eventually periodic, augment the residue of $C_m$, the residue of
+$2^m$, and the forcing phase. Modulo a fixed integer this is a finite deterministic system,
+so its trajectory is eventually periodic. This elementary observation does not require
+Skolem–Mahler–Lech, which concerns exact zero sets of linear recurrences rather than fixed-modulus
+divisibility in this form.
+
+Periodic parity is already excluded by the project's complexity theorem. Periodicity of one
+carry-divisibility set alone would not contradict that theorem. **Do not build a new SML module**
+merely to reprove the existing obstruction. Add a small finite-state lemma only if A4 needs it.
+
+### F4.2 Correct the raw-power versus beta-iteration dictionary
+
+For noninteger $\beta$, $T_\beta^n(x)$ generally differs from $\{\beta^n x\}$. At $x=3/4$,
+$$T_{3/2}(x)=1/8,\qquad T_{3/2}^2(x)=3/16,\qquad
+  \{(3/2)^2x\}=11/16.$$
+Consequently the earlier `pinning_imp_topDigit_at_boundaries` claim is not justified.
+Formalize this exact counterexample with `norm_num`.
+
+The valid route is the existing `fract_dynamics_conj_betaMap` in
+[BetaShiftThreeHalvesDictionary.lean](./BetaShiftThreeHalvesDictionary.lean):
+$x_n=2\,\operatorname{fracPart}(a_0,\alpha,n)$ follows the beta map **under consecutive companion
+hypotheses**, and its greedy digit is the actual integer-orbit parity. Use that conjugacy, not
+the raw powers of $L$, when bringing kneading restrictions into A4.
 
 ### F4.3 Markov-chain-on-residues heuristic — banked explicitly as a NON-proof
-The `4:2:1:1` octadic anatomy (Priority 3) *suggests*, under a **uniform-residue independence heuristic**,
-that each epoch lands in the death classes $\{2,6\}$ (a $\tfrac14$ share of the even continuation branch)
-with constant positive probability, so survival through $N$ epochs has heuristic probability $\to 0$
-geometrically. **This is NOT a proof** — the residues are *determined by the single constant $L$* (F2/F3),
-hence neither uniform nor independent; the heuristic ignores exactly the correlations that a counterexample
-would exploit. **Deliverables:** (a) `octadic_density_counts` — the rigorous combinatorial core (the
-$4:2:1:1$ class counts and the $\{2,6\}$ death share), fully proved; (b) `markovSurvival` — a *clearly
-labeled heuristic* `def` computing the product-measure survival decay, with a docstring stating it is a
-**non-theorem / intuition pump**, plus a Lean `example` exhibiting a concrete correlated chain that beats
-the heuristic prediction (to make the gap undeniable). **Banked result:** "the measure heuristic predicts
-null survival but is provably not rigorous; the independence assumption fails because $L$ couples the
-epochs." This is precisely the kind of honest negative packaging the program wants, and it stops a future
-round from mistaking the density for a proof.
+The death classes $\{2,6\}$ comprise $2/8=1/4$ of all octadic classes, but **$2/4=1/2$ of the even
+classes**. These are different conditioning events. Neither uniformity nor independence across
+actual epochs has been established. Determinism alone does not prove independence false: deterministic
+dynamics can generate independent observations under an appropriate distribution on initial states.
+
+**Bank a precise countermodel to the inference, not an alleged surviving Mahler chain:** draw one
+uniform element of `Fin 8` and reuse it at every time. Each marginal death share is $1/4$, but the
+fraction avoiding death at every one of $N\ge1$ times is $3/4$, not $(3/4)^N$.
+Finite-set intersection and cardinality suffice to formalize this. Retain the octadic counts;
+omit a probability library or heuristic API unless another deliverable actually needs it.
 
 ### F4.4 Effective Pillai/Baker literature anchor for Priority 2
-Priority 2's cutoff needs an external effective bound. The right citation is **Bennett (2001)**,
-*Rational approximation to algebraic numbers of small height*: for the pair $(2,3)$ the inequality
-$|3^a - 2^b| \ge \max(3^a,2^b)^{\,1-\kappa}$ holds effectively, and more directly the finiteness/explicit
-list of solutions to $3^a - 2^b = c$ for fixed small $c$ (Pillai; Stroeker–Tijdeman). **Deliverable:**
-`effective_pillai_hypothesis` — state the needed bound as a named hypothesis with the Bennett/Pillai
-constant, and prove `effective_pillai_cutoff_excludes_bounded_V_and_s` *relative to it* (so the conditional
-status is explicit in the type). **Obstruction to bank:** Mathlib has no Baker/Bennett; the result stays
-conditional, mirroring Round 2's S-unit dependency. Note the honest scope in the paper.
+Priority 2 needs a theorem for **variable bounded coefficients** $V,V'$, not just $3^a-2^c=d$.
+The earlier Bennett citation was not verified as supplying that theorem and must not be used to
+invent a constant. A verified primary reference for the needed linear-forms methodology is
+E. M. Matveev, [An explicit lower bound for a homogeneous rational linear form in the logarithms
+of algebraic numbers. II](https://doi.org/10.1070/IM2000v064n06ABEH000314),
+*Izvestiya: Mathematics* 64:6 (2000), 1217–1269.
 
-## F5. Honest "what would actually close the proof"
+Use $\Lambda=a\log3-c\log2+\log(V/V')>0$ and the rational squeeze from Track 2.
+State `effective_pillai_hypothesis` with **all** bounds on $V,V',s,a,c$ quantified; prove the
+finite-chain cutoff relative to it. A paper citation is not a Lean proof of that hypothesis.
+Do not export an unconditional corollary unless that dependency has actually been discharged.
 
-After Round 3, the entire conjecture reduces to **one analytic input about the single real constant $L$**:
+## F5. What would actually close the proof: corrected target
 
-> **Missing lemma (R3.3-closer).** There is an effective $c > 0$ and $N_0$ with
-> $\{L\,(3/2)^n\} \le 1 - c$ for some $n \in \{N_0, \ldots, N_0 + g\}$ in every gap of length $g \ge 4$ —
-> equivalently, $L$ does not admit maximal $\beta=3/2$ digits on an infinite gap-$\ge 4$ subsequence.
+The previous closer was invalid. Finding an escape **between** selected boundaries does not force
+an escape **at** a boundary; an unspecified $c>0$ need not exceed the relevant error threshold;
+and raw powers are not greedy beta iterates. The supposed equivalent sparse-subsequence exclusion
+is false.
 
-Given that lemma, F2's pinning ($\{L(3/2)^{S_K}\} \ge 62/65$) is violated at some boundary, killing the
-expanding regime and (with Rounds 1–2) finishing Mahler's $3/2$ conjecture. **This lemma is currently open
-and is essentially a case of the notorious "$(3/2)^n \bmod 1$" distribution problem** — so Round 3 should
-*not* be scoped to prove it. Round 3's realistic, fully-unconditional deliverables are:
-(i) the Archimedean constant of motion + $3/65$ pinning law (F2, integer form), (ii) the $L$-to-death-class
-coupling as a reduction (F3), and (iii) the banked limitative results F4.1–F4.4. The proof is **not** closed
-by Round 3; it is **reduced to a single, sharply stated, standard-looking Diophantine lemma about one real
-number** — a substantial and honest advance over "eliminate $V_r \to \infty$."
+The replacement in A3 is an exact, all-block bridge. For every genuine positive odd seed it
+associates a renewal tail $h_r$ to every odd return. An infinite companion exists precisely when
+all these tails are $<1/2$, once both directions and all intermediate times are proved.
+Thus an **actual-orbit** theorem forcing some $h_r\ge1/2$ would close the corresponding seed case.
+A4 proposes a stronger, finite integer certificate that suffices for this conclusion, while keeping
+the limiting equality case explicit.
 
-## F6. Revised execution order for Argon (Round 3, with Fable's additions interleaved)
+This is a correctly formulated research target, not a claim that a standard distribution theorem
+will prove it, nor that the research is "one easy lemma away."
 
-| Step | Module | Headline theorems | Gate |
-| --- | --- | --- | --- |
-| **1** | `AllRungConstantOfMotionAndDualRemainder.lean` (Astra) | as in Astra's table; **add** `allRung_W_recurrence` and prove the master identity *from it* | `lake build`, `warningAsError=true`, 0 `sorry` |
-| **1.5 (Fable)** | `ArchimedeanPinningAndMahlerBridge.lean` | `allRung_tailGap_eq_sum`, `allRung_tailGap_pos`, `allRung_tailGap_le`, `allRung_pinning_mod_lower` (integer core); then `exists_archimedean_constant_of_motion`, `fract_pinning_ge`, `boundary_val2_mod_three_zero`, `archimedean_two_adic_coincidence` (real upgrade) | same; keep integer core even if real upgrade is deferred to a `sorry`-free partial |
-| **2** | `ConsecutiveQuotientGCDAndEffectivePillai.lean` (Astra) | as in Astra's table; mark the cutoff **conditional**, cite Bennett/Pillai via `effective_pillai_hypothesis` | same |
-| **3** | `ModThreeDeathClassOctadicSieve.lean` (Astra) | as in Astra's table, **renamed as "anatomy"**; `octadic_density_counts` lives here | same |
-| **3.5 (Fable)** | `DeathAvoidanceCouplingAndBankedHeuristics.lean` | `coupling_val_determined_by_L`, `coupling_finite_horizon_contradiction_scheme` (F3); `eventuallyPeriodic_parity_imp_false_via_SML` (F4.1); `markovSurvival` heuristic `def` + counter-`example` (F4.3); optional `pinning_imp_topDigit_at_boundaries` (F4.2) | same; heuristic clearly labeled non-theorem |
-| **4** | Paper/README/`lakefile.toml`/report + push | update file counts; add a **"What is proved vs. what is reduced"** box reflecting F5; append execution report | full `lake build` all targets, `git push origin HEAD` |
+## F6. Execution-order update
 
-**Priority discipline (unchanged from Astra):** if time-boxed, do Steps 1 → 1.5 → 3.5-coupling first
-(the genuinely new math), then 2 and 3. The integer-form pinning (Step 1.5 core) is the single
-highest-value unconditional result and must land even if nothing else does.
+Use **Section A8**, not the earlier Fable ordering. The sharp integer bound, exact companion bridge,
+and all-block renewal formulation come before a large coupling/heuristics module. Retired F3–F5
+claims are negative-result checks, not positive theorem targets.
 
 ## F7. Mathlib reality notes for the new modules
 
 - **Geometric tail bound** (F2.2/F2.5): work over `ℚ` or `ℝ`; use `tsum_geometric_of_lt_one`
   (ratio `(2/3)^4 = 16/81 < 1`) for the clean `81/65`, or a finite `geom_sum_le` + nonneg tail to stay in
   `ℚ` and dodge `tsum` side-goals. The constant equality `(1/27)*(81/65) = 3/65` is `norm_num`.
+  **Prefer A1's integer induction first:** it is stronger and needs no infinite geometric series.
 - **Monotone-convergence constant $L$** (F2.5 item 6): the antitone bounded sequence `g K = (2/3)^(S K) * W K`
   over `ℝ`; `L := ⨅ K, g K` via `Real.exists_isGLB`/`tendsto_atTop_ciInf (hf : Antitone g) (BddBelow (Set.range g))`.
   `BddBelow` from `g K ≥ W 0 - 1`. Avoid `Filter`-heavy API; `ciInf` + `le_ciInf`/`ciInf_le` suffice.
@@ -559,19 +581,773 @@ highest-value unconditional result and must land even if nothing else does.
 - **Modular pinning** (F2.5 item 5): `(2^d * W M) % 3^d` — keep everything in `ℕ`; the inequality
   `65 * (...) ≥ 62 * 3^d` is linear once `3^d W_K - 2^d W_M` is bounded, so `omega` closes it *after* the
   nonlinear `pow` facts are supplied as hypotheses (don't feed `omega` raw `3^d`).
-- **No new axioms**; everything stays in `Classical` + standard Mathlib. No Baker/SML/Weyl formalization is
-  attempted — those appear only as named hypotheses (F4.1, F4.4) or prose (F2.7).
+- **No new global axioms.** External effective bounds or S-unit results must be explicit theorem
+  parameters. SML is not needed for F4.1. Check `#print axioms` and also read theorem assumptions:
+  a conditional theorem can have only standard kernel axioms while still depending on an unproved input.
 - **`decide` caution** (carried from Round 2): do not `decide` on `ℝ`/`ℚ` (in)equalities; use `norm_num`.
   For the octadic `Fin 8` classification (`octadic_density_counts`) `decide` is fine.
 
-### Fable's closing note to Argon
-The crown jewel of Round 3 is the **integer-form pinning law** (Step 1.5 core, F2.3) — it is unconditional,
-needs no analysis, and upgrades the constant of motion into a Mahler-type statement about a single real
-constant. Land that first. Everything else (real-$L$ upgrade, F3 coupling, F4 banked dead ends) is
-structure and honesty around it. Do **not** let the `markovSurvival` heuristic (F4.3) drift into looking
-like a proof — the whole point of banking it is that it is *not* one. And please keep the "what is reduced,
-not proved" box (F5) prominently in the paper: we are one clean Diophantine lemma away, and saying so
-precisely is worth more than overclaiming.
+### Closing note, updated after the audit
 
+Keep the useful integer pinning law, now sharpened in A1. Do not confuse an identity in new
+coordinates with a new exclusion, or a conditional reduction with a completed theorem.
+The additions below are designed to expose exactly where new arithmetic is still needed.
 
+---
+
+# Part III - Astra's Further Research Plan: Sharp Errors, Renewal Tails, and Exact Arithmetic
+
+**Controlling revision for Argon's next execution.** The priorities and proof obligations in this
+part supersede conflicting language above. These are proposed formalizations, with derivations
+given where available. "Derived" below means a mathematical argument is supplied, not that Lean
+has already checked it. No claim of novelty beyond this project's synthesis is intended.
+
+## A0. Repair the foundations before extending the proof search
+
+### A0.1 Keep a coverage and assumption ledger
+
+| Object or claim | Correct scope | Required action |
+| --- | --- | --- |
+| The single-exponent $W$ recurrence | Consecutive normalized long-exit epochs with $s_r\ge4$ | Prove the bridge from actual boundaries; do not silently skip $s=2$ blocks. |
+| Infinite sparse/descent exclusion | Sustained descent under the theorem's hypotheses | Do not infer that oscillation is excluded. |
+| Bounded $(j,V)$ exclusion | Strictly increasing boundaries with both coordinates bounded | Retain as unconditional in that scope. |
+| Bounded $V$ exclusion via S-units | Conditional on the stated external finiteness input | Keep that input in every downstream theorem signature. |
+| Unbounded $V$ | Arbitrarily large values, not necessarily an eventual lower bound | Never replace it by $V_r\to\infty$ without proof. |
+| Sharp pinning | An all-long cocycle bound; necessary for legitimate all-long trajectories | Interpret it through the exact companion bridge, not an unrelated raw-power digit map. |
+| All-block renewal system | Every positive odd integer seed and every actual odd return | Prove both directions of the companion correspondence, including intermediate times. |
+| Finite escape certificates | A stronger, finitely checkable sufficient exclusion | Account separately for limiting equality at the strict endpoint. |
+
+Read the actual statements, rather than relying on the execution-report prose, in
+[GeneralizedDefectFactorizationAndAllRungDescent.lean](./GeneralizedDefectFactorizationAndAllRungDescent.lean),
+[BoundedOddPartAndThreeAdicSieve.lean](./BoundedOddPartAndThreeAdicSieve.lean), and
+[InfiniteZNumberBridgeAndRationalBase.lean](./InfiniteZNumberBridgeAndRationalBase.lean).
+The signed cocycle in
+[SparseDefectCocycleAndValuationLock.lean](./SparseDefectCocycleAndValuationLock.lean) already
+handles the distinction between short, neutral, and long blocks; reuse it for the coverage audit.
+
+### A0.2 A genuine finite counterexample to the deleted base-two remainder claim
+
+Start at odd seed $149$. Its first odd return has length $6$ and lands at $1701$.
+Use that post-defect boundary as the beginning of the following window:
+
+| $r$ | $b_r$ | $W_r=(19b_r+9)/72$ | $j_r$ | Outgoing long block |
+| --- | --- | --- | --- | --- |
+| 0 | 1701 | 449 | 0 | 4 |
+| 1 | 8613 | 2273 | 0 | 4 |
+| 2 | 43605 | 11507 | 0 | 8 |
+| 3 | 1117557 | 294911 | 0 | Not used |
+
+These are actual integer odd returns, and the displayed $W_r$ are odd, coprime to $3$, and
+congruent to $12$ modulo $19$. For the three-step normalized window,
+$$S_3=16,\qquad
+  \widetilde\Delta_1=1,\quad
+  \widetilde\Delta_2=97,\quad
+  \widetilde\Delta_3=6561\cdot97+256\cdot211=690433.$$
+Although $W_0=449<2^9\le2^{16}$,
+$$\left\lfloor\frac{3^{16}\cdot449}{2^{16}}\right\rfloor=294921\ne294911=W_3,
+  \qquad (3^{16}\cdot449)\bmod2^{16}=35073\ne690433.$$
+The missing quotient term is $\lfloor690433/65536\rfloor=10$.
+
+**Deliverable:** a closed `norm_num` example for the master identity and the unequal quotients,
+plus an actual-odd-block witness using the existing return theorem. This refutes the inference
+from the stated finite hypotheses; it does not assert that the segment extends to an infinite
+survivor. The existing formal frozen-remainder theorem did not make this incorrect claim:
+freezing the seed's own residue is different from bounding the accumulated defect by $2^{S_K}$.
+
+Also bank the $M=K$ counterexample to F2's former modular quantifier and the beta-map example
+in F4.2. These are inexpensive safeguards against regressions in future plans.
+
+### A0.3 Stronger negative result: even a fixed sparse clock can fake the static tests
+
+We can avoid a major equidistribution theorem and construct a direct countermodel to the
+discarded "pinning plus valuation is impossible" claim.
+
+Set $\lambda=3/2$, $D=24$, $m_*=114=2\cdot3\cdot19$, and
+$$a=30+\frac{26}{27}+\frac1{125},\qquad
+  b=a+\frac1{125},\qquad \ell=b-a=\frac1{125}.$$
+Then $30+26/27<a<b<31$ and, by an exact rational calculation,
+$$\lambda^{24}\ell>114+\ell.$$
+Consider closed intervals
+$$I_r(m)=\lambda^{-24r}\bigl(114m+[a,b]\bigr),\qquad m\in\mathbb N.$$
+Given $I_r(m_r)$, its image after multiplying by $\lambda^{24(r+1)}$ has length
+$\lambda^{24}\ell>114+\ell$, so it contains a whole translate $114m_{r+1}+[a,b]$.
+Choose such a child. Start with $m_0=0$. The intervals are nested, positive, compact, and have
+diameters $\ell\lambda^{-24r}\to0$, hence have a common real point $L>0$.
+
+For every $r$, define $W_r=\lceil L\lambda^{24r}\rceil$. Then
+$$0<W_r-L\lambda^{24r}<1/27,\qquad
+  W_r=114m_r+31,\qquad
+  v_2(W_r)=0,\quad 3\nmid W_r,\quad W_r\equiv12\pmod{19}.$$
+Thus even the static boundary-integrality test $(72W_r-9)/19\in\mathbb N$ holds.
+Indeed, with $\alpha=72L/19$ and $b_r=(72W_r-9)/19$, one has
+$1/3<\alpha\lambda^{24r}-b_r<9/19$ at every selected time. Even fractional feasibility at
+those boundaries can pass while the intervening orbit law fails.
+Taking $j_r=0,s_r=24$ also gives the formal clock identity $S_r=24r$.
+**What fails is the actual transition law:** $W_0=31$ gives $b_0=117$, whose actual first
+odd-return length is $v_2(3\cdot117+1)=5$, not $24$.
+
+This is not a Mahler counterexample. It is a counterexample to eliminating the recurrence while
+retaining only its pointwise consequences. The first-return clock is indispensable, even when
+several static arithmetic checks have been retained.
+
+**Lean target:** `static_pinning_and_valuation_do_not_supply_orbit_clock`. First prove the
+interval-containment lemma using a ceiling to choose $m_{r+1}$; then use nested intervals.
+The rational inequalities and the first-return mismatch can land as separate small checks.
+If the compactness formalization is deferred, record that explicitly; checking fifty nested
+children is not a proof of an infinite intersection.
+
+## A1. Finish the error refinement: the sharp $1/27$ telescoping bound
+
+### A1.1 Preserve the correlation between defect size and contraction
+
+Write
+$$a_r=3j_r+s_r,\quad u_r=2^{3j_r}D_{s_r},\quad
+  D_s=3^{s-3}-2^{s-3},\quad q=2/3.$$
+The recurrence is
+$$2^{a_r}W_{r+1}+u_r=3^{a_r}W_r.$$
+Fable's $3/65$ estimate independently maximized the increment and minimized the step length.
+Those worst cases do not occur together. Keeping their dependence gives the exact slack identity
+$$\boxed{
+3^a-2^a-27u
+ =3^s\bigl(3^{3j}-2^{3j}\bigr)+19\cdot2^{a-3}>0
+ \quad(j\ge0,\ s\ge4,\ a=3j+s).
+}$$
+For $j=0,s=4$, for example, the slack is $38$, not zero. This establishes
+$27u<3^a-2^a$ without real analysis.
+
+Apply the defect recurrence and induct on a nonempty segment:
+$$\boxed{0<27\widetilde\Delta_K<3^{S_K}-2^{S_K}\qquad(K\ge1).}$$
+An especially transparent proof tracks
+$R_K=3^{S_K}-2^{S_K}-27\widetilde\Delta_K$:
+$$R_{K+1}=3^{a_K}R_K+
+  2^{S_K}\bigl(3^{a_K}-2^{a_K}-27u_K\bigr),\qquad R_0=0.$$
+After the first step every summand needed for strict positivity is available.
+Over `Nat`, prefer the corresponding additive equality and prove nonnegativity before
+introducing subtraction; over `Int`, the displayed identity can be used directly.
+
+### A1.2 The finite two-index version, with the right quantifiers
+
+For $K<M$, put $d=S_M-S_K$ and
+$G_{K,M}=3^dW_K-2^dW_M$. Shifting the same induction gives
+$$\boxed{G_{K,M}>0,\qquad 27G_{K,M}<3^d-2^d.}$$
+Since $0<G_{K,M}<3^d$, Euclidean division yields
+$$\left\lfloor\frac{2^dW_M}{3^d}\right\rfloor=W_K-1,\qquad
+  (2^dW_M)\bmod3^d=3^d-G_{K,M},$$
+and therefore the stronger modular pinning
+$$\boxed{27\bigl((2^dW_M)\bmod3^d\bigr)>26\cdot3^d+2^d.}$$
+The corresponding $65$-bound is now just a weaker corollary. Do not retain a second independent
+geometric-series proof unless it serves as a useful verification exercise.
+
+Suggested elementary targets in the already planned constant-of-motion module:
+
+1. `allRung_local_twentySeven_slack_identity`.
+2. `allRungDefectAcc_twentySeven_strict_bound`.
+3. `allRung_tailGap_twentySeven_strict_bound`.
+4. `allRung_pinning_mod_strict_lower`.
+5. `allRung_W_strictMono` for positive integer $W$: the local bound implies
+   $u_r<(3^{a_r}-2^{a_r})W_r$, hence $W_{r+1}>W_r$.
+
+### A1.3 The real limit and strict error
+
+For an infinite chain, the normalized sequence $q^{S_K}W_K$ decreases to a limit $L$.
+The finite bounds imply a weak tail bound $W_K-L\lambda^{S_K}\le1/27$.
+Strictness should not be inferred merely by taking limits of strict inequalities. Instead write
+$$\epsilon_K:=W_K-L\lambda^{S_K}
+ =\frac{u_K}{3^{a_K}}+q^{a_K}\epsilon_{K+1}.$$
+The first term is positive; using $\epsilon_{K+1}\le1/27$ and the strictly positive local
+slack gives
+$$\boxed{0<\epsilon_K<1/27\quad\text{for every }K\ge0.}$$
+Consequently
+$$W_0-\frac1{27}<L<W_0,\qquad
+  W_K=\lceil L\lambda^{S_K}\rceil,\qquad
+  \{L\lambda^{S_K}\}>26/27.$$
+When $W_0\ge1$, $L>0$ follows. This is stronger than F2, but still only a statement about
+the specified all-long chain.
+
+### A1.4 Optimal bounded-rung constants and a Bellman viewpoint
+
+If $4\le s_r\le H$, the best uniform one-state constant for the **relaxed affine system** is
+$$\boxed{C_H=\frac{3^{H-3}-2^{H-3}}{3^H-2^H}.}$$
+The exact values
+$$C_4=\frac1{65},\qquad C_5=\frac5{211},\qquad C_6=\frac1{35},
+  \qquad C_H\uparrow\frac1{27}$$
+give useful regression checks.
+
+To prove optimality, maximize $u/(3^a-2^a)$. For fixed $s$, write $t=q^{3j}$:
+$$\frac{u}{3^a-2^a}
+ =\frac{t(1-q^{s-3})}{27(1-tq^s)}.$$
+This increases with $t$, so its maximum is at $j=0$. With $x=q^{s-3}$ the remaining expression is
+$(1-x)/(27-8x)$, which increases as $s$ increases. Cross-multiplication proves both monotonicity
+statements without calculus. The induction then gives
+$$G_{K,M}\le C_H(3^d-2^d),\qquad 0<\epsilon_K\le C_H.$$
+For the constant real schedule $j=0,s=H$, choose a real affine trajectory with
+$W_K=L\lambda^{HK}+C_H$; it attains the constant. **Do not claim this constructs an infinite
+integer orbit.** Taking $H\to\infty$ shows that the universal $1/27$ cannot be lowered using
+only these relaxed local inequalities.
+
+This is a small optimal-control/Bellman certificate: for a state-dependent error budget $C(z)$
+and an allowed edge $z\to z'$ labeled $(j,s)$, check
+$$\frac{u}{3^a}+q^aC(z')\le C(z).$$
+Use exact rational inequalities. Any additional state restriction must be derived from a genuine
+orbit, not selected because it produces a convenient bound. State refinement is worthwhile only
+when it improves a proved bound or eliminates a real branch.
+
+## A2. Identify the limit exactly: an essential redundancy audit
+
+Assume the missing bridge has actually been established:
+$$b_r=\operatorname{orbit}(a_0,t_0+S_r),\qquad 19b_r+9=72W_r,$$
+and $\alpha$ is a companion forever. Put
+$$f_r=\alpha\lambda^{t_0+S_r}-b_r,\qquad 0\le f_r<1/2.$$
+Multiplying the boundary identity by $q^{S_r}$ shows
+$$q^{S_r}W_r=\frac{19}{72}\alpha\lambda^{t_0}
+  +q^{S_r}\frac{9-19f_r}{72}.$$
+The second term tends to zero because $f_r$ is bounded and $S_r\to\infty$. Hence
+$$\boxed{L=\frac{19}{72}\alpha\lambda^{t_0},\qquad
+  \epsilon_r=\frac{9-19f_r}{72}.}$$
+The sharp pinning is therefore exactly
+$$\boxed{0<\epsilon_r<1/27\quad\Longleftrightarrow\quad1/3<f_r<9/19.}$$
+
+This explains why fractional parts near one for the scaled $L$ are compatible with fractional
+parts below one-half for $\alpha$. Improving the numerical bound is useful; interpreting it as
+an independent incompatibility with Mahler's condition would be wrong.
+
+**Deliverables:**
+
+- `normalized_boundary_limit_eq_scaled_companion`.
+- `pinning_error_eq_boundary_fraction_affine`.
+- `sharp_pinning_iff_boundary_fraction_window`.
+- A corollary stating explicitly which hypotheses are orbit bridges, which are cocycle algebra,
+  and which are companion assumptions.
+
+Do not prove a fake converse by simply defining $b_r=(72W_r-9)/19$: integrality, positivity,
+actual first-return lengths, and intermediate-time behavior remain separate obligations.
+Section A3 supplies the correct all-block route.
+
+## A3. Main new synthesis: a renewal system that includes every odd block
+
+### A3.1 Replace the signed defect by a constant $+1$
+
+Begin at a positive odd integer $b_0$. At **every** odd boundary, not just long-defect epochs,
+define
+$$P_r=3b_r+1,\qquad
+  s_r=v_2(P_r)\ge1,\qquad
+  Q_r=P_r/2^{s_r}\ \text{odd},\qquad
+  T_0=0,\quad T_{r+1}=T_r+s_r.$$
+The existing odd-return theorem gives
+$$b_{r+1}=3^{s_r-1}Q_r,\qquad
+  \boxed{P_{r+1}=3^{s_r}Q_r+1=\lambda^{s_r}P_r+1.}$$
+Here $P_r\equiv4\pmod6$ and $\gcd(Q_r,6)=1$.
+The gap $s_r$ is **computed from $P_r$**, not selected by an optimizing controller.
+Unlike the $19b+9$ defect coordinate, this coordinate has the same additive term for $s=1,2,3$
+and every longer block.
+
+Reuse [OddBlockCoupling.lean](./OddBlockCoupling.lean) and the definitions `blockSteps` and
+`ValidBlockChain` in [BridgeThreeMixedBlocks.lean](./BridgeThreeMixedBlocks.lean).
+Do not build a parallel definition of the original orbit.
+Prove existence of the infinite odd-return chain for every positive odd seed, and its exact
+correspondence with `orbit b_0 (blockSteps s r)`.
+
+### A3.2 A positive renewal sum and its tail recurrence
+
+Normalize the affine recurrence:
+$$q^{T_N}P_N=P_0+\sum_{i=1}^{N}q^{T_i}.$$
+Since $T_i\ge i$, the sum converges by comparison with $\sum_{i\ge1}q^i=2$. Define
+$$\mathcal H=P_0+\sum_{i\ge1}q^{T_i},\qquad
+  h_r=\mathcal H\lambda^{T_r}-P_r
+      =\sum_{i>r}q^{T_i-T_r}.$$
+These definitions make sense for **every** genuine positive integer odd-block orbit, whether
+or not it has a companion. Always $0<h_r\le2$.
+Separating the first summand gives
+$$\boxed{h_r=q^{s_r}(1+h_{r+1}),\qquad
+  h_{r+1}=\lambda^{s_r}h_r-1.}$$
+The coupled system is particularly simple:
+$$\boxed{(P,h)\longmapsto
+  \bigl(\lambda^sP+1,\ \lambda^sh-1\bigr),\qquad s=v_2(P).}$$
+The sum $P+h$ expands homogeneously; its normalization is $\mathcal H$.
+This is the useful connection to renewal equations and affine cocycles. It is an exact
+reformulation, not an appeal to a random renewal process.
+
+### A3.3 Prove the companion equivalence, including all intermediate times
+
+For a companion $\alpha$ beginning at $b_0$, boundedness of its fractional remainder implies
+$$\mathcal H=3\alpha,\qquad
+  h_r=3\bigl(\alpha\lambda^{T_r}-b_r\bigr)-1.$$
+Positivity of the renewal tail then strengthens the odd-boundary lower bound to
+$\alpha\lambda^{T_r}-b_r>1/3$. Thus survival forces $0<h_r<1/2$ for all $r$.
+
+Conversely, suppose the **genuine integer trajectory** has $h_r<1/2$ at every odd return.
+Set $\alpha=\mathcal H/3$. At those boundaries,
+$$f(T_r)=\alpha\lambda^{T_r}-b_r=(1+h_r)/3\in(1/3,1/2).$$
+For $1\le v\le s_r$, the existing fractional block identity gives
+$$\boxed{f(T_r+v)=q^{\,s_r-v}f(T_{r+1}).}$$
+This is positive and less than $1/2$. The formula is not asserted at $v=0$, where the
+initial odd-step offset has not yet been applied. Since the increasing times $T_r$ cover all
+ordinary times by these intervals, $\alpha$ is a companion forever.
+
+**Central theorem target:**
+
+> For every positive odd seed $b_0$, an infinite companion exists if and only if every tail
+> of its actual odd-block renewal series satisfies $h_r<1/2$.
+
+Also prove the initial-shift bridge: a positive integer seed reaches an odd state after its
+finite initial even run. A putative positive Z-number must eventually have positive floor.
+Excluding all positive odd seeds therefore excludes all positive Z-numbers. Do not accidentally
+include $\alpha=0$ or a negative rational ghost as a positive seed.
+
+### A3.4 Real feasibility alone cannot remove the difficult language
+
+If an abstract gap schedule has $s_r\ge3$ for every $r$, then
+$$0<h_r\le\sum_{i\ge1}q^{3i}=\frac8{19}<\frac12.$$
+Therefore **every such schedule passes the real tail test**. In particular, if a genuine positive
+integer orbit had all odd gaps at least three forever, A3.3 would produce a companion.
+The task in this subclass is entirely to rule out the required natural-seed arithmetic.
+
+The schedule $s_r=3$ forever has
+$$h_r=8/19,\qquad P_*=-8/19,\qquad b_*=-9/19,$$
+with $P_*=\lambda^3P_*+1$. This is the familiar rational $2$-adic ghost, not a positive integer.
+It is a required control example for every real-only or fixed-congruence-state argument.
+
+The older parity-tail formula is
+$f_n=(1/3)\sum_{k\ge0}q^k e_{n+k}$ under infinite companion hypotheses.
+Grouping its nonzero terms at odd returns gives exactly $(1+h_r)/3$.
+Thus the renewal bridge is a more convenient complete coordinate system, not an independent
+second source of exclusion beyond the parity-tail/signed-margin method.
+
+At normalized long-epoch boundaries, A2 becomes
+$$\epsilon_r=\frac{8-19h_r}{216}.$$
+So the $1/27$ pinning says $0<h_r<8/19$. With all ordinary gaps at most $H$, the bound
+$h_r\ge2^H/(3^H-2^H)$ recovers $C_H$ from A1. This is an important redundancy result:
+the sharp error estimate and the renewal estimate are two expressions of the same geometry.
+
+### A3.5 An exact two-prime transport identity
+
+Because $3\nmid Q_r$, the integer recurrence also gives
+$$\boxed{v_3(P_{r+1}-1)=s_r=v_2(P_r),\qquad
+  \frac{P_{r+1}-1}{3^{s_r}}=\frac{P_r}{2^{s_r}}=Q_r.}$$
+For a genuine successor, its predecessor is recoverable by
+$$s=v_3(P_{r+1}-1),\qquad P_r=2^s(P_{r+1}-1)/3^s.$$
+Not every even number congruent to one modulo three has a valid predecessor in the same domain;
+check that domain condition rather than assuming surjectivity.
+
+**Research use:** meet forward binary-prefix certificates with backward ternary constraints
+using this exact transport. Do not count the two descriptions as independent information:
+the project's carry-injectivity and universal parity/residue bijection already warn against
+claiming free extra sieve power from a second modulus.
+
+### A3.6 Suggested formalization units
+
+Keep the API small: one module for the integer return/renewal identities, and one for the real
+companion equivalence if analysis imports would otherwise spread unnecessarily.
+
+- `oddReturnP_recurrence`, `oddReturnP_strictMono`.
+- `oddReturnP_three_adic_transport` and the guarded inverse identity.
+- `renewal_normalized_prefix_identity`.
+- `renewalSeries_summable`, `renewalTail_pos`, `renewalTail_recurrence`.
+- `renewalScale_eq_three_mul_companion`.
+- `renewalTail_lt_half_iff_exists_companion`.
+- `minimum_gap_three_real_feasibility` and the rational ghost example.
+
+These are the highest-value new bridge targets. If a direction of the equivalence is not
+completed, report the missing direction and its exact hypotheses; do not shorten "necessary
+condition" to "equivalent" in the paper.
+
+## A4. Primary active research: exact finite escape and height-aware certificates
+
+### A4.1 A finite integer certificate, not a distribution heuristic
+
+For $N>r$ set $d=T_N-T_r$ and
+$$A_{r,N}=\sum_{i=r+1}^{N}2^{T_i-T_r}3^{T_N-T_i}.$$
+Then
+$$2^dP_N=3^dP_r+A_{r,N},\qquad
+  h_r=\frac{A_{r,N}}{3^d}+q^d h_N.$$
+Hence the check
+$$\boxed{2A_{r,N}\ge3^d}$$
+is sufficient to exclude an infinite companion. In fact equality is impossible: the left side
+is even and the right side is odd. Thus the finite partial sum already exceeds $1/2$.
+
+The same certificate should exclude a finite companion through ordinary time **$T_N+1$**:
+the extra step after the terminal odd boundary forces $f(T_N)\ge1/3$, hence $h_N\ge0$.
+Do not drop that extra step when connecting to `ValidCompanionUpTo`.
+
+**Concrete control:** the gap pair $(2,5)$ has $d=7,A=1100$, so
+$2A=2200>2187=3^7$. It occurs on the genuine odd orbit
+$137\to309\to2349$. This recovers the known requirement that an $s=2$ block needs at least an
+$s=6$ next return. Reuse the established short-block lock rather than claim a new exclusion.
+
+**Open target A4-FE:**
+
+> Every positive odd integer seed has an actual finite future block segment satisfying
+> $2A_{r,N}\ge3^{T_N-T_r}$.
+
+This would prove the conjecture after A3's bridges. It is intentionally stronger than merely
+showing that some infinite tail is at least $1/2$.
+
+**Endpoint warning:** if $h_r=1/2$ but all its finite partial sums stay below $1/2$, this
+particular certificate never fires at that $r$. Do not infer a finite certificate from a weak
+limit inequality. Either prove an additional endpoint-exclusion/propagation lemma, or keep this
+case separate in the global coverage ledger.
+
+### A4.2 A cheap exact interval engine for discovering new block certificates
+
+Under a hypothetical surviving tail, propagate a strict upper cap $0<h_r<B_r\le1/2$:
+$$B_0=\frac12,\qquad
+  \boxed{B_{r+1}=\min\!\left(\frac12,\lambda^{s_r}B_r-1\right).}$$
+If the new cap is nonpositive, the prefix is impossible. Every operation is rational.
+For a fixed finite gap word this is exact propagation of the open feasible interval:
+the image of $(0,B_r)$ under $h\mapsto\lambda^{s_r}h-1$, intersected with $(0,1/2)$,
+is $(0,B_{r+1})$ when $B_{r+1}>0$, and is empty otherwise.
+
+Recover the known controls:
+
+- After $s=2$, $B=1/8$, forcing the next gap to be at least $6$.
+- After $(2,6)$, $B=217/512$.
+- Appending one $3$ gives $1763/4096$; appending another gives $14833/32768$.
+- Appending the next $2$ gives $2425/131072$, forcing the following gap to be at least $10$.
+
+This is the already observed kneading/recovery cascade in a rational return-coordinate form.
+It should be compared with
+[BetaShiftThreeHalvesDictionary.lean](./BetaShiftThreeHalvesDictionary.lean) and
+[ParitySurplusPotentialsAndSafetyGame.lean](./ParitySurplusPotentialsAndSafetyGame.lean),
+not implemented as a competing collection of unrelated heuristics.
+
+The actual research state is **$(P_r,B_r)$**, with the next branch fixed by $v_2(P_r)$.
+Long gaps can reset $B_r$ to $1/2$, so the cap alone is not a decreasing global potential.
+The missing mathematics must correlate those resets with natural-seed arithmetic.
+
+### A4.3 Exact prefix compatibility: keep the extra binary bit
+
+For a finite gap word, define
+$$A_{0,0}=0,\qquad
+  A_{0,N+1}=3^{s_N}A_{0,N}+2^{T_{N+1}}.$$
+The master identity gives an input-residue condition. To encode **exact** odd-to-odd returns,
+the terminal $P_N$ must be even, so use
+$$\boxed{3^{T_N}P_0+A_{0,N}\equiv0\pmod{2^{T_N+1}},
+  \qquad P_0\equiv1\pmod3.}$$
+The extra bit is not optional. For example, $P_0=4$ with the falsely requested gap $s=1$
+passes $2\mid(3P_0+2)$, but gives terminal value $7$, which is odd; it fails divisibility by $4$.
+The actual first gap is $v_2(4)=2$.
+
+Prove necessity and sufficiency by reusing the parity-word/residue bijection.
+Alternatively, derive prefix integrality from the terminal congruence, then work backward:
+an even $P_{i+1}$ makes $P_{i+1}-1$ odd, forcing $v_2(P_i)=s_i$ in the exact recurrence.
+Positivity and the mod-$3$ boundary condition still need to be carried.
+
+This gives a compact cylinder certificate for a whole finite gap word. It is not an extra
+independent ternary sieve beyond the underlying word/seed bijection.
+
+### A4.4 Add the natural-seed height rather than another free congruence depth
+
+Use initial seed boxes or intervals together with the exact prefix residue:
+
+1. An explicitly bounded interval for **the initial seed**, with the required parity and mod-$3$
+   condition in the $P$ coordinate.
+2. Its compatible residue modulo $2^{T_N+1}$, or an equivalent compressed parity cylinder.
+3. The exact rational feasibility cap and a certified block history or certificate summary.
+4. The deterministic next valuation, splitting only when the current cylinder does not determine it.
+
+Reject a node when its residue class misses the initial seed interval or the renewal/companion
+certificate proves infeasibility. If a current-state height bound is used to cap an unresolved
+valuation branch, derive that bound at the current time. **The initial height bound cannot be
+reused as a bound on the exponentially growing current state.**
+
+Implement a small proof-producing checker, not a huge new search framework. The checker should
+validate exact divisions, return lengths, interval endpoints, complete branch coverage, and the
+leaf certificate. A search program may be untrusted; its accepted certificate must not be.
+
+**Initial experiment budget:** test the existing known seeds and odd seeds below $2^{12}$,
+with an explicitly recorded ordinary-time cap such as $512$. Report every surviving or
+budget-exhausted leaf. These are diagnostic settings, not mathematical cutoffs and not an
+instruction to label all unexamined states impossible.
+
+For each newly discovered pruning inequality, record the excluded **set of inputs**, not just
+one fortunate run. Look for a finite family of symbolic rules that can be proved uniformly.
+Only after a rule demonstrably needs more state should the congruence depth be increased.
+
+### A4.5 What a genuinely global certificate would need
+
+There are two worthwhile goals; neither follows from a finite census:
+
+- **Uniform height-to-escape theorem:** a proved function $N(H)$ and proof that every positive
+  odd seed at most $H$ has a valid escape certificate by $N(H)$, for every $H$.
+- **Well-founded reduction:** a verified transformation taking any hypothetical surviving
+  seed in a larger height class to a strictly smaller positive surviving seed, with a checked
+  base case and a proof that the transformation preserves the entire infinite property.
+
+The universal shared-prefix bijection permits some finite seed changes, but does not preserve
+an infinite tail for free. For example, subtracting $2^m$ from a seed preserves compatible
+behavior for an initial $m$-step window, while the later displacement has become $3^m$ and
+continues evolving. The missing infinite-tail bridge must be proved, not assumed.
+
+An alternative discovery target is a lower bound, tending to infinity with prefix length,
+for the least positive seed compatible with a **real-feasible** prefix. Merely proving that
+the prefix modulus grows does not prove that its least compatible seed grows.
+
+**Stop/go gate:** do not pursue a new potential unless it has (i) a stated domain,
+(ii) checked transition inequalities, (iii) a lower bound or well-founded range, and
+(iv) a proof that every unresolved actual trajectory eventually makes the required progress.
+A potential that decreases only in a favorable branch is not a termination proof.
+
+## A5. A bounded secondary track: finite prime support, not just bounded size
+
+### A5.1 Consecutive all-block quotients are coprime
+
+The renewal integer map immediately gives
+$$2^{s_{r+1}}Q_{r+1}-3^{s_r}Q_r=1.$$
+Consequently
+$$\boxed{\gcd(Q_r,Q_{r+1})=1,\qquad
+  \gcd(P_r,P_{r+1})=2^{\min(s_r,s_{r+1})}.}$$
+An odd common divisor of the two $P$ values would divide $Q_r$ and $3^{s_r}Q_r+1$, which is
+impossible. These are elementary, all-block counterparts of Track 2's long-rung GCD law.
+
+**Important limitation:** pairwise adjacent coprimality does not force a brand-new prime at
+every step; old primes can reappear later. Nor does a primitive divisor of
+$3^{s-3}-2^{s-3}$ automatically divide an adjacent $V$. Do not promote a Zsigmondy observation
+into an orbit prime-growth theorem without a divisibility bridge.
+
+### A5.2 Conditional prime diversification for every positive odd-block orbit
+
+Suppose all $Q_r$ are supported on a fixed finite prime set $\mathcal P$. With
+$S=\mathcal P\cup\{2,3\}$, the pairs
+$$x_r=P_{r+1}=2^{s_{r+1}}Q_{r+1},\qquad
+  y_r=3^{s_r}Q_r$$
+are positive rational $S$-units satisfying $x_r-y_r=1$.
+These two-term solutions are nondegenerate, and they are distinct because $P_{r+1}$ strictly
+increases. S-unit finiteness therefore excludes fixed prime support.
+
+This is a theorem **conditional in Lean on the external S-unit input**. It applies to every
+positive integer odd-block orbit, not just surviving ones. That broad scope is both useful and
+a warning: by itself it provides no new incompatibility with the real survival condition.
+
+### A5.3 Extension of the bounded-$V$ result to unbounded smooth $V$
+
+For the all-long recurrence, let $a=3j+s$ and $c=3j'+s$. Dividing
+$3^aV-2^cV'=3^{s-3}-2^{s-3}$ by $3^{s-3}$ yields
+$$x_1-x_2+x_3=1,\qquad
+  x_1=3^{3j+3}V,\quad
+  x_2=\frac{2^{3j'+s}V'}{3^{s-3}},\quad
+  x_3=(2/3)^{s-3}.$$
+If the primes in all $V_r$ lie in a fixed finite set, these are $S$-unit triples even if
+$V_r$ itself is unbounded.
+
+Check every nondegeneracy condition. Here $x_1>1$ and $0<x_3<1$:
+$x_1-x_2=1-x_3>0$, $-x_2+x_3=1-x_1<0$, and $x_1+x_3>0$; singletons are nonzero.
+The value of $x_3$ determines $s$, and the exact power of $3$ in $x_1$ determines $j$
+because $3\nmid V$. It then determines $V$.
+Thus identical triples would give identical $(j,V)$ and $W=2^{3j}V$.
+Strict increase of $W$ from A1.2, or the existing strict boundary bridge, proves distinctness.
+
+**Deliverable:** `no_infinite_allLong_chain_with_finite_V_prime_support`,
+with the S-unit finiteness statement passed as an explicit parameter.
+This genuinely extends "bounded $V$": unbounded powers of finitely many primes are also covered.
+It still does not imply that every remaining $V_r$ tends to infinity.
+
+### A5.4 Optional quantitative version, with a verified source and correct rank
+
+Evertse, Schlickewei, and Schmidt,
+[Linear equations in variables which lie in a multiplicative group](https://annals.math.princeton.edu/2002/155-3/p04),
+*Annals of Mathematics* 155 (2002), 807–836, give a bound
+$$\#\{\text{nondegenerate solutions}\}\le
+  \exp\bigl((6n)^{3n}(r+1)\bigr)$$
+for a rank-$r$ subgroup of $(K^\times)^n$ in characteristic zero.
+The exact formula and nondegeneracy convention are visible in the
+[authors' full text](https://arxiv.org/html/math/0409604v1).
+
+For positive rational units supported on $S$, the one-coordinate rank is $|S|$, not
+$|S|-1$. A safe bound for the product group is $n|S|$.
+If $k_N$ counts the distinct prime divisors among $Q_0,\ldots,Q_N$, then the two-variable
+version gives, conditionally, for $N\ge1$,
+$$N\le\exp\bigl(12^6(2(k_N+2)+1)\bigr).$$
+Thus $k_N$ has a very weak logarithmic lower bound in $N$.
+The analogous triple bound uses $18^9(3(|\mathcal P|+2)+1)$.
+
+These are bounds on the **number of solutions**, not effective bounds on their heights or
+an algorithm listing them. They do not yield an effective exponent cutoff just by citation.
+Formalize finiteness and injectivity first; the enormous quantitative constant is optional.
+Stop this track if no genuine survivor-specific restriction can be coupled to the diversification:
+an ever-growing supply of primes is perfectly compatible with unbounded integers.
+
+## A6. Cross-disciplinary connections: use only those that keep the arithmetic
+
+1. **Renewal theory / inducing:** A3 groups the parity tail at actual odd returns. Its benefit is
+   a positive, constant-source recurrence and complete block coverage, not independence or mixing.
+2. **Optimal control / Bellman inequalities:** A1 supplies sharp rational tail budgets; A4 supplies
+   exact feasible-interval propagation. The controller cannot freely choose $s$: $v_2(P)$ decides it.
+3. **Program termination / abstract interpretation:** a finite symbolic checker can prove whole
+   seed families impossible, but requires sound abstraction, complete branches, and well-founded
+   progress. Keep the least seed representative or initial height information that excludes ghosts.
+4. **Two-prime arithmetic / $S$-unit equations:** A3.5 transports one quotient between powers of
+   two and three; A5 exposes prime-support growth. Neither creates an independent random sieve.
+5. **Beta dynamics / kneading:** use the proved companion conjugacy and compare the rational cap
+   cascade with existing kneading restrictions. Do not identify raw powers with beta iterates.
+
+Do not open all five as independent large projects. The primary research experiment is A4's
+coupled integer/interval system. A5 is the one bounded secondary arithmetic extension.
+The other connections supply language, lemmas, or verification tools for those two efforts.
+
+**A worthwhile new-mathematics question:** Can one prove that the actual integer map cannot reset
+the real feasibility cap indefinitely without eventually exhausting a fixed natural-seed cylinder?
+This asks for a relation between arithmetic prefix representatives and feasible renewal tails,
+not for a better average death probability. A successful answer must include a quantitative
+height bound or well-founded progress statement. A proof that no chosen class of potentials
+can supply it is also useful, provided the class and countermodel are stated precisely.
+
+## A7. Verification evidence and regression requirements
+
+### A7.1 Exact checks performed while preparing this revision
+
+A local Node.js `BigInt`/rational check, with no floating-point acceptance tests, verified:
+
+| Check | Scope and count |
+| --- | --- |
+| Local $27$-slack identity and strict positivity | 333 pairs, $0\le j\le8$, $4\le s\le40$ |
+| Bounded-rung inequalities | 6327 triples with $s\le H\le40$ |
+| Accumulated-defect induction identities and inequalities | 1000 distinct generated words, 12 prefixes each |
+| Genuine odd-return, signed-cocycle, valuation and GCD identities | 16000 blocks from 1000 distinct positive odd seeds below 2000 |
+| Short-block coverage within those genuine orbits | 3938 blocks with $s=2$ |
+| Finite renewal numerator identities | 136000 nonempty orbit segments |
+| Deleted quotient claim | The actual seed-$149$ post-defect window in A0.2 |
+| Deleted diagonal modular claim and beta-map identification | Exact rational/integer counterexamples |
+| Static-pinning countermodel | Exact scale inequality and 50 nested-child checks, not an infinite-existence proof |
+| Short recovery and finite escape | The seed-$137$ certificate and all five displayed rational recovery caps |
+| Extra-bit prefix compatibility | 3200 seed/word pairs, including 41 matching prefixes |
+| Affine coordinate conversion and relaxed ghost | 101 rational conversion checks and the exact $s=3$ fixed-point identities |
+
+These checks are falsification aids and checks of the written examples. They do **not** formalize
+the theorems, certify an infinite integer orbit, prove the conjecture, or establish that every
+formula in the document has been independently machine-checked.
+
+### A7.2 Argon's required controls
+
+- Keep algebraic-word tests separate from actual-orbit tests; assert that sample sets are
+  nonempty and count distinct inputs where distinctness is claimed.
+- Include $K=0$, $M=K$, $M=K+1$, $j=0$, and the smallest long rung $s=4$.
+- Include $s=1$ death, $s=2$ recovery, $s=3$ neutral behavior, and a longer rung.
+- Include the exact $(2,5)$ escape and the $(2,6,3,3,2)$ recovery-cap calculations.
+- Include the extra-bit prefix counterexample $P_0=4,s=1$.
+- Include the negative rational $s=3$ ghost in relaxed models, and prove that it is excluded
+  by the positive natural-seed domain, not by an invented real inequality.
+- Explicitly distinguish $h<1/2$, $h\le1/2$, and $h=1/2$.
+- Audit nonzero valuation arguments, exact divisions, and every natural subtraction.
+- Check relative documentation links and update the assumption/coverage ledger after each
+  formalized bridge. No polished report may hide a deferred endpoint or short-block case.
+
+### A7.3 What counts as a banked negative result
+
+A disproved target needs a precise statement and a proved counterexample under **its actual
+claimed hypotheses**. A failed numerical search only establishes a search outcome. A restricted
+ghost model only refutes the inference for that model, not the original conjecture.
+Do not manufacture a "counterexample" by proving an implication from an inconsistent hypothesis,
+and do not count a renamed existing theorem as a new exclusion.
+
+## A8. Final execution order, budgets, and reporting contract
+
+| Phase | Work and suggested location | Completion evidence | Stop/go condition |
+| --- | --- | --- | --- |
+| **0: correctness** | A0 ledger; small regression examples in checks modules | False statements removed; actual hypotheses documented | Do not attempt the retired F3–F5 positive targets. |
+| **1: sharp algebra** | A1 in the planned constant-of-motion/pinning modules | Master identity, $27$-slack, finite modular bound, bounded-rung constants | Bank the integer core even if analysis APIs take longer. |
+| **2: exact bridges** | A2 and A3, reusing the existing odd-block and companion APIs | Limit identification and both directions of the all-block companion theorem | No global reduction claim before intermediate times and initial shifts are covered. |
+| **3: primary research** | A4 finite numerator/cap checker, then arithmetic-height certificates | Checked certificates for whole seed families; named unresolved branches | Expand state only to address a demonstrated obstruction. |
+| **4: bounded secondary arithmetic** | Track 2 GCD facts plus A5 finite-prime-support extension | Elementary GCD proofs and conditional S-unit reduction | Keep external hypotheses explicit; stop at diversification unless a real-survival link emerges. |
+| **5: low-cost anatomy** | Track 3 counts, F4.2 counterexample, F4.3 finite countermodel | Exact counts and properly scoped negative results | No full SML, measure, or probability-library detour. |
+| **6: integration** | Existing paper, README, build targets, and **Part IV execution report** | Targeted checks, full integration build, accurate theorem/assumption inventory | Push Argon's verified execution work as requested for that execution; do not describe this plan as completed formalization. |
+
+### A8.1 Formalization discipline
+
+Search for existing helpers first. Keep the single-exponent integer core separate from optional
+analysis, and avoid one new module per minor observation. The suggested theorem names are
+interfaces to aim for, not a demand to duplicate an equivalent existing result.
+
+Use Lean 4.19.0 and the repository's configured checks. Run focused module/check targets while
+developing, then the full integration build before reporting completion or pushing execution work.
+Require no `sorry`, no `admit`, no new global assumptions disguised as axioms, and no suppression
+of warnings to conceal a proof problem. Audit actual theorem signatures as well as `#print axioms`.
+
+A conditional theorem with an explicit named S-unit or effective-Pillai hypothesis is acceptable
+and useful. The proof checker has verified the implication, not the external hypothesis.
+Use accurate status labels: **formalized unconditional**, **formalized conditional**,
+**formalized counterexample/limitation**, **derived but not formalized**, **open**, or **deferred**.
+
+### A8.2 Part IV execution report must answer these questions
+
+1. Which exact statements were formalized, and in which modules?
+2. Which were already present and merely reused?
+3. Which conjectured statements failed, with what proved counterexample?
+4. Which external mathematical assumptions remain in exported signatures?
+5. Is the all-block companion equivalence complete in both directions?
+6. Are the strict endpoint and finite-certificate gap resolved or still open?
+7. What families of natural seeds were excluded uniformly, rather than only sampled?
+8. Did any result constrain an actual positive integer survivor in a genuinely new way?
+9. What is the single highest-priority unresolved lemma for the next round, and why does it
+   survive the ghost, sparse-clock, and coverage counterchecks?
+
+Report every unexecuted item with its reason; do not quietly skip difficult branches.
+If the work produces only sharper identities and a cleaner reformulation, say so.
+That is valuable progress, but it is not evidence that the proof is nearly finished.
+
+### Final team-leader assessment
+
+The most promising change here is not simply replacing $3/65$ by $1/27$.
+It is replacing an incomplete, sometimes overinterpreted long-defect description by a complete
+all-block system with a precise real constraint and a deterministic arithmetic clock.
+The sharp bound is a good theorem to bank; the exact bridge prevents us from mistaking it for
+a contradiction; and the renewal certificate exposes a concrete place where genuinely new
+arithmetic could enter. Concentrate the next discovery effort there.
+
+---
+
+# Part IV — Argon's Round 3 Execution Report (Phases 0–6 Formalized in Lean 4)
+
+**Baseline after Round 3 execution:** `166` Lean 4.19.0 files (`+8` new files, `0` `sorry`s, `0` warnings, standard kernel axioms `[propext, Classical.choice, Quot.sound]`).
+
+## Answers to Section A8.2's Nine Required Audit Questions
+
+1. **Which exact statements were formalized, and in which modules?**
+   - **[`AllRungConstantOfMotionAndDualRemainder.lean`](./AllRungConstantOfMotionAndDualRemainder.lean) (+ [`...Checks.lean`](./AllRungConstantOfMotionAndDualRemainderChecks.lean))**:
+     - `allRungTwoExp_add_three_mul_eq` (**formalized unconditional**): $E_K + 3 j_0 = S_K + 3 j_K$.
+     - `allRung_W_recurrence`, `allRung_single_exponent_master_identity`, `allRung_single_exponent_master_identity_from_V` (**formalized unconditional**): $2^{S_K} W_K + \widetilde{\Delta}_K = 3^{S_K} W_0$ for $W_r = 2^{3 j_r} V_r$.
+     - `allRung_local_twentySeven_slack_identity`, `allRungDefectAcc_twentySeven_strict_bound`, `allRungDefectAcc_pos_and_le_three_pow_sub_two_pow` (**formalized unconditional**): exact local decomposition $3^a - 2^a = 27 u + 3^s(3^{3j} - 2^{3j}) + 19 \cdot 2^{a-3}$ and strict accumulated bound $0 < 27 \widetilde{\Delta}_K < 3^{S_K} - 2^{S_K}$ for $K \ge 1$.
+     - `all_rung_constant_of_motion_and_dual_remainder`, `allRung_tailGap_twentySeven_strict_bound`, `allRung_pinning_mod_strict_lower`, `allRung_W_strictMono` (**formalized unconditional**): $(2^{S_K} W_K)/3^{S_K} = W_0 - 1$, strict two-index tail-gap and modular pinning for $K < M$ ($27((2^d W_M) \bmod 3^d) > 26 \cdot 3^d + 2^d$), corrected base-$2$ division $(3^{S_K} W_0)/2^{S_K} = W_K + \widetilde{\Delta}_K / 2^{S_K}$, and strict monotonicity $W_r < W_{r+1}$ for $W_0 \ge 1$.
+     - `bounded_rung_bellman_constant_optimality`, `bounded_rung_accumulated_defect_bound`, `bounded_rung_bellman_constants_four_five_six` (**formalized unconditional**): optimal bounded-rung Bellman inequality $(3^H - 2^H) u \le (3^{H-3} - 2^{H-3})(3^a - 2^a)$ for $4 \le s \le H$ and exact constants $C_4 = 1/65, C_5 = 5/211, C_6 = 1/35$.
+     - `all_rung_repeated_epoch_window_pq_cutoff` (**formalized unconditional**): repeated $L$-epoch window cutoff with local window length $d$ and $1 \le q$.
+     - `seed_149_window_1701_base_two_quotient_counterexample`, `diagonal_M_eq_K_mod_pinning_counterexample` (**formalized counterexample/limitation**).
+   - **[`ArchimedeanPinningAndMahlerBridge.lean`](./ArchimedeanPinningAndMahlerBridge.lean) (+ [`...Checks.lean`](./ArchimedeanPinningAndMahlerBridgeChecks.lean))**:
+     - `normalizedBoundarySeq_step_and_prefix`, `normalizedBoundarySeq_strictAnti_and_lower_bound`, `exists_archimedean_constant_of_motion`, `pinning_ceil_and_fract_and_val2_coincidence`, `coupling_val_determined_by_L` (**formalized unconditional**): strict antitonicity of $g_K = (2/3)^{S_K} W_K$, existence of $L = \inf_K g_K \in (W_0 - 1/27, W_0)$ with $0 < W_K - L(3/2)^{S_K} < 1/27 < 3/65$, ceiling/fractional pinning, $v_2(W_K) = 3 j_K \equiv 0 \pmod 3$, and valuation coupling.
+     - `pinning_error_eq_boundary_fraction_affine`, `sharp_pinning_iff_boundary_fraction_window`, `normalized_boundary_limit_eq_scaled_companion` (**formalized unconditional**): exact bridge $L = \frac{19}{72}\alpha(3/2)^{t_0}$ and $0 < \varepsilon_r < 1/27 \iff 1/3 < f_r < 9/19$.
+     - `static_pinning_and_valuation_do_not_supply_orbit_clock` (**formalized counterexample/limitation**): scale-24 interval expansion and $b_0 = 117$ first-return mismatch ($s_0 = 5 \ne 24$).
+     - `oddReturnP_recurrence_and_strictMono`, `oddReturnP_three_adic_transport`, `three_mul_blockKernel_eq_pow_diff_add_renewalNumerator`, `renewal_prefix_master_identity`, `renewal_normalized_prefix_identity`, `renewalTail_recurrence_and_block_companion_iff`, `even_seed_reaches_odd_boundary`, `minimum_gap_three_real_feasibility_and_ghost` (**formalized unconditional**): all-block $P_r = 3 b_r + 1$ dynamics, exact kernel–renewal identity $3 K_N = (3^{T_N} - 2^{T_N}) + A_{0,N}$, single-block renewal-tail companion characterization including intermediate steps $1 \le v \le s_r$, initial even-run shift bridge, and the $s = 3$ rational ghost $P_* = -8/19, b_* = -9/19$.
+     - `finite_renewal_escape_certificate`, `seed_137_two_five_escape_certificate`, `recoveryCap_two_six_three_three_two_cascade`, `extra_bit_prefix_compatibility_and_counterexample` (**formalized unconditional**): finite escape certificate $2 A_{0,N} \ge 3^{T_N}$ (with $2 A_{0,N} \ne 3^{T_N}$) excluding `ValidCompanionUpTo b_0 α (T_N + 1)` and `ValidCompanionForever b_0 α`, seed-137 $(2,5)$ witness, $(2,6,3,3,2)$ rational cap cascade, and $2^{T_N+1}$ extra-bit prefix compatibility.
+   - **[`ConsecutiveQuotientGCDAndEffectivePillai.lean`](./ConsecutiveQuotientGCDAndEffectivePillai.lean) (+ [`...Checks.lean`](./ConsecutiveQuotientGCDAndEffectivePillaiChecks.lean))**:
+     - `consecutive_V_gcd_dvd_defectCore`, `two_pow_add_one_ne_three_pow_of_four_le`, `dense_core_consecutive_V_coprime_and_ne`, `bounded_V_and_s_rational_pillai_squeeze`, `consecutive_oddReturnQ_coprime_and_P_gcd`, `three_pow_mul_V_injective`, `allLong_normalized_three_term_sunit_nondegenerate_and_injective` (**formalized unconditional**).
+     - `effective_pillai_cutoff_excludes_bounded_V_and_s`, `no_infinite_allLong_chain_with_finite_V_prime_support`, `no_infinite_oddReturnQ_chain_with_finite_prime_support` (**formalized conditional** on explicit Pillai / $S$-unit finiteness hypotheses).
+   - **[`ModThreeDeathClassOctadicSieve.lean`](./ModThreeDeathClassOctadicSieve.lean) (+ [`...Checks.lean`](./ModThreeDeathClassOctadicSieveChecks.lean))**:
+     - `octadic_triad_exit_partition`, `octadic_density_counts`, `death_class_avoidance_mod_four_condition`, `coincidence_quotient_bijection_mod_eight`, `periodic_parity_forces_eventually_periodic_carry_mod` (**formalized unconditional**).
+     - `raw_power_fract_ne_betaMap_iterate_at_three_fourths`, `correlated_diagonal_draw_beats_independent_product_bound` (**formalized counterexample/limitation**).
+
+2. **Which were already present and merely reused?**
+   - Reused `orbit_odd_block_return`, `orbit_odd_block_even_interior`, `not_three_dvd_odd_part`, `fracPart_succ`, `fracPart_odd_block` from [`OddBlockCoupling.lean`](./OddBlockCoupling.lean); `blockSteps`, `blockKernel`, `ValidBlockChain`, `mixed_block_integer_identity`, `mixed_block_return_odd`, `mixed_block_return_pinch` from [`BridgeThreeMixedBlocks.lean`](./BridgeThreeMixedBlocks.lean); `ValidCompanionForever` from [`InfiniteZNumberBridgeAndRationalBase.lean`](./InfiniteZNumberBridgeAndRationalBase.lean); `betaDigit`, `betaMap` from [`BetaShiftThreeHalvesDictionary.lean`](./BetaShiftThreeHalvesDictionary.lean); `three_pow_sub_two_pow_coprime_six` from [`GeneralizedDefectFactorizationAndAllRungDescent.lean`](./GeneralizedDefectFactorizationAndAllRungDescent.lean); and `no_simultaneously_bounded_j_and_V_along_strictMono_boundaries` from [`BoundedOddPartAndThreeAdicSieve.lean`](./BoundedOddPartAndThreeAdicSieve.lean).
+
+3. **Which conjectured statements failed, with what proved counterexample?**
+   - The unguarded base-$2$ floor/remainder claim $W_0 < 2^{S_K} \implies W_K = \lfloor 3^{S_K} W_0 / 2^{S_K} \rfloor$ failed (`seed_149_window_1701_base_two_quotient_counterexample`).
+   - The $M = K$ diagonal quantifier in F2's modular lower bound failed (`diagonal_M_eq_K_mod_pinning_counterexample`).
+   - Identifying raw fractional powers $\{\beta^n x\}$ with greedy $\beta$-map iterates $T_\beta^n(x)$ failed at $x = 3/4, n = 2$ (`raw_power_fract_ne_betaMap_iterate_at_three_fourths`).
+   - Static pinning + valuation + mod-$19$ boundary integrality without the first-return clock failed (`static_pinning_and_valuation_do_not_supply_orbit_clock`).
+   - The independent product-measure survival heuristic $(3/4)^N$ failed on correlated deterministic draws (`correlated_diagonal_draw_beats_independent_product_bound`).
+
+4. **Which external mathematical assumptions remain in exported signatures?**
+   - `EffectivePillaiHypothesis M S_max A_max` in `effective_pillai_cutoff_excludes_bounded_V_and_s`, and the explicit $S$-unit finiteness caps in `no_infinite_allLong_chain_with_finite_V_prime_support` and `no_infinite_oddReturnQ_chain_with_finite_prime_support` (plus Round 2's `no_bounded_odd_part_orbit_of_sunit_finiteness`). Zero global axioms were added.
+
+5. **Is the all-block companion equivalence complete in both directions?**
+   - Across any odd-to-odd block (`renewalTail_recurrence_and_block_companion_iff`), both the forward recurrence $h_1 = (3/2)^s h_0 - 1 \leftrightarrow h_0 = (2/3)^s(1 + h_1)$ and the sufficiency of $0 < h_1 < 1/2 \land h_0 < 1/2$ for `ValidCompanionAt b α v` across **all intermediate steps $0 \le v \le s$** are proved, and `finite_renewal_escape_certificate` proves that $2 A_{0,N} \ge 3^{T_N}$ is equivalent to violating `mixed_block_return_pinch`. Infinite-series summability of $\mathcal{H} = P_0 + \sum_{i \ge 1} (2/3)^{T_i}$ over an arbitrary infinite odd-block sequence is addressed in the next outer-loop iterations.
+
+6. **Are the strict endpoint and finite-certificate gap resolved or still open?**
+   - For any finite $N$-block prefix, $2 A_{0,N} \ne 3^{T_N}$ holds unconditionally by parity (`2 * renewalNumerator s N ≠ 3 ^ T_N`), so a finite renewal sum can never hit $1/2$ with equality. However, the infinite-horizon limiting endpoint case $\lim_{N\to\infty} A_{r,N}/3^{T_N - T_r} = 1/2$ (where all finite partial sums stay strictly $< 1/2$) remains distinct from a finite certificate $2 A_{r,N} > 3^d$; we target this directly in the outer-loop research program below.
+
+7. **What families of natural seeds were excluded uniformly, rather than only sampled?**
+   - Every seed $b_0$ realizing a finite block prefix with $2 A_{0,N} \ge 3^{T_N}$ is excluded uniformly (`finite_renewal_escape_certificate`); every positive all-long chain with a repeated $L$-epoch window violating $q d < p S_{r_2} + q B$ is excluded uniformly (`all_rung_repeated_epoch_window_pq_cutoff`); and every stationary dense-core transition $V_{r+1} = V_r$ ($c \ge 4$) is excluded unconditionally (`dense_core_consecutive_V_coprime_and_ne`).
+
+8. **Did any result constrain an actual positive integer survivor in a genuinely new way?**
+   - Yes: (i) the identity $3 \cdot \operatorname{blockKernel}(s, N) = (3^{T_N} - 2^{T_N}) + A_{0,N}$ unifies the old mixed-block carry kernel with the positive renewal numerator across **all** block lengths $s \ge 1$ (including $s = 2$ recoveries), and (ii) the consecutive quotient coprimality $\gcd(Q_r, Q_{r+1}) = 1$ and $\gcd(P_r, P_{r+1}) = 2^{\min(s_r, s_{r+1})}$ hold unconditionally at every odd return.
+
+9. **What is the single highest-priority unresolved lemma for the next round, and why does it survive the ghost, sparse-clock, and coverage counterchecks?**
+   - **Target A4-FE (Uniform Natural-Seed Renewal Escape):** proving that for every positive odd integer $b_0 \ge 1$, the actual deterministic odd-return sequence $P_{r+1} = 3^{s_r} (P_r / 2^{s_r}) + 1$ ($s_r = v_2(P_r)$) eventually produces a finite segment $(r, N)$ with $2 A_{r,N} > 3^{T_N - T_r}$. It survives the $s = 3$ ghost check because $b_0 \ge 1$ is a positive natural number ($P_0 = 3 b_0 + 1 \ge 4 > 0$, whereas the ghost has $P_* = -8/19 < 0$), survives the static sparse-clock countermodel because $s_r = v_2(P_r)$ is the true first-return valuation, and survives the short-block coverage check because $P_r = 3 b_r + 1$ covers $s_r = 1, 2, 3$ and $s_r \ge 4$ uniformly.
 
