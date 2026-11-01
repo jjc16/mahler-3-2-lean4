@@ -2,7 +2,7 @@
 
 Date: 2026-11-01  
 **Role:** Team Leader & Quality Architect Roadmap (Astra, synthesizing Fable & Argon Rounds 1–2)  
-**Reported formal baseline:** `166` Lean 4.19.0 files (`0` `sorry`s, `0` warnings, Round 3 Phases 0–6 formalized)
+**Reported formal baseline:** `186` Lean 4.19.0 files (`0` `sorry`s, `0` warnings, Round 3 + 10 Outer Loops formalized)
 
 **Predecessor Plans:** [Round 1 Plan](./RESEARCH_PLAN_ARGON_GENERAL_PROOF.md) · [Round 2 Plan & Report](./RESEARCH_PLAN_ARGON_ROUND2_COMPLETION.md)
 
@@ -1598,6 +1598,52 @@ arithmetic could enter. Concentrate the next discovery effort there.
 
 ## O10.3 Inner Loop 3 / 3 — Explore & Exploit: The 186-File Round 3 + 10-Outer-Loop Grand Synthesis
 - **Explore & Exploit (Priority 3):** Assemble `mahler_round3_and_ten_outer_loops_grand_synthesis` uniting the headline unconditional theorems across Round 3 and Outer Loops 1–10.
+
+---
+
+# Part XV — Plain-English Summary of Advances & Honest Assessment of Progress on the $3/2 \bmod 1$ Wall
+
+## 1. Plain-English Summary of What Was Accomplished (From 158 to 186 Lean 4 Files)
+
+Across the initial Round 3 execution and all 10 Outer Loops ($n = 10$ outer iterations $\times$ $m = 3$ inner explore/exploit iterations = **30 research iterations**, adding **28 new `sorry`-free Lean 4 files** for a total of **186 Lean 4 files**), we built and machine-verified a complete, self-contained mathematical reformulation of Mahler's $3/2$ problem:
+
+1. **A Single Unified Coordinate System That Never Drops Short Recovery Blocks (`oddReturnP`, $P_r = 3 b_r + 1$):**
+   - Previously, the project's multi-step algebraic towers tracked $19 b_r + 9$, which worked cleanly on long blocks ($s_r \ge 4$) and neutral blocks ($s_r = 3$), but changed sign whenever an orbit used a short recovery block ($s_r = 2$).
+   - By switching to $P_r = 3 b_r + 1$, **every** odd-to-odd block of any length $s_r \ge 1$ obeys the exact same affine law:
+     $$P_{r+1} = \left(\frac{3}{2}\right)^{s_r} P_r + 1 \qquad\big(s_r = v_2(P_r)\big).$$
+   - In Outer Loops 9 and 10 (`InfiniteRenewalSeriesAndGlobalCompanionEquivalence.lean`, `CanonicalOddBlockChainAndGrandSynthesis.lean`), we proved **unconditionally** that every odd integer seed $b_0$ generates a unique infinite odd-block chain $(b_r, s_r, u_r)_{r \in \mathbb{N}}$, a unique real supremum constant $\mathcal{H}_\infty = P_0 + \sum_{i \ge 1} (2/3)^{T_i}$, and a two-way equivalence:
+     > **A starting odd whole number $b_0$ has a Mahler $Z$-number companion $\alpha$ surviving forever if and only if $\alpha = \mathcal{H}_\infty / 3$ and every renewal tail $h_r^\infty = \mathcal{H}_\infty (3/2)^{T_r} - P_r$ stays strictly below $1/2$.**
+
+2. **Exact Bridges Between All Three Coordinate Systems & Resolution of the Endpoint Gap:**
+   - We proved the universal identity $\operatorname{defectCocycleSum}(s, N) = 9 A_{0,N} - 8 K_N$ and $19 \Sigma_N = 3 \cdot 3^{T_N} + 16 \cdot 2^{T_N} - 6 \operatorname{defectCocycleSum}(s, N)$ (`SignedCocycleRenewalBridgeAndTwoBlockFormula.lean`), where $\Sigma_N = 3^{T_N} - 2 A_{0,N}$ is the odd integer renewal slack.
+   - This immediately proved that **no segment with $s_k \ge 3$ can ever trigger a finite escape certificate $2 A_{0,N} \ge 3^{T_N}$**: every finite escape is driven by $s = 1$ or $s = 2$ blocks.
+   - In Outer Loop 8 (`StrictEndpointResolutionAndSlackGrowth.lean`), we proved $\Sigma_{0,N} = 3^{T_N}(1 - 2 h_0(\alpha)) + 2^{T_N+1} h_N(\alpha)$, completely resolving the $h_0 = 1/2$ / asymptotic-endpoint question: even if all finite partial sums stay below $1/2$ ($\Sigma_{0,N} > 0$), if $\inf_N \Sigma_{0,N} / 3^{T_N} \le 0$ (or if $\Sigma_{0,N} \le M$ is bounded), no companion $\alpha$ can survive forever.
+
+3. **Sharper Bounds, New Quotient GCD Laws, and Exact Symbolic Hensel Pruning to $b_0 \ge 61{,}397{,}513$:**
+   - We sharpened the all-long error bound from $3/65$ to the strict optimal constant **$1/27$** (`AllRungConstantOfMotionAndDualRemainder.lean`) and proved the exact companion bridge $L = \frac{19}{72}\alpha(3/2)^{t_0}$ (`ArchimedeanPinningAndMahlerBridge.lean`), showing $0 < \varepsilon_r < 1/27 \iff 1/3 < f_r < 9/19$.
+   - We proved consecutive coprimality $\gcd(Q_r, Q_{r+1}) = 1$, the distance-2 Fermat GCD law $\gcd(Q_r, Q_{r+2}) \mid (3^{s_{r+1}} + 2^{s_{r+1}})$, the $m$-step interior GCD law $\gcd(Q_0, Q_m) \mid (3^d + A_{1,m})$, elementary exclusions of $2^c + 1 = 3^a$ ($c \ge 4$) and $2^c = 3^a + 1$ ($a \ge 2$), and all-block rapid-growth descent $Q_{r+1} + 2 \le Q_r$ (`ConsecutiveQuotientGCDAndEffectivePillai.lean`, `MultiStepQuotientMasterAndFermatGCD.lean`).
+   - We proved closed-form slack laws for the kneading cascade $(2, 6, 3^j, 2)$ ($19 \Sigma = 9 \cdot 27^{j+1} - 2048 \cdot 8^j$) and $(2, 6, 3, 3, 2, s_5)$ ($\Sigma_6 = 2425 \cdot 3^{s_5} - 131072 \cdot 2^{s_5}$), and built a 2-adic Hensel pruning tree (`TwoAdicRecoveryCascadePruningTree.lean`, `SixBlockKneadingEscapeAndFiftyMillionBound.lean`) proving that **every positive integer seed realizing $(2, 6, 3, 3, 2, s_5 \ge 10)$ satisfies $b_0 \equiv 61{,}397{,}513 \pmod{2^{26}}$, and thus $b_0 \ge 61{,}397{,}513$**.
+
+---
+
+## 2. Honest Assessment: Have We Broken Through the $3/2 \bmod 1$ Wall?
+
+**Short, honest answer:** **No — the unconditional Mahler $3/2$ conjecture remains open, and we have not broken through the fundamental $(3/2)^n \bmod 1$ wall.** However, we **have** made genuine, permanent mathematical progress in *stripping away every illusion and isolating the exact arithmetic core of the wall*.
+
+Here is why, in plain terms:
+
+1. **Why Earlier "Near-Proof" Claims Were Illusions (Now Proved False in Lean):**
+   - Earlier it looked as though pinning $W_K$ within $3/65$ (or $1/27$) of $L(3/2)^{S_K}$ nearly finished the proof. Our exact bridge $L = \frac{19}{72}\alpha(3/2)^{t_0}$ proved that $0 < W_r - L(3/2)^{S_r} < 1/27$ is **merely a rewriting of the already-known local window $1/3 < f_r < 9/19$**. It does not create a new contradiction with $f_r < 1/2$.
+   - Even more decisively, our scale-24 countermodel (`static_pinning_and_valuation_do_not_supply_orbit_clock`) proved that one can satisfy the $1/27$ pinning, the 2-adic valuation condition $v_2(W_r) = 0 \equiv 0 \pmod 3$, and the mod-19 boundary condition simultaneously without obeying the actual orbit recurrence.
+
+2. **Where the Real Brick Wall Actually Sits:**
+   - Thanks to Outer Loops 3, 9, and 10, the entire problem for a positive odd integer $b_0 \ge 1$ is now reduced (without any unproved hypotheses or skipped $s = 2$ blocks) to a single deterministic dynamical system:
+     $$P_0 = 3 b_0 + 1, \qquad s_r = v_2(P_r), \qquad P_{r+1} = \left(\frac{3}{2}\right)^{s_r} P_r + 1.$$
+   - If a seed $b_0$ could somehow keep $s_r \ge 3$ forever ($8 \mid P_r$ at every step $r$), our theorem `no_finite_renewal_escape_of_all_blocks_ge_three` proves that its real renewal tails $h_r^\infty$ would automatically stay $\le 8/19 < 1/2$ forever, **so a genuine $Z$-number would exist**!
+   - Conversely, if an orbit uses $s_r = 2$ recovery blocks, it must repeatedly hit high 2-adic divisibility on subsequent blocks (like $s_1 \ge 6$ and $s_5 \ge 10$, which pushed $b_0 \ge 61{,}397{,}513$ mod $2^{26}$).
+   - **Why we haven't broken the wall:** Every time we add $k$ more binary steps to our 2-adic Hensel tree, the modulus $2^{T_N}$ grows by $2^k$, while the integer state $P_N \sim (3/2)^{T_N} P_0$ grows by $(3/2)^k$. Because the number of surviving residue classes modulo $2^{T_N}$ also grows like $(3/2)^{T_N}$ (`|G_N| ≥ (3/2)^N`), **local 2-adic congruences and archimedean interval budgets balance each other at the exact critical slope $\log 2 / \log(3/2) \approx 1.709511$**.
+   - Breaking through this wall for *all* $b_0 \ge 1$ simultaneously requires proving a **global correlation between the size (Archimedean height) of the fixed initial integer $P_0 = 3 b_0 + 1$ and the 2-adic valuations $v_2(P_r)$ at arbitrarily large times $r$** — i.e., proving that a fixed positive integer $P_0$ cannot forever land in the exponentially thin set of residue classes modulo $2^{T_N}$ that avoid $s_r = 1$ and unrecovered $s_r = 2$ blocks. No known method in number theory (including Baker–Matveev linear forms in logarithms or Subspace/S-unit theorems, which only give finiteness under bounded-parameter or fixed-prime-support assumptions) currently controls $v_2(P_r)$ when both the exponents and prime factors of $Q_r$ grow without bound.
+
 
 
 
