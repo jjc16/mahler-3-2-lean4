@@ -1382,4 +1382,32 @@ arithmetic could enter. Concentrate the next discovery effort there.
      showing that the return-pinch margin from `BridgeThreeMixedBlocks.lean` is identically equal to the integer renewal slack $\Sigma_N$.
   3. Prove that $\Sigma_N$ is always odd ($\Sigma_N \bmod 2 = 1$) and satisfies $\Sigma_{N+1} \equiv -2^{T_{N+1} + 1} \pmod{3^{s_N}}$.
 
+---
+
+# Part VI — Outer Loop 2 / 10 (Inner Loops 1–3): All-Block Repeated-Window $(6 \cdot 2^d)$ Super-Divisibility, Mod-6 Anagram Invariance & Survivor $(p, q)$ Cutoffs
+
+## O2.1 Inner Loop 1 / 3 — Explore & Exploit: All-Block Repeated Gap-Window $(6 \cdot 2^d)$ Super-Divisibility
+- **Explore:** Pull in **Factor Complexity & Return-Word Divisibility** in the all-block coordinate $P_r = 3 b_r + 1$ ($b_r$ odd), which includes short $s_r = 2$ recovery blocks without restriction.
+- **Exploit (Priority 1):** Whenever an $L$-block gap window repeats at $r_1 < r_2$ (`∀ t < L, s (r₁ + t) = s (r₂ + t)`) with local step sum $d = \sum_{t<L} s_{r_1+t}$:
+  1. $A_{r_1, r_1+L} = A_{r_2, r_2+L}$ cancels identically, yielding $2^d (P_{r_2+L} - P_{r_1+L}) = 3^d (P_{r_2} - P_{r_1})$.
+  2. Because $b_{r_1}, b_{r_2}, b_{r_1+L}, b_{r_2+L}$ are odd, $P_{r_2} - P_{r_1} = 3(b_{r_2} - b_{r_1})$ and $P_{r_2+L} - P_{r_1+L} = 3(b_{r_2+L} - b_{r_1+L})$ are both divisible by $6$, upgrading the divisibility by a factor of $6$:
+     $$\big(6 \cdot 2^d\big) \;\Big|\; \big(P_{r_2} - P_{r_1}\big) \quad\text{and}\quad \big(6 \cdot 3^d\big) \;\Big|\; \big(P_{r_2+L} - P_{r_1+L}\big)!$$
+
+## O2.2 Inner Loop 2 / 3 — Explore & Exploit: Universal Mod-6 Congruence of Renewal Numerators & Anagram Syzygy
+- **Explore:** Pull in **Abelian / Parikh Anagram Invariants** to study what depends only on the total step sum $d = T_L$ of an $L$-block window rather than the individual block lengths.
+- **Exploit (Priority 2):**
+  1. From $3 K_L = (3^d - 2^d) + A_{0,L}$ and evenness of $A_{0,L}$ ($d \ge 1$), prove that $A_{0,L} \bmod 6$ is determined **solely by $d \bmod 2$**:
+     $$A_{0,L} + (3^d - 2^d) \equiv 0 \pmod 3 \quad\text{and}\quad A_{0,L} \equiv 0 \pmod 2 \qquad (L \ge 1,\; \forall k < L, 1 \le s_k).$$
+  2. Consequently, across **any** two valid $L_1$-block and $L_2$-block windows with the same total step sum $d_1 = d_2 = d$, $6 \mid (A_2 - A_1)$!
+  3. If both windows survive the finite escape test ($2 A_1 < 3^d$ and $2 A_2 < 3^d$), then $2 |A_2 - A_1| < 3^d$.
+
+## O2.3 Inner Loop 3 / 3 — Explore & Exploit: All-Block Survivor State Upper Bound & $(p, q)$ Complexity Cutoff
+- **Explore:** Pull in **Diophantine Height vs. 2-Adic Valuation Comparisons** on $P_r = 3 b_r + 1$.
+- **Exploit (Priority 3):**
+  1. Prove that whenever a trajectory survives through block $r$ ($2 A_{0,r} < 3^{T_r}$),
+     $$2^{T_r + 1} P_r \;=\; 2 \cdot 3^{T_r} P_0 + 2 A_{0,r} \;<\; 3^{T_r} (2 P_0 + 1).$$
+  2. Combining $6 \cdot 2^d \le P_{r_2} - P_{r_1} < P_{r_2}$ ($r_1 < r_2$) with $2^{T_{r_2}+1} P_{r_2} < 3^{T_{r_2}}(2 P_0 + 1)$ and $2 P_0 + 1 \le 3 \cdot 2^B$, $1 \le q$, $3^q \le 2^{p+q}$ yields the **All-Block Survivor Repeated-Window $(p, q)$ Cutoff**:
+     $$\boxed{q \cdot (d + 2) \;<\; p \cdot T_{r_2} + q \cdot B!}$$
+
+
 

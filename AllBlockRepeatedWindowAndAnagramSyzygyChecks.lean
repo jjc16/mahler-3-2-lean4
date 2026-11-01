@@ -1,0 +1,23 @@
+import AllBlockRepeatedWindowAndAnagramSyzygy
+
+namespace Mahler.Checks
+
+open Mahler.AllBlockRepeatedWindow
+
+#check @validBlockChain_shift
+#check @blockSteps_and_renewalNumerator_congr
+#check @allBlock_repeated_window_six_mul_two_pow_dvd
+#check @renewalNumerator_even_and_mod_three_law
+#check @allBlock_anagram_mod_six_congruence_and_pinch_gap
+#check @allBlock_survivor_P_upper_bound
+#check @allBlock_repeated_window_survivor_pq_cutoff
+
+#print axioms validBlockChain_shift
+#print axioms blockSteps_and_renewalNumerator_congr
+#print axioms allBlock_repeated_window_six_mul_two_pow_dvd
+#print axioms renewalNumerator_even_and_mod_three_law
+#print axioms allBlock_anagram_mod_six_congruence_and_pinch_gap
+#print axioms allBlock_survivor_P_upper_bound
+#print axioms allBlock_repeated_window_survivor_pq_cutoff
+
+end Mahler.Checks

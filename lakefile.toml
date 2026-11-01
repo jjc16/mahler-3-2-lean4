@@ -511,6 +511,13 @@ name = "RenewalCocycleAndBellmanSandwich"
 [[lean_lib]]
 name = "RenewalCocycleAndBellmanSandwichChecks"
 
+[[lean_lib]]
+name = "AllBlockRepeatedWindowAndAnagramSyzygy"
+
+[[lean_lib]]
+name = "AllBlockRepeatedWindowAndAnagramSyzygyChecks"
+
+
 
 
 
