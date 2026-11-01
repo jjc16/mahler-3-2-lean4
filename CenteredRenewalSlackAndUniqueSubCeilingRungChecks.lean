@@ -1,0 +1,20 @@
+import CenteredRenewalSlackAndUniqueSubCeilingRung
+
+namespace Mahler.Checks
+
+open Mahler.CenteredRenewalSlack
+
+#check @allBlock_equal_stepSum_second_difference_identity
+#check @centeredRenewalSlack
+#check @centeredRenewalSlack_step_and_cocycle
+#check @centeredRenewalSlack_nonneg_of_three_le_and_nonpos_of_le_two
+#check @centeredRenewalSlack_eq_three_mul_and_mod_six_eq_three
+#check @two_block_centeredRenewalSlack_and_unique_subCeiling_rung_six
+
+#print axioms allBlock_equal_stepSum_second_difference_identity
+#print axioms centeredRenewalSlack_step_and_cocycle
+#print axioms centeredRenewalSlack_nonneg_of_three_le_and_nonpos_of_le_two
+#print axioms centeredRenewalSlack_eq_three_mul_and_mod_six_eq_three
+#print axioms two_block_centeredRenewalSlack_and_unique_subCeiling_rung_six
+
+end Mahler.Checks

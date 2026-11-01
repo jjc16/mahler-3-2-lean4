@@ -1672,6 +1672,35 @@ Here is why, in plain terms:
 - **Exploit (Priority 5):** Prove that whenever $\forall k, 2 \le s_k$, $0 < \operatorname{supRenewalTail} b_0 \, s \, r \le 4/5 < 1$, so:
   $$\boxed{\left\lfloor \mathcal{H}_\infty \left(\frac{3}{2}\right)^{T_r} \right\rfloor \;=\; P_r \quad\text{and}\quad \operatorname{Int.fract}\!\left(\mathcal{H}_\infty \left(\frac{3}{2}\right)^{T_r}\right) \;=\; \operatorname{supRenewalTail} b_0 \, s \, r!}$$
 
+---
+
+# Part XVII — Second Campaign (`m = 5, n = 20`) — Outer Loop 2 / 20 (Inner Loops 1–5): Centered Renewal Slack $\widehat{\Sigma}_N = \Sigma_N - 2^{T_N}$, Mod-6 Non-Vanishing Law & Uniqueness of the $s_1 = 6$ Sub-Ceiling Rung
+
+## C2.O2.1 Inner Loop 1 / 5 — Explore & Exploit: Equal-Step-Sum Second-Difference Identity for $P_r$
+- **Explore:** Pull in **Second-Order Difference Equations** across consecutive equal-step-sum segments $[0, K]$ and $[K, K+M]$ ($T_K = d$).
+- **Exploit (Priority 1):** Prove $(2^d P_{K+M} - 3^d P_K) - (2^d P_K - 3^d P_0) = A_{K,K+M} - A_{0,K}$.
+
+## C2.O2.2 Inner Loop 2 / 5 — Explore & Exploit: Discovery of the Centered Renewal Slack Cocycle $\widehat{\Sigma}_N = \Sigma_N - 2^{T_N}$
+- **Explore:** Substitute $2 A_{K,K+M} = 3^d - \Sigma_{K,K+M}$ into the slack cocycle law to discover the homogeneous ceiling-distance invariant $\widehat{\Sigma}_N := \Sigma_N - 2^{T_N} = 3^{T_N} - 2^{T_N} - 2 A_{0,N}$.
+- **Exploit (Priority 2):** Prove the **Homogeneous Centered-Slack Cocycle Law**:
+  $$\boxed{\widehat{\Sigma}_0 = 0, \qquad \widehat{\Sigma}_{N+1} = 3^{s_N} \widehat{\Sigma}_N + 3 \cdot 2^{T_N}\big(3^{s_N - 1} - 2^{s_N}\big), \qquad \widehat{\Sigma}_{0,K+M} = 3^d \widehat{\Sigma}_{0,K} + 2^{T_K} \widehat{\Sigma}_{K,K+M}.}$$
+
+## C2.O2.3 Inner Loop 3 / 5 — Explore & Exploit: Sign of $\widehat{\Sigma}_N$ on $s_k \ge 3$ vs. $s_k \le 2$ Segments
+- **Explore:** Analyze the local centered increment $3(3^{s-1} - 2^s)$, which is $-3$ for $s \in \{1, 2\}$ and $\ge +3$ for $s \ge 3$.
+- **Exploit (Priority 3):** Prove that $\widehat{\Sigma}_N \ge 0$ ($\Sigma_N \ge 2^{T_N}$) whenever $\forall k < N,\, 3 \le s_k$, and $\widehat{\Sigma}_N \le 0$ ($\Sigma_N \le 2^{T_N}$) whenever $\forall k < N,\, 1 \le s_k \le 2$.
+
+## C2.O2.4 Inner Loop 4 / 5 — Explore & Exploit: Kernel Identity $\widehat{\Sigma}_N = 3(3^{T_N} - 2^{T_N} - 2 K_N)$ & $\widehat{\Sigma}_N \equiv 3 \pmod 6$
+- **Explore:** Express $\widehat{\Sigma}_N$ in terms of `blockKernel` $K_N$ to determine its residue modulo $6$.
+- **Exploit (Priority 4):** Prove $\widehat{\Sigma}_N = 3(3^{T_N} - 2^{T_N} - 2 K_N)$ and $\widehat{\Sigma}_N \bmod 6 = 3$ for all $N \ge 1$ ($\forall k < N, 1 \le s_k$), proving that **$\widehat{\Sigma}_N \ne 0$ for all $N \ge 1$** (an unclipped cap $B_N = \Sigma_N / 2^{T_N+1}$ can never hit $1/2$ with exact equality!).
+
+## C2.O2.5 Inner Loop 5 / 5 — Explore & Exploit: Closed Form $\widehat{\Sigma}_2(2, s_1) = 3^{s_1} - 12 \cdot 2^{s_1}$ & Uniqueness of the $s_1 = 6$ Sub-Ceiling Rung
+- **Explore:** Classify $(2, s_1)$ pairs into escape ($\Sigma_2 \le 0$), sub-ceiling survival ($0 < \Sigma_2 < 2^{2+s_1}$), and full ceiling restoration ($\widehat{\Sigma}_2 \ge 0$).
+- **Exploit (Priority 5):** Prove $\widehat{\Sigma}_2(2, s_1) = 3^{s_1} - 12 \cdot 2^{s_1}$ and the exact trichotomy:
+  - $s_1 \le 5 \iff \Sigma_2 \le 0$ (Escape),
+  - $s_1 = 6 \iff (0 < \Sigma_2 \land \widehat{\Sigma}_2 < 0)$ (**Unique Sub-Ceiling Recovery Rung**, $\widehat{\Sigma}_2 = -39$), and
+  - $s_1 \ge 7 \iff 0 < \widehat{\Sigma}_2$ (Full Ceiling Restoration in one step, $\widehat{\Sigma}_2(2, 7) = 651$).
+
+
 
 
 
