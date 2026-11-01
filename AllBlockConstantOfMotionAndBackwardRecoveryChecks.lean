@@ -1,0 +1,21 @@
+import AllBlockConstantOfMotionAndBackwardRecovery
+
+namespace Mahler.Checks
+
+open Mahler.AllBlockConstantOfMotion
+
+#check @renewalNumerator_lt_three_pow_of_two_le
+#check @allBlock_constant_of_motion_and_mod_three_pow
+#check @allBlock_markovian_mod_three_pow_escape_and_slack
+#check @allBlock_frozen_seed_stabilization
+#check @allBlock_backward_state_recovery_from_future
+#check @supRenewalTail_le_four_fifths_and_floor_fract_identity
+
+#print axioms renewalNumerator_lt_three_pow_of_two_le
+#print axioms allBlock_constant_of_motion_and_mod_three_pow
+#print axioms allBlock_markovian_mod_three_pow_escape_and_slack
+#print axioms allBlock_frozen_seed_stabilization
+#print axioms allBlock_backward_state_recovery_from_future
+#print axioms supRenewalTail_le_four_fifths_and_floor_fract_identity
+
+end Mahler.Checks

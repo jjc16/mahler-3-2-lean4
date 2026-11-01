@@ -565,6 +565,13 @@ name = "CanonicalOddBlockChainAndGrandSynthesis"
 [[lean_lib]]
 name = "CanonicalOddBlockChainAndGrandSynthesisChecks"
 
+[[lean_lib]]
+name = "AllBlockConstantOfMotionAndBackwardRecovery"
+
+[[lean_lib]]
+name = "AllBlockConstantOfMotionAndBackwardRecoveryChecks"
+
+
 
 
 

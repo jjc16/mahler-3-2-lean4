@@ -1644,6 +1644,35 @@ Here is why, in plain terms:
    - **Why we haven't broken the wall:** Every time we add $k$ more binary steps to our 2-adic Hensel tree, the modulus $2^{T_N}$ grows by $2^k$, while the integer state $P_N \sim (3/2)^{T_N} P_0$ grows by $(3/2)^k$. Because the number of surviving residue classes modulo $2^{T_N}$ also grows like $(3/2)^{T_N}$ (`|G_N| ≥ (3/2)^N`), **local 2-adic congruences and archimedean interval budgets balance each other at the exact critical slope $\log 2 / \log(3/2) \approx 1.709511$**.
    - Breaking through this wall for *all* $b_0 \ge 1$ simultaneously requires proving a **global correlation between the size (Archimedean height) of the fixed initial integer $P_0 = 3 b_0 + 1$ and the 2-adic valuations $v_2(P_r)$ at arbitrarily large times $r$** — i.e., proving that a fixed positive integer $P_0$ cannot forever land in the exponentially thin set of residue classes modulo $2^{T_N}$ that avoid $s_r = 1$ and unrecovered $s_r = 2$ blocks. No known method in number theory (including Baker–Matveev linear forms in logarithms or Subspace/S-unit theorems, which only give finiteness under bounded-parameter or fixed-prime-support assumptions) currently controls $v_2(P_r)$ when both the exponents and prime factors of $Q_r$ grow without bound.
 
+---
+
+# Part XVI — Second Campaign (`m = 5, n = 20`) — Outer Loop 1 / 20 (Inner Loops 1–5): All-Block Constant of Motion $\lfloor 2^{T_N} P_N / 3^{T_N} \rfloor = P_0$, Markovian Mod-$3^{T_N}$ Escape & Exact Backward State Recovery
+
+## C2.O1.1 Inner Loop 1 / 5 — Explore & Exploit: Unconditional $A_{0,N} < 3^{T_N}$ and Constant of Motion for $s_k \ge 2$
+- **Explore:** Pull in **Euclidean Division Invariants** on $2^{T_N} P_N = 3^{T_N} P_0 + A_{0,N}$ using the Bellman upper sandwich at $L = 2$ ($\forall k < N, 2 \le s_k$).
+- **Exploit (Priority 1):** Because $5 A_{0,N} \le 4(3^{T_N} - 2^{T_N}) < 4 \cdot 3^{T_N}$ whenever $\forall k < N, 2 \le s_k$, we have $0 < A_{0,N} < 3^{T_N}$ unconditionally (including all $s = 2$ recovery blocks!), which forces:
+  $$\boxed{\big(2^{T_N} P_N\big) / 3^{T_N} \;=\; P_0 \quad\text{and}\quad \big(2^{T_N} P_N\big) \bmod 3^{T_N} \;=\; A_{0,N}!}$$
+
+## C2.O1.2 Inner Loop 2 / 5 — Explore & Exploit: Markovian Mod-$3^{T_N}$ Characterization of Finite Escape & Renewal Slack
+- **Explore:** Express the history-dependent quantities $A_{0,N}$ and $\Sigma_N = 3^{T_N} - 2 A_{0,N}$ purely in terms of the current state $(P_N, T_N)$.
+- **Exploit (Priority 2):** Prove that for any no-death-block chain ($\forall k < N, 2 \le s_k$):
+  $$\boxed{2 A_{0,N} \ge 3^{T_N} \;\Longleftrightarrow\; 2\big((2^{T_N} P_N) \bmod 3^{T_N}\big) \ge 3^{T_N}, \qquad \Sigma_N = 3^{T_N} - 2\big((2^{T_N} P_N) \bmod 3^{T_N}\big).}$$
+
+## C2.O1.3 Inner Loop 3 / 5 — Explore & Exploit: Dual Base-2 Division & Seed-Bit Freezing for $P_0 < 2^{T_N}$
+- **Explore:** Analyze the dual Euclidean division of $2^{T_N} P_N = 3^{T_N} P_0 + A_{0,N}$ by $2^{T_N}$ and $3^{T_N}$.
+- **Exploit (Priority 3):** Prove that when $P_0 < 2^{T_N}$ and $\forall k < N, 2 \le s_k$, $P_0 = P_0 \bmod 2^{T_N}$ and $P_N < 3^{T_N}$.
+
+## C2.O1.4 Inner Loop 4 / 5 — Explore & Exploit: Exact Backward State Recovery $P_K = (2^d P_M) / 3^d$ from Any Future State
+- **Explore:** Pull in **Time-Reversal / Backward Euclidean Reconstruction** across any two indices $K < M$ ($d = T_M - T_K$).
+- **Exploit (Priority 4):** Prove that along any chain with $s_k \ge 2$, a single future state $P_M$ and step-sum difference $d = T_M - T_K$ uniquely determine both the past state $P_K$ and the intermediate renewal numerator $A_{K,M}$:
+  $$\boxed{P_K \;=\; \big(2^d P_M\big) / 3^d \quad\text{and}\quad A_{K,M} \;=\; \big(2^d P_M\big) \bmod 3^d!}$$
+
+## C2.O1.5 Inner Loop 5 / 5 — Explore & Exploit: Exact Floor and Fractional-Part Identification of $\mathcal{H}_\infty (3/2)^{T_r}$
+- **Explore:** Combine the $L = 2$ Bellman upper sandwich with Outer Loop 9's supremum renewal constant $\mathcal{H}_\infty$.
+- **Exploit (Priority 5):** Prove that whenever $\forall k, 2 \le s_k$, $0 < \operatorname{supRenewalTail} b_0 \, s \, r \le 4/5 < 1$, so:
+  $$\boxed{\left\lfloor \mathcal{H}_\infty \left(\frac{3}{2}\right)^{T_r} \right\rfloor \;=\; P_r \quad\text{and}\quad \operatorname{Int.fract}\!\left(\mathcal{H}_\infty \left(\frac{3}{2}\right)^{T_r}\right) \;=\; \operatorname{supRenewalTail} b_0 \, s \, r!}$$
+
+
 
 
 
