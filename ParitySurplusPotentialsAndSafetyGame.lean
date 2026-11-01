@@ -168,18 +168,26 @@ theorem signedMargin_succ_le_three_mul (ε : ℕ → ℕ) (n : ℕ) :
   have h2 : (0 : ℤ) ≤ (2 : ℤ) ^ (n + 1) * ((ε n % 2 : ℕ) : ℤ) := by positivity
   linarith
 
-/-- **The Post-`101` Five-Zero Margin Lock (`signedMargin_post_101_five_zeros_lock`)**:
+/-- **The Post-`101` Five-Zero Margin Lock (`signedMargin_post_101_five_zeros_lock`, Section 6.2 & Section 8.3)**:
 Suppose `ε 0 % 2 = 1`, `ε 1 % 2 = 0`, and `ε 2 % 2 = 1`. Then:
 1. `signedMargin ε 3 = 1`,
-2. For every `k ≤ 5`, `signedMargin ε (3 + k) ≤ 3^k`, and
-3. If `0 < signedMargin ε N`, then for every `j ∈ {3, 4, 5}` with `j < N`, `ε j % 2 = 0`. -/
+2. If `0 < signedMargin ε N`, then all **five** subsequent parities `j ∈ {3, 4, 5, 6, 7}` with `j < N`
+   must vanish (`ε j % 2 = 0`), ruling out the Parry forbidden prefixes `1011`, `10101`, `101001`,
+   `1010001`, and `10100001`!
+3. Conversely, if `ε 3 % 2 = ε 4 % 2 = ε 5 % 2 = ε 6 % 2 = ε 7 % 2 = 0` and `ε 8 % 2 = 1`
+   (`101000001`), then `signedMargin ε 8 = 243` and `signedMargin ε 9 = 217 > 0` (the kneading
+   sequence's `s = 6` block after `s = 2` is strictly admissible!). -/
 theorem signedMargin_post_101_five_zeros_lock {ε : ℕ → ℕ}
     (h0 : ε 0 % 2 = 1) (h1 : ε 1 % 2 = 0) (h2 : ε 2 % 2 = 1) :
     signedMargin ε 3 = 1 ∧
       (∀ N : ℕ, 0 < signedMargin ε N →
         (3 < N → ε 3 % 2 = 0) ∧
         (4 < N → ε 4 % 2 = 0) ∧
-        (5 < N → ε 5 % 2 = 0)) := by
+        (5 < N → ε 5 % 2 = 0) ∧
+        (6 < N → ε 6 % 2 = 0) ∧
+        (7 < N → ε 7 % 2 = 0)) ∧
+      (ε 3 % 2 = 0 → ε 4 % 2 = 0 → ε 5 % 2 = 0 → ε 6 % 2 = 0 → ε 7 % 2 = 0 → ε 8 % 2 = 1 →
+        signedMargin ε 8 = 243 ∧ signedMargin ε 9 = 217 ∧ 0 < signedMargin ε 9) := by
   have hd1 : signedMargin ε 1 = 1 := by
     simp [signedMargin, h0]
   have hd2 : signedMargin ε 2 = 3 := by
@@ -190,42 +198,86 @@ theorem signedMargin_post_101_five_zeros_lock {ε : ℕ → ℕ}
     change min ((2 : ℤ) ^ 3) (3 * signedMargin ε 2 - (2 : ℤ) ^ 3 * ((ε 2 % 2 : ℕ) : ℤ)) = 1
     rw [hd2, h2]
     decide
-  refine ⟨hd3, ?_⟩
-  intro N hposN
   have hd4_le : signedMargin ε 4 ≤ 3 := by
     have hle := signedMargin_succ_le_three_mul ε 3
     linarith
   have hd5_le : signedMargin ε 5 ≤ 9 := by
     have hle := signedMargin_succ_le_three_mul ε 4
     linarith
-  refine ⟨?_, ?_, ?_⟩
-  · intro h3N
-    by_contra h3_ne
-    have h3_odd : ε 3 % 2 = 1 := by omega
-    have hd4_neg : signedMargin ε 4 ≤ 0 := by
-      have eq4 := (signedMargin_odd_step_eq h3_odd).1
-      have hp4 : (2 : ℤ) ^ (3 + 1) = 16 := by decide
-      linarith
-    have hnonpos := (signedMargin_nonpos_of_nonpos hd4_neg).2 N (by omega : 4 ≤ N)
+  have hd6_le : signedMargin ε 6 ≤ 27 := by
+    have hle := signedMargin_succ_le_three_mul ε 5
     linarith
-  · intro h4N
-    by_contra h4_ne
-    have h4_odd : ε 4 % 2 = 1 := by omega
-    have hd5_neg : signedMargin ε 5 ≤ 0 := by
-      have eq5 := (signedMargin_odd_step_eq h4_odd).1
-      have hp5 : (2 : ℤ) ^ (4 + 1) = 32 := by decide
-      linarith
-    have hnonpos := (signedMargin_nonpos_of_nonpos hd5_neg).2 N (by omega : 5 ≤ N)
+  have hd7_le : signedMargin ε 7 ≤ 81 := by
+    have hle := signedMargin_succ_le_three_mul ε 6
     linarith
-  · intro h5N
-    by_contra h5_ne
-    have h5_odd : ε 5 % 2 = 1 := by omega
-    have hd6_neg : signedMargin ε 6 ≤ 0 := by
-      have eq6 := (signedMargin_odd_step_eq h5_odd).1
-      have hp6 : (2 : ℤ) ^ (5 + 1) = 64 := by decide
+  refine ⟨hd3, ?_, ?_⟩
+  · intro N hposN
+    refine ⟨?_, ?_, ?_, ?_, ?_⟩
+    · intro h3N
+      by_contra h3_ne
+      have h3_odd : ε 3 % 2 = 1 := by omega
+      have hd4_neg : signedMargin ε 4 ≤ 0 := by
+        have eq4 := (signedMargin_odd_step_eq h3_odd).1
+        have hp4 : (2 : ℤ) ^ (3 + 1) = 16 := by decide
+        linarith
+      have hnonpos := (signedMargin_nonpos_of_nonpos hd4_neg).2 N (by omega : 4 ≤ N)
       linarith
-    have hnonpos := (signedMargin_nonpos_of_nonpos hd6_neg).2 N (by omega : 6 ≤ N)
-    linarith
+    · intro h4N
+      by_contra h4_ne
+      have h4_odd : ε 4 % 2 = 1 := by omega
+      have hd5_neg : signedMargin ε 5 ≤ 0 := by
+        have eq5 := (signedMargin_odd_step_eq h4_odd).1
+        have hp5 : (2 : ℤ) ^ (4 + 1) = 32 := by decide
+        linarith
+      have hnonpos := (signedMargin_nonpos_of_nonpos hd5_neg).2 N (by omega : 5 ≤ N)
+      linarith
+    · intro h5N
+      by_contra h5_ne
+      have h5_odd : ε 5 % 2 = 1 := by omega
+      have hd6_neg : signedMargin ε 6 ≤ 0 := by
+        have eq6 := (signedMargin_odd_step_eq h5_odd).1
+        have hp6 : (2 : ℤ) ^ (5 + 1) = 64 := by decide
+        linarith
+      have hnonpos := (signedMargin_nonpos_of_nonpos hd6_neg).2 N (by omega : 6 ≤ N)
+      linarith
+    · intro h6N
+      by_contra h6_ne
+      have h6_odd : ε 6 % 2 = 1 := by omega
+      have hd7_neg : signedMargin ε 7 ≤ 0 := by
+        have eq7 := (signedMargin_odd_step_eq h6_odd).1
+        have hp7 : (2 : ℤ) ^ (6 + 1) = 128 := by decide
+        linarith
+      have hnonpos := (signedMargin_nonpos_of_nonpos hd7_neg).2 N (by omega : 7 ≤ N)
+      linarith
+    · intro h7N
+      by_contra h7_ne
+      have h7_odd : ε 7 % 2 = 1 := by omega
+      have hd8_neg : signedMargin ε 8 ≤ 0 := by
+        have eq8 := (signedMargin_odd_step_eq h7_odd).1
+        have hp8 : (2 : ℤ) ^ (7 + 1) = 256 := by decide
+        linarith
+      have hnonpos := (signedMargin_nonpos_of_nonpos hd8_neg).2 N (by omega : 8 ≤ N)
+      linarith
+  · intro h3 h4 h5 h6 h7 h8
+    have hd4 : signedMargin ε 4 = 3 := by
+      change min ((2 : ℤ) ^ 4) (3 * signedMargin ε 3 - (2 : ℤ) ^ 4 * ((ε 3 % 2 : ℕ) : ℤ)) = 3
+      rw [hd3, h3]; decide
+    have hd5 : signedMargin ε 5 = 9 := by
+      change min ((2 : ℤ) ^ 5) (3 * signedMargin ε 4 - (2 : ℤ) ^ 5 * ((ε 4 % 2 : ℕ) : ℤ)) = 9
+      rw [hd4, h4]; decide
+    have hd6 : signedMargin ε 6 = 27 := by
+      change min ((2 : ℤ) ^ 6) (3 * signedMargin ε 5 - (2 : ℤ) ^ 6 * ((ε 5 % 2 : ℕ) : ℤ)) = 27
+      rw [hd5, h5]; decide
+    have hd7 : signedMargin ε 7 = 81 := by
+      change min ((2 : ℤ) ^ 7) (3 * signedMargin ε 6 - (2 : ℤ) ^ 7 * ((ε 6 % 2 : ℕ) : ℤ)) = 81
+      rw [hd6, h6]; decide
+    have hd8 : signedMargin ε 8 = 243 := by
+      change min ((2 : ℤ) ^ 8) (3 * signedMargin ε 7 - (2 : ℤ) ^ 8 * ((ε 7 % 2 : ℕ) : ℤ)) = 243
+      rw [hd7, h7]; decide
+    have hd9 : signedMargin ε 9 = 217 := by
+      change min ((2 : ℤ) ^ 9) (3 * signedMargin ε 8 - (2 : ℤ) ^ 9 * ((ε 8 % 2 : ℕ) : ℤ)) = 217
+      rw [hd8, h8]; decide
+    exact ⟨hd8, hd9, by omega⟩
 
 /-! ## 2. Look-Ahead-Free Finite Odd-Count Bound (Phase C1) -/
 
@@ -333,8 +385,8 @@ theorem three_mul_oddParityCount_le_add_three_of_signedMargin_pos :
         have hcnt : oddParityCount ε N = 1 + oddParityCount (shiftStream ε 3) (N - 3) := by
           conv_lhs => rw [hsplit, oddParityCount_add, hcnt3]
         omega
-      · -- Case 3: `(ε 0, ε 1, ε 2) = (1, 0, 1)` -> post-`101` lock forces `ε 3 = ε 4 = ε 5 = 0`
-        have hlock := (signedMargin_post_101_five_zeros_lock h0_odd h1_even h2_odd).2 N hpos
+      · -- Case 3: `(ε 0, ε 1, ε 2) = (1, 0, 1)` -> post-`101` lock forces `ε 3 = ... = ε 7 = 0`
+        have hlock := (signedMargin_post_101_five_zeros_lock h0_odd h1_even h2_odd).2.1 N hpos
         have hcnt3 : oddParityCount ε 3 = 2 := by
           rw [show (3 : ℕ) = 0 + 1 + 1 + 1 by rfl, oddParityCount_succ, oddParityCount_succ,
             oddParityCount_succ, oddParityCount_zero, h0_odd, h1_even, h2_odd]
@@ -348,7 +400,7 @@ theorem three_mul_oddParityCount_le_add_three_of_signedMargin_pos :
           omega
         · have h3_0 := hlock.1 (by omega)
           have h4_0 := hlock.2.1 (by omega)
-          have h5_0 := hlock.2.2 (by omega)
+          have h5_0 := hlock.2.2.1 (by omega)
           have hcnt6 : oddParityCount ε 6 = 2 := by
             rw [show (6 : ℕ) = 3 + 1 + 1 + 1 by rfl, oddParityCount_succ, oddParityCount_succ,
               oddParityCount_succ, hcnt3, h3_0, h4_0, h5_0]

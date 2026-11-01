@@ -1,6 +1,6 @@
 name = "mahler_demand_a"
 version = "0.1.0"
-defaultTargets = ["MahlerDemandA", "Adversarial", "Checks", "InfiniteChecks", "DeadEndsChecks", "PureIntegerPinchChecks", "OddBlockCouplingChecks", "ParitySplitPinchChecks", "CoupledProductGraphChecks", "BridgeOneArchimedeanChecks", "BridgeTwoBlockDrainChecks", "BridgeThreeMixedBlocksChecks", "FormulationBHighBitJumpChecks", "FormulationBJumpValuationChecks", "EscapeBranchTwoCapChecks", "CoprimeQuotientPhaseLockChecks", "MahlerMasterReductionChecks", "ModEightPhaseClassifierChecks", "CoprimeRemainderSlackChecks", "ShiftInvariantSlackChecks", "KernelFactorizationDualityChecks", "ZeroLiftCoastingChecks", "TwoSidedSqueezeChecks", "SharpenedSqueezesChecks", "AperiodicSlackCocycleChecks", "MinSlackDynamicalSystemChecks", "GlobalStepRateBoundsChecks", "BaseTwoDivModLockChecks", "CeilingSaturationSynthesisChecks", "TelescopingSeriesDualityChecks", "ConverseCompanionReconstructionChecks", "ExplicitHorizonCutoffsChecks", "CeilingDeficitAmplificationChecks", "UniversalTwoVisitSeparationChecks", "MonotonicStepSumSeparationChecks", "CeilingSaturatedModTrapsChecks", "TwoAdicLiftingExponentChecks", "FullStepSumValuationChecks", "CoprimeRemainderAdditionLawChecks", "TwoAdicCauchyConvergenceChecks", "AllHistoryQuotientRecoveryChecks", "ParametricRemainderCorridorChecks", "AperiodicBoundedBlockSqueezeChecks", "TimeIndependentDeficiencySqueezeChecks", "SlackDeadEndsAndWitnessesChecks", "MahlerGrandSynthesisChecks", "Mod256CompleteSieveChecks", "CoprimeUnitRigidityChecks", "DeterminantFactorizationChecks", "BakerMatveevFrameworkChecks", "RidoutSubspaceFrameworkChecks", "MultiOriginSubspaceSyzygyChecks", "RepeatedSubwordComplexityChecks", "SimultaneousBaseDigitRigidityChecks", "MultiStepQuotientGCDChecks", "MahlerSeriesHankelFrameworkChecks", "ThreeAdicAndSeedGCDLocksChecks", "CoupledFractionalPartDynamicsChecks", "Mod2304CombinedSieveChecks", "TwoSidedCRTAndBackwardObstructionsChecks", "ThreeAdicValuationConservationChecks", "Mod216TwoSidedQuotientFloorChecks", "InfiniteZNumberBridgeAndRationalBaseChecks", "SturmianAndBalancedComplexityExclusionChecks", "FiniteSeedCarryAndBackwardDescentChecks", "SubstitutionMahlerMethodAndGrandSynthesisChecks", "EndpointCompactnessAndBalancedExclusionChecks", "ExactSeedResidueTreeAndStabilizationChecks", "ThueMorseMahlerFunctionalEquationChecks", "SparseDefectCocycleAndValuationLockChecks", "DubickasConfinementAndComplexityExtensionChecks", "ParitySurplusPotentialsAndSafetyGameChecks", "BaseSixMultiplicationAutomatonChecks", "TransferOperatorJSRAndCarryFourierChecks", "SolenoidRigidityDiscrepancyAndRenormalizationChecks"]
+defaultTargets = ["MahlerDemandA", "Adversarial", "Checks", "InfiniteChecks", "DeadEndsChecks", "PureIntegerPinchChecks", "OddBlockCouplingChecks", "ParitySplitPinchChecks", "CoupledProductGraphChecks", "BridgeOneArchimedeanChecks", "BridgeTwoBlockDrainChecks", "BridgeThreeMixedBlocksChecks", "FormulationBHighBitJumpChecks", "FormulationBJumpValuationChecks", "EscapeBranchTwoCapChecks", "CoprimeQuotientPhaseLockChecks", "MahlerMasterReductionChecks", "ModEightPhaseClassifierChecks", "CoprimeRemainderSlackChecks", "ShiftInvariantSlackChecks", "KernelFactorizationDualityChecks", "ZeroLiftCoastingChecks", "TwoSidedSqueezeChecks", "SharpenedSqueezesChecks", "AperiodicSlackCocycleChecks", "MinSlackDynamicalSystemChecks", "GlobalStepRateBoundsChecks", "BaseTwoDivModLockChecks", "CeilingSaturationSynthesisChecks", "TelescopingSeriesDualityChecks", "ConverseCompanionReconstructionChecks", "ExplicitHorizonCutoffsChecks", "CeilingDeficitAmplificationChecks", "UniversalTwoVisitSeparationChecks", "MonotonicStepSumSeparationChecks", "CeilingSaturatedModTrapsChecks", "TwoAdicLiftingExponentChecks", "FullStepSumValuationChecks", "CoprimeRemainderAdditionLawChecks", "TwoAdicCauchyConvergenceChecks", "AllHistoryQuotientRecoveryChecks", "ParametricRemainderCorridorChecks", "AperiodicBoundedBlockSqueezeChecks", "TimeIndependentDeficiencySqueezeChecks", "SlackDeadEndsAndWitnessesChecks", "MahlerGrandSynthesisChecks", "Mod256CompleteSieveChecks", "CoprimeUnitRigidityChecks", "DeterminantFactorizationChecks", "BakerMatveevFrameworkChecks", "RidoutSubspaceFrameworkChecks", "MultiOriginSubspaceSyzygyChecks", "RepeatedSubwordComplexityChecks", "SimultaneousBaseDigitRigidityChecks", "MultiStepQuotientGCDChecks", "MahlerSeriesHankelFrameworkChecks", "ThreeAdicAndSeedGCDLocksChecks", "CoupledFractionalPartDynamicsChecks", "Mod2304CombinedSieveChecks", "TwoSidedCRTAndBackwardObstructionsChecks", "ThreeAdicValuationConservationChecks", "Mod216TwoSidedQuotientFloorChecks", "InfiniteZNumberBridgeAndRationalBaseChecks", "SturmianAndBalancedComplexityExclusionChecks", "FiniteSeedCarryAndBackwardDescentChecks", "SubstitutionMahlerMethodAndGrandSynthesisChecks", "EndpointCompactnessAndBalancedExclusionChecks", "ExactSeedResidueTreeAndStabilizationChecks", "ThueMorseMahlerFunctionalEquationChecks", "SparseDefectCocycleAndValuationLockChecks", "DubickasConfinementAndComplexityExtensionChecks", "ParitySurplusPotentialsAndSafetyGameChecks", "BaseSixMultiplicationAutomatonChecks", "TransferOperatorJSRAndCarryFourierChecks", "SolenoidRigidityDiscrepancyAndRenormalizationChecks", "UniversalOrbitBijectionAndRightSpecialLockChecks", "BetaShiftThreeHalvesDictionaryChecks", "GeneralizedDefectFactorizationAndAllRungDescentChecks", "BoundedOddPartAndThreeAdicSieveChecks"]
 
 [[require]]
 name = "mathlib"
@@ -456,6 +456,34 @@ name = "SolenoidRigidityDiscrepancyAndRenormalization"
 
 [[lean_lib]]
 name = "SolenoidRigidityDiscrepancyAndRenormalizationChecks"
+
+[[lean_lib]]
+name = "UniversalOrbitBijectionAndRightSpecialLock"
+
+[[lean_lib]]
+name = "UniversalOrbitBijectionAndRightSpecialLockChecks"
+
+[[lean_lib]]
+name = "BetaShiftThreeHalvesDictionary"
+
+[[lean_lib]]
+name = "BetaShiftThreeHalvesDictionaryChecks"
+
+[[lean_lib]]
+name = "GeneralizedDefectFactorizationAndAllRungDescent"
+
+[[lean_lib]]
+name = "GeneralizedDefectFactorizationAndAllRungDescentChecks"
+
+[[lean_lib]]
+name = "BoundedOddPartAndThreeAdicSieve"
+
+[[lean_lib]]
+name = "BoundedOddPartAndThreeAdicSieveChecks"
+
+
+
+
 
 
 

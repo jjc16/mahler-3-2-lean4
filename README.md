@@ -1,6 +1,6 @@
-# Mahler $3/2$ Problem — 150-File Lean 4 Formalization (`mahler_demand_a`)
+# Mahler $3/2$ Problem — 158-File Lean 4 Formalization (`mahler_demand_a`)
 
-This repository contains a **150-file (`sorry`-free) Lean 4.19.0 + Mathlib v4.19.0 formalization** of the reduced Mahler $3/2$ dynamical system ($Z$-numbers) and its interval- and union-confinement relaxations ([`MAHLER_FORMALIZATION_PAPER.pdf`](./MAHLER_FORMALIZATION_PAPER.pdf)).
+This repository contains a **158-file (`sorry`-free) Lean 4.19.0 + Mathlib v4.19.0 formalization** of the reduced Mahler $3/2$ dynamical system ($Z$-numbers) and its interval- and union-confinement relaxations ([`MAHLER_FORMALIZATION_PAPER.pdf`](./MAHLER_FORMALIZATION_PAPER.pdf)).
 
 ---
 
@@ -119,14 +119,15 @@ For a complete, human-readable mathematical exposition of our results and barrie
 
 ## Next General-Case Research Plan & Round 1 Formalized Deliverables
 
-The [research plan for Argon](./RESEARCH_PLAN_ARGON_GENERAL_PROOF.md) sets out
-a coverage audit, finite-seed escape targets, a base-6 multiplication-automaton
-route, cross-disciplinary tracks (Part II Sections 11–23), and the **Round 1
+The [research plan for Argon](./RESEARCH_PLAN_ARGON_GENERAL_PROOF.md) and its
+follow-up **[Round 2 completion plan](./RESEARCH_PLAN_ARGON_ROUND2_COMPLETION.md)**
+set out a coverage audit, finite-seed escape targets, a base-6 multiplication-automaton
+route, cross-disciplinary tracks (Part II Sections 11–23), the **Round 1
 Execution Report (Part III Sections 24–26)** documenting the 8 newly formalized
 Lean 4 modules (`ParitySurplusPotentialsAndSafetyGame.lean`,
 `BaseSixMultiplicationAutomaton.lean`, `TransferOperatorJSRAndCarryFourier.lean`,
 `SolenoidRigidityDiscrepancyAndRenormalization.lean`, and their `*Checks.lean`
-suites):
+suites), and the **Round 2 five-track roadmap**:
 - **Look-Ahead-Free Finite Odd-Count Bridge & Potentials (`ParitySurplusPotentialsAndSafetyGame.lean`):**
   Universal shift-submultiplicativity `signedMargin ε (k + m) ≤ 2^k * signedMargin (shiftStream ε k) m`,
   the unconditional bound `0 < signedMargin ε N → 3 * oddParityCount ε N ≤ N + 3` (`3 * oddCount a_0 N ≤ N + 3`
@@ -149,6 +150,31 @@ suites):
   quantitative discrepancy-to-escape and Erdős–Turán reductions, dyadic-block uniqueness past bit `W` vs.
   the seed `149` single-survivor witness, Mahler's method value-irrationality seed exclusion, and the
   `s = 3` vs. `s = 4` first-return 2-adic defect (`0` vs. `-72`) and multiplier (`27/8 ≠ 81/16`) mismatch.
+- **Universal $(2^m, 3^m)$ Orbit Bijection, Unconditional $1.709511$ Rational-Base Complexity & Mod-3
+  Valuation Trichotomy (`UniversalOrbitBijectionAndRightSpecialLock.lean`, Round 2):**
+  Assumption-free 3-way bijection `orbit a_0 n₁ % 2^m = orbit a_0 n₂ % 2^m ↔ (∀ j < m, parities match) ↔ orbit a_0 (n₁ + m) % 3^m = orbit a_0 (n₂ + m) % 3^m`
+  on all of $[0, 1/2)$, global right-special odd-quotient lock `b_{n₂} - b_{n₁} = 2^m * q_odd` and
+  `b_{n₂+m} - b_{n₁+m} = 3^m * q_odd`, **unconditional proof that EVERY positive integer $a_0 \ge 1$ under
+  $T(x) = \lceil 3x/2 \rceil$ has parity factor complexity slope $\ge \log 2 / \log(3/2) \approx 1.709511$**
+  (`raw_orbit_no_subcritical_parity_complexity_for_all_pos_seeds`), and the master mod-3 valuation trichotomy
+  `3 * (19 * b + 9) = 19 * (3 * b + 1) + 8` coding run lengths and exit types (`v_2 ≡ 1 (mod 3)` death class).
+- **The $\beta = 3/2$ Shift Dictionary, Kneading Cascade & $|G_N| \ge (3/2)^N$ Counting
+  (`BetaShiftThreeHalvesDictionary.lean`, Round 2):**
+  Exact conjugacy between `2 * fracPart` and the greedy $\beta = 3/2$ map, 34-step certification of the
+  kneading sequence $d_{3/2}(1)$ matching the `[2, 6, 3, 3, 2, 10, 7]` recovery cascade, shift-invariant
+  Parry forbidden prefixes (`11`, `1011`, `10101`, `101001`, `1010001`, `10100001` vs. admissible `101000001`),
+  exact survivor count `2^(W - N) * |G_N|` for $N \le W$, elementary rational-grid proof that
+  $3^N \le 2^N \cdot |G_N|$ (`|G_N| ≥ (3/2)^N`), and the periodic sign obstruction.
+- **Universal $-72(3^{s-3} - 2^{s-3})$ Defect Factorization, All-Rung Descent, $(2, s_1)$ Composite Lock,
+  Bounded-Odd-Part $S$-Unit Exclusion & Mod-$6^\ell$ Sieve Equivalence
+  (`GeneralizedDefectFactorizationAndAllRungDescent.lean`, `BoundedOddPartAndThreeAdicSieve.lean`, Round 2):**
+  Universal factorization $E(s) = -72(3^{s-3} - 2^{s-3})$ with $\gcd(3^{s-3} - 2^{s-3}, 6) = 1$ for all $s \ge 4$,
+  post-defect 3-adic lock $9 \mid U_1 \land 27 \nmid U_1$, all-rung sparse-defect descent $V_{r+1} + 2 \le V_r$,
+  composite $(2, s_1)$ defect $+36(3^{s_1-3} + 2^{s_1})$ with $\Delta \Phi_{\text{def}} = s_1 - 4 \ge +2$,
+  non-vanishing subsums of the 4-term $\{2, 3\}$-unit epoch equation, **unconditional impossibility of
+  simultaneously bounded $(j_r, V_r)$ along strictly increasing boundaries** (`strictMono_boundaries_injective_on_j_and_V`),
+  conditional $S$-unit exclusion of bounded odd parts $V_r \le M$, mod-3/mod-9/mod-$6^\ell$ backward sieve
+  biconditionals, minimal floor $3 \nmid a^*$, and $\Sigma_1 / \Pi_2$ certificate completeness.
 
 ## Acknowledgments
 

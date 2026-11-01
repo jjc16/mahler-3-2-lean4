@@ -1189,3 +1189,6 @@ four new core modules and four verification modules (`warningAsError=true`, stan
      cutoff from linear complexity $p(L) \le \kappa L + C_0$ to general sub-exponential complexity
      using multi-scale Ostrowski / bispecial return times.
 
+See **[RESEARCH_PLAN_ARGON_ROUND2_COMPLETION.md](./RESEARCH_PLAN_ARGON_ROUND2_COMPLETION.md)** for the
+complete, actionable Round 2 research plan and Lean 4 module specification built on these findings.
+
