@@ -1460,6 +1460,29 @@ arithmetic could enter. Concentrate the next discovery effort there.
   1. Prove elementarily modulo $8$ that for every $a \ge 2$, $3^a + 1 \not\equiv 0 \pmod 8$, so $2^c = 3^a + 1$ has **no solutions** with $a \ge 2$!
   2. Consequently, whenever $s_r \ge 2$ and $3^{s_r} \le 2^{s_{r+1}}$ ($Q_r, Q_{r+1}$ odd, $Q_r \ge 1$), we have $Q_{r+1} \ne Q_r$ and $Q_{r+1} + 2 \le Q_r$, ruling out infinite rapid-growth $Q$-chains across all block lengths $s_r \ge 2$.
 
+---
+
+# Part IX — Outer Loop 5 / 10 (Inner Loops 1–3): Closed-Form Recovery Cascades, $\Sigma_3(2, s_1, s_2)$, and the $19 \Sigma(2, 6, 3^j, 2) = 9 \cdot 27^{j+1} - 2048 \cdot 8^j$ Law
+
+## O5.1 Inner Loop 1 / 3 — Explore & Exploit: Closed Form for $(2, 6, 3^j)$ and $(2, 6, 3^j, 2)$
+- **Explore:** Pull in **Symbolic Kneading-Word Algebra** to derive closed-form polynomial/exponential expressions for the integer renewal slack $\Sigma_N$ across the $(2, 6, 3^j, 2)$ recovery cascade.
+- **Exploit (Priority 1):**
+  1. Prove that for a pure $s = 3$ run of length $j$, $19 A(3^j) = 8(27^j - 8^j)$.
+  2. Using $19 \cdot 3^6 - 216 \cdot 2^6 = 27$, prove the exact closed forms:
+     $$\boxed{19 \, \Sigma_{2+j}(2, 6, 3^j) \;=\; 27^{j+1} + 4096 \cdot 8^j,}$$
+     $$\boxed{19 \, \Sigma_{3+j}(2, 6, 3^j, 2) \;=\; 9 \cdot 27^{j+1} - 2048 \cdot 8^j!}$$
+
+## O5.2 Inner Loop 2 / 3 — Explore & Exploit: Three-Block $(2, s_1, s_2)$ Slack Formula & $(2, 6, s_2)$ Dichotomy
+- **Explore:** Pull in **Three-Block Diophantine Slack Expansion** for $(2, s_1, s_2)$.
+- **Exploit (Priority 2):**
+  1. Prove $\Sigma_3(2, s_1, s_2) = 3^{s_1 + s_2} - 8 \cdot 2^{s_1} 3^{s_2} - 8 \cdot 2^{s_1 + s_2}$.
+  2. Specialize to $s_1 = 6$: $\Sigma_3(2, 6, s_2) = 217 \cdot 3^{s_2} - 512 \cdot 2^{s_2}$, proving that $2 A_{0,3} \ge 3^{8 + s_2} \iff s_2 \le 2$ (so $(2, 6, 1)$ and $(2, 6, 2)$ escape unconditionally!).
+
+## O5.3 Inner Loop 3 / 3 — Explore & Exploit: Mandatory $j \ge 2$ Neutral Waiting Time After $(2, 6)$ Before Next $s = 2$
+- **Explore:** Pull in **Waiting-Time Lower Bounds Between Short Recovery Blocks**.
+- **Exploit (Priority 3):** From $19 \Sigma_{3+j}(2, 6, 3^j, 2) = 9 \cdot 27^{j+1} - 2048 \cdot 8^j$, prove that $2 A_{0, 3+j} \ge 3^{10 + 3j} \iff j \le 1$, while for $j = 2$ ($\Sigma_5 = 2425 > 0$) and all $j \ge 2$, $\Sigma_{3+j} > 0$.
+
+
 
 
 

@@ -1,0 +1,19 @@
+import RecoveryCascadeClosedFormsAndKneadingWords
+
+namespace Mahler.Checks
+
+open Mahler.RecoveryCascadeClosedForms
+
+#check @constant_three_run_renewalNumerator_nineteen_law
+#check @two_six_three_run_and_next_two_slack_closed_forms
+#check @three_block_two_s1_s2_slack_formula
+#check @three_block_two_six_s2_escape_iff_s2_le_two
+#check @two_six_three_pow_two_escape_iff_j_le_one
+
+#print axioms constant_three_run_renewalNumerator_nineteen_law
+#print axioms two_six_three_run_and_next_two_slack_closed_forms
+#print axioms three_block_two_s1_s2_slack_formula
+#print axioms three_block_two_six_s2_escape_iff_s2_le_two
+#print axioms two_six_three_pow_two_escape_iff_j_le_one
+
+end Mahler.Checks

@@ -529,6 +529,13 @@ name = "MultiStepQuotientMasterAndFermatGCD"
 [[lean_lib]]
 name = "MultiStepQuotientMasterAndFermatGCDChecks"
 
+[[lean_lib]]
+name = "RecoveryCascadeClosedFormsAndKneadingWords"
+
+[[lean_lib]]
+name = "RecoveryCascadeClosedFormsAndKneadingWordsChecks"
+
+
 
 
 
