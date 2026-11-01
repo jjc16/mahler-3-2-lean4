@@ -1,6 +1,6 @@
-# Mahler $3/2$ Problem — 174-File Lean 4 Formalization (`mahler_demand_a`)
+# Mahler $3/2$ Problem — 176-File Lean 4 Formalization (`mahler_demand_a`)
 
-This repository contains a **174-file (`sorry`-free) Lean 4.19.0 + Mathlib v4.19.0 formalization** of the reduced Mahler $3/2$ dynamical system ($Z$-numbers) and its interval- and union-confinement relaxations ([`MAHLER_FORMALIZATION_PAPER.pdf`](./MAHLER_FORMALIZATION_PAPER.pdf)).
+This repository contains a **176-file (`sorry`-free) Lean 4.19.0 + Mathlib v4.19.0 formalization** of the reduced Mahler $3/2$ dynamical system ($Z$-numbers) and its interval- and union-confinement relaxations ([`MAHLER_FORMALIZATION_PAPER.pdf`](./MAHLER_FORMALIZATION_PAPER.pdf)).
 
 ---
 
@@ -186,6 +186,8 @@ not a completed proof; its Part III corrects earlier overstatements and controls
   Universal identity $\operatorname{defectCocycleSum}(s, N) = 9 A_{0,N} - 8 K_N$, exact signed-cocycle bridge $19 \Sigma_N = 3 \cdot 3^{T_N} + 16 \cdot 2^{T_N} - 6 \operatorname{defectCocycleSum}(s, N)$ proving that no $s_k \ge 3$ segment can ever trigger $2 A_{0,N} \ge 3^{T_N}$, 4-way valuation dictionary on $3(19 b + 9) = 19(3 b + 1) + 8$, and the closed form $\Sigma_2(2, s_1) = 3^{s_1} - 8 \cdot 2^{s_1}$ ($2 A_{0,2} \ge 3^{2+s_1} \iff s_1 \le 5$).
 - **Distance-2 Fermat Quotient GCD Law, Universal $m$-Step Odd-Quotient Master Equation & All-Block $Q$-Descent (`MultiStepQuotientMasterAndFermatGCD.lean`, Outer Loop 4):**
   Exact two-step identity $2^{s_1+s_2} Q_2 = 3^{s_0+s_1} Q_0 + (3^{s_1} + 2^{s_1})$ forcing $\gcd(Q_0, Q_2) \mid (3^{s_1} + 2^{s_1})$ ($13, 35, 97$ for $s_1 = 2, 3, 4$), universal $m$-step quotient equation $2^{d+s_{\text{end}}} Q_{\text{end}} = 3^{s_0+d} Q_0 + (3^d + A_{1,m})$ forcing $\gcd(Q_0, Q_{\text{end}}) \mid (3^d + A_{1,m})$, elementary mod-8 exclusion of $2^c = 3^a + 1$ ($a \ge 2$), and all-block odd-quotient descent $Q_{r+1} + 2 \le Q_r$ ($s_r \ge 2, 3^{s_r} \le 2^{s_{r+1}}$).
+- **Closed-Form Recovery Cascades, $\Sigma_3(2, s_1, s_2)$, and the $19 \Sigma(2, 6, 3^j, 2) = 9 \cdot 27^{j+1} - 2048 \cdot 8^j$ Law (`RecoveryCascadeClosedFormsAndKneadingWords.lean`, Outer Loop 5):**
+  Pure $s = 3$ run identity $19 A(3^j) = 8(27^j - 8^j)$, closed forms $19 \Sigma(2, 6, 3^j) = 27^{j+1} + 4096 \cdot 8^j$ and $19 \Sigma(2, 6, 3^j, 2) = 9 \cdot 27^{j+1} - 2048 \cdot 8^j$, general 3-block formula $\Sigma_3(2, s_1, s_2) = 3^{s_1+s_2} - 8 \cdot 2^{s_1} 3^{s_2} - 8 \cdot 2^{s_1+s_2}$, and unconditional exclusion of $(2, 6, s_2)$ for $s_2 \le 2$ and $(2, 6, 3^j, 2)$ for $j \le 1$.
 
 ## Acknowledgments
 
