@@ -535,6 +535,13 @@ name = "RecoveryCascadeClosedFormsAndKneadingWords"
 [[lean_lib]]
 name = "RecoveryCascadeClosedFormsAndKneadingWordsChecks"
 
+[[lean_lib]]
+name = "TwoAdicRecoveryCascadePruningTree"
+
+[[lean_lib]]
+name = "TwoAdicRecoveryCascadePruningTreeChecks"
+
+
 
 
 

@@ -1,0 +1,15 @@
+import TwoAdicRecoveryCascadePruningTree
+
+namespace Mahler.Checks
+
+open Mahler.TwoAdicRecoveryPruningTree
+
+#check @two_six_prefix_mod_256_and_512_classification
+#check @two_six_lift_P2_parameterization_and_mod_2048_pruning
+#check @two_six_three_lift_P3_parameterization_and_6665_lower_bound
+
+#print axioms two_six_prefix_mod_256_and_512_classification
+#print axioms two_six_lift_P2_parameterization_and_mod_2048_pruning
+#print axioms two_six_three_lift_P3_parameterization_and_6665_lower_bound
+
+end Mahler.Checks

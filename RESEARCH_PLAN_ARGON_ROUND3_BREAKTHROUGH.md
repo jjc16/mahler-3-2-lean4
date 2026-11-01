@@ -1482,6 +1482,30 @@ arithmetic could enter. Concentrate the next discovery effort there.
 - **Explore:** Pull in **Waiting-Time Lower Bounds Between Short Recovery Blocks**.
 - **Exploit (Priority 3):** From $19 \Sigma_{3+j}(2, 6, 3^j, 2) = 9 \cdot 27^{j+1} - 2048 \cdot 8^j$, prove that $2 A_{0, 3+j} \ge 3^{10 + 3j} \iff j \le 1$, while for $j = 2$ ($\Sigma_5 = 2425 > 0$) and all $j \ge 2$, $\Sigma_{3+j} > 0$.
 
+---
+
+# Part X — Outer Loop 6 / 10 (Inner Loops 1–3): Exact 2-Adic Symbolic Pruning Tree for $(2, 6, 3, \dots)$ & the $b_0 \equiv 6665 \pmod{16384}$ Lower Bound
+
+## O6.1 Inner Loop 1 / 3 — Explore & Exploit: Mod-256 and Mod-512 Characterization of $(s_0 = 2, s_1 = 6)$
+- **Explore:** Pull in **2-Adic Hensel Lifting** on $P_0 = 3 b_0 + 1 = 4 Q_0$ and $P_1 = 9 Q_0 + 1$ using the exact inverse $9 \times 7 = 64 - 1$.
+- **Exploit (Priority 1):**
+  1. Prove that $s_0 = 2 \land s_1 \ge 6$ (`4 ∣ P_0 ∧ ¬(8 ∣ P_0) ∧ 64 ∣ P_1`) holds if and only if $b_0 \equiv 9 \pmod{256}$ ($Q_0 \equiv 7 \pmod{64}$).
+  2. Prove that $s_0 = 2 \land s_1 = 6$ (`64 ∣ P_1 ∧ ¬(128 ∣ P_1)`) holds if and only if $b_0 \equiv 9 \pmod{512}$ ($b_0 = 9 + 512 m$, $Q_1 = 1 + 54 m$), while $b_0 \equiv 265 \pmod{512}$ gives $s_1 \ge 7$.
+
+## O6.2 Inner Loop 2 / 3 — Explore & Exploit: Mod-2048 Pruning of $(2, 6, s_2)$ ($b_0 \equiv 521 \pmod{2048}$)
+- **Explore:** Couple the exact polynomial parameterization $P_2(m) = 2(365 + 19683 m)$ ($b_0 = 9 + 512 m$) with Outer Loop 5's theorem `three_block_two_six_s2_escape_iff_s2_le_two` ($s_2 \ge 3$ is required for survival).
+- **Exploit (Priority 2):** Prove that $P_2 = 2(365 + 19683 m)$ satisfies $s_2 \ge 3$ (`8 ∣ P_2`) if and only if $m \equiv 1 \pmod 4$, i.e.
+  $$\boxed{b_0 \equiv 521 \pmod{2048},}$$
+  eliminating $3/4$ of all $(2, 6)$ lifts ($m \equiv 0, 2 \pmod 4$ die with $s_2 = 1$; $m \equiv 3 \pmod 4$ escapes with $s_2 = 2$).
+
+## O6.3 Inner Loop 3 / 3 — Explore & Exploit: Mod-16384 Pruning of $(2, 6, 3, s_3 \ge 3)$ ($b_0 \equiv 6665 \pmod{16384}$)
+- **Explore:** Parameterize $b_0 = 521 + 2048 n$, compute $Q_2 = 5012 + 19683 n$ and $P_3 = 135325 + 531441 n$, and couple with Outer Loop 5's `two_six_three_pow_two_escape_iff_j_le_one` ($j = 1$ requires $s_3 \ge 3$).
+- **Exploit (Priority 3):** Prove that along $b_0 = 521 + 2048 n$:
+  - $s_2 = 3$ (`Q_2 % 2 = 1`) $\iff n \equiv 1 \pmod 2$, and
+  - $s_2 = 3 \land s_3 \ge 3$ (`8 ∣ P_3`) $\iff n \equiv 3 \pmod 8 \iff \boxed{b_0 \equiv 6665 \pmod{16384}}$,
+  proving unconditionally that **every positive integer seed realizing $(2, 6, 3, s_3 \ge 3)$ satisfies $b_0 \ge 6665$**!
+
+
 
 
 
