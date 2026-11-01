@@ -1,0 +1,21 @@
+import UniversalSubCeilingNonBranchingAndKneading78
+
+namespace Mahler.Checks
+
+open Mahler.UniversalSubCeilingNonBranching
+
+#check @subCeiling_step_sandwich_iff
+#check @subCeiling_survival_rung_unique_and_trichotomy
+#check @subCeiling_rung_iff_eq_of_witness
+#check @blockSteps_and_slacks_congr
+#check @all_horizon_subCeiling_corridor_unique_sequence
+#check @seven_and_eight_block_kneading_corridor_certification
+
+#print axioms subCeiling_step_sandwich_iff
+#print axioms subCeiling_survival_rung_unique_and_trichotomy
+#print axioms subCeiling_rung_iff_eq_of_witness
+#print axioms blockSteps_and_slacks_congr
+#print axioms all_horizon_subCeiling_corridor_unique_sequence
+#print axioms seven_and_eight_block_kneading_corridor_certification
+
+end Mahler.Checks

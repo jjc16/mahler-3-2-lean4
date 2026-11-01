@@ -1724,6 +1724,35 @@ Here is why, in plain terms:
 - **Explore:** Classify $(2, 6, 3, 3, 2, s_5)$ by $\Sigma_6 = 2425 \cdot 3^{s_5} - 131072 \cdot 2^{s_5}$ and $\widehat{\Sigma}_6 = 2425 \cdot 3^{s_5} - 196608 \cdot 2^{s_5}$.
 - **Exploit (Priority 5):** Prove that $(0 < \Sigma_6 \land \widehat{\Sigma}_6 < 0) \iff s_5 = 10$ ($\widehat{\Sigma}_6 = -58132767$), and bundle all 5 steps into the **Unique 6-Block Sub-Ceiling Corridor Theorem**: starting from $s_0 = 2$, $(2, 6, 3, 3, 2, 10)$ is the **unique** 6-block word satisfying $0 < \Sigma_k < 2^{T_k}$ for all $1 \le k \le 6$!
 
+---
+
+# Part XIX — Second Campaign (`m = 5, n = 20`) — Outer Loop 4 / 20 (Inner Loops 1–5): Universal Sub-Ceiling Non-Branching Theorem Across All Horizons $K \in \mathbb{N}$ & 8-Block Kneading Certification $(2, 6, 3, 3, 2, 10, 7, 5)$
+
+## C2.O4.1 Inner Loop 1 / 5 — Explore & Exploit: Exact $(2 : 3)$ Multiplicative Width of the Sub-Ceiling Window
+- **Explore:** Express the sub-ceiling corridor condition $0 < \Sigma_{N+1}$ and $\widehat{\Sigma}_{N+1} < 0$ at step $N$ as a single multiplicative sandwich on $3^{s_N} \Sigma_N$.
+- **Exploit (Priority 1):** Prove the exact equivalence:
+  $$\big(0 < \Sigma_{N+1} \land \widehat{\Sigma}_{N+1} < 0\big) \;\Longleftrightarrow\; \boxed{2 \cdot 2^{T_N + s_N} \;<\; 3^{s_N} \Sigma_N \;<\; 3 \cdot 2^{T_N + s_N}!}$$
+
+## C2.O4.2 Inner Loop 2 / 5 — Explore & Exploit: Universal At-Most-One Sub-Ceiling Rung Theorem
+- **Explore:** Because the ratio of the upper endpoint $3 \cdot 2^{T_N + s}$ to the lower endpoint $2 \cdot 2^{T_N + s}$ is $3/2$, increasing $s$ by $\ge 1$ multiplies $3^s \Sigma_N / 2^{T_N + s}$ by $(3/2)^{s' - s} \ge 3/2$, jumping completely across the open window!
+- **Exploit (Priority 2):** Prove `subCeiling_survival_rung_unique_and_trichotomy`: for **any** $\Sigma_N \in \mathbb{Z}$, $T_N \in \mathbb{N}$, and $s_1 < s_2$:
+  1. $2 \cdot 2^{T_N + s_1} < 3^{s_1} \Sigma_N \implies 3 \cdot 2^{T_N + s_2} < 3^{s_2} \Sigma_N$ (every $s_2 > s_1$ saturates the ceiling!),
+  2. $3^{s_2} \Sigma_N < 3 \cdot 2^{T_N + s_2} \implies 3^{s_1} \Sigma_N < 2 \cdot 2^{T_N + s_1}$ (every $s_1 < s_2$ dies!), and
+  3. At most **one** $s \in \mathbb{N}$ can satisfy $2 \cdot 2^{T_N + s} < 3^s \Sigma_N < 3 \cdot 2^{T_N + s}$!
+
+## C2.O4.3 Inner Loop 3 / 5 — Explore & Exploit: One-Line Witness Criterion `subCeiling_rung_iff_eq_of_witness`
+- **Explore:** Convert the universal trichotomy into a 1-line witness rule that eliminates manual induction for every future kneading block.
+- **Exploit (Priority 3):** Prove that if a single integer $s_*$ satisfies $0 < \Sigma_{N+1}(s_*) \land \widehat{\Sigma}_{N+1}(s_*) < 0$, then for all $s \in \mathbb{N}$:
+  $$(0 < \Sigma_{N+1}(s) \land \widehat{\Sigma}_{N+1}(s) < 0) \iff s = s_*, \quad \Sigma_{N+1}(s) \le 0 \iff s < s_*, \quad 0 < \widehat{\Sigma}_{N+1}(s) \iff s_* < s.$$
+
+## C2.O4.4 Inner Loop 4 / 5 — Explore & Exploit: All-Horizon Sub-Ceiling Corridor Non-Branching Theorem
+- **Explore:** Induct the single-step uniqueness across an arbitrary horizon $K \in \mathbb{N}$.
+- **Exploit (Priority 4):** Prove `all_horizon_subCeiling_corridor_unique_sequence`: for **every** horizon $K \in \mathbb{N}$, any two sequences $s, s' : \mathbb{N} \to \mathbb{N}$ with $s_0 = s'_0$ that stay in the sub-ceiling corridor $0 < \Sigma_k \land \widehat{\Sigma}_k < 0$ for all $1 \le k \le K$ satisfy $\forall k < K,\, s_k = s'_k$!
+
+## C2.O4.5 Inner Loop 5 / 5 — Explore & Exploit: One-Line Certification of the 7th ($s_6 = 7$) and 8th ($s_7 = 5$) Kneading Rungs
+- **Explore & Exploit (Priority 5):** Apply `subCeiling_rung_iff_eq_of_witness` to certify $s_6 = 7$ ($\Sigma_7 = 2{,}450{,}854{,}955$, $\widehat{\Sigma}_7 = -6{,}139{,}079{,}637$) and $s_7 = 5$ ($\Sigma_8 = 45{,}801{,}940{,}177$, $\widehat{\Sigma}_8 = -229{,}075{,}966{,}767$), extending the unique sub-ceiling kneading corridor to 8 blocks $(2, 6, 3, 3, 2, 10, 7, 5)$!
+
+
 
 
 
