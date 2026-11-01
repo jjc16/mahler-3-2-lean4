@@ -1,0 +1,19 @@
+import StrictEndpointResolutionAndSlackGrowth
+
+namespace Mahler.Checks
+
+open Mahler.StrictEndpointAndSlackGrowth
+
+#check @multi_block_renewalTail_and_slack_identity
+#check @validCompanionUpTo_imp_renewalIntSlack_exponential_lower_bound
+#check @asymptotic_endpoint_slack_ratio_zero_excludes_companion_forever
+#check @id_le_blockSteps
+#check @no_bounded_renewalIntSlack_for_validCompanionForever
+
+#print axioms multi_block_renewalTail_and_slack_identity
+#print axioms validCompanionUpTo_imp_renewalIntSlack_exponential_lower_bound
+#print axioms asymptotic_endpoint_slack_ratio_zero_excludes_companion_forever
+#print axioms id_le_blockSteps
+#print axioms no_bounded_renewalIntSlack_for_validCompanionForever
+
+end Mahler.Checks

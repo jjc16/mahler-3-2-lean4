@@ -1530,6 +1530,30 @@ arithmetic could enter. Concentrate the next discovery effort there.
   $$\boxed{1024 \mid P_5 \;\Longleftrightarrow\; r \equiv 468 \pmod{512} \;\Longleftrightarrow\; b_0 \equiv 61{,}397{,}513 \pmod{67{,}108{,}864}!}$$
   Consequently, **every positive integer seed realizing $(2, 6, 3, 3, 2, s_5 \ge 10)$ satisfies $b_0 \ge 61{,}397{,}513$**!
 
+---
+
+# Part XII — Outer Loop 8 / 10 (Inner Loops 1–3): Resolution of the Strict Endpoint Question ($h_0 = 1/2$), the Exact Identity $\Sigma_{0,N} = 3^{T_N}(1 - 2 h_0) + 2^{T_N+1} h_N$, and Bounded-Slack Exclusion
+
+## O8.1 Inner Loop 1 / 3 — Explore & Exploit: Exact Multi-Block Renewal-Tail Identity $\Sigma_{0,N} = 3^{T_N}(1 - 2 h_0) + 2^{T_N+1} h_N$
+- **Explore:** Pull in **Martingale-Difference / Telescoping Decomposition of the Renewal Tail** $h_N(\alpha) = 3 \operatorname{fracPart}(b_0, \alpha, T_N) - 1$ to relate $h_0(\alpha)$ and $h_N(\alpha)$ directly to the integer renewal slack $\Sigma_{0,N} = 3^{T_N} - 2 A_{0,N}$.
+- **Exploit (Priority 1):** From the mixed-block fractional identity $2^{T_N} f(T_N) = 3^{T_N} f(0) - K_N$ and the kernel–renewal bridge $3 K_N = (3^{T_N} - 2^{T_N}) + A_{0,N}$, prove:
+  1. $2^{T_N} h_N(\alpha) = 3^{T_N} h_0(\alpha) - A_{0,N}$,
+  2. $\boxed{\Sigma_{0,N} \;=\; 3^{T_N}\big(1 - 2 h_0(\alpha)\big) + 2^{T_N + 1} h_N(\alpha)}$, and
+  3. Specializing to the boundary value $h_0(\alpha) = 1/2$ yields the irreducible dyadic fraction $h_N(\alpha) = \Sigma_{0,N} / 2^{T_N + 1}$.
+
+## O8.2 Inner Loop 2 / 3 — Explore & Exploit: Complete Resolution of Question 6 (The Limiting Endpoint $\lim A_{0,N}/3^{T_N} = 1/2$)
+- **Explore:** Analyze whether a trajectory with $\lim_{N\to\infty} A_{0,N}/3^{T_N} = 1/2$ (i.e. $\inf_N \Sigma_{0,N} / 3^{T_N} = 0$, while $\Sigma_{0,N} > 0$ for all finite $N$) can still admit an infinite companion $\alpha$.
+- **Exploit (Priority 2):**
+  1. If `ValidCompanionForever b_0 α` holds, then at $n = 0$, $f(0) < 1/2 \implies 1 - 2 h_0(\alpha) > 0$; and at step $T_N + 1$, odd-step survival forces $f(T_N) \ge 1/3 \implies h_N(\alpha) \ge 0$.
+  2. Therefore, for **every** $N \ge 1$:
+     $$\boxed{\Sigma_{0,N} \;\ge\; \big(1 - 2 h_0(\alpha)\big) \cdot 3^{T_N} \;>\; 0 \quad\text{and}\quad \frac{A_{0,N}}{3^{T_N}} \;\le\; h_0(\alpha) \;<\; \frac{1}{2}!}$$
+  3. **Resolution of Question 6 (`asymptotic_endpoint_slack_ratio_zero_excludes_companion_forever`):** If for every $\varepsilon > 0$ there exists $N \ge 1$ with $\Sigma_{0,N} < \varepsilon \cdot 3^{T_N}$ (in particular if $\lim_{N\to\infty} A_{0,N}/3^{T_N} = 1/2$), then **no real $\alpha$ can satisfy `ValidCompanionForever b_0 α`**, even if $2 A_{0,N} < 3^{T_N}$ holds at every finite $N$!
+
+## O8.3 Inner Loop 3 / 3 — Explore & Exploit: Unconditional Exclusion of Bounded Integer Renewal Slack $\Sigma_{0,N} \le M$
+- **Explore:** Apply the exponential lower bound $\Sigma_{0,N} \ge (1 - 2 h_0(\alpha)) \cdot 3^{T_N}$ to bounded or sub-exponential slack sequences.
+- **Exploit (Priority 3):** Prove `no_bounded_renewalIntSlack_for_validCompanionForever`: along any infinite valid block chain (`∀ N, ValidBlockChain b_0 s u N`), if `ValidCompanionForever b_0 α` holds, then $\Sigma_{0,N}$ grows at least as fast as $(1 - 2 h_0(\alpha)) \cdot 3^N$, so $\Sigma_{0,N} \le M$ cannot hold for all $N \in \mathbb{N}$!
+
+
 
 
 

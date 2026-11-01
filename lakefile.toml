@@ -547,6 +547,13 @@ name = "SixBlockKneadingEscapeAndFiftyMillionBound"
 [[lean_lib]]
 name = "SixBlockKneadingEscapeAndFiftyMillionBoundChecks"
 
+[[lean_lib]]
+name = "StrictEndpointResolutionAndSlackGrowth"
+
+[[lean_lib]]
+name = "StrictEndpointResolutionAndSlackGrowthChecks"
+
+
 
 
 
