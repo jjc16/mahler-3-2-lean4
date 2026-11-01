@@ -1,6 +1,6 @@
-# Mahler $3/2$ Problem — 168-File Lean 4 Formalization (`mahler_demand_a`)
+# Mahler $3/2$ Problem — 170-File Lean 4 Formalization (`mahler_demand_a`)
 
-This repository contains a **168-file (`sorry`-free) Lean 4.19.0 + Mathlib v4.19.0 formalization** of the reduced Mahler $3/2$ dynamical system ($Z$-numbers) and its interval- and union-confinement relaxations ([`MAHLER_FORMALIZATION_PAPER.pdf`](./MAHLER_FORMALIZATION_PAPER.pdf)).
+This repository contains a **170-file (`sorry`-free) Lean 4.19.0 + Mathlib v4.19.0 formalization** of the reduced Mahler $3/2$ dynamical system ($Z$-numbers) and its interval- and union-confinement relaxations ([`MAHLER_FORMALIZATION_PAPER.pdf`](./MAHLER_FORMALIZATION_PAPER.pdf)).
 
 ---
 
@@ -180,6 +180,8 @@ not a completed proof; its Part III corrects earlier overstatements and controls
   Exact exponent cancellation $E_K + 3 j_0 = S_K + 3 j_K$, single-exponent master identity $2^{S_K} W_K + \widetilde{\Delta}_K = 3^{S_K} W_0$, sharp local and accumulated $27$-slack inequality $0 < 27 \widetilde{\Delta}_K < 3^{S_K} - 2^{S_K}$, universal floor $(2^{S_K} W_K)/3^{S_K} = W_0 - 1$ and strict modular pinning $27((2^d W_M)\bmod 3^d) > 26 \cdot 3^d + 2^d$, optimal bounded-rung Bellman constants $C_H = (3^{H-3}-2^{H-3})/(3^H-2^H)$, real constant of motion $L = \inf_K (2/3)^{S_K} W_K$ with $0 < W_K - L(3/2)^{S_K} < 1/27$ and exact companion bridge $L = \frac{19}{72}\alpha(3/2)^{t_0}$ ($0 < \varepsilon_r < 1/27 \iff 1/3 < f_r < 9/19$), all-block renewal system $P_{r+1} = (3/2)^{s_r} P_r + 1$ with kernel bridge $3 K_N = (3^{T_N} - 2^{T_N}) + A_{0,N}$ and finite escape certificate $2 A_{0,N} \ge 3^{T_N}$, consecutive quotient GCD laws $\gcd(V_r, V_{r+1}) \mid (3^{s_r-3}-2^{s_r-3})$ and $\gcd(Q_r, Q_{r+1}) = 1$, elementary mod-16/mod-5 proof that $2^c + 1 \ne 3^a$ ($c \ge 4$), conditional Pillai and smooth $S$-unit prime-support exclusions, and the `4 : 2 : 1 : 1` octadic triad partition and 8-lift bijection.
 - **Renewal Cocycle Composition, Escape Persistence, Two-Sided Bellman Gap Sandwiches & Odd Integer Renewal Slack (`RenewalCocycleAndBellmanSandwich.lean`, Outer Loop 1):**
   Exact two-segment cocycle law $A_{0,K+M} = 3^d A_{0,K} + 2^{T_K} A_{K,K+M}$, unconditional persistence of finite renewal escape ($2 A_{0,K} \ge 3^{T_K} \implies 2 A_{0,K+M} > 3^{T_{K+M}}$ for all $M \ge 1$), two-sided integer Bellman sandwiches $2^H(3^{T_N}-2^{T_N}) \le (3^H-2^H)A_{0,N}$ ($s_k \le H$) and $(3^L-2^L)A_{0,N} \le 2^L(3^{T_N}-2^{T_N})$ ($s_k \ge L$), unconditional escape of short-block segments ($s_k \le 2, T_N \ge 3$), and the odd integer renewal slack $\Sigma_N = 3^{T_N} - 2 A_{0,N} = 3^{T_N+1} - (6 K_N + 2^{T_N+1})$.
+- **All-Block Repeated-Window $(6 \cdot 2^d)$ Super-Divisibility, Universal Mod-6 Anagram Invariance & All-Block Survivor $(p, q)$ Cutoffs (`AllBlockRepeatedWindowAndAnagramSyzygy.lean`, Outer Loop 2):**
+  Automatic strict monotonicity $P_{r_1} < P_{r_2}$ and $(6 \cdot 2^d) \mid (P_{r_2} - P_{r_1})$, $(6 \cdot 3^d) \mid (P_{r_2+L} - P_{r_1+L})$ across any repeated $L$-block gap window (including $s = 2$ recovery blocks), universal congruence $A_{0,L} \equiv 2^d \pmod 6$ forcing $6 \mid (A_2 - A_1)$ across any two step-sum anagrams, survivor upper bound $2^{T_r+1} P_r < 3^{T_r}(2 P_0 + 1)$, and the all-block repeated-window cutoff $q(d + 2) < p T_{r_2} + q B$.
 
 ## Acknowledgments
 
