@@ -1,0 +1,30 @@
+import RenewalCocycleAndBellmanSandwich
+
+namespace Mahler.Checks
+
+open Mahler.RenewalCocycleAndSandwich
+
+#check @blockSteps_add_shift
+#check @renewalNumerator_cocycle_composition
+#check @renewalNumerator_pos_of_pos_horizon
+#check @renewal_escape_persists_forever
+#check @pow_diff_mul_two_pow_mono
+#check @renewalNumerator_bellman_lower_sandwich
+#check @renewalNumerator_bellman_upper_sandwich
+#check @short_block_segment_escape_of_stepSum_ge_three
+#check @renewalIntSlack
+#check @renewalIntSlack_step_and_cocycle
+#check @renewalIntSlack_eq_return_pinch_margin_and_odd
+
+#print axioms blockSteps_add_shift
+#print axioms renewalNumerator_cocycle_composition
+#print axioms renewalNumerator_pos_of_pos_horizon
+#print axioms renewal_escape_persists_forever
+#print axioms pow_diff_mul_two_pow_mono
+#print axioms renewalNumerator_bellman_lower_sandwich
+#print axioms renewalNumerator_bellman_upper_sandwich
+#print axioms short_block_segment_escape_of_stepSum_ge_three
+#print axioms renewalIntSlack_step_and_cocycle
+#print axioms renewalIntSlack_eq_return_pinch_margin_and_odd
+
+end Mahler.Checks

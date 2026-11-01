@@ -505,6 +505,13 @@ name = "ModThreeDeathClassOctadicSieve"
 [[lean_lib]]
 name = "ModThreeDeathClassOctadicSieveChecks"
 
+[[lean_lib]]
+name = "RenewalCocycleAndBellmanSandwich"
+
+[[lean_lib]]
+name = "RenewalCocycleAndBellmanSandwichChecks"
+
+
 
 
 

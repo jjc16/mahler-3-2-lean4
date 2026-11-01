@@ -1351,3 +1351,35 @@ arithmetic could enter. Concentrate the next discovery effort there.
 9. **What is the single highest-priority unresolved lemma for the next round, and why does it survive the ghost, sparse-clock, and coverage counterchecks?**
    - **Target A4-FE (Uniform Natural-Seed Renewal Escape):** proving that for every positive odd integer $b_0 \ge 1$, the actual deterministic odd-return sequence $P_{r+1} = 3^{s_r} (P_r / 2^{s_r}) + 1$ ($s_r = v_2(P_r)$) eventually produces a finite segment $(r, N)$ with $2 A_{r,N} > 3^{T_N - T_r}$. It survives the $s = 3$ ghost check because $b_0 \ge 1$ is a positive natural number ($P_0 = 3 b_0 + 1 \ge 4 > 0$, whereas the ghost has $P_* = -8/19 < 0$), survives the static sparse-clock countermodel because $s_r = v_2(P_r)$ is the true first-return valuation, and survives the short-block coverage check because $P_r = 3 b_r + 1$ covers $s_r = 1, 2, 3$ and $s_r \ge 4$ uniformly.
 
+---
+
+# Part V — Outer Loop 1 / 10 (Inner Loops 1–3): Renewal Cocycle Composition, Bellman Gap Sandwiches & Odd Renewal Slack
+
+## O1.1 Inner Loop 1 / 3 — Explore & Exploit: Cocycle Decomposition of $A_{0,K+M}$ and Escape Persistence
+- **Explore:** Pull in **non-autonomous affine cocycle theory** and **Ostrowski / rational-base numerator trees** to study how the all-block renewal numerator $A_{0,N}$ composes across two arbitrary block segments $[0, K]$ and $[K, K+M]$, alongside tropical (min-plus) invariants of the cap map and $p$-adic Hankel determinants of $P_r$.
+- **Exploit (Priority 1):** Prove the exact **Renewal Cocycle Composition Law**
+  $$A_{0, K+M} = 3^d A_{0,K} + 2^{T_K} A_{K, K+M} \qquad \big(d = T_{K+M} - T_K\big).$$
+  Immediate consequences:
+  1. The normalized renewal ratio $\rho_N = A_{0,N} / 3^{T_N}$ is strictly increasing:
+     $$\rho_{K+M} - \rho_K = \left(\frac{2}{3}\right)^{T_K} \frac{A_{K,K+M}}{3^d} > 0 \qquad (M \ge 1).$$
+  2. **Unconditional Persistence of Finite Escape:** Once $2 A_{0,K} \ge 3^{T_K}$ holds at any block horizon $K$, $2 A_{0,K+M} > 3^{T_{K+M}}$ holds strictly for **every** $M \ge 1$ regardless of how long the subsequent gaps $s_K, \dots, s_{K+M-1}$ are!
+
+## O1.2 Inner Loop 2 / 3 — Explore & Exploit: Two-Sided Bellman Sandwiches for $A_{0,N}$
+- **Explore:** Pull in **Bellman sub-/super-solutions from optimal control** to bound $A_{0,N}$ from both above and below whenever a block segment has gap lengths in $[L, H]$ ($1 \le L \le s_r \le H$).
+- **Exploit (Priority 2):** Because $s \mapsto \frac{2^s}{3^s - 2^s}$ is strictly decreasing, prove the **Two-Sided Integer Bellman Sandwich**:
+  - **Lower Sandwich ($s_r \le H$):** $(3^H - 2^H) A_{0,N} \ge 2^H (3^{T_N} - 2^{T_N})$.
+  - **Upper Sandwich ($s_r \ge L$):** $(3^L - 2^L) A_{0,N} \le 2^L (3^{T_N} - 2^{T_N})$.
+  - **Sub-Ceiling Escape Corollary ($H = 2$):** Any block segment with $1 \le s_r \le 2$ and total step sum $T_N \ge 3$ satisfies $5 A_{0,N} \ge 4(3^{T_N} - 2^{T_N})$, which forces $2 A_{0,N} > 3^{T_N}$ unconditionally!
+
+## O1.3 Inner Loop 3 / 3 — Explore & Exploit: Odd Integer Renewal Slack $\Sigma_N = 3^{T_N} - 2 A_{0,N}$
+- **Explore:** Pull in **discrete Lyapunov / martingale-difference potentials** to track the exact integer distance to the $1/2$ renewal barrier: $\Sigma_N := 3^{T_N} - 2 A_{0,N}$ (in $\mathbb{Z}$).
+- **Exploit (Priority 3):**
+  1. Prove the exact **Integer Renewal Slack Recurrence**:
+     $$\Sigma_0 = 1, \qquad \Sigma_{N+1} = 3^{s_N} \Sigma_N - 2^{T_{N+1} + 1},$$
+     and its multi-step composition law $\Sigma_{K+M} = 3^d \Sigma_K - 2^{T_K + 1} A_{K,K+M}$.
+  2. Prove the **Exact Identity with `blockKernel`**:
+     $$3^{T_N + 1} - \big(6 \cdot \operatorname{blockKernel}(s, N) + 2^{T_N + 1}\big) \;=\; 3^{T_N} - 2 A_{0,N} \;=\; \Sigma_N,$$
+     showing that the return-pinch margin from `BridgeThreeMixedBlocks.lean` is identically equal to the integer renewal slack $\Sigma_N$.
+  3. Prove that $\Sigma_N$ is always odd ($\Sigma_N \bmod 2 = 1$) and satisfies $\Sigma_{N+1} \equiv -2^{T_{N+1} + 1} \pmod{3^{s_N}}$.
+
+
