@@ -1,6 +1,6 @@
-# Mahler $3/2$ Problem — 172-File Lean 4 Formalization (`mahler_demand_a`)
+# Mahler $3/2$ Problem — 174-File Lean 4 Formalization (`mahler_demand_a`)
 
-This repository contains a **172-file (`sorry`-free) Lean 4.19.0 + Mathlib v4.19.0 formalization** of the reduced Mahler $3/2$ dynamical system ($Z$-numbers) and its interval- and union-confinement relaxations ([`MAHLER_FORMALIZATION_PAPER.pdf`](./MAHLER_FORMALIZATION_PAPER.pdf)).
+This repository contains a **174-file (`sorry`-free) Lean 4.19.0 + Mathlib v4.19.0 formalization** of the reduced Mahler $3/2$ dynamical system ($Z$-numbers) and its interval- and union-confinement relaxations ([`MAHLER_FORMALIZATION_PAPER.pdf`](./MAHLER_FORMALIZATION_PAPER.pdf)).
 
 ---
 
@@ -184,6 +184,8 @@ not a completed proof; its Part III corrects earlier overstatements and controls
   Automatic strict monotonicity $P_{r_1} < P_{r_2}$ and $(6 \cdot 2^d) \mid (P_{r_2} - P_{r_1})$, $(6 \cdot 3^d) \mid (P_{r_2+L} - P_{r_1+L})$ across any repeated $L$-block gap window (including $s = 2$ recovery blocks), universal congruence $A_{0,L} \equiv 2^d \pmod 6$ forcing $6 \mid (A_2 - A_1)$ across any two step-sum anagrams, survivor upper bound $2^{T_r+1} P_r < 3^{T_r}(2 P_0 + 1)$, and the all-block repeated-window cutoff $q(d + 2) < p T_{r_2} + q B$.
 - **Exact Signed-Cocycle–Renewal Identity, the $s_k \ge 3$ Certificate Barrier, 4-Way Valuation Dictionary & $\Sigma_2(2, s_1) = 3^{s_1} - 8 \cdot 2^{s_1}$ (`SignedCocycleRenewalBridgeAndTwoBlockFormula.lean`, Outer Loop 3):**
   Universal identity $\operatorname{defectCocycleSum}(s, N) = 9 A_{0,N} - 8 K_N$, exact signed-cocycle bridge $19 \Sigma_N = 3 \cdot 3^{T_N} + 16 \cdot 2^{T_N} - 6 \operatorname{defectCocycleSum}(s, N)$ proving that no $s_k \ge 3$ segment can ever trigger $2 A_{0,N} \ge 3^{T_N}$, 4-way valuation dictionary on $3(19 b + 9) = 19(3 b + 1) + 8$, and the closed form $\Sigma_2(2, s_1) = 3^{s_1} - 8 \cdot 2^{s_1}$ ($2 A_{0,2} \ge 3^{2+s_1} \iff s_1 \le 5$).
+- **Distance-2 Fermat Quotient GCD Law, Universal $m$-Step Odd-Quotient Master Equation & All-Block $Q$-Descent (`MultiStepQuotientMasterAndFermatGCD.lean`, Outer Loop 4):**
+  Exact two-step identity $2^{s_1+s_2} Q_2 = 3^{s_0+s_1} Q_0 + (3^{s_1} + 2^{s_1})$ forcing $\gcd(Q_0, Q_2) \mid (3^{s_1} + 2^{s_1})$ ($13, 35, 97$ for $s_1 = 2, 3, 4$), universal $m$-step quotient equation $2^{d+s_{\text{end}}} Q_{\text{end}} = 3^{s_0+d} Q_0 + (3^d + A_{1,m})$ forcing $\gcd(Q_0, Q_{\text{end}}) \mid (3^d + A_{1,m})$, elementary mod-8 exclusion of $2^c = 3^a + 1$ ($a \ge 2$), and all-block odd-quotient descent $Q_{r+1} + 2 \le Q_r$ ($s_r \ge 2, 3^{s_r} \le 2^{s_{r+1}}$).
 
 ## Acknowledgments
 
