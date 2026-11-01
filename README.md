@@ -1,6 +1,6 @@
-# Mahler $3/2$ Problem — 190-File Lean 4 Formalization (`mahler_demand_a`)
+# Mahler $3/2$ Problem — 192-File Lean 4 Formalization (`mahler_demand_a`)
 
-This repository contains a **190-file (`sorry`-free) Lean 4.19.0 + Mathlib v4.19.0 formalization** of the reduced Mahler $3/2$ dynamical system ($Z$-numbers) and its interval- and union-confinement relaxations ([`MAHLER_FORMALIZATION_PAPER.pdf`](./MAHLER_FORMALIZATION_PAPER.pdf)).
+This repository contains a **192-file (`sorry`-free) Lean 4.19.0 + Mathlib v4.19.0 formalization** of the reduced Mahler $3/2$ dynamical system ($Z$-numbers) and its interval- and union-confinement relaxations ([`MAHLER_FORMALIZATION_PAPER.pdf`](./MAHLER_FORMALIZATION_PAPER.pdf)).
 
 ---
 
@@ -202,6 +202,8 @@ not a completed proof; its Part III corrects earlier overstatements and controls
   Unconditional bound $5 A_{0,N} \le 4(3^{T_N}-2^{T_N})$ and $A_{0,N} < 3^{T_N}$ for $s_k \ge 2$, all-block constant of motion $(2^{T_N} P_N)/3^{T_N} = P_0$ and $(2^{T_N} P_N)\bmod 3^{T_N} = A_{0,N}$, markovian escape $2 A_{0,N} \ge 3^{T_N} \iff 2((2^{T_N} P_N)\bmod 3^{T_N}) \ge 3^{T_N}$, backward state recovery $P_K = (2^d P_M)/3^d$ and $A_{K,M} = (2^d P_M)\bmod 3^d$, and exact floor/fractional-part identification $\lfloor \mathcal{H}_\infty (3/2)^{T_r}\rfloor = P_r$ and $\{\mathcal{H}_\infty (3/2)^{T_r}\} = h_r^\infty \le 4/5$.
 - **Centered Renewal Slack $\widehat{\Sigma}_N = \Sigma_N - 2^{T_N}$, Mod-6 Non-Vanishing Law & Uniqueness of the $s_1 = 6$ Sub-Ceiling Rung (`CenteredRenewalSlackAndUniqueSubCeilingRung.lean`, Campaign 2 Outer Loop 2):**
   Equal-step-sum second-difference identity for $P_r$, homogeneous centered-slack cocycle $\widehat{\Sigma}_{0,K+M} = 3^d \widehat{\Sigma}_{0,K} + 2^{T_K} \widehat{\Sigma}_{K,K+M}$, sign dichotomy ($\widehat{\Sigma}_N \ge 0$ on $s_k \ge 3$ vs. $\widehat{\Sigma}_N \le 0$ on $1 \le s_k \le 2$), kernel identity $\widehat{\Sigma}_N = 3(3^{T_N}-2^{T_N}-2 K_N)$ with $\widehat{\Sigma}_N \bmod 6 = 3 \ne 0$ for $N \ge 1$, and $\widehat{\Sigma}_2(2, s_1) = 3^{s_1} - 12 \cdot 2^{s_1}$ proving $s_1 = 6$ is the unique sub-ceiling recovery rung after $s_0 = 2$.
+- **The Unique 6-Block Sub-Ceiling Kneading Corridor Theorem (`UniqueSubCeilingKneadingCorridor.lean`, Campaign 2 Outer Loop 3):**
+  Closed form $19 \widehat{\Sigma}_{2+j}(2, 6, 3^j) = 27^{j+1} - 768 \cdot 8^j$ ($\widehat{\Sigma}_{2+j} < 0 \iff j \le 2$; $\widehat{\Sigma}_{2+j} > 0 \iff j \ge 3$), step-by-step uniqueness of each sub-ceiling rung ($s_1 = 6, s_2 = 3, s_3 = 3, s_4 = 2, s_5 = 10$), and `unique_six_block_subCeiling_kneading_corridor` proving that $(2, 6, 3, 3, 2, 10)$ is the **unique** 6-block word starting with $s_0 = 2$ that stays inside $0 < \Sigma_k < 2^{T_k}$ for all $2 \le k \le 6$.
 
 ## Acknowledgments
 
