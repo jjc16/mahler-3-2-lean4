@@ -1,0 +1,21 @@
+import UniqueSubCeilingKneadingCorridor
+
+namespace Mahler.Checks
+
+open Mahler.UniqueSubCeilingCorridor
+
+#check @two_six_three_run_centeredRenewalSlack_and_j_ge_three_restoration
+#check @three_block_two_six_unique_subCeiling_rung_three
+#check @four_block_two_six_three_unique_subCeiling_rung_three
+#check @five_block_two_six_three_three_unique_subCeiling_rung_two
+#check @six_block_unique_subCeiling_rung_ten
+#check @unique_six_block_subCeiling_kneading_corridor
+
+#print axioms two_six_three_run_centeredRenewalSlack_and_j_ge_three_restoration
+#print axioms three_block_two_six_unique_subCeiling_rung_three
+#print axioms four_block_two_six_three_unique_subCeiling_rung_three
+#print axioms five_block_two_six_three_three_unique_subCeiling_rung_two
+#print axioms six_block_unique_subCeiling_rung_ten
+#print axioms unique_six_block_subCeiling_kneading_corridor
+
+end Mahler.Checks

@@ -1700,6 +1700,31 @@ Here is why, in plain terms:
   - $s_1 = 6 \iff (0 < \Sigma_2 \land \widehat{\Sigma}_2 < 0)$ (**Unique Sub-Ceiling Recovery Rung**, $\widehat{\Sigma}_2 = -39$), and
   - $s_1 \ge 7 \iff 0 < \widehat{\Sigma}_2$ (Full Ceiling Restoration in one step, $\widehat{\Sigma}_2(2, 7) = 651$).
 
+---
+
+# Part XVIII — Second Campaign (`m = 5, n = 20`) — Outer Loop 3 / 20 (Inner Loops 1–5): The Unique Sub-Ceiling Corridor Theorem for $(2, 6, 3, 3, 2, 10)$
+
+## C2.O3.1 Inner Loop 1 / 5 — Explore & Exploit: Closed Form $19 \widehat{\Sigma}_{2+j}(2, 6, 3^j) = 27^{j+1} - 768 \cdot 8^j$ & the $j \ge 3$ Ceiling Restoration Threshold
+- **Explore:** Compute the exact centered slack along $(2, 6, 3^j)$ to find when neutral $s = 3$ blocks restore the full ceiling $1/2$.
+- **Exploit (Priority 1):** Prove $19 \widehat{\Sigma}_{2+j}(2, 6, 3^j) = 27^{j+1} - 768 \cdot 8^j$, which is $< 0$ iff $j \le 2$ and $> 0$ iff $j \ge 3$ (with $\widehat{\Sigma}_5(2, 6, 3, 3, 3) = 7275 > 0$).
+
+## C2.O3.2 Inner Loop 2 / 5 — Explore & Exploit: Uniqueness of the $s_2 = 3$ Sub-Ceiling Rung After $(2, 6)$
+- **Explore:** Classify $(2, 6, s_2)$ by $\Sigma_3$ and $\widehat{\Sigma}_3 = 217 \cdot 3^{s_2} - 768 \cdot 2^{s_2}$.
+- **Exploit (Priority 2):** Prove that $(0 < \Sigma_3 \land \widehat{\Sigma}_3 < 0) \iff s_2 = 3$ ($\widehat{\Sigma}_3 = -285$), while $s_2 \le 2$ escapes and $s_2 \ge 4$ restores the ceiling ($\widehat{\Sigma}_3(2, 6, 4) = 5289 > 0$).
+
+## C2.O3.3 Inner Loop 3 / 5 — Explore & Exploit: Uniqueness of the $s_3 = 3$ Sub-Ceiling Rung After $(2, 6, 3)$
+- **Explore:** Classify $(2, 6, 3, s_3)$ by $\Sigma_4 = 1763 \cdot 3^{s_3} - 4096 \cdot 2^{s_3}$ and $\widehat{\Sigma}_4 = 1763 \cdot 3^{s_3} - 6144 \cdot 2^{s_3}$.
+- **Exploit (Priority 3):** Prove that $(0 < \Sigma_4 \land \widehat{\Sigma}_4 < 0) \iff s_3 = 3$ ($\widehat{\Sigma}_4 = -1551$), while $s_3 \le 2$ escapes and $s_3 \ge 4$ restores the ceiling ($\widehat{\Sigma}_4(2, 6, 3, 4) = 44499 > 0$).
+
+## C2.O3.4 Inner Loop 4 / 5 — Explore & Exploit: Uniqueness of the $s_4 = 2$ Sub-Ceiling Rung After $(2, 6, 3, 3)$
+- **Explore:** Classify $(2, 6, 3, 3, s_4)$ by $\Sigma_5 = 14833 \cdot 3^{s_4} - 32768 \cdot 2^{s_4}$ and $\widehat{\Sigma}_5 = 14833 \cdot 3^{s_4} - 49152 \cdot 2^{s_4}$.
+- **Exploit (Priority 4):** Prove that $(0 < \Sigma_5 \land \widehat{\Sigma}_5 < 0) \iff s_4 = 2$ ($\widehat{\Sigma}_5 = -63111$), while $s_4 \le 1$ escapes and $s_4 \ge 3$ restores the ceiling ($\widehat{\Sigma}_5(2, 6, 3, 3, 3) = 7275 > 0$).
+
+## C2.O3.5 Inner Loop 5 / 5 — Explore & Exploit: Uniqueness of the $s_5 = 10$ Sub-Ceiling Rung & the 6-Block Corridor Theorem
+- **Explore:** Classify $(2, 6, 3, 3, 2, s_5)$ by $\Sigma_6 = 2425 \cdot 3^{s_5} - 131072 \cdot 2^{s_5}$ and $\widehat{\Sigma}_6 = 2425 \cdot 3^{s_5} - 196608 \cdot 2^{s_5}$.
+- **Exploit (Priority 5):** Prove that $(0 < \Sigma_6 \land \widehat{\Sigma}_6 < 0) \iff s_5 = 10$ ($\widehat{\Sigma}_6 = -58132767$), and bundle all 5 steps into the **Unique 6-Block Sub-Ceiling Corridor Theorem**: starting from $s_0 = 2$, $(2, 6, 3, 3, 2, 10)$ is the **unique** 6-block word satisfying $0 < \Sigma_k < 2^{T_k}$ for all $1 \le k \le 6$!
+
+
 
 
 
