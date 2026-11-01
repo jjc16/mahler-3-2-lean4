@@ -589,6 +589,13 @@ name = "UniversalSubCeilingNonBranchingAndKneading78"
 [[lean_lib]]
 name = "UniversalSubCeilingNonBranchingAndKneading78Checks"
 
+[[lean_lib]]
+name = "RungShiftIdentityAndExistsUniqueKneadingRung"
+
+[[lean_lib]]
+name = "RungShiftIdentityAndExistsUniqueKneadingRungChecks"
+
+
 
 
 

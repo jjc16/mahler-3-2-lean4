@@ -1,0 +1,21 @@
+import RungShiftIdentityAndExistsUniqueKneadingRung
+
+namespace Mahler.Checks
+
+open Mahler.RungShiftAndExistsUniqueKneading
+
+#check @candidateSlack
+#check @candidateCenteredSlack
+#check @candidateCenteredSlack_succ_eq_three_mul_candidateSlack
+#check @subCeiling_window_iff_survives_and_prev_dies
+#check @two_mul_two_pow_three_mul_add_two_lt_three_pow
+#check @exists_unique_subCeiling_rung_of_odd_subCeiling_slack
+#check @nine_and_ten_block_kneading_corridor_certification
+
+#print axioms candidateCenteredSlack_succ_eq_three_mul_candidateSlack
+#print axioms subCeiling_window_iff_survives_and_prev_dies
+#print axioms two_mul_two_pow_three_mul_add_two_lt_three_pow
+#print axioms exists_unique_subCeiling_rung_of_odd_subCeiling_slack
+#print axioms nine_and_ten_block_kneading_corridor_certification
+
+end Mahler.Checks

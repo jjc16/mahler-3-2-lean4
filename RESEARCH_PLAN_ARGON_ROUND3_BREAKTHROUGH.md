@@ -1752,6 +1752,31 @@ Here is why, in plain terms:
 ## C2.O4.5 Inner Loop 5 / 5 — Explore & Exploit: One-Line Certification of the 7th ($s_6 = 7$) and 8th ($s_7 = 5$) Kneading Rungs
 - **Explore & Exploit (Priority 5):** Apply `subCeiling_rung_iff_eq_of_witness` to certify $s_6 = 7$ ($\Sigma_7 = 2{,}450{,}854{,}955$, $\widehat{\Sigma}_7 = -6{,}139{,}079{,}637$) and $s_7 = 5$ ($\Sigma_8 = 45{,}801{,}940{,}177$, $\widehat{\Sigma}_8 = -229{,}075{,}966{,}767$), extending the unique sub-ceiling kneading corridor to 8 blocks $(2, 6, 3, 3, 2, 10, 7, 5)$!
 
+---
+
+# Part XX — Second Campaign (`m = 5, n = 20`) — Outer Loop 5 / 20 (Inner Loops 1–5): The Rung-Shift Identity $\widehat{\Sigma}_{N+1}(s) = 3 \Sigma_{N+1}(s - 1)$, Universal Existence & Uniqueness (`∃! s_*`) of the Sub-Ceiling Rung, and 10-Block Kneading Certification
+
+## C2.O5.1 Inner Loop 1 / 5 — Explore & Exploit: Discovery of the Universal Rung-Shift Identity $\widehat{\Sigma}_{N+1}(s) = 3 \Sigma_{N+1}(s - 1)$
+- **Explore:** Compare the centered slack at candidate block length $s \ge 1$ with the ordinary renewal slack at candidate block length $s - 1$.
+- **Exploit (Priority 1):** Prove the exact algebraic identity:
+  $$\boxed{\widehat{\Sigma}_{N+1}(s) \;=\; 3^s \Sigma_N - 3 \cdot 2^{T_N + s} \;=\; 3\Big(3^{s-1} \Sigma_N - 2 \cdot 2^{T_N + s - 1}\Big) \;=\; 3 \cdot \Sigma_{N+1}(s - 1) \qquad (\forall s \ge 1)!}$$
+  Thus **a candidate rung $s \ge 1$ stays strictly below the ceiling ($\widehat{\Sigma}_{N+1}(s) < 0$) if and only if the rung $s - 1$ immediately below it dies ($\Sigma_{N+1}(s - 1) < 0$)**!
+
+## C2.O5.2 Inner Loop 2 / 5 — Explore & Exploit: Minimal-Surviving-Rung Characterization of the Sub-Ceiling Rung
+- **Explore:** Use $\widehat{\Sigma}_{N+1}(s) = 3 \Sigma_{N+1}(s - 1)$ and oddness of $3^{s-1} \Sigma_N$ to show that the geometric progression $(3/2)^s \Sigma_N / 2^{T_N}$ can never jump over the open interval $(2, 3)$.
+- **Exploit (Priority 2):** Prove that when $\Sigma_N \bmod 2 = 1$, a rung $s \ge 1$ lies in the sub-ceiling survival window $2 \cdot 2^{T_N+s} < 3^s \Sigma_N < 3 \cdot 2^{T_N+s}$ if and only if $\Sigma_{N+1}(s) > 0$ and $\Sigma_{N+1}(s - 1) < 0$ (i.e. $s$ is the first rung where $\Sigma_{N+1}(s) > 0$).
+
+## C2.O5.3 Inner Loop 3 / 5 — Explore & Exploit: Universal Upper Bound $s_* \le 2 T_N + 2$ & Existence-and-Uniqueness (`∃! s_*`)
+- **Explore:** Show that for any odd $\Sigma_N$ with $1 \le \Sigma_N < 2^{T_N}$, $s = 1$ always dies ($\Sigma_{N+1}(1) < 0$) while $s = 2 T_N + 2$ always survives ($\Sigma_{N+1}(2 T_N + 2) > 0$).
+- **Exploit (Priority 3):** Prove `exists_unique_subCeiling_rung_of_odd_subCeiling_slack`: for **every** odd integer $\Sigma_N$ with $1 \le \Sigma_N < 2^{T_N}$, there exists a **unique** $s_* \in \mathbb{N}$ (`∃! s_star : ℕ`) satisfying $2 \cdot 2^{T_N + s_*} < 3^{s_*} \Sigma_N < 3 \cdot 2^{T_N + s_*}$, and furthermore $2 \le s_* \le 2 T_N + 2$!
+
+## C2.O5.4 Inner Loop 4 / 5 — Explore & Exploit: Certification of the 9th ($s_8 = 7$) and 10th ($s_9 = 3$) Kneading Rungs
+- **Explore & Exploit (Priority 4):** Certify in one line of `norm_num` that after $(2, 6, 3, 3, 2, 10, 7, 5)$, the unique 9th sub-ceiling rung is $s_8 = 7$ ($T_9 = 45$, $\Sigma_9 = 29{,}800{,}098{,}989{,}435$, $\widehat{\Sigma}_9 = -5{,}384{,}273{,}099{,}397$) and the unique 10th sub-ceiling rung is $s_9 = 3$ ($T_{10} = 48$, $\Sigma_{10} = 241{,}652{,}719{,}293{,}433$, $\widehat{\Sigma}_{10} = -39{,}822{,}257{,}417{,}223$)!
+
+## C2.O5.5 Inner Loop 5 / 5 — Explore & Exploit: Complete 10-Block Sub-Ceiling Kneading Uniqueness Theorem
+- **Explore & Exploit (Priority 5):** Bundle all 10 blocks into `unique_ten_block_subCeiling_kneading_corridor`: starting from $s_0 = 2$, $(2, 6, 3, 3, 2, 10, 7, 5, 7, 3)$ is the **unique** 10-block sequence staying in the sub-ceiling survival corridor!
+
+
 
 
 
