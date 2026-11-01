@@ -1409,5 +1409,35 @@ arithmetic could enter. Concentrate the next discovery effort there.
   2. Combining $6 \cdot 2^d \le P_{r_2} - P_{r_1} < P_{r_2}$ ($r_1 < r_2$) with $2^{T_{r_2}+1} P_{r_2} < 3^{T_{r_2}}(2 P_0 + 1)$ and $2 P_0 + 1 \le 3 \cdot 2^B$, $1 \le q$, $3^q \le 2^{p+q}$ yields the **All-Block Survivor Repeated-Window $(p, q)$ Cutoff**:
      $$\boxed{q \cdot (d + 2) \;<\; p \cdot T_{r_2} + q \cdot B!}$$
 
+---
+
+# Part VII — Outer Loop 3 / 10 (Inner Loops 1–3): Exact Signed-Cocycle–Renewal Identity, $s_k \ge 3$ Certificate Barrier & the $\Sigma_2(2, s_1) = 3^{s_1} - 8 \cdot 2^{s_1}$ Law
+
+## O3.1 Inner Loop 1 / 3 — Explore & Exploit: Universal Identity $19 A_{0,N} = 8(3^{T_N} - 2^{T_N}) + 3 \operatorname{defectCocycleSum}(s, N)$ and the $s_k \ge 3$ Escape Barrier
+- **Explore:** Pull in **Affine Invariant Cohomology** to relate the signed defect invariant $I(b) = 19 b + 9$ directly to the renewal coordinate $P(b) = 3 b + 1$.
+- **Exploit (Priority 1):**
+  1. Prove the universal boundary identity $3 I(b) = 19 P(b) + 8$ and the exact multi-block identity
+     $$\boxed{19 \cdot A_{0,N} + 24 \cdot \operatorname{blockKernel}(s, N) \;=\; 27 \cdot \operatorname{blockKernel}(s, N) + \dots \;\Longleftrightarrow\; 19 \cdot A_{0,N} \;=\; 8\big(3^{T_N} - 2^{T_N}\big) + 3 \cdot \operatorname{defectCocycleSum}(s, N)}$$
+     (or directly in terms of the integer renewal slack $\Sigma_N = 3^{T_N} - 2 A_{0,N}$:
+     $$19 \Sigma_N \;=\; 3 \cdot 3^{T_N} + 16 \cdot 2^{T_N} - 6 \cdot \operatorname{defectCocycleSum}(s, N)!$$)
+  2. **Banked Barrier Theorem:** Whenever $\forall k < N,\, 3 \le s_k$, every block defect is $\le 0$, so $19 A_{0,N} \le 8(3^{T_N} - 2^{T_N})$ and $19 \Sigma_N \ge 3 \cdot 3^{T_N} + 16 \cdot 2^{T_N} > 0$. Thus **no segment with $s_k \ge 3$ can ever trigger the finite escape certificate $2 A_{0,N} \ge 3^{T_N}$**; every finite escape certificate requires a positive contribution from $s = 1$ or $s = 2$ blocks!
+
+## O3.2 Inner Loop 2 / 3 — Explore & Exploit: Exact 4-Way Valuation Dictionary Between $P(b) = 2^s u$ and $I(b) = 19 b + 9$
+- **Explore:** Pull in **2-Adic Valuation Transport** on $3 I(b) = 19 \cdot 2^s u + 8$.
+- **Exploit (Priority 2):** Prove the exact 4-way divisibility dictionary for any odd block $3 b + 1 = 2^s u$ ($u$ odd):
+  - $s = 1 \implies 2 \mid I(b) \land \neg(4 \mid I(b))$,
+  - $s = 2 \implies 4 \mid I(b) \land \neg(8 \mid I(b))$,
+  - $s \ge 4 \implies 8 \mid I(b) \land \neg(16 \mid I(b))$, and
+  - $s = 3 \implies 16 \mid I(b)$.
+
+## O3.3 Inner Loop 3 / 3 — Explore & Exploit: Closed Form $\Sigma_2(2, s_1) = 3^{s_1} - 8 \cdot 2^{s_1}$ and Unclipped Rational Cap Identity
+- **Explore:** Pull in **Symbolic Symbolic-Cap Closed Forms** for $(2, s_1)$ recovery pairs and unclipped cap segments.
+- **Exploit (Priority 3):**
+  1. Prove that across any 2-block segment with $s_0 = 2$ and $s_1 \ge 1$,
+     $$A_{0,2} = 4 \cdot 3^{s_1} + 4 \cdot 2^{s_1} \quad\text{and}\quad \Sigma_2 = 3^{s_1} - 8 \cdot 2^{s_1}.$$
+  2. Prove that $\Sigma_2 \le 0$ ($2 A_{0,2} > 3^{2 + s_1}$) holds if and only if $s_1 \le 5$, while at $s_1 = 6$, $\Sigma_2 = 217$ and $\Sigma_2 / 2^{2 + 6 + 1} = 217 / 512 = B_2$!
+  3. Prove that along any segment where the rational cap does not clip at $1/2$, $B_N = \Sigma_N / 2^{T_N + 1}$.
+
+
 
 

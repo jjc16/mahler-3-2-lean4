@@ -517,6 +517,13 @@ name = "AllBlockRepeatedWindowAndAnagramSyzygy"
 [[lean_lib]]
 name = "AllBlockRepeatedWindowAndAnagramSyzygyChecks"
 
+[[lean_lib]]
+name = "SignedCocycleRenewalBridgeAndTwoBlockFormula"
+
+[[lean_lib]]
+name = "SignedCocycleRenewalBridgeAndTwoBlockFormulaChecks"
+
+
 
 
 
