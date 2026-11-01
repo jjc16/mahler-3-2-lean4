@@ -1,6 +1,6 @@
-# Mahler $3/2$ Problem — 170-File Lean 4 Formalization (`mahler_demand_a`)
+# Mahler $3/2$ Problem — 172-File Lean 4 Formalization (`mahler_demand_a`)
 
-This repository contains a **170-file (`sorry`-free) Lean 4.19.0 + Mathlib v4.19.0 formalization** of the reduced Mahler $3/2$ dynamical system ($Z$-numbers) and its interval- and union-confinement relaxations ([`MAHLER_FORMALIZATION_PAPER.pdf`](./MAHLER_FORMALIZATION_PAPER.pdf)).
+This repository contains a **172-file (`sorry`-free) Lean 4.19.0 + Mathlib v4.19.0 formalization** of the reduced Mahler $3/2$ dynamical system ($Z$-numbers) and its interval- and union-confinement relaxations ([`MAHLER_FORMALIZATION_PAPER.pdf`](./MAHLER_FORMALIZATION_PAPER.pdf)).
 
 ---
 
@@ -182,6 +182,8 @@ not a completed proof; its Part III corrects earlier overstatements and controls
   Exact two-segment cocycle law $A_{0,K+M} = 3^d A_{0,K} + 2^{T_K} A_{K,K+M}$, unconditional persistence of finite renewal escape ($2 A_{0,K} \ge 3^{T_K} \implies 2 A_{0,K+M} > 3^{T_{K+M}}$ for all $M \ge 1$), two-sided integer Bellman sandwiches $2^H(3^{T_N}-2^{T_N}) \le (3^H-2^H)A_{0,N}$ ($s_k \le H$) and $(3^L-2^L)A_{0,N} \le 2^L(3^{T_N}-2^{T_N})$ ($s_k \ge L$), unconditional escape of short-block segments ($s_k \le 2, T_N \ge 3$), and the odd integer renewal slack $\Sigma_N = 3^{T_N} - 2 A_{0,N} = 3^{T_N+1} - (6 K_N + 2^{T_N+1})$.
 - **All-Block Repeated-Window $(6 \cdot 2^d)$ Super-Divisibility, Universal Mod-6 Anagram Invariance & All-Block Survivor $(p, q)$ Cutoffs (`AllBlockRepeatedWindowAndAnagramSyzygy.lean`, Outer Loop 2):**
   Automatic strict monotonicity $P_{r_1} < P_{r_2}$ and $(6 \cdot 2^d) \mid (P_{r_2} - P_{r_1})$, $(6 \cdot 3^d) \mid (P_{r_2+L} - P_{r_1+L})$ across any repeated $L$-block gap window (including $s = 2$ recovery blocks), universal congruence $A_{0,L} \equiv 2^d \pmod 6$ forcing $6 \mid (A_2 - A_1)$ across any two step-sum anagrams, survivor upper bound $2^{T_r+1} P_r < 3^{T_r}(2 P_0 + 1)$, and the all-block repeated-window cutoff $q(d + 2) < p T_{r_2} + q B$.
+- **Exact Signed-Cocycle–Renewal Identity, the $s_k \ge 3$ Certificate Barrier, 4-Way Valuation Dictionary & $\Sigma_2(2, s_1) = 3^{s_1} - 8 \cdot 2^{s_1}$ (`SignedCocycleRenewalBridgeAndTwoBlockFormula.lean`, Outer Loop 3):**
+  Universal identity $\operatorname{defectCocycleSum}(s, N) = 9 A_{0,N} - 8 K_N$, exact signed-cocycle bridge $19 \Sigma_N = 3 \cdot 3^{T_N} + 16 \cdot 2^{T_N} - 6 \operatorname{defectCocycleSum}(s, N)$ proving that no $s_k \ge 3$ segment can ever trigger $2 A_{0,N} \ge 3^{T_N}$, 4-way valuation dictionary on $3(19 b + 9) = 19(3 b + 1) + 8$, and the closed form $\Sigma_2(2, s_1) = 3^{s_1} - 8 \cdot 2^{s_1}$ ($2 A_{0,2} \ge 3^{2+s_1} \iff s_1 \le 5$).
 
 ## Acknowledgments
 
