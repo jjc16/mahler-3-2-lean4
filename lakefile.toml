@@ -559,6 +559,13 @@ name = "InfiniteRenewalSeriesAndGlobalCompanionEquivalence"
 [[lean_lib]]
 name = "InfiniteRenewalSeriesAndGlobalCompanionEquivalenceChecks"
 
+[[lean_lib]]
+name = "CanonicalOddBlockChainAndGrandSynthesis"
+
+[[lean_lib]]
+name = "CanonicalOddBlockChainAndGrandSynthesisChecks"
+
+
 
 
 

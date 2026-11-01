@@ -1577,6 +1577,29 @@ arithmetic could enter. Concentrate the next discovery effort there.
   1. Prove that if `ValidCompanionForever b_0 α` holds, then $0 \le 3 \alpha - \mathcal{L}_N < \frac{1}{2}(2/3)^{T_N}$ for all $N$, forcing $3 \alpha = \mathcal{H}_\infty$ ($\alpha = \mathcal{H}_\infty / 3$) and $h_r(\alpha) = h_r^\infty < 1/2$ for all $r$.
   2. Bundle both directions into the **Two-Way Infinite-Horizon All-Block Companion Equivalence (`exists_validCompanionForever_iff_forall_supRenewalTail_lt_half`)**, completely resolving Question 5 of Section A8.2!
 
+---
+
+# Part XIV — Outer Loop 10 / 10 (Inner Loops 1–3): Unconditional Canonical Odd-Block Chain Construction, Hypothesis-Free Odd-Seed Companion Equivalence & the 186-File Grand Synthesis
+
+## O10.1 Inner Loop 1 / 3 — Explore & Exploit: Unconditional Construction of `ValidBlockChain` for Every Odd Seed
+- **Explore:** Pull in **2-Adic Valuation / `ordProj` Canonical Decomposition** of $3 b + 1 = 2^{s(b)} u(b)$ to construct the deterministic infinite odd-return chain $(b_r, s_r, u_r)_{r \in \mathbb{N}}$ for every odd seed $b_0$ (`b_0 % 2 = 1`) without any external chain hypothesis.
+- **Exploit (Priority 1):**
+  1. Define `canonicalStepS (b : ℕ) := (3 * b + 1).factorization 2` and `canonicalStepU (b : ℕ) := (3 * b + 1) / 2 ^ (canonicalStepS b)`.
+  2. Prove that whenever $b \bmod 2 = 1$, we have $1 \le \operatorname{canonicalStepS} b$, $\operatorname{canonicalStepU} b \bmod 2 = 1$, $3 b + 1 = 2^{\operatorname{canonicalStepS} b} \cdot \operatorname{canonicalStepU} b$, and $\operatorname{orbit} b (\operatorname{canonicalStepS} b) \bmod 2 = 1$.
+  3. Define `canonicalBlockB b_0`, `canonicalBlockS b_0`, `canonicalBlockU b_0` and prove **unconditionally** (`canonical_infinite_validBlockChain_of_odd_seed`):
+     $$\boxed{b_0 \bmod 2 = 1 \;\Longrightarrow\; \forall N \in \mathbb{N},\; \operatorname{ValidBlockChain} b_0 \, (\operatorname{canonicalBlockS} b_0) \, (\operatorname{canonicalBlockU} b_0) \, N!}$$
+
+## O10.2 Inner Loop 2 / 3 — Explore & Exploit: Hypothesis-Free Odd-Seed Companion Equivalence & Positive-Seed Reduction
+- **Explore:** Discharge the `∀ N, ValidBlockChain b_0 s u N` hypothesis from Outer Loops 8 and 9 using `canonical_infinite_validBlockChain_of_odd_seed`, and combine with the initial even-run shift bridge (`even_seed_reaches_odd_boundary`).
+- **Exploit (Priority 2):**
+  1. Prove `odd_seed_validCompanionForever_iff_canonical_supRenewalTail_lt_half`: for **every** odd natural number $b_0$ (`b_0 % 2 = 1`),
+     $$\big(\exists \alpha \in \mathbb{R},\; \operatorname{ValidCompanionForever} b_0 \, \alpha\big) \;\Longleftrightarrow\; \big(\forall r \in \mathbb{N},\; \operatorname{supRenewalTail} b_0 \, (\operatorname{canonicalBlockS} b_0) \, r < 1/2\big).$$
+  2. Prove `positive_seed_no_validCompanionForever_of_canonical_escape`: for **every** positive integer $a_0 \ge 1$, factoring $a_0 = 2^k b_{\text{odd}}$ (`k = a_0.factorization 2`) reaches the odd boundary $b_* = 3^k b_{\text{odd}}$ at step $k$, so any finite certificate $2 A_{0,N} \ge 3^{T_N}$ (or asymptotic slack ratio $\inf_N \Sigma_{0,N}/3^{T_N} \le 0$) on `canonicalBlockS b_*` unconditionally excludes `ValidCompanionForever a_0 α` for all $\alpha \in \mathbb{R}$!
+
+## O10.3 Inner Loop 3 / 3 — Explore & Exploit: The 186-File Round 3 + 10-Outer-Loop Grand Synthesis
+- **Explore & Exploit (Priority 3):** Assemble `mahler_round3_and_ten_outer_loops_grand_synthesis` uniting the headline unconditional theorems across Round 3 and Outer Loops 1–10.
+
+
 
 
 

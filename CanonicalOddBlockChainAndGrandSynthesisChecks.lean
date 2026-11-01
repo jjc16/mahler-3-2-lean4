@@ -1,0 +1,26 @@
+import CanonicalOddBlockChainAndGrandSynthesis
+
+namespace Mahler.Checks
+
+open Mahler.CanonicalOddBlockSynthesis
+
+#check @canonicalStepS
+#check @canonicalStepU
+#check @canonicalStep_spec_of_odd
+#check @canonicalBlockB
+#check @canonicalBlockS
+#check @canonicalBlockU
+#check @canonicalBlockB_eq_orbit_blockSteps
+#check @canonical_infinite_validBlockChain_of_odd_seed
+#check @odd_seed_validCompanionForever_iff_canonical_supRenewalTail_lt_half
+#check @positive_seed_no_validCompanionForever_of_canonical_escape
+#check @mahler_round3_and_ten_outer_loops_grand_synthesis
+
+#print axioms canonicalStep_spec_of_odd
+#print axioms canonicalBlockB_eq_orbit_blockSteps
+#print axioms canonical_infinite_validBlockChain_of_odd_seed
+#print axioms odd_seed_validCompanionForever_iff_canonical_supRenewalTail_lt_half
+#print axioms positive_seed_no_validCompanionForever_of_canonical_escape
+#print axioms mahler_round3_and_ten_outer_loops_grand_synthesis
+
+end Mahler.Checks
