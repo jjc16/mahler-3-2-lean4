@@ -119,15 +119,13 @@ For a complete, human-readable mathematical exposition of our results and barrie
 
 ## Next General-Case Research Plan & Round 1 Formalized Deliverables
 
-The [research plan for Argon](./RESEARCH_PLAN_ARGON_GENERAL_PROOF.md) and its
-follow-up **[Round 2 completion plan](./RESEARCH_PLAN_ARGON_ROUND2_COMPLETION.md)**
+The [research plan for Argon](./RESEARCH_PLAN_ARGON_GENERAL_PROOF.md), its
+follow-up **[Round 2 completion plan & report](./RESEARCH_PLAN_ARGON_ROUND2_COMPLETION.md)**,
+and the new **[Round 3 breakthrough plan](./RESEARCH_PLAN_ARGON_ROUND3_BREAKTHROUGH.md)**
 set out a coverage audit, finite-seed escape targets, a base-6 multiplication-automaton
 route, cross-disciplinary tracks (Part II Sections 11–23), the **Round 1
-Execution Report (Part III Sections 24–26)** documenting the 8 newly formalized
-Lean 4 modules (`ParitySurplusPotentialsAndSafetyGame.lean`,
-`BaseSixMultiplicationAutomaton.lean`, `TransferOperatorJSRAndCarryFourier.lean`,
-`SolenoidRigidityDiscrepancyAndRenormalization.lean`, and their `*Checks.lean`
-suites), and the **Round 2 five-track roadmap**:
+Execution Report (Part III Sections 24–26)**, the **Round 2 Execution Report**,
+and the **Round 3 three-track breakthrough roadmap**:
 - **Look-Ahead-Free Finite Odd-Count Bridge & Potentials (`ParitySurplusPotentialsAndSafetyGame.lean`):**
   Universal shift-submultiplicativity `signedMargin ε (k + m) ≤ 2^k * signedMargin (shiftStream ε k) m`,
   the unconditional bound `0 < signedMargin ε N → 3 * oddParityCount ε N ≤ N + 3` (`3 * oddCount a_0 N ≤ N + 3`

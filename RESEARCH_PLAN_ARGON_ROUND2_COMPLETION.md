@@ -876,3 +876,6 @@ unconditionally proved from the exact remaining open regime:
      Determining whether an unbounded integer trajectory can avoid $\nu_{r+1} \equiv 1 \pmod 3$ forever is
      the exact arithmetic heart of Mahler's $3/2$ problem.
 
+See **[RESEARCH_PLAN_ARGON_ROUND3_BREAKTHROUGH.md](./RESEARCH_PLAN_ARGON_ROUND3_BREAKTHROUGH.md)** for the
+complete, prioritized Round 3 research plan and new mathematical invariants addressing these questions.
+
