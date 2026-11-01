@@ -1,7 +1,7 @@
 # Formalizing the Reduced Mahler $3/2$ Dynamical System in Lean 4: Exact 1D Slack Reduction, Constructive Coasting Survivors, Conditional Finiteness Theorems, and Certified Transcendence Barriers
 
-**Authors:** Joshua Coon (with Astra and Argon AI assistance via GitHub Copilot)  
-**Toolchain:** Lean 4.19.0 + Mathlib v4.19.0 (`142` `.lean` files, `0` `sorry`s, `0` warnings, standard Lean axioms `[propext, Classical.choice, Quot.sound]`)
+**Authors:** Joshua Coon (with Astra, Fable, and Argon AI assistance via GitHub Copilot)  
+**Toolchain:** Lean 4.19.0 + Mathlib v4.19.0 (`150` `.lean` files, `0` `sorry`s, `0` warnings, standard Lean axioms `[propext, Classical.choice, Quot.sound]`)
 
 ---
 
@@ -9,7 +9,7 @@
 
 Mahler's $3/2$ problem (1968) asks whether there exists any real "$Z$-number" $\alpha > 0$ such that the fractional part $\{(3/2)^n \alpha\}$ lies in $[0, 1/2)$ for every integer $n \ge 0$. Writing $\alpha = a_0 + \xi$ with $a_0 = \lfloor \alpha \rfloor \in \mathbb{N}$ and $\xi \in [0, 1)$, survival up to step $N$ is equivalent to the discrete ceiling recurrence $g_{n+1} = \lceil 3 g_n / 2 \rceil = \lfloor (3 g_n + 1)/2 \rfloor$ ($g_0 = a_0$) admitting a non-empty intersection of $N$ nested archimedean companion intervals $[\text{lowerBound}(a_0, n),\, \text{upperBound}(a_0, n))$ (`InfiniteZNumberBridgeAndRationalBase.lean`).
 
-In this work, we present a 142-file, `sorry`-free formalization in Lean 4 that investigates both **constructive survival** and **obstructions to infinite orbits**:
+In this work, we present a 150-file, `sorry`-free formalization in Lean 4 that investigates both **constructive survival** and **obstructions to infinite orbits**:
 1. **Exact 1D Slack Reduction & Infinite-Horizon $Z$-Number Bridge:** By grouping each odd step $g \mapsto (3g+1)/2$ with its $s(k)-1$ subsequent even steps $g \mapsto 3g/2$ via $3 b_k + 1 = 2^{s(k)} u(k)$ ($\gcd(u(k), 6) = 1$), we collapse all $\binom{K}{2}$ pairwise companion-interval inequalities along a finite block chain into a **single 1D recurrence** (`minSlack`), and prove its exact two-way equivalence with the existence of a real companion surviving through step $T(K)$ (both in interval form and in direct `Int.fract` form). Normalizing by $2^{T(m)}$ yields the time-homogeneous 1D slack map $\mu_2(s, m+1) = \min\big(1,\, (3/2)^{s(m)} \mu_2(s, m) - 2\big)$ driven by the arithmetic-controlled block length $s(m) = v_2(3 b_m + 1)$ (`CoupledFractionalPartDynamics.lean`, `FiniteSeedCarryAndBackwardDescent.lean`).
 2. **Constructive Survivors & 113-Step Record-Holder:** We prove that any block sequence with $s(k) \ge 3$ saturates the ceiling $\text{minSlack } s\ m = 2^{T(m)}$ and automatically admits a valid real companion at every finite horizon. Using this sufficiency theorem, we construct closed-form seed families surviving arbitrarily many blocks prior to ceiling exit, and machine-certify a 55-bit integer (`recordHolderA0 = 29871555608238677 < 2^55`) that survives **113 steps** (58 steps past its 55-bit binary length) before dying at step 114 (`MahlerGrandSynthesis.lean`, `InfiniteZNumberBridgeAndRationalBase.lean`).
 3. **Unconditional Exclusion of Restricted, Aperiodic, Non-Stationary & Rapid-Growth Classes:** We prove explicit, logarithm-free step cutoffs in Lean 4 ruling out: (i) sub-ceiling bounded-block runs ($s(k) \le c$), (ii) periodic and uniform-macro-block sequences (`2^(D m) ∣ ((3^D - 2^D)(3a_0+1) + 2^(s 0) R_0)`), (iii) **arbitrary two-letter $\{a, b\}$ ($3 \le a \le b$) mechanical/Sturmian block chains** (`no_infinite_mechanical_two_letter_block_chain`, with factor complexity $\le L + 1$ derived directly from phase thresholds), (iv) **sub-critical liminf-complexity sequences** ($\kappa < \log 2 / \log(3/2) \approx 1.709511$) under a positive Cesàro mean, uniform window balance, or scale-local epoch balance (`no_infinite_tendsto_mean_log_threshold_block_chain`, `no_infinite_uniformWindowMean_global_complexity_block_chain`, `no_infinite_scale_local_balanced_block_chain`, including the non-stationary oscillating-epoch family `nonStationaryEpochSeq a b`), (v) **3-step encoded Thue–Morse and Period-Doubling parity streams** (`no_nonneg_seed_realizes_tmEncodedParity`, `pdEncodedParity_cutoff_and_exclusion`, with quantitative seed-residue lower bounds $\ge 2^{2^k}$) and **Thue–Morse block-length chains** (`no_infinite_tmBlockSeq_block_chain`), and (vi) **sustained rapid-growth chains** ($3 \le s(m+1)$ and $3^{s(m)} < 2^{s(m+1)}$, via well-founded odd-quotient descent $u(m+1) + 2 \le u(m)$ in `no_infinite_rapid_growth_block_chain`). We also formalize the exact arithmetic setup for Baker–Matveev, Ridout, and Schlickewei Subspace analyses, clearly separating the machine-checked algebraic/analytic bounds from external transcendence theorems not yet in Mathlib.
@@ -722,24 +722,27 @@ What is the exact combinatorial and dynamical structure of the zero-width Cantor
 
 ## 8. Architectural Capstone: Complete Hierarchy of Reductions & The Exponential Carry-Entropy Boundary
 
-Across the 142 Lean 4 files of this project (including 182 sections and 38,546 lines in `DubickasConfinementAndComplexityExtension.lean`), every hypothetical infinite Mahler $(3/2)$-confinement orbit has been systematically reduced through a sequence of machine-checked structural sieves:
+Across the 150 Lean 4 files of this project (including 182 sections and 38,874 lines in `DubickasConfinementAndComplexityExtension.lean`, plus our cross-disciplinary extension modules `ParitySurplusPotentialsAndSafetyGame.lean`, `BaseSixMultiplicationAutomaton.lean`, `TransferOperatorJSRAndCarryFourier.lean`, and `SolenoidRigidityDiscrepancyAndRenormalization.lean`), hypothetical infinite Mahler $(3/2)$-confinement orbits have been analyzed through a sequence of machine-checked structural sieves and certified barrier theorems:
 
 1. **Interval & Union Confinement Away from $0$ (100% Closed):**
    - Every shifted open/closed window of width $\le 1/2$ away from $0$, every multi-island safe zone up to width $17/24 \approx 70.83\%$ ($U_{17/24}$), and the upper interval $[8/57, 1/2)$ ($71.93\%$ of $[0, 1/2)$, plus the two-island union $\mathcal{W}_{280/2187}$ covering $73.43\%$) admit **zero infinite survivors**, with explicit linear $O(W)$ escape bounds ($\le 3W + 20$ steps on $[8/57, 1/2)$ and $\le W + 17$ steps on $U_{17/24}$).
-2. **The Inductive Catapult Elevator & Cantor Dust Outside the Dense Core (100% Closed in Measure & For All $d < \infty$):**
-   - Below $8/57$, the overlapping catapult staircase $\varepsilon_g^* = \frac{2^g}{3(3^g - 2^g)} \to 0$ and its $K$-pass self-cleaning death bands shrink the surviving Lebesgue measure at rate $(1/19)^K \to 0$ (**$100\%$ of $[0, 1/2)$ eliminated in measure**).
-   - On the Dense Core interval $[8/81, 1/2)$ ($80.25\%$ of $[0, 1/2)$), the normalized recurrence $2^{3j+4} V_{r+1} + 1 = 3^{3j+4} V_r$ ($\gcd(V_r, 6) = 1$, $V(0) > 6.644 \times 10^{27} > 2^{92}$) eliminates all trajectories with any unbounded run or defect ($d < \infty$) and all trajectories with sub-critical factor complexity $p(N) < (3/2)^N$ ($\kappa < \frac{7 \log 2}{\mu \log(3/2)} \in [1.1967, 1.7095]$).
-3. **The Final Trajectory Family (Bounded-Run Super-Critical Anagram-Mixing, $1 \le L_1(n), L_2(n) \le B$, $p(N) \ge (3/2)^N$):**
+2. **The Inductive Catapult Elevator & Cantor Dust Outside the Dense Core (Closed in Lebesgue Measure & Under Sustained Sparse/Epoch Growth):**
+   - Below $8/57$, the overlapping catapult staircase $\varepsilon_g^* = \frac{2^g}{3(3^g - 2^g)} \to 0$ and its $K$-pass self-cleaning death bands shrink the surviving Lebesgue measure at rate $(1/19)^K \to 0$ (**$100\%$ of $[0, 1/2)$ eliminated in measure**; note that measure zero does not by itself exclude a single exceptional arithmetic orbit).
+   - On the Dense Core interval $[8/81, 1/2)$ ($80.25\%$ of $[0, 1/2)$), the normalized recurrence $2^{3j+4} V_{r+1} + 1 = 3^{3j+4} V_r$ ($\gcd(V_r, 6) = 1$, $V(0) > 6.644 \times 10^{27} > 2^{92}$) eliminates all trajectories with sustained sparse or cumulative-epoch defect growth (`no_infinite_sparse_defect_cantor_dust_chain`, `no_infinite_cumulative_sparse_epoch_cantor_dust_chain`) and all trajectories with sub-critical **linear** factor complexity $p(L) \le \kappa L + C_0$ at arbitrarily large lengths $L$ for $\kappa < \frac{7 \log 2}{\mu \log(3/2)} \in [1.1967, 1.7095]$ (`no_subcritical_log_threshold_dense_core`, `no_density_weighted_subcritical_log_threshold_dense_core`).
+3. **Bounded-Run Super-Critical Anagram-Mixing ($1 \le L_1(n), L_2(n) \le B$) & Exact 3-Adic Carry Injectivity:**
    - **Anagram Middle-Disagreement Sieve (Sections 90–153):** By extracting $16{,}243{,}286{,}400 = 2^7 \cdot 3^7 \cdot 58{,}025$ at matching boundary $2$-runs, $2^{E_{\text{run}}}$ at the first divergence, and $3^{E_{\text{tail}}}$ at the last divergence, the doubly super-reduced defect $q^{**}_A$ satisfies $261{,}288{,}489{,}825 \cdot q^{**}_A < 59{,}049 \cdot 3^{E_{\text{mid}} - E_{\text{run}} - E_{\text{tail}} - 10}$, unconditionally eliminating all anagram pairs with middle disagreement $E_{\text{mid}} \le 46$ steps.
-   - **Sliding-Window Shift-Duality & Abelian Block-Match Engine (Sections 154–182):** Sliding an $(N+1)$-wave window by $d+1$ waves ($0 \to d+1$) eliminates all $N - d$ overlapping waves from the carry recurrence and cancels $3^{S_d + 10 L_2(0)}$ from the right-hand side, yielding the $d \le N$-free $W(0)$-referenced cutoff:
+   - **Sliding-Window Shift-Duality & Abelian Block-Match Engine (Sections 154–182):** Sliding an $(N+1)$-wave window by $d+1$ waves ($0 \to d+1$) eliminates all $N - d$ overlapping waves from the carry recurrence and cancels $3^{S_d + 10 L_2(0)}$ from the right-hand side, yielding the conditional $d \le N$-free $W(0)$-referenced cutoff:
      $$10 S_d + 100 L_2(d + 1) + 330 \;<\; 7 S_0 + 70 L_2(0) + 10 W_0 \qquad (\text{or } + 320 \text{ under 4-window carry cancellation}).$$
-   - **The Exponential Carry-Entropy Boundary ($3^{S_d}$ vs. $10 S_d$):**
+   - **The Exponential Carry-Entropy Boundary & Exact 3-Adic Carry Injectivity (`TransferOperatorJSRAndCarryFourier.lean`):**
      - For **bounded sliding blocks ($S_d \le 28$, $d \in \{0, 1\}$)**, the trillion-fold suppression bound $33{,}444{,}926{,}697{,}600 \cdot q_{\text{Acc},d} < 3^{S_d} \le 3^{28}$ forces the carry defect $q_{\text{Acc},d} = 0$ **automatically** for any abelian step-sum match, establishing unconditional finite-horizon floors ($549$ at $d = 0$, $838$ at $d = 1$, and $170 L_2(0) + 17 S_d + 330 < 1{,}428 + 10 W_{\text{mid}}$ under the no-repeat permutation cap).
-     - For **arbitrarily large initial seeds $W_0 \to \infty$**, beating $10 W_0$ on the right-hand side requires $S_d > W_0 \gg 28$. In that asymptotic regime, the carry $\text{Acc}_d \in [0, 3^{S_d}/2059)$ ranges over an **exponentially large** $3$-adic palette of size $\sim 3^{S_d - 44}$, so any Pigeonhole-based carry collision requires waiting $N \sim \exp(c \cdot d)$ waves—causing the distance penalty $7 S_0 \sim \exp(c \cdot d)$ to outgrow the linear valuation gain $10 S_d \sim 170 d$. Closing this remaining asymptotic gap requires a non-Pigeonhole Diophantine mechanism capable of forcing $3$-adic carry alignment modulo $3^{S_d}$ within a linear horizon $N = O(d)$.
+     - For **arbitrarily large initial seeds $W_0 \to \infty$**, we prove in `wordCarry_mod_three_pow_eq_iff_parity_eq` and `aligned_carry_collision_iff_exact_factor_match` that the normalized $m$-step carry map $(e_0, \dots, e_{m-1}) \mapsto C_m \bmod 3^m$ is **100% injective** on binary words of length $m$: two aligned windows collide modulo $3^m$ **if and only if they match bit-for-bit**. Moreover, at any fixed 2-adic congruence depth $2^k$, the 2-adic ghost fixed points (`-9/19`, `1/2059`, `1/58025`) form self-loops that force every coupled mod-$2^k$ transfer operator and JSR weight to have spectral radius $\rho_k \ge 1$ (`mod_two_pow_ghost_self_loop_at_all_depths`, `no_subcritical_weight_of_self_loop`).
+4. **General-Case Pointwise Bridges: Look-Ahead-Free Odd-Count Bound, Base-6 Multiplication Automaton, Lyapunov Indifference & Safety-Game Completeness:**
+   - **Look-Ahead-Free Finite Odd-Count Bound (`ParitySurplusPotentialsAndSafetyGame.lean`):** Using universal shift-submultiplicativity $D_{k+m}(\varepsilon) \le 2^k D_m(\text{shift}_k \varepsilon)$, we prove that $0 < D_N(\varepsilon) \implies 3 \cdot \text{oddParityCount}(\varepsilon, N) \le N + 3$ holds for **every** parity stream $\varepsilon$ and horizon $N$ without look-ahead assumptions (`three_mul_oddParityCount_le_add_three_of_signedMargin_pos`). Thus a single finite parity-surplus violation $3 O_{a_0}(N) > N + 3$ (or a single visit to $T^n(a_0) \equiv 3 \pmod 4$) for every $a_0 \ge 1$ suffices to resolve Mahler's conjecture (`mahler_conjecture_of_forall_pos_seed_parity_surplus`, `mahler_conjecture_of_forall_pos_seed_hits_three_mod_four`).
+   - **Exact Base-6 Multiplication Cellular Automaton $\Pi_{3/2, 6}$ (`BaseSixMultiplicationAutomaton.lean`):** Formalizes Kari and Kopra's radius-1 base-6 multiplication automaton, its exact rational value homomorphism, the canonical digit-`(-1)` trace equivalence $\operatorname{fract}(x) < 1/2 \iff d(-1) \in \{0, 1, 2\}$, and the 2-adic ghost obstruction proving why the left-finite boundary $d(i) = 0$ ($i \ge m$) is indispensable.
 
 ---
 
-## 9. Architecture of the 142 Lean 4 Files & Verification
+## 9. Architecture of the 150 Lean 4 Files & Verification
 
 Every theorem in this repository is machine-checked in Lean 4.19.0 (`mahler_demand_a/`) without a single `sorry`. Each core module `Foo.lean` is paired with a verification module `FooChecks.lean` that runs `#check` and `#print axioms` on every exported theorem.
 
@@ -777,13 +780,17 @@ lake env lean -DwarningAsError=true ExactSeedResidueTreeAndStabilizationChecks.l
 lake env lean -DwarningAsError=true ThueMorseMahlerFunctionalEquationChecks.lean
 lake env lean -DwarningAsError=true SparseDefectCocycleAndValuationLockChecks.lean
 lake env lean -DwarningAsError=true DubickasConfinementAndComplexityExtensionChecks.lean
+lake env lean -DwarningAsError=true ParitySurplusPotentialsAndSafetyGameChecks.lean
+lake env lean -DwarningAsError=true BaseSixMultiplicationAutomatonChecks.lean
+lake env lean -DwarningAsError=true TransferOperatorJSRAndCarryFourierChecks.lean
+lake env lean -DwarningAsError=true SolenoidRigidityDiscrepancyAndRenormalizationChecks.lean
 ```
 
 ---
 
 ## Acknowledgments
 
-This research and its 142-file Lean 4 formalization were developed by Joshua Coon with the assistance of the **Astra** and **Argon** AI models in GitHub Copilot.
+This research and its 150-file Lean 4 formalization were developed by Joshua Coon with the assistance of the **Astra**, **Fable**, and **Argon** AI models in GitHub Copilot.
 
 ---
 
@@ -807,4 +814,7 @@ This research and its 142-file Lean 4 formalization were developed by Joshua Coo
 16. **A. Dubickas (2009),** *"Powers of a rational number modulo $1$ cannot lie in a small interval,"* Acta Arithmetica **137**, 233–239.
 17. **The Formal Conjectures Authors (Google DeepMind, 2025–2026),** *"Formal Conjectures in Lean 4: `Mahler32.lean`, `Problem10_9.lean`, and `ZNumber.lean`,"* `https://github.com/google-deepmind/formal-conjectures`.
 18. **S. Akiyama, C. Frougny, and J. Sakarovitch (2008),** *"Powers of rationals modulo 1 and rational base number systems,"* Israel Journal of Mathematics **168**, 53–91.
-19. **M. Andrieu, S. Eliahou, and L. Vivion (2025),** *"A Normality Conjecture on Rational Base Number Systems,"* `arXiv:2510.11723`.
+19. **M. Andrieu, S. Eliahou, and L. Vivion (2025–2026),** *"A Normality Conjecture on Rational Base Number Systems,"* `arXiv:2510.11723`.
+20. **J. Kari (2012),** *"Cellular automata, the Collatz conjecture and powers of $3/2$,"* Developments in Language Theory (DLT 2012), LNCS **7410**, 40–49.
+21. **J. Kopra (2020),** *"On the Trace Subshifts of Fractional Multiplication Automata,"* `arXiv:2005.05112`.
+22. **D. J. Rudolph (1990),** *"$\times 2$ and $\times 3$ invariant measures and entropy,"* Ergodic Theory and Dynamical Systems **10**, 395–406.

@@ -1,6 +1,6 @@
-# Mahler $3/2$ Problem — 142-File Lean 4 Formalization (`mahler_demand_a`)
+# Mahler $3/2$ Problem — 150-File Lean 4 Formalization (`mahler_demand_a`)
 
-This repository contains a **142-file (`sorry`-free) Lean 4.19.0 + Mathlib v4.19.0 formalization** of the reduced Mahler $3/2$ dynamical system ($Z$-numbers) and its interval- and union-confinement relaxations ([`MAHLER_FORMALIZATION_PAPER.pdf`](./MAHLER_FORMALIZATION_PAPER.pdf)).
+This repository contains a **150-file (`sorry`-free) Lean 4.19.0 + Mathlib v4.19.0 formalization** of the reduced Mahler $3/2$ dynamical system ($Z$-numbers) and its interval- and union-confinement relaxations ([`MAHLER_FORMALIZATION_PAPER.pdf`](./MAHLER_FORMALIZATION_PAPER.pdf)).
 
 ---
 
@@ -117,9 +117,42 @@ This repository formalizes:
 
 For a complete, human-readable mathematical exposition of our results and barrier analyses, see **[MAHLER_FORMALIZATION_PAPER.pdf](./MAHLER_FORMALIZATION_PAPER.pdf)** (and the synchronized Markdown/LaTeX sources **[MAHLER_FORMALIZATION_PAPER.md](./MAHLER_FORMALIZATION_PAPER.md)** / **[MAHLER_FORMALIZATION_PAPER.tex](./MAHLER_FORMALIZATION_PAPER.tex)**).
 
+## Next General-Case Research Plan & Round 1 Formalized Deliverables
+
+The [research plan for Argon](./RESEARCH_PLAN_ARGON_GENERAL_PROOF.md) sets out
+a coverage audit, finite-seed escape targets, a base-6 multiplication-automaton
+route, cross-disciplinary tracks (Part II Sections 11–23), and the **Round 1
+Execution Report (Part III Sections 24–26)** documenting the 8 newly formalized
+Lean 4 modules (`ParitySurplusPotentialsAndSafetyGame.lean`,
+`BaseSixMultiplicationAutomaton.lean`, `TransferOperatorJSRAndCarryFourier.lean`,
+`SolenoidRigidityDiscrepancyAndRenormalization.lean`, and their `*Checks.lean`
+suites):
+- **Look-Ahead-Free Finite Odd-Count Bridge & Potentials (`ParitySurplusPotentialsAndSafetyGame.lean`):**
+  Universal shift-submultiplicativity `signedMargin ε (k + m) ≤ 2^k * signedMargin (shiftStream ε k) m`,
+  the unconditional bound `0 < signedMargin ε N → 3 * oddParityCount ε N ≤ N + 3` (`3 * oddCount a_0 N ≤ N + 3`
+  for every valid companion), pointwise parity-surplus and `orbit a_0 n % 4 = 3` sufficient conditions,
+  the `deficitPotential` indifference surface refutation on `100` vs. `8 ∣ (19 * q_N + 9)` 2-adic drop,
+  and the 4-way safety-game `survivorKernel = ∅` completeness equivalence.
+- **Exact Base-6 Multiplication Cellular Automaton $\Pi_{3/2, 6}$ (`BaseSixMultiplicationAutomaton.lean`):**
+  Kari and Kopra's radius-1 base-6 multiplication automaton (`mulThreeCA`, `mulThreeHalvesCA`),
+  unconditional carry-flux conservation, exact `(3/2)` rational value homomorphism, canonical digit-`(-1)`
+  trace equivalence `Int.fract x < 1/2 ↔ d(-1) ∈ {0, 1, 2}`, non-canonical `0.2555..._6 = 1/2` endpoint
+  counterexample, causal-cone trace escapes for `x = 1, 8`, and the 2-adic ghost trace obstruction.
+- **Coupled Transfer Operators, JSR & 3-Adic Carry Injectivity (`TransferOperatorJSRAndCarryFourier.lean`):**
+  Perron–Frobenius-free sub-invariant weight and JSR bounds, the archimedean-only density fallacy (`ρ ≥ 4/3 > 1`),
+  existence of 2-adic ghost self-loops (`19 r_k + 9 ≡ 0`, `2059 v_1 ≡ 1`, `58025 v_2 ≡ 1 (mod 2^k)`) forcing
+  `ρ_k ≥ 1` at every finite congruence depth `k`, `m`-step 3-adic carry memory erasure, and **exact 3-adic
+  carry injectivity** (`wordCarry ε₁ m % 3^m = wordCarry ε₂ m % 3^m ↔ ∀ j < m, ε₁ j % 2 = ε₂ j % 2`).
+- **Solenoid Rigidity Obstruction, Erdős–Turán Reduction, S-Unit / Mahler-Value Bridges & Renormalization
+  (`SolenoidRigidityDiscrepancyAndRenormalization.lean`):**
+  Non-invariance of single-generator `×(3/2)` orbits and finite confinement cylinders under `×2` and `×3`,
+  quantitative discrepancy-to-escape and Erdős–Turán reductions, dyadic-block uniqueness past bit `W` vs.
+  the seed `149` single-survivor witness, Mahler's method value-irrationality seed exclusion, and the
+  `s = 3` vs. `s = 4` first-return 2-adic defect (`0` vs. `-72`) and multiplier (`27/8 ≠ 81/16`) mismatch.
+
 ## Acknowledgments
 
-Developed by Joshua Coon with the assistance of the **Astra** and **Argon** AI models in GitHub Copilot.
+Developed by Joshua Coon with the assistance of the **Astra**, **Fable**, and **Argon** AI models in GitHub Copilot.
 
 ## Building & Verifying
 
