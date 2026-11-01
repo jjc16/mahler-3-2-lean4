@@ -1,7 +1,7 @@
 # Formalizing the Reduced Mahler $3/2$ Dynamical System in Lean 4: Exact 1D Slack Reduction, Constructive Coasting Survivors, Conditional Finiteness Theorems, and Certified Transcendence Barriers
 
 **Authors:** Joshua Coon (with Astra, Fable, and Argon AI assistance via GitHub Copilot)  
-**Toolchain:** Lean 4.19.0 + Mathlib v4.19.0 (`194` `.lean` files, `0` `sorry`s, `0` warnings, standard Lean axioms `[propext, Classical.choice, Quot.sound]`)
+**Toolchain:** Lean 4.19.0 + Mathlib v4.19.0 (`196` `.lean` files, `0` `sorry`s, `0` warnings, standard Lean axioms `[propext, Classical.choice, Quot.sound]`)
 
 ---
 
@@ -9,7 +9,7 @@
 
 Mahler's $3/2$ problem (1968) asks whether there exists any real "$Z$-number" $\alpha > 0$ such that the fractional part $\{(3/2)^n \alpha\}$ lies in $[0, 1/2)$ for every integer $n \ge 0$. Writing $\alpha = a_0 + \xi$ with $a_0 = \lfloor \alpha \rfloor \in \mathbb{N}$ and $\xi \in [0, 1)$, survival up to step $N$ is equivalent to the discrete ceiling recurrence $g_{n+1} = \lceil 3 g_n / 2 \rceil = \lfloor (3 g_n + 1)/2 \rfloor$ ($g_0 = a_0$) admitting a non-empty intersection of $N$ nested archimedean companion intervals $[\text{lowerBound}(a_0, n),\, \text{upperBound}(a_0, n))$ (`InfiniteZNumberBridgeAndRationalBase.lean`).
 
-In this work, we present a 194-file, `sorry`-free formalization in Lean 4 that investigates both **constructive survival** and **obstructions to infinite orbits**:
+In this work, we present a 196-file, `sorry`-free formalization in Lean 4 that investigates both **constructive survival** and **obstructions to infinite orbits**:
 1. **Exact 1D Slack Reduction & Infinite-Horizon $Z$-Number Bridge:** By grouping each odd step $g \mapsto (3g+1)/2$ with its $s(k)-1$ subsequent even steps $g \mapsto 3g/2$ via $3 b_k + 1 = 2^{s(k)} u(k)$ ($\gcd(u(k), 6) = 1$), we collapse all $\binom{K}{2}$ pairwise companion-interval inequalities along a finite block chain into a **single 1D recurrence** (`minSlack`), and prove its exact two-way equivalence with the existence of a real companion surviving through step $T(K)$ (both in interval form and in direct `Int.fract` form). Normalizing by $2^{T(m)}$ yields the time-homogeneous 1D slack map $\mu_2(s, m+1) = \min\big(1,\, (3/2)^{s(m)} \mu_2(s, m) - 2\big)$ driven by the arithmetic-controlled block length $s(m) = v_2(3 b_m + 1)$ (`CoupledFractionalPartDynamics.lean`, `FiniteSeedCarryAndBackwardDescent.lean`).
 2. **Constructive Survivors & 113-Step Record-Holder:** We prove that any block sequence with $s(k) \ge 3$ saturates the ceiling $\text{minSlack } s\ m = 2^{T(m)}$ and automatically admits a valid real companion at every finite horizon. Using this sufficiency theorem, we construct closed-form seed families surviving arbitrarily many blocks prior to ceiling exit, and machine-certify a 55-bit integer (`recordHolderA0 = 29871555608238677 < 2^55`) that survives **113 steps** (58 steps past its 55-bit binary length) before dying at step 114 (`MahlerGrandSynthesis.lean`, `InfiniteZNumberBridgeAndRationalBase.lean`).
 3. **Unconditional Exclusion of Restricted, Aperiodic, Non-Stationary & Rapid-Growth Classes:** We prove explicit, logarithm-free step cutoffs in Lean 4 ruling out: (i) sub-ceiling bounded-block runs ($s(k) \le c$), (ii) periodic and uniform-macro-block sequences (`2^(D m) ∣ ((3^D - 2^D)(3a_0+1) + 2^(s 0) R_0)`), (iii) **arbitrary two-letter $\{a, b\}$ ($3 \le a \le b$) mechanical/Sturmian block chains** (`no_infinite_mechanical_two_letter_block_chain`, with factor complexity $\le L + 1$ derived directly from phase thresholds), (iv) **sub-critical liminf-complexity sequences** ($\kappa < \log 2 / \log(3/2) \approx 1.709511$) under a positive Cesàro mean, uniform window balance, or scale-local epoch balance (`no_infinite_tendsto_mean_log_threshold_block_chain`, `no_infinite_uniformWindowMean_global_complexity_block_chain`, `no_infinite_scale_local_balanced_block_chain`, including the non-stationary oscillating-epoch family `nonStationaryEpochSeq a b`), (v) **3-step encoded Thue–Morse and Period-Doubling parity streams** (`no_nonneg_seed_realizes_tmEncodedParity`, `pdEncodedParity_cutoff_and_exclusion`, with quantitative seed-residue lower bounds $\ge 2^{2^k}$) and **Thue–Morse block-length chains** (`no_infinite_tmBlockSeq_block_chain`), and (vi) **sustained rapid-growth chains** ($3 \le s(m+1)$ and $3^{s(m)} < 2^{s(m+1)}$, via well-founded odd-quotient descent $u(m+1) + 2 \le u(m)$ in `no_infinite_rapid_growth_block_chain`). We also formalize the exact arithmetic setup for Baker–Matveev, Ridout, and Schlickewei Subspace analyses, clearly separating the machine-checked algebraic/analytic bounds from external transcendence theorems not yet in Mathlib.
@@ -745,7 +745,7 @@ Across the 158 Lean 4 files of this project (including 182 sections and 38,874 l
 
 ---
 
-## 9. Architecture of the 194 Lean 4 Files & Verification
+## 9. Architecture of the 196 Lean 4 Files & Verification
 
 Every theorem in this repository is machine-checked in Lean 4.19.0 (`mahler_demand_a/`) without a single `sorry`. Each core module `Foo.lean` is paired with a verification module `FooChecks.lean` that runs `#check` and `#print axioms` on every exported theorem.
 
@@ -809,13 +809,14 @@ lake env lean -DwarningAsError=true AllBlockConstantOfMotionAndBackwardRecoveryC
 lake env lean -DwarningAsError=true CenteredRenewalSlackAndUniqueSubCeilingRungChecks.lean
 lake env lean -DwarningAsError=true UniqueSubCeilingKneadingCorridorChecks.lean
 lake env lean -DwarningAsError=true UniversalSubCeilingNonBranchingAndKneading78Checks.lean
+lake env lean -DwarningAsError=true RungShiftIdentityAndExistsUniqueKneadingRungChecks.lean
 ```
 
 ---
 
 ## Acknowledgments
 
-This research and its 194-file Lean 4 formalization were developed by Joshua Coon with the assistance of the **Astra**, **Fable**, and **Argon** AI models in GitHub Copilot.
+This research and its 196-file Lean 4 formalization were developed by Joshua Coon with the assistance of the **Astra**, **Fable**, and **Argon** AI models in GitHub Copilot.
 
 ---
 

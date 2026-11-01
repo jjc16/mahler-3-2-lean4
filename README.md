@@ -1,6 +1,6 @@
-# Mahler $3/2$ Problem — 194-File Lean 4 Formalization (`mahler_demand_a`)
+# Mahler $3/2$ Problem — 196-File Lean 4 Formalization (`mahler_demand_a`)
 
-This repository contains a **194-file (`sorry`-free) Lean 4.19.0 + Mathlib v4.19.0 formalization** of the reduced Mahler $3/2$ dynamical system ($Z$-numbers) and its interval- and union-confinement relaxations ([`MAHLER_FORMALIZATION_PAPER.pdf`](./MAHLER_FORMALIZATION_PAPER.pdf)).
+This repository contains a **196-file (`sorry`-free) Lean 4.19.0 + Mathlib v4.19.0 formalization** of the reduced Mahler $3/2$ dynamical system ($Z$-numbers) and its interval- and union-confinement relaxations ([`MAHLER_FORMALIZATION_PAPER.pdf`](./MAHLER_FORMALIZATION_PAPER.pdf)).
 
 ---
 
@@ -206,6 +206,8 @@ not a completed proof; its Part III corrects earlier overstatements and controls
   Closed form $19 \widehat{\Sigma}_{2+j}(2, 6, 3^j) = 27^{j+1} - 768 \cdot 8^j$ ($\widehat{\Sigma}_{2+j} < 0 \iff j \le 2$; $\widehat{\Sigma}_{2+j} > 0 \iff j \ge 3$), step-by-step uniqueness of each sub-ceiling rung ($s_1 = 6, s_2 = 3, s_3 = 3, s_4 = 2, s_5 = 10$), and `unique_six_block_subCeiling_kneading_corridor` proving that $(2, 6, 3, 3, 2, 10)$ is the **unique** 6-block word starting with $s_0 = 2$ that stays inside $0 < \Sigma_k < 2^{T_k}$ for all $2 \le k \le 6$.
 - **Universal Sub-Ceiling Non-Branching Theorem Across All Horizons $K \in \mathbb{N}$ & 8-Block Kneading Certification (`UniversalSubCeilingNonBranchingAndKneading78.lean`, Campaign 2 Outer Loop 4):**
   Exact $(2 : 3)$ multiplicative window $2 \cdot 2^{T_N+s} < 3^s \Sigma_N < 3 \cdot 2^{T_N+s}$ for sub-ceiling survival, universal non-branching theorem (`subCeiling_survival_rung_unique_and_trichotomy`, `all_horizon_subCeiling_corridor_unique_sequence`) proving that at most **one** block sequence in the universe can remain in the sub-ceiling corridor for $K$ steps, one-line witness criterion (`subCeiling_rung_iff_eq_of_witness`), and certification of the 7th ($s_6 = 7$) and 8th ($s_7 = 5$) kneading rungs $(2, 6, 3, 3, 2, 10, 7, 5)$.
+- **Universal Rung-Shift Identity $\widehat{\Sigma}_{N+1}(s) = 3 \Sigma_{N+1}(s - 1)$, Existence & Uniqueness (`∃! s_*`) of the Sub-Ceiling Rung & 10-Block Kneading Certification (`RungShiftIdentityAndExistsUniqueKneadingRung.lean`, Campaign 2 Outer Loop 5):**
+  Exact rung-shift identity $\widehat{\Sigma}_{N+1}(m + 1) = 3 \Sigma_{N+1}(m)$ proving that $s = m + 1$ stays strictly below the ceiling iff $s - 1 = m$ dies, universal existence-and-uniqueness theorem (`exists_unique_subCeiling_rung_of_odd_subCeiling_slack`, `∃! s_star` with $2 \le s_* \le 2 T_N + 2$), and certification of the 9th ($s_8 = 7$) and 10th ($s_9 = 3$) kneading rungs $(2, 6, 3, 3, 2, 10, 7, 5, 7, 3)$.
 
 ## Acknowledgments
 
