@@ -541,6 +541,13 @@ name = "TwoAdicRecoveryCascadePruningTree"
 [[lean_lib]]
 name = "TwoAdicRecoveryCascadePruningTreeChecks"
 
+[[lean_lib]]
+name = "SixBlockKneadingEscapeAndFiftyMillionBound"
+
+[[lean_lib]]
+name = "SixBlockKneadingEscapeAndFiftyMillionBoundChecks"
+
+
 
 
 

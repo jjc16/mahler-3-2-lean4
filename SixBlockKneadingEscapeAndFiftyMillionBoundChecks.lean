@@ -1,0 +1,15 @@
+import SixBlockKneadingEscapeAndFiftyMillionBound
+
+namespace Mahler.Checks
+
+open Mahler.SixBlockKneadingAndFiftyMillion
+
+#check @two_six_three_three_two_mod_131072_classification
+#check @six_block_kneading_s5_slack_and_escape_iff_le_nine
+#check @two_six_three_three_two_ten_mod_two_pow_27_and_50387465_lower_bound
+
+#print axioms two_six_three_three_two_mod_131072_classification
+#print axioms six_block_kneading_s5_slack_and_escape_iff_le_nine
+#print axioms two_six_three_three_two_ten_mod_two_pow_27_and_50387465_lower_bound
+
+end Mahler.Checks

@@ -1505,6 +1505,32 @@ arithmetic could enter. Concentrate the next discovery effort there.
   - $s_2 = 3 \land s_3 \ge 3$ (`8 ∣ P_3`) $\iff n \equiv 3 \pmod 8 \iff \boxed{b_0 \equiv 6665 \pmod{16384}}$,
   proving unconditionally that **every positive integer seed realizing $(2, 6, 3, s_3 \ge 3)$ satisfies $b_0 \ge 6665$**!
 
+---
+
+# Part XI — Outer Loop 7 / 10 (Inner Loops 1–3): Six-Block $(2, 6, 3, 3, 2, s_5)$ Slack Law ($s_5 \ge 10$) & the $b_0 \equiv 50{,}387{,}465 \pmod{2^{27}}$ Lower Bound
+
+## O7.1 Inner Loop 1 / 3 — Explore & Exploit: Mod-131072 Parameterization of the 5-Block Kneading Prefix $(2, 6, 3, 3, 2)$
+- **Explore:** Continue the 2-adic Hensel lifting tree from $b_0 = 6665 + 16384 k$ ($n = 3 + 8 k$) through blocks 3 and 4 ($s_3 = 3, s_4 = 2$).
+- **Exploit (Priority 1):**
+  1. Along $b_0 = 6665 + 16384 k$, $P_3 = 8(216206 + 531441 k)$, so $s_3 = 3$ (`Q_3 % 2 = 1`) $\iff k \bmod 2 = 1$ ($k = 1 + 2 \ell$, $b_0 = 23049 + 32768 \ell$).
+  2. Along $k = 1 + 2 \ell$, $P_4 = 2(10093235 + 14348907 \ell)$, so:
+     - $\ell \bmod 2 = 0 \implies s_4 = 1$ (instant death),
+     - $\ell \bmod 4 = 3 \implies 8 \mid P_4$ ($s_4 \ge 3$), and
+     - $\ell \bmod 4 = 1 \iff 4 \mid P_4 \land \neg(8 \mid P_4)$ ($s_4 = 2$, exact 5-block kneading prefix $(2, 6, 3, 3, 2)$) $\iff \boxed{b_0 \equiv 55817 \pmod{131072}}$!
+
+## O7.2 Inner Loop 2 / 3 — Explore & Exploit: Six-Block Slack Formula $\Sigma_6(2, 6, 3, 3, 2, s_5) = 2425 \cdot 3^{s_5} - 131072 \cdot 2^{s_5}$ & the $s_5 \le 9$ Escape Theorem
+- **Explore:** Compute the exact integer renewal slack $\Sigma_6$ after $(2, 6, 3, 3, 2, s_5)$ and determine its exact sign threshold.
+- **Exploit (Priority 2):**
+  1. Prove `renewalIntSlack s 6 = 2425 * (3 : ℤ) ^ (s 5) - 131072 * (2 : ℤ) ^ (s 5)`.
+  2. Prove `2 * renewalNumerator s 6 ≥ 3 ^ (blockSteps s 6) ↔ s 5 ≤ 9`, while at $s_5 = 10$, $\Sigma_6 = 8{,}976{,}097 > 0$.
+
+## O7.3 Inner Loop 3 / 3 — Explore & Exploit: Mod-$2^{26}$ Pruning of $(2, 6, 3, 3, 2, s_5 \ge 10)$ & the $61{,}397{,}577$ Seed Lower Bound
+- **Explore:** Couple the $(2, 6, 3, 3, 2)$ parameterization $b_0 = 55817 + 131072 r$ ($\ell = 1 + 4 r$) with the mandatory recovery condition $s_5 \ge 10$ ($1024 \mid P_5$).
+- **Exploit (Priority 3):** Along $b_0 = 55817 + 131072 r$, $Q_4 = 12221071 + 28697814 r$ (always odd!) and $P_5 = 9 Q_4 + 1 = 109989640 + 258280326 r = 2(54994820 + 129140163 r)$, so:
+  $$\boxed{1024 \mid P_5 \;\Longleftrightarrow\; r \equiv 468 \pmod{512} \;\Longleftrightarrow\; b_0 \equiv 61{,}397{,}513 \pmod{67{,}108{,}864}!}$$
+  Consequently, **every positive integer seed realizing $(2, 6, 3, 3, 2, s_5 \ge 10)$ satisfies $b_0 \ge 61{,}397{,}513$**!
+
+
 
 
 
