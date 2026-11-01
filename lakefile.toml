@@ -553,6 +553,13 @@ name = "StrictEndpointResolutionAndSlackGrowth"
 [[lean_lib]]
 name = "StrictEndpointResolutionAndSlackGrowthChecks"
 
+[[lean_lib]]
+name = "InfiniteRenewalSeriesAndGlobalCompanionEquivalence"
+
+[[lean_lib]]
+name = "InfiniteRenewalSeriesAndGlobalCompanionEquivalenceChecks"
+
+
 
 
 

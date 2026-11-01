@@ -1553,6 +1553,31 @@ arithmetic could enter. Concentrate the next discovery effort there.
 - **Explore:** Apply the exponential lower bound $\Sigma_{0,N} \ge (1 - 2 h_0(\alpha)) \cdot 3^{T_N}$ to bounded or sub-exponential slack sequences.
 - **Exploit (Priority 3):** Prove `no_bounded_renewalIntSlack_for_validCompanionForever`: along any infinite valid block chain (`∀ N, ValidBlockChain b_0 s u N`), if `ValidCompanionForever b_0 α` holds, then $\Sigma_{0,N}$ grows at least as fast as $(1 - 2 h_0(\alpha)) \cdot 3^N$, so $\Sigma_{0,N} \le M$ cannot hold for all $N \in \mathbb{N}$!
 
+---
+
+# Part XIII — Outer Loop 9 / 10 (Inner Loops 1–3): Complete Resolution of Question 5 — Supremum Renewal Constant $\mathcal{H}_\infty$, Uniqueness of $\alpha = \mathcal{H}_\infty / 3$, and the Two-Way Infinite-Horizon All-Block Companion Equivalence
+
+## O9.1 Inner Loop 1 / 3 — Explore & Exploit: Universal Upper Bound $A_{0,N} \le 2(3^{T_N} - 2^{T_N})$ & Supremum Renewal Scale $\mathcal{H}_\infty$
+- **Explore:** Specialize the Bellman upper sandwich (`renewalNumerator_bellman_upper_sandwich`) to $L = 1$ ($s_k \ge 1$) and $L = 2$ ($s_k \ge 2$) to bound the partial renewal sequence $\mathcal{L}_N := P_0 + A_{0,N} / 3^{T_N}$ without any companion hypothesis.
+- **Exploit (Priority 1):**
+  1. For every valid block chain ($\forall k, 1 \le s_k$), prove $A_{0,N} \le 2(3^{T_N} - 2^{T_N})$ (and $5 A_{0,N} \le 4(3^{T_N} - 2^{T_N})$ when $\forall k, 2 \le s_k$).
+  2. Prove that $\mathcal{L}_N = P_0 + A_{0,N} / 3^{T_N}$ is strictly increasing (`StrictMono`) and satisfies
+     $$0 \;<\; \mathcal{L}_M - \mathcal{L}_K \;\le\; 2\left(\left(\frac{2}{3}\right)^{T_K} - \left(\frac{2}{3}\right)^{T_M}\right) \qquad (K < M).$$
+  3. Define $\mathcal{H}_\infty := \sup_N \mathcal{L}_N = \operatorname{sSup}(\operatorname{range} \mathcal{L})$ and $h_r^\infty := \mathcal{H}_\infty (3/2)^{T_r} - P_r$, and prove $0 < h_r^\infty \le 2$ and $h_{r+1}^\infty = (3/2)^{s_r} h_r^\infty - 1$.
+
+## O9.2 Inner Loop 2 / 3 — Explore & Exploit: Interval Coverage of All Ordinary Times $n \in \mathbb{N}$ & Converse Companion Construction
+- **Explore:** Connect boundary survival $0 < h_r^\infty < 1/2$ ($\forall r \in \mathbb{N}$) to `ValidCompanionForever b_0 (H_∞ / 3)` across all ordinary times $n \in \mathbb{N}$.
+- **Exploit (Priority 2):**
+  1. Prove the time-partition lemma `exists_block_interval_containing_time`: for every $s : \mathbb{N} \to \mathbb{N}$ with $\forall k, 1 \le s_k$ and every $n \in \mathbb{N}$, there exist $r \le n$ and $v \le s_r$ such that $n = T_r + v$.
+  2. Using `renewalTail_recurrence_and_block_companion_iff`, prove that if $\forall r \in \mathbb{N},\, h_r^\infty < 1/2$, then $\alpha_\infty := \mathcal{H}_\infty / 3$ satisfies `ValidCompanionForever b_0 α_∞`!
+
+## O9.3 Inner Loop 3 / 3 — Explore & Exploit: Uniqueness $\alpha = \mathcal{H}_\infty / 3$ & Full Two-Way All-Block Companion Equivalence
+- **Explore:** Prove that any companion $\alpha$ satisfying `ValidCompanionForever b_0 α` must equal $\mathcal{H}_\infty / 3$.
+- **Exploit (Priority 3):**
+  1. Prove that if `ValidCompanionForever b_0 α` holds, then $0 \le 3 \alpha - \mathcal{L}_N < \frac{1}{2}(2/3)^{T_N}$ for all $N$, forcing $3 \alpha = \mathcal{H}_\infty$ ($\alpha = \mathcal{H}_\infty / 3$) and $h_r(\alpha) = h_r^\infty < 1/2$ for all $r$.
+  2. Bundle both directions into the **Two-Way Infinite-Horizon All-Block Companion Equivalence (`exists_validCompanionForever_iff_forall_supRenewalTail_lt_half`)**, completely resolving Question 5 of Section A8.2!
+
+
 
 
 

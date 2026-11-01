@@ -1,0 +1,24 @@
+import InfiniteRenewalSeriesAndGlobalCompanionEquivalence
+
+namespace Mahler.Checks
+
+open Mahler.InfiniteRenewalEquivalence
+
+#check @renewalPartialSeq
+#check @supRenewalScale
+#check @supRenewalTail
+#check @renewalPartialSeq_strictMono_and_two_index_bound
+#check @supRenewalTail_bounds_and_recurrence
+#check @exists_block_interval_containing_time
+#check @validCompanionForever_of_forall_supRenewalTail_lt_half
+#check @validCompanionForever_imp_eq_supRenewalScale_div_three
+#check @exists_validCompanionForever_iff_forall_supRenewalTail_lt_half
+
+#print axioms renewalPartialSeq_strictMono_and_two_index_bound
+#print axioms supRenewalTail_bounds_and_recurrence
+#print axioms exists_block_interval_containing_time
+#print axioms validCompanionForever_of_forall_supRenewalTail_lt_half
+#print axioms validCompanionForever_imp_eq_supRenewalScale_div_three
+#print axioms exists_validCompanionForever_iff_forall_supRenewalTail_lt_half
+
+end Mahler.Checks
