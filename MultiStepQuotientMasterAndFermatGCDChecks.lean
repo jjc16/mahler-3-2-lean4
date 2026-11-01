@@ -1,0 +1,23 @@
+import MultiStepQuotientMasterAndFermatGCD
+
+namespace Mahler.Checks
+
+open Mahler.MultiStepQuotientAndFermatGCD
+
+#check @two_step_oddReturnQ_fermat_identity_and_gcd
+#check @renewalNumerator_succ_eq_two_pow_mul_interior
+#check @multi_step_oddReturnQ_master_identity_and_interior_gcd
+#check @three_pow_add_one_not_dvd_eight
+#check @two_pow_ne_three_pow_add_one_of_two_le
+#check @allBlock_oddReturnQ_strict_descent
+#check @no_infinite_allBlock_rapid_growth_Q_chain
+
+#print axioms two_step_oddReturnQ_fermat_identity_and_gcd
+#print axioms renewalNumerator_succ_eq_two_pow_mul_interior
+#print axioms multi_step_oddReturnQ_master_identity_and_interior_gcd
+#print axioms three_pow_add_one_not_dvd_eight
+#print axioms two_pow_ne_three_pow_add_one_of_two_le
+#print axioms allBlock_oddReturnQ_strict_descent
+#print axioms no_infinite_allBlock_rapid_growth_Q_chain
+
+end Mahler.Checks

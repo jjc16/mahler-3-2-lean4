@@ -523,6 +523,13 @@ name = "SignedCocycleRenewalBridgeAndTwoBlockFormula"
 [[lean_lib]]
 name = "SignedCocycleRenewalBridgeAndTwoBlockFormulaChecks"
 
+[[lean_lib]]
+name = "MultiStepQuotientMasterAndFermatGCD"
+
+[[lean_lib]]
+name = "MultiStepQuotientMasterAndFermatGCDChecks"
+
+
 
 
 

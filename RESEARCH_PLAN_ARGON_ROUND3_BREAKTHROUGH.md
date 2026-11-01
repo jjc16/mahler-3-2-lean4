@@ -1438,6 +1438,29 @@ arithmetic could enter. Concentrate the next discovery effort there.
   2. Prove that $\Sigma_2 \le 0$ ($2 A_{0,2} > 3^{2 + s_1}$) holds if and only if $s_1 \le 5$, while at $s_1 = 6$, $\Sigma_2 = 217$ and $\Sigma_2 / 2^{2 + 6 + 1} = 217 / 512 = B_2$!
   3. Prove that along any segment where the rational cap does not clip at $1/2$, $B_N = \Sigma_N / 2^{T_N + 1}$.
 
+---
+
+# Part VIII — Outer Loop 4 / 10 (Inner Loops 1–3): Two-Step Fermat Quotient GCD $\gcd(Q_r, Q_{r+2}) \mid (3^{s_{r+1}} + 2^{s_{r+1}})$, Universal $m$-Step Quotient Master Identity & All-Block $Q$-Descent
+
+## O4.1 Inner Loop 1 / 3 — Explore & Exploit: Distance-2 Odd-Quotient Fermat GCD Law
+- **Explore:** Pull in **2-Step Projective Homography Composition** on the odd-quotient sequence $Q_r = P_r / 2^{s_r}$ ($2^{s_{r+1}} Q_{r+1} = 3^{s_r} Q_r + 1$).
+- **Exploit (Priority 1):** Eliminating $Q_1$ between $2^{s_1} Q_1 = 3^{s_0} Q_0 + 1$ and $2^{s_2} Q_2 = 3^{s_1} Q_1 + 1$ yields the exact two-step identity
+  $$\boxed{2^{s_1 + s_2} Q_2 \;=\; 3^{s_0 + s_1} Q_0 + \big(3^{s_1} + 2^{s_1}\big),}$$
+  which proves that $\gcd(Q_0, Q_2) \mid (3^{s_1} + 2^{s_1})$ (dependently only on the middle gap $s_1$!), with explicit specializations $\gcd(Q_0, Q_2) \mid 13$ for $s_1 = 2$, $\gcd(Q_0, Q_2) \mid 35$ for $s_1 = 3$, and $\gcd(Q_0, Q_2) \mid 97$ for $s_1 = 4$.
+
+## O4.2 Inner Loop 2 / 3 — Explore & Exploit: Universal $m$-Step Odd-Quotient Master Equation & Interior GCD Law
+- **Explore:** Pull in **Shifted Renewal Cocycle Factorization** to divide $2^{s_0}$ out of $A_{0,m}$ for any $m \ge 1$.
+- **Exploit (Priority 2):** Using $A_{0,m} = 2^{s_0}(3^d + A_{1,m})$ ($d = T_m - s_0$), prove the **Universal $m$-Step Odd-Quotient Master Identity**:
+  $$\boxed{2^{d + s_m} Q_m \;=\; 3^{s_0 + d} Q_0 + \big(3^d + A_{1,m}\big),}$$
+  and its universal divisibility law $\gcd(Q_0, Q_m) \mid (3^d + A_{1,m})$, where the right-hand side depends **only on the interior block lengths $s_1, \dots, s_{m-1}$**.
+
+## O4.3 Inner Loop 3 / 3 — Explore & Exploit: Elementary Exclusion of $2^c = 3^a + 1$ ($a \ge 2$) & All-Block $Q$-Descent
+- **Explore:** Pull in **Well-Founded Odd-Quotient Descent** on $2^{s_{r+1}} Q_{r+1} = 3^{s_r} Q_r + 1$.
+- **Exploit (Priority 3):**
+  1. Prove elementarily modulo $8$ that for every $a \ge 2$, $3^a + 1 \not\equiv 0 \pmod 8$, so $2^c = 3^a + 1$ has **no solutions** with $a \ge 2$!
+  2. Consequently, whenever $s_r \ge 2$ and $3^{s_r} \le 2^{s_{r+1}}$ ($Q_r, Q_{r+1}$ odd, $Q_r \ge 1$), we have $Q_{r+1} \ne Q_r$ and $Q_{r+1} + 2 \le Q_r$, ruling out infinite rapid-growth $Q$-chains across all block lengths $s_r \ge 2$.
+
+
 
 
 
