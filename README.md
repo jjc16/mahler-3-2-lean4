@@ -1,6 +1,6 @@
-# Mahler $3/2$ Problem — 178-File Lean 4 Formalization (`mahler_demand_a`)
+# Mahler $3/2$ Problem — 180-File Lean 4 Formalization (`mahler_demand_a`)
 
-This repository contains a **178-file (`sorry`-free) Lean 4.19.0 + Mathlib v4.19.0 formalization** of the reduced Mahler $3/2$ dynamical system ($Z$-numbers) and its interval- and union-confinement relaxations ([`MAHLER_FORMALIZATION_PAPER.pdf`](./MAHLER_FORMALIZATION_PAPER.pdf)).
+This repository contains a **180-file (`sorry`-free) Lean 4.19.0 + Mathlib v4.19.0 formalization** of the reduced Mahler $3/2$ dynamical system ($Z$-numbers) and its interval- and union-confinement relaxations ([`MAHLER_FORMALIZATION_PAPER.pdf`](./MAHLER_FORMALIZATION_PAPER.pdf)).
 
 ---
 
@@ -190,6 +190,8 @@ not a completed proof; its Part III corrects earlier overstatements and controls
   Pure $s = 3$ run identity $19 A(3^j) = 8(27^j - 8^j)$, closed forms $19 \Sigma(2, 6, 3^j) = 27^{j+1} + 4096 \cdot 8^j$ and $19 \Sigma(2, 6, 3^j, 2) = 9 \cdot 27^{j+1} - 2048 \cdot 8^j$, general 3-block formula $\Sigma_3(2, s_1, s_2) = 3^{s_1+s_2} - 8 \cdot 2^{s_1} 3^{s_2} - 8 \cdot 2^{s_1+s_2}$, and unconditional exclusion of $(2, 6, s_2)$ for $s_2 \le 2$ and $(2, 6, 3^j, 2)$ for $j \le 1$.
 - **Exact 2-Adic Symbolic Pruning Tree for $(2, 6, 3, \dots)$ & the $b_0 \equiv 6665 \pmod{16384}$ Lower Bound (`TwoAdicRecoveryCascadePruningTree.lean`, Outer Loop 6):**
   Exact mod-256 and mod-512 Hensel classification of $(2, 6)$ vs. $(2, s_1 \ge 7)$ ($b_0 \equiv 9 \pmod{512}$ vs. $265 \pmod{512}$), mod-2048 pruning of $(2, 6, s_2 \ge 3)$ ($b_0 \equiv 521 \pmod{2048}$, eliminating $3/4$ of all lifts), and mod-16384 pruning of $(2, 6, 3, s_3 \ge 3)$ ($b_0 \equiv 6665 \pmod{16384}$, forcing $b_0 \ge 6665$).
+- **Six-Block $(2, 6, 3, 3, 2, s_5)$ Slack Law ($s_5 \ge 10$) & the $b_0 \equiv 61{,}397{,}513 \pmod{2^{26}}$ Lower Bound (`SixBlockKneadingEscapeAndFiftyMillionBound.lean`, Outer Loop 7):**
+  Exact mod-131072 parameterization of $(2, 6, 3, 3, 2)$ ($b_0 \equiv 55817 \pmod{131072}$), 6-block slack law $\Sigma_6(2, 6, 3, 3, 2, s_5) = 2425 \cdot 3^{s_5} - 131072 \cdot 2^{s_5}$ proving $2 A_{0,6} \ge 3^{16+s_5} \iff s_5 \le 9$, and mod-$2^{26}$ Hensel lifting ($1024 \mid P_5 \iff r \equiv 468 \pmod{512} \iff b_0 \equiv 61{,}397{,}513 \pmod{67{,}108{,}864}$) proving $b_0 \ge 61{,}397{,}513$ for every seed realizing $(2, 6, 3, 3, 2, s_5 \ge 10)$.
 
 ## Acknowledgments
 
