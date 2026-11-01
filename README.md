@@ -1,6 +1,6 @@
-# Mahler $3/2$ Problem — 192-File Lean 4 Formalization (`mahler_demand_a`)
+# Mahler $3/2$ Problem — 194-File Lean 4 Formalization (`mahler_demand_a`)
 
-This repository contains a **192-file (`sorry`-free) Lean 4.19.0 + Mathlib v4.19.0 formalization** of the reduced Mahler $3/2$ dynamical system ($Z$-numbers) and its interval- and union-confinement relaxations ([`MAHLER_FORMALIZATION_PAPER.pdf`](./MAHLER_FORMALIZATION_PAPER.pdf)).
+This repository contains a **194-file (`sorry`-free) Lean 4.19.0 + Mathlib v4.19.0 formalization** of the reduced Mahler $3/2$ dynamical system ($Z$-numbers) and its interval- and union-confinement relaxations ([`MAHLER_FORMALIZATION_PAPER.pdf`](./MAHLER_FORMALIZATION_PAPER.pdf)).
 
 ---
 
@@ -204,6 +204,8 @@ not a completed proof; its Part III corrects earlier overstatements and controls
   Equal-step-sum second-difference identity for $P_r$, homogeneous centered-slack cocycle $\widehat{\Sigma}_{0,K+M} = 3^d \widehat{\Sigma}_{0,K} + 2^{T_K} \widehat{\Sigma}_{K,K+M}$, sign dichotomy ($\widehat{\Sigma}_N \ge 0$ on $s_k \ge 3$ vs. $\widehat{\Sigma}_N \le 0$ on $1 \le s_k \le 2$), kernel identity $\widehat{\Sigma}_N = 3(3^{T_N}-2^{T_N}-2 K_N)$ with $\widehat{\Sigma}_N \bmod 6 = 3 \ne 0$ for $N \ge 1$, and $\widehat{\Sigma}_2(2, s_1) = 3^{s_1} - 12 \cdot 2^{s_1}$ proving $s_1 = 6$ is the unique sub-ceiling recovery rung after $s_0 = 2$.
 - **The Unique 6-Block Sub-Ceiling Kneading Corridor Theorem (`UniqueSubCeilingKneadingCorridor.lean`, Campaign 2 Outer Loop 3):**
   Closed form $19 \widehat{\Sigma}_{2+j}(2, 6, 3^j) = 27^{j+1} - 768 \cdot 8^j$ ($\widehat{\Sigma}_{2+j} < 0 \iff j \le 2$; $\widehat{\Sigma}_{2+j} > 0 \iff j \ge 3$), step-by-step uniqueness of each sub-ceiling rung ($s_1 = 6, s_2 = 3, s_3 = 3, s_4 = 2, s_5 = 10$), and `unique_six_block_subCeiling_kneading_corridor` proving that $(2, 6, 3, 3, 2, 10)$ is the **unique** 6-block word starting with $s_0 = 2$ that stays inside $0 < \Sigma_k < 2^{T_k}$ for all $2 \le k \le 6$.
+- **Universal Sub-Ceiling Non-Branching Theorem Across All Horizons $K \in \mathbb{N}$ & 8-Block Kneading Certification (`UniversalSubCeilingNonBranchingAndKneading78.lean`, Campaign 2 Outer Loop 4):**
+  Exact $(2 : 3)$ multiplicative window $2 \cdot 2^{T_N+s} < 3^s \Sigma_N < 3 \cdot 2^{T_N+s}$ for sub-ceiling survival, universal non-branching theorem (`subCeiling_survival_rung_unique_and_trichotomy`, `all_horizon_subCeiling_corridor_unique_sequence`) proving that at most **one** block sequence in the universe can remain in the sub-ceiling corridor for $K$ steps, one-line witness criterion (`subCeiling_rung_iff_eq_of_witness`), and certification of the 7th ($s_6 = 7$) and 8th ($s_7 = 5$) kneading rungs $(2, 6, 3, 3, 2, 10, 7, 5)$.
 
 ## Acknowledgments
 
