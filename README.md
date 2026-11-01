@@ -1,6 +1,6 @@
-# Mahler $3/2$ Problem — 176-File Lean 4 Formalization (`mahler_demand_a`)
+# Mahler $3/2$ Problem — 178-File Lean 4 Formalization (`mahler_demand_a`)
 
-This repository contains a **176-file (`sorry`-free) Lean 4.19.0 + Mathlib v4.19.0 formalization** of the reduced Mahler $3/2$ dynamical system ($Z$-numbers) and its interval- and union-confinement relaxations ([`MAHLER_FORMALIZATION_PAPER.pdf`](./MAHLER_FORMALIZATION_PAPER.pdf)).
+This repository contains a **178-file (`sorry`-free) Lean 4.19.0 + Mathlib v4.19.0 formalization** of the reduced Mahler $3/2$ dynamical system ($Z$-numbers) and its interval- and union-confinement relaxations ([`MAHLER_FORMALIZATION_PAPER.pdf`](./MAHLER_FORMALIZATION_PAPER.pdf)).
 
 ---
 
@@ -188,6 +188,8 @@ not a completed proof; its Part III corrects earlier overstatements and controls
   Exact two-step identity $2^{s_1+s_2} Q_2 = 3^{s_0+s_1} Q_0 + (3^{s_1} + 2^{s_1})$ forcing $\gcd(Q_0, Q_2) \mid (3^{s_1} + 2^{s_1})$ ($13, 35, 97$ for $s_1 = 2, 3, 4$), universal $m$-step quotient equation $2^{d+s_{\text{end}}} Q_{\text{end}} = 3^{s_0+d} Q_0 + (3^d + A_{1,m})$ forcing $\gcd(Q_0, Q_{\text{end}}) \mid (3^d + A_{1,m})$, elementary mod-8 exclusion of $2^c = 3^a + 1$ ($a \ge 2$), and all-block odd-quotient descent $Q_{r+1} + 2 \le Q_r$ ($s_r \ge 2, 3^{s_r} \le 2^{s_{r+1}}$).
 - **Closed-Form Recovery Cascades, $\Sigma_3(2, s_1, s_2)$, and the $19 \Sigma(2, 6, 3^j, 2) = 9 \cdot 27^{j+1} - 2048 \cdot 8^j$ Law (`RecoveryCascadeClosedFormsAndKneadingWords.lean`, Outer Loop 5):**
   Pure $s = 3$ run identity $19 A(3^j) = 8(27^j - 8^j)$, closed forms $19 \Sigma(2, 6, 3^j) = 27^{j+1} + 4096 \cdot 8^j$ and $19 \Sigma(2, 6, 3^j, 2) = 9 \cdot 27^{j+1} - 2048 \cdot 8^j$, general 3-block formula $\Sigma_3(2, s_1, s_2) = 3^{s_1+s_2} - 8 \cdot 2^{s_1} 3^{s_2} - 8 \cdot 2^{s_1+s_2}$, and unconditional exclusion of $(2, 6, s_2)$ for $s_2 \le 2$ and $(2, 6, 3^j, 2)$ for $j \le 1$.
+- **Exact 2-Adic Symbolic Pruning Tree for $(2, 6, 3, \dots)$ & the $b_0 \equiv 6665 \pmod{16384}$ Lower Bound (`TwoAdicRecoveryCascadePruningTree.lean`, Outer Loop 6):**
+  Exact mod-256 and mod-512 Hensel classification of $(2, 6)$ vs. $(2, s_1 \ge 7)$ ($b_0 \equiv 9 \pmod{512}$ vs. $265 \pmod{512}$), mod-2048 pruning of $(2, 6, s_2 \ge 3)$ ($b_0 \equiv 521 \pmod{2048}$, eliminating $3/4$ of all lifts), and mod-16384 pruning of $(2, 6, 3, s_3 \ge 3)$ ($b_0 \equiv 6665 \pmod{16384}$, forcing $b_0 \ge 6665$).
 
 ## Acknowledgments
 
