@@ -1,6 +1,6 @@
-# Mahler $3/2$ Problem — 182-File Lean 4 Formalization (`mahler_demand_a`)
+# Mahler $3/2$ Problem — 184-File Lean 4 Formalization (`mahler_demand_a`)
 
-This repository contains a **182-file (`sorry`-free) Lean 4.19.0 + Mathlib v4.19.0 formalization** of the reduced Mahler $3/2$ dynamical system ($Z$-numbers) and its interval- and union-confinement relaxations ([`MAHLER_FORMALIZATION_PAPER.pdf`](./MAHLER_FORMALIZATION_PAPER.pdf)).
+This repository contains a **184-file (`sorry`-free) Lean 4.19.0 + Mathlib v4.19.0 formalization** of the reduced Mahler $3/2$ dynamical system ($Z$-numbers) and its interval- and union-confinement relaxations ([`MAHLER_FORMALIZATION_PAPER.pdf`](./MAHLER_FORMALIZATION_PAPER.pdf)).
 
 ---
 
@@ -194,6 +194,8 @@ not a completed proof; its Part III corrects earlier overstatements and controls
   Exact mod-131072 parameterization of $(2, 6, 3, 3, 2)$ ($b_0 \equiv 55817 \pmod{131072}$), 6-block slack law $\Sigma_6(2, 6, 3, 3, 2, s_5) = 2425 \cdot 3^{s_5} - 131072 \cdot 2^{s_5}$ proving $2 A_{0,6} \ge 3^{16+s_5} \iff s_5 \le 9$, and mod-$2^{26}$ Hensel lifting ($1024 \mid P_5 \iff r \equiv 468 \pmod{512} \iff b_0 \equiv 61{,}397{,}513 \pmod{67{,}108{,}864}$) proving $b_0 \ge 61{,}397{,}513$ for every seed realizing $(2, 6, 3, 3, 2, s_5 \ge 10)$.
 - **Resolution of the Strict Endpoint Question ($h_0 = 1/2$), $\Sigma_{0,N} = 3^{T_N}(1 - 2 h_0) + 2^{T_N+1} h_N$, and Bounded-Slack Exclusion (`StrictEndpointResolutionAndSlackGrowth.lean`, Outer Loop 8):**
   Exact multi-block renewal-tail decomposition $\Sigma_{0,N} = 3^{T_N}(1 - 2 h_0(\alpha)) + 2^{T_N+1} h_N(\alpha)$, exponential lower bound $\Sigma_{0,N} \ge (1 - 2 h_0(\alpha)) \cdot 3^{T_N} > 0$ along any surviving companion, complete resolution of Section A8.2 Question 6 (`asymptotic_endpoint_slack_ratio_zero_excludes_companion_forever`, proving that $\inf_N \Sigma_{0,N}/3^{T_N} \le 0$ — including $\lim_{N\to\infty} A_{0,N}/3^{T_N} = 1/2$ — excludes `ValidCompanionForever`), and unconditional exclusion of bounded renewal slack $\Sigma_{0,N} \le M$.
+- **Supremum Renewal Constant $\mathcal{H}_\infty$, Companion Uniqueness $\alpha = \mathcal{H}_\infty / 3$ & Two-Way Infinite-Horizon All-Block Companion Equivalence (`InfiniteRenewalSeriesAndGlobalCompanionEquivalence.lean`, Outer Loop 9):**
+  Universal upper bound $A_{0,N} \le 2(3^{T_N} - 2^{T_N})$, strict monotonicity of $\mathcal{L}_N = P_0 + A_{0,N}/3^{T_N}$, existence of $\mathcal{H}_\infty = \sup_N \mathcal{L}_N \in (P_0, P_0 + 2]$ and $h_r^\infty = \mathcal{H}_\infty (3/2)^{T_r} - P_r \in (0, 2]$ obeying $h_{r+1}^\infty = (3/2)^{s_r} h_r^\infty - 1$, all-time interval coverage $n = T_r + v$, uniqueness $\alpha = \mathcal{H}_\infty / 3$, and the full two-way equivalence $(\exists \alpha, \operatorname{ValidCompanionForever} b_0 \, \alpha) \iff (\forall r, h_r^\infty < 1/2) \iff \operatorname{ValidCompanionForever} b_0 \, (\mathcal{H}_\infty / 3)$ (resolving Section A8.2 Question 5).
 
 ## Acknowledgments
 
