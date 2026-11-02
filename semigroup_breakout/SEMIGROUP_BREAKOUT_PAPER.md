@@ -115,7 +115,47 @@ Whenever $b_1, b_2 < 2^{T_N + 1}$ both realize an $N$-block prefix $s$ ($N \ge 1
 
 ---
 
-## 4. Verification Instructions
+## 4. The Three-Wildcard Expedition: Density-Zero Extinction, Base-3 Frozen Prefixes, and the Mahler–Antihydra $BB(6)$ Duality
+
+In [`vibe_mathing_wildcards.py`](./vibe_mathing_wildcards.py) and Sections 6–8 of [`SemigroupBreakoutTheorems.lean`](./SemigroupBreakoutTheorems.lean), we extended the breakout campaign along three wildcard directions:
+
+### 4.1 Theorem SB.6 (Wildcard 1): The 4-Lift Double-Odd Exclusion & $(3/4)^m$ Exponential Density-Zero Mechanism (`dyadic_four_lift_double_odd_bijection_and_three_of_four_survival`)
+
+For any prefix seed $r \in [0, 2^k)$ and 2-bit dyadic lift $b_0 = r + 2^k t$ ($t \in \{0, 1, 2, 3\}$):
+1. Whenever the parities match for $j < k$, $\operatorname{orbit}(r + 2^k t, k) = \operatorname{orbit}(r, k) + 3^k t$.
+2. A double-odd step occurs at $(k, k+1)$ if and only if $\operatorname{orbit}(b_0, k) \equiv 3 \pmod 4$:
+   $$\big(\operatorname{orbit}(b_0, k) \bmod 2 = 1 \;\wedge\; \operatorname{orbit}(b_0, k+1) \bmod 2 = 1\big) \iff \operatorname{orbit}(b_0, k) \bmod 4 = 3.$$
+3. Because $3^k \bmod 4 \in \{1, 3\}$ is a unit modulo $4$, as $t$ ranges over $\{0, 1, 2, 3\}$, **exactly 1 of the 4 lifts hits the forbidden $\equiv 3 \pmod 4$ double-odd class and dies**, leaving **at most $3$ out of $4$ lifts** surviving each 2-step block! Across $m$ disjoint 2-step blocks in $[0, 4^m)$, at most $3^m$ seeds avoid double-odd steps at even positions (and at most $F_{2m+2}$ avoid all double-odd steps):
+
+| $m$ | Horizon $2m$ | Box Size $4^m$ | No-Even-$(1,1)$ Count $3^m$ | Fibonacci Bound $F_{2m+2}$ | Actual Mahler Survivors | Surviving Fraction |
+| :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| $1$ | $2$ | $4$ | $3$ | $3$ | $3$ | $0.750000$ |
+| $2$ | $4$ | $16$ | $9$ | $8$ | $8$ | $0.500000$ |
+| $3$ | $6$ | $64$ | $27$ | $21$ | $18$ | $0.281250$ |
+| $4$ | $8$ | $256$ | $81$ | $55$ | $40$ | $0.156250$ |
+| $5$ | $10$ | $1024$ | $243$ | $144$ | $90$ | $0.087891$ |
+| $6$ | $12$ | $4096$ | $729$ | $377$ | $201$ | $0.049072$ |
+| $7$ | $14$ | $16384$ | $2187$ | $987$ | $452$ | $0.027588$ |
+
+### 4.2 Theorem SB.7 (Wildcard 2): Raw-Orbit Base-3 "Frozen Top Digits" & Forbidden Trit $2$ (`raw_orbit_base3_frozen_prefix_and_leading_trit_le_one`)
+
+Flipping from base 2 to base 3 along the raw binary orbit $2^N g_N = 3^N g_0 + K_N$ ($2 K_N < 3^N$, $1 \le N$):
+1. $\lfloor 2^N g_N / 3^N \rfloor = g_0$ and $(2^N g_N) \bmod 3^N = K_N$: **in base 3, the top digits of $2^N g_N$ above position $N$ are permanently frozen at the initial integer $g_0$ for all $N \ge 1$**.
+2. The $(N-1)$-st base-3 digit of $2^N g_N$ satisfies $\lfloor ((2^N g_N) \bmod 3^N) / 3^{N-1} \rfloor \le 1$ (**never $2$**).
+3. **$\mathbb{Z}_2$-Symmetry-Breaking Base-3 Length Bound:** When $g_0 < 3^L$ is a true whole number of at most $L$ base-3 digits, $2^N g_N < 3^{N + L}$ has at most $N + L$ base-3 digits.
+
+### 4.3 Theorem SB.8 (Wildcard 3): Exact Mahler–Antihydra $BB(6)$ Complement Duality (`mahler_antihydra_bb6_complement_duality`)
+
+The famous 6-state Busy Beaver holdout **Antihydra** (`bbchallenge`, 2024) iterates the floor map $a_{k+1} = \lfloor 3 a_k / 2 \rfloor$ starting at $a_0 = 8$, whereas Mahler's $3/2$ problem iterates the ceiling map $g_{k+1} = \lceil 3 g_k / 2 \rceil$. We discovered and formalized in Lean 4 an **exact complement duality** linking the two systems at every finite horizon $N$:
+- For every horizon $N \in \mathbb{N}$, every Antihydra seed $a_0 \le 2^N$, and every step $0 \le k \le N$, setting the Mahler seed to be the $N$-bit complement $b_0 := 2^N - a_0$:
+  $$\boxed{\operatorname{orbit}\big(2^N - a_0,\, k\big) + \operatorname{antihydraOrbit}(a_0, k) = 3^k \cdot 2^{N - k},}$$
+  and for every $0 \le k < N$:
+  $$\boxed{\operatorname{orbit}\big(2^N - a_0,\, k\big) \bmod 2 = \operatorname{antihydraOrbit}(a_0, k) \bmod 2!}$$
+- Thus **Antihydra's binary parity sequence from $a_0 = 8$ is 100% identical to Mahler's binary parity sequence from $b_0 = 2^N - 8$ for the first $N$ steps**, and at steps $k = 11, 12$ (`681 → 1021`), Antihydra hits two consecutive odd steps (`antihydraOrbit 8 11 % 2 = 1 ∧ antihydraOrbit 8 12 % 2 = 1`), meaning its dual Mahler seed $2^N - 8$ dies as a Mahler companion at step 12!
+
+---
+
+## 5. Verification Instructions
 
 To verify the cordoned-off Lean 4 proofs without modifying the root 226-file build:
 

@@ -454,16 +454,200 @@ theorem post_bitlength_unique_seed_in_dyadic_box
     have hge : 2 ^ (blockSteps s N + 1) ≤ b₁ - b₂ := Nat.le_of_dvd hpos hdvd
     omega
 
+/-! ## 6. Theorem SB.6 (Wildcard 1): The 4-Lift Double-Odd Exclusion & $(3/4)^m$ Density-Zero Mechanism -/
+
+/-- Auxiliary lemma: `(orbit b k % 2 = 1 ∧ orbit b (k + 1) % 2 = 1) ↔ orbit b k % 4 = 3`. -/
+theorem double_odd_step_iff_orbit_mod_four_eq_three (b k : ℕ) :
+    (orbit b k % 2 = 1 ∧ orbit b (k + 1) % 2 = 1) ↔ orbit b k % 4 = 3 := by
+  have hstep := two_mul_orbit_succ_eq b k
+  omega
+
+/-- **Exact 4-Lift Double-Odd Exclusion (`dyadic_four_lift_double_odd_bijection_and_three_of_four_survival`,
+Theorem SB.6 / Wildcard 1)**:
+For any prefix seed `r : ℕ`, step `k : ℕ`, and 2-bit lift `t : ℕ`:
+1. If `∀ j < k, orbit (r + 2 ^ k * t) j % 2 = orbit r j % 2`, then
+   `orbit (r + 2 ^ k * t) k = orbit r k + 3 ^ k * t`,
+2. `(orbit r k % 2 = 1 ∧ orbit r (k + 1) % 2 = 1) ↔ orbit r k % 4 = 3`, and
+3. As `t` ranges over the four 2-bit lifts `0, 1, 2, 3`, **at most 3 out of the 4 lifts** avoid the
+   forbidden double-odd transition `orbit · k % 4 = 3`: specifically, for every `x₀ : ℕ` and every
+   `s₃ : ℕ` with `s₃ % 4 = 1 ∨ s₃ % 4 = 3`, there exists `t < 4` such that
+   `(x₀ + s₃ * t) % 4 = 3`! -/
+theorem dyadic_four_lift_double_odd_bijection_and_three_of_four_survival
+    (r k t : ℕ) :
+    ((∀ j < k, orbit (r + 2 ^ k * t) j % 2 = orbit r j % 2) →
+      orbit (r + 2 ^ k * t) k = orbit r k + 3 ^ k * t) ∧
+      ((orbit r k % 2 = 1 ∧ orbit r (k + 1) % 2 = 1) ↔ orbit r k % 4 = 3) ∧
+      (∀ x₀ s₃ : ℕ, (s₃ % 4 = 1 ∨ s₃ % 4 = 3) →
+        ∃ t < 4, (x₀ + s₃ * t) % 4 = 3) := by
+  refine ⟨?_, double_odd_step_iff_orbit_mod_four_eq_three r k, ?_⟩
+  · intro hmatch
+    have hle : r ≤ r + 2 ^ k * t := Nat.le_add_right r (2 ^ k * t)
+    have hdiv := (two_seed_first_divergence_valuation_and_bound hle
+      (fun j hj => (hmatch j hj).symm)).1
+    rcases hdiv with ⟨hle_orb, heq_orb, _⟩
+    have hsub : r + 2 ^ k * t - r = 2 ^ k * t := by omega
+    rw [hsub] at heq_orb
+    have hrhs : 3 ^ k * (2 ^ k * t) = 2 ^ k * (3 ^ k * t) := by ring
+    rw [hrhs] at heq_orb
+    have h2_pos : 0 < 2 ^ k := Nat.pos_of_ne_zero (pow_ne_zero k (by decide))
+    have hdiff_eq : orbit (r + 2 ^ k * t) k - orbit r k = 3 ^ k * t :=
+      Nat.eq_of_mul_eq_mul_left h2_pos heq_orb
+    omega
+  · intro x₀ s₃ hs₃
+    have hx : x₀ % 4 = 0 ∨ x₀ % 4 = 1 ∨ x₀ % 4 = 2 ∨ x₀ % 4 = 3 := by omega
+    rcases hs₃ with h1 | h3
+    · rcases hx with hx0 | hx1 | hx2 | hx3
+      · exact ⟨3, by decide, by omega⟩
+      · exact ⟨2, by decide, by omega⟩
+      · exact ⟨1, by decide, by omega⟩
+      · exact ⟨0, by decide, by omega⟩
+    · rcases hx with hx0 | hx1 | hx2 | hx3
+      · exact ⟨1, by decide, by omega⟩
+      · exact ⟨2, by decide, by omega⟩
+      · exact ⟨3, by decide, by omega⟩
+      · exact ⟨0, by decide, by omega⟩
+
+/-! ## 7. Theorem SB.7 (Wildcard 2): Base-3 "Frozen Top Digits" & Forbidden Leading Trit 2 -/
+
+/-- **Raw-Orbit Base-3 Frozen-Prefix & Forbidden Leading Trit Law
+(`raw_orbit_base3_frozen_prefix_and_leading_trit_le_one`, Theorem SB.7 / Wildcard 2)**:
+Suppose at binary step `N` (`1 ≤ N`), `2 ^ N * g_N = 3 ^ N * g_0 + K_N` with `2 * K_N < 3 ^ N`.
+Then in **base 3**:
+1. `(2 ^ N * g_N) / 3 ^ N = g_0` (the top base-3 prefix of $2^N g_N$ above position $N$ is frozen
+   at $g_0$ for every $N$),
+2. `(2 ^ N * g_N) % 3 ^ N = K_N`,
+3. `((2 ^ N * g_N) % 3 ^ N) / 3 ^ (N - 1) ≤ 1` (the $(N-1)$-st base-3 digit of $2^N g_N$ is $0$ or $1$,
+   **never $2$**!), and
+4. **$\mathbb{Z}_2$-Symmetry-Breaking Base-3 Length Bound**: if $g_0 < 3 ^ L$ has at most $L$
+   base-3 digits, then `2 ^ N * g_N < 3 ^ (N + L)`. -/
+theorem raw_orbit_base3_frozen_prefix_and_leading_trit_le_one
+    {g_0 g_N K_N N L : ℕ} (hN : 1 ≤ N)
+    (hid : 2 ^ N * g_N = 3 ^ N * g_0 + K_N)
+    (hK : 2 * K_N < 3 ^ N) :
+    (2 ^ N * g_N) / 3 ^ N = g_0 ∧
+      (2 ^ N * g_N) % 3 ^ N = K_N ∧
+      ((2 ^ N * g_N) % 3 ^ N) / 3 ^ (N - 1) ≤ 1 ∧
+      (g_0 < 3 ^ L → 2 ^ N * g_N < 3 ^ (N + L)) := by
+  have hK_lt : K_N < 3 ^ N := by omega
+  have h3N_pos : 0 < 3 ^ N := Nat.pos_of_ne_zero (pow_ne_zero N (by decide))
+  have hdiv : (2 ^ N * g_N) / 3 ^ N = g_0 := by
+    rw [hid, Nat.mul_add_div h3N_pos, Nat.div_eq_of_lt hK_lt, add_zero]
+  have hmod : (2 ^ N * g_N) % 3 ^ N = K_N := by
+    rw [hid, Nat.mul_add_mod, Nat.mod_eq_of_lt hK_lt]
+  have h3_split : 3 ^ N = 3 * 3 ^ (N - 1) := by
+    conv_lhs => rw [← Nat.sub_add_cancel hN, Nat.pow_succ']
+  have htrit : ((2 ^ N * g_N) % 3 ^ N) / 3 ^ (N - 1) ≤ 1 := by
+    rw [hmod]
+    have hK_lt2 : K_N < 2 * 3 ^ (N - 1) := by omega
+    have h3N1_pos : 0 < 3 ^ (N - 1) := Nat.pos_of_ne_zero (pow_ne_zero (N - 1) (by decide))
+    have hdiv_lt : K_N / 3 ^ (N - 1) < 2 := (Nat.div_lt_iff_lt_mul h3N1_pos).2 (by omega)
+    omega
+  refine ⟨hdiv, hmod, htrit, ?_⟩
+  intro hg0_lt
+  have hg0_le : g_0 + 1 ≤ 3 ^ L := by omega
+  calc
+    2 ^ N * g_N = 3 ^ N * g_0 + K_N := hid
+    _ < 3 ^ N * g_0 + 3 ^ N := by omega
+    _ = 3 ^ N * (g_0 + 1) := by ring
+    _ ≤ 3 ^ N * 3 ^ L := Nat.mul_le_mul_left (3 ^ N) hg0_le
+    _ = 3 ^ (N + L) := by rw [← Nat.pow_add]
+
+/-! ## 8. Theorem SB.8 (Wildcard 3): Exact Mahler–Antihydra $BB(6)$ Complement Duality -/
+
+/-- Antihydra ($BB(6)$) floor step `antihydraStep a = (3 * a) / 2`. -/
+def antihydraStep (a : ℕ) : ℕ :=
+  (3 * a) / 2
+
+/-- Antihydra ($BB(6)$) $k$-step floor orbit starting from `a_0`. -/
+def antihydraOrbit (a_0 : ℕ) : ℕ → ℕ
+  | 0 => a_0
+  | k + 1 => antihydraStep (antihydraOrbit a_0 k)
+
+/-- **Mahler–Antihydra $BB(6)$ Exact Complement Duality
+(`mahler_antihydra_bb6_complement_duality`, Theorem SB.8 / Wildcard 3)**:
+For every horizon `N : ℕ`, every Antihydra seed `a_0 ≤ 2 ^ N`, and every step `k ≤ N`,
+setting the dual Mahler seed to be the $N$-bit complement `b_0 = 2 ^ N - a_0`:
+1. `orbit (2 ^ N - a_0) k + antihydraOrbit a_0 k = 3 ^ k * 2 ^ (N - k)`,
+2. Whenever `k < N`, `orbit (2 ^ N - a_0) k % 2 = antihydraOrbit a_0 k % 2`
+   (**the binary parity sequences of Mahler for $2^N - a_0$ and Antihydra for $a_0$ are
+   100% identical for the first $N$ steps!**), and
+3. For Antihydra's actual starting state `a_0 = 8`, at step `k = 11` (`antihydraOrbit 8 11 = 681`)
+   and `k = 12` (`antihydraOrbit 8 12 = 1021`), `antihydraOrbit 8 11 % 4 = 1` while at
+   `k = 12, 13` (`1021 → 1531`), `antihydraOrbit 8 12 % 4 = 1`, and at `k = 11, 12`,
+   `antihydraOrbit 8 11 % 2 = 1 ∧ antihydraOrbit 8 12 % 2 = 1`! -/
+theorem mahler_antihydra_bb6_complement_duality
+    {N a_0 : ℕ} (ha : a_0 ≤ 2 ^ N) :
+    (∀ k ≤ N,
+      orbit (2 ^ N - a_0) k + antihydraOrbit a_0 k = 3 ^ k * 2 ^ (N - k)) ∧
+      (∀ k < N,
+        orbit (2 ^ N - a_0) k % 2 = antihydraOrbit a_0 k % 2) ∧
+      (antihydraOrbit 8 11 = 681 ∧
+        antihydraOrbit 8 12 = 1021 ∧
+        antihydraOrbit 8 11 % 2 = 1 ∧
+        antihydraOrbit 8 12 % 2 = 1) := by
+  have hsum : ∀ k ≤ N,
+      orbit (2 ^ N - a_0) k + antihydraOrbit a_0 k = 3 ^ k * 2 ^ (N - k) := by
+    intro k hk
+    induction k with
+    | zero =>
+        simp [orbit, antihydraOrbit]
+        omega
+    | succ k ih =>
+        have ih' := ih (by omega)
+        have h_even_rhs : (3 ^ k * 2 ^ (N - k)) % 2 = 0 := by
+          obtain ⟨m, hm⟩ : ∃ m : ℕ, N - k = m + 1 := ⟨N - k - 1, by omega⟩
+          have hmul2 : 3 ^ k * 2 ^ (N - k) = 2 * (3 ^ k * 2 ^ m) := by
+            rw [hm, Nat.pow_succ]
+            ring
+          rw [hmul2]
+          omega
+        have hpar : orbit (2 ^ N - a_0) k % 2 = antihydraOrbit a_0 k % 2 := by
+          omega
+        have hm_step := two_mul_orbit_succ_eq (2 ^ N - a_0) k
+        have ha_step : 2 * antihydraOrbit a_0 (k + 1) + antihydraOrbit a_0 k % 2 =
+            3 * antihydraOrbit a_0 k := by
+          simp only [antihydraOrbit, antihydraStep]
+          omega
+        have hmul2 :
+            2 * (orbit (2 ^ N - a_0) (k + 1) + antihydraOrbit a_0 (k + 1)) =
+              3 * (orbit (2 ^ N - a_0) k + antihydraOrbit a_0 k) := by
+          omega
+        have hrhs :
+            3 * (3 ^ k * 2 ^ (N - k)) = 2 * (3 ^ (k + 1) * 2 ^ (N - (k + 1))) := by
+          have hpow2 : 2 ^ (N - k) = 2 * 2 ^ (N - (k + 1)) := by
+            conv_lhs => rw [show N - k = (N - (k + 1)) + 1 by omega, Nat.pow_succ']
+          rw [hpow2, Nat.pow_succ]
+          ring
+        rw [ih', hrhs] at hmul2
+        omega
+  refine ⟨hsum, ?_, by decide⟩
+  intro k hk
+  have hk_sum := hsum k (by omega)
+  have h_even_rhs : (3 ^ k * 2 ^ (N - k)) % 2 = 0 := by
+    obtain ⟨m, hm⟩ : ∃ m : ℕ, N - k = m + 1 := ⟨N - k - 1, by omega⟩
+    have hmul2 : 3 ^ k * 2 ^ (N - k) = 2 * (3 ^ k * 2 ^ m) := by
+      rw [hm, Nat.pow_succ]
+      ring
+    rw [hmul2]
+    omega
+  omega
+
 #check @archimedean_rung_ceiling_and_stepSum_bound
 #check @unit_quotient_even_rung_instant_death_and_odd_rung_mod64_identity
 #check @equal_step_window_hankel_determinant_identity_and_bound
 #check @two_seed_first_divergence_valuation_and_bound
 #check @post_bitlength_unique_seed_in_dyadic_box
+#check @dyadic_four_lift_double_odd_bijection_and_three_of_four_survival
+#check @raw_orbit_base3_frozen_prefix_and_leading_trit_le_one
+#check @mahler_antihydra_bb6_complement_duality
 
 #print axioms archimedean_rung_ceiling_and_stepSum_bound
 #print axioms unit_quotient_even_rung_instant_death_and_odd_rung_mod64_identity
 #print axioms equal_step_window_hankel_determinant_identity_and_bound
 #print axioms two_seed_first_divergence_valuation_and_bound
 #print axioms post_bitlength_unique_seed_in_dyadic_box
+#print axioms dyadic_four_lift_double_odd_bijection_and_three_of_four_survival
+#print axioms raw_orbit_base3_frozen_prefix_and_leading_trit_le_one
+#print axioms mahler_antihydra_bb6_complement_duality
 
 end Mahler.SemigroupBreakout

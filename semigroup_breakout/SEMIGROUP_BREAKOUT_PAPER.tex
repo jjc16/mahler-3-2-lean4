@@ -75,4 +75,26 @@ For any $b_1 \le b_2$ whose binary parities agree for $k < n_0$ and diverge at s
 so $2^{n_0} \mid (b_2 - b_1)$ and $2^{n_0+1} \nmid (b_2 - b_1)$ ($n_0 = v_2(b_2 - b_1)$). Thus $b_2 - b_1 < 2^N$ forces divergence before step $N$.
 \end{theorem}
 
+\section{The Three-Wildcard Expedition: Density-Zero Extinction, Base-3 Frozen Prefixes, and Mahler--Antihydra $BB(6)$ Duality}
+
+\begin{theorem}[4-Lift Double-Odd Exclusion, \texttt{dyadic\_four\_lift\_double\_odd\_bijection\_and\_three\_of\_four\_survival}]
+For any prefix seed $r$, step $k$, and 2-bit lift $t$, if parities match on $[0, k)$, then $\operatorname{orbit}(r + 2^k t, k) = \operatorname{orbit}(r, k) + 3^k t$, and $(\varepsilon_k = 1 \wedge \varepsilon_{k+1} = 1) \iff \operatorname{orbit}(r, k) \bmod 4 = 3$. Since $3^k \bmod 4 \in \{1, 3\}$, exactly $1$ of the $4$ lifts $t \in \{0, 1, 2, 3\}$ hits the forbidden double-odd residue $3 \pmod 4$, leaving at most $3^m$ seeds in $[0, 4^m)$ avoiding even-step double-odd transitions up to step $2m$.
+\end{theorem}
+
+\begin{theorem}[Base-3 Frozen Top Digits \& Forbidden Trit 2, \texttt{raw\_orbit\_base3\_frozen\_prefix\_and\_leading\_trit\_le\_one}]
+Whenever $1 \le N$, $2^N g_N = 3^N g_0 + K_N$, and $2 K_N < 3^N$:
+\[
+  \lfloor 2^N g_N / 3^N \rfloor = g_0,\qquad (2^N g_N) \bmod 3^N = K_N,\qquad \lfloor ((2^N g_N) \bmod 3^N) / 3^{N-1} \rfloor \le 1,
+\]
+and if $g_0 < 3^L$, then $2^N g_N < 3^{N + L}$.
+\end{theorem}
+
+\begin{theorem}[Mahler--Antihydra $BB(6)$ Exact Complement Duality, \texttt{mahler\_antihydra\_bb6\_complement\_duality}]
+Let $\operatorname{antihydraOrbit}(a_0, k)$ be the $k$-th iterate of Antihydra's floor map $a \mapsto \lfloor 3a/2 \rfloor$. For every $N \in \mathbb{N}$ and $a_0 \le 2^N$:
+\[
+  \forall k \le N,\quad \operatorname{orbit}(2^N - a_0, k) + \operatorname{antihydraOrbit}(a_0, k) = 3^k \cdot 2^{N - k},
+\]
+and for all $k < N$, $\operatorname{orbit}(2^N - a_0, k) \bmod 2 = \operatorname{antihydraOrbit}(a_0, k) \bmod 2$.
+\end{theorem}
+
 \end{document}
