@@ -2106,6 +2106,32 @@ Here is why, in plain terms:
 ## C2.O18.5 Inner Loop 5 / 5 — Explore & Exploit: Mod-$2^{235}$ Seed Uniqueness for the 48-Block Sub-Ceiling Corridor
 - **Explore & Exploit (Priority 5):** Prove that any two seeds $b_1 < b_2$ realizing the 48-block sub-ceiling kneading corridor satisfy $2^{235} \mid (b_2 - b_1)$ and $2^{235} \le b_2$.
 
+---
+
+# Part XXXIV — Second Campaign (`m = 5, n = 20`) — Outer Loop 19 / 20 (Inner Loops 1–5): Subword Return-Proximity Law $3^{d_M}(-\widehat{\Sigma}_N) < \Sigma_M(w)\cdot 2^{T_N}$, Strict Parry Rung-Jump Dichotomy ($s_{N+M} = w_M$ vs. $w_M + 1 \le s_{N+M}$) & 51-Block ($T_{51} = 247$) Kneading Certification
+
+## C2.O19.1 Inner Loop 1 / 5 — Explore & Exploit: Exact Return-Proximity Criterion for Matching $M$ Kneading Blocks
+- **Explore:** Determine when a sub-ceiling state $N$ ($\widehat{\Sigma}_N(s) < 0$) that matches $w$ on $[0, M)$ ($\forall t < M,\, s(N+t) = w(t)$) keeps step $N + M$ in the sub-ceiling corridor.
+- **Exploit (Priority 1):** Prove `subCeiling_prefix_match_survives_iff_centered_deficit_bound`: whenever $\widehat{\Sigma}_N(s) < 0$, $\forall t < M,\, s(N+t) = w(t)$, and $\widehat{\Sigma}_M(w) \le 0$, step $N + M$ is sub-ceiling if and only if
+  $$3^{d_M}\big(-\widehat{\Sigma}_N(s)\big) < \Sigma_M(w) \cdot 2^{T_N}.$$
+
+## C2.O19.2 Inner Loop 2 / 5 — Explore & Exploit: The Strict Parry–Kneading Rung-Jump Dichotomy ($s_{N+M} = w_M$ vs. $w_M + 1 \le s_{N+M}$)
+- **Explore:** Refine the weak Parry inequality $w(M) \le s(N + M)$ of Outer Loop 17 into an exact criterion for equality $s(N+M) = w(M)$ vs. strict jump $w(M) + 1 \le s(N+M)$.
+- **Exploit (Priority 2):** Prove `subCeiling_shift_strict_rung_jump_dichotomy`: if $\widehat{\Sigma}_N(s) < 0$, $\forall t < M,\, s(N+t) = w(t)$, $\widehat{\Sigma}_{M+1}(w) \le 0$, and $0 < \Sigma_{N+M+1}(s)$, then:
+  - If $\Sigma_{M+1}(w) \cdot 2^{T_N} \le 3^{d_{M+1}}(-\widehat{\Sigma}_N(s))$, then **$w(M) + 1 \le s(N + M)$** (strict jump!).
+  - If $3^{d_{M+1}}(-\widehat{\Sigma}_N(s)) < \Sigma_{M+1}(w) \cdot 2^{T_N}$ and $\widehat{\Sigma}_{N+M+1}(s) < 0$, then **$s(N + M) = w(M)$**!
+
+## C2.O19.3 Inner Loop 3 / 5 — Explore & Exploit: Explicit 4-Block $(2, 6, 3, 3)$ vs. $(2, 6, 3, \ge 4)$ Return Threshold
+- **Explore:** Explain why $(s_{47}, s_{48}, s_{49}, s_{50}) = (2, 6, 3, 4)$ jumps from $w_3 = 3$ to $s_{50} = 4$ after matching $(2, 6, 3)$.
+- **Exploit (Priority 3):** Prove `two_six_three_three_vs_four_return_threshold`: when $\widehat{\Sigma}_N(s) < 0$ and $(s_N, s_{N+1}, s_{N+2}) = (2, 6, 3)$, if $s_{N+3} = 3$ then $\Sigma_{N+4}(s) = 4{,}782{,}969\,\widehat{\Sigma}_N(s) + 14{,}833 \cdot 2^{T_N}$, so whenever $14{,}833 \cdot 2^{T_N} \le 4{,}782{,}969(-\widehat{\Sigma}_N(s))$ and $0 < \Sigma_{N+4}(s)$, we must have **$4 \le s_{N+3}$**!
+
+## C2.O19.4 Inner Loop 4 / 5 — Explore & Exploit: Certification of Blocks 49, 50, and 51 ($s_{48} = 6, s_{49} = 3, s_{50} = 4$, $T_{51} = 247$)
+- **Explore & Exploit (Priority 4):** Certify blocks 49–51 of the sub-ceiling kneading cascade ($s_{48} = 6, T_{49} = 240$; $s_{49} = 3, T_{50} = 243$; $s_{50} = 4, T_{51} = 247$), confirming the strict Parry jump $(s_{47}, s_{48}, s_{49}, s_{50}) = (2, 6, 3, 4)$.
+
+## C2.O19.5 Inner Loop 5 / 5 — Explore & Exploit: Mod-$2^{248}$ Seed Uniqueness for the 51-Block Sub-Ceiling Corridor
+- **Explore & Exploit (Priority 5):** Prove that any two seeds $b_1 < b_2$ realizing the 51-block sub-ceiling kneading corridor satisfy $2^{248} \mid (b_2 - b_1)$ and $2^{248} \le b_2$.
+
+
 
 
 

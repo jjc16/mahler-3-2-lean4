@@ -673,6 +673,13 @@ name = "TwoRungSandwichAndKneading48"
 [[lean_lib]]
 name = "TwoRungSandwichAndKneading48Checks"
 
+[[lean_lib]]
+name = "StrictParryJumpDichotomyAndKneading51"
+
+[[lean_lib]]
+name = "StrictParryJumpDichotomyAndKneading51Checks"
+
+
 
 
 

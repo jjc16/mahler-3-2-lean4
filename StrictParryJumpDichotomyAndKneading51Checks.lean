@@ -1,0 +1,17 @@
+import StrictParryJumpDichotomyAndKneading51
+
+/-!
+# Verification Checks for `StrictParryJumpDichotomyAndKneading51`
+-/
+
+open Mahler.StrictParryJumpAndKneading51
+
+#check @subCeiling_prefix_match_survives_iff_centered_deficit_bound
+#check @subCeiling_shift_strict_rung_jump_dichotomy
+#check @two_six_three_three_vs_four_return_threshold
+#check @fortynine_to_fiftyone_block_kneading_corridor_and_two_pow_248_uniqueness
+
+#print axioms subCeiling_prefix_match_survives_iff_centered_deficit_bound
+#print axioms subCeiling_shift_strict_rung_jump_dichotomy
+#print axioms two_six_three_three_vs_four_return_threshold
+#print axioms fortynine_to_fiftyone_block_kneading_corridor_and_two_pow_248_uniqueness
