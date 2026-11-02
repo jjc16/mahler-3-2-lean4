@@ -2031,6 +2031,32 @@ Here is why, in plain terms:
 ## C2.O15.5 Inner Loop 5 / 5 — Explore & Exploit: Mod-$2^{189}$ Seed Uniqueness for the 39-Block Sub-Ceiling Corridor
 - **Explore & Exploit (Priority 5):** Prove that any two seeds $b_1 < b_2$ realizing the 39-block sub-ceiling kneading corridor satisfy $2^{189} \mid (b_2 - b_1)$ and $2^{189} \le b_2$.
 
+---
+
+# Part XXXI — Second Campaign (`m = 5, n = 20`) — Outer Loop 16 / 20 (Inner Loops 1–5): Mixed Shift-Slack Cocycle $\Sigma_{N+M} = 3^d \widehat{\Sigma}_N + 2^{T_N}\Sigma_M(s')$, Universal Subword Escape Inheritance & 42-Block ($T_{42} = 208$) Kneading Certification
+
+## C2.O16.1 Inner Loop 1 / 5 — Explore & Exploit: Mixed Shift-Slack Decomposition $\Sigma_{N+M}(s) = 3^d \widehat{\Sigma}_N(s) + 2^{T_N} \Sigma_M(s')$
+- **Explore:** Rewrite $\Sigma_{N+M}(s) = 3^d \Sigma_N(s) - 2^{T_N+1} A_{0,M}(s')$ by substituting $\Sigma_N(s) = \widehat{\Sigma}_N(s) + 2^{T_N}$ and $3^d - 2 A_{0,M}(s') = \Sigma_M(s')$.
+- **Exploit (Priority 1):** Prove `renewalIntSlack_shift_eq_three_pow_centered_add_two_pow_slack`: for all $N, M \in \mathbb{N}$ with $s'(t) = s(N+t)$ and $d = \operatorname{blockSteps}(s', M)$,
+  $$\Sigma_{N+M}(s) = 3^d \widehat{\Sigma}_N(s) + 2^{T_N} \Sigma_M(s').$$
+
+## C2.O16.2 Inner Loop 2 / 5 — Explore & Exploit: Universal Subword Escape Inheritance
+- **Explore:** Observe that whenever step $N$ is sub-ceiling ($\widehat{\Sigma}_N(s) < 0$), $3^d \widehat{\Sigma}_N(s) \le -3^d < 0$.
+- **Exploit (Priority 2):** Prove `subCeiling_subword_escape_inheritance`: if $\widehat{\Sigma}_N(s) < 0$ and a subword $s'(t) = s(N+t)$ escapes from the root ($\Sigma_M(s') \le 0$), then $\Sigma_{N+M}(s) \le -3^d + 2^{T_N}\Sigma_M(s') < 0$. Thus **every root-escaping word is universally forbidden at every sub-ceiling step $N$ of every trajectory**!
+
+## C2.O16.3 Inner Loop 3 / 5 — Explore & Exploit: Universal Exclusion of $(2, 6, 2)$ and $(2, 6, 3, 2)$ at Arbitrary Sub-Ceiling Steps
+- **Explore:** Contrast $(2, 7, 2)$ (which occurs at blocks 45–47 of the kneading cascade!) with $(2, 6, 2)$ and $(2, 6, 3, 2)$.
+- **Exploit (Priority 3):** Prove `universal_subCeiling_two_six_two_and_two_six_three_two_forbidden`: at any sub-ceiling step $N$ ($\widehat{\Sigma}_N < 0$),
+  - If $(s_N, s_{N+1}) = (2, 6)$ and $0 < \Sigma_{N+3}$, then $3 \le s_{N+2}$ (so $(2, 6, 2)$ is universally forbidden), and
+  - If $(s_N, s_{N+1}, s_{N+2}) = (2, 6, 3)$ and $0 < \Sigma_{N+4}$, then $3 \le s_{N+3}$ (so $(2, 6, 3, 2)$ is universally forbidden).
+
+## C2.O16.4 Inner Loop 4 / 5 — Explore & Exploit: Certification of Blocks 40, 41, and 42 ($s_{39} = 5, s_{40} = 4, s_{41} = 11$, $T_{42} = 208$)
+- **Explore & Exploit (Priority 4):** Cross the 200-step binary horizon by certifying blocks 40–42 ($s_{39} = 5, T_{40} = 193$; $s_{40} = 4, T_{41} = 197$; $s_{41} = 11, T_{42} = 208$).
+
+## C2.O16.5 Inner Loop 5 / 5 — Explore & Exploit: Mod-$2^{209}$ Seed Uniqueness for the 42-Block Sub-Ceiling Corridor
+- **Explore & Exploit (Priority 5):** Prove that any two seeds $b_1 < b_2$ realizing the 42-block sub-ceiling kneading corridor satisfy $2^{209} \mid (b_2 - b_1)$ and $2^{209} \le b_2$.
+
+
 
 
 

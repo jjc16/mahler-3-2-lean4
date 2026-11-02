@@ -655,6 +655,13 @@ name = "FixedPointEigenDefectAndKneading39"
 [[lean_lib]]
 name = "FixedPointEigenDefectAndKneading39Checks"
 
+[[lean_lib]]
+name = "ShiftSlackDecompositionAndKneading42"
+
+[[lean_lib]]
+name = "ShiftSlackDecompositionAndKneading42Checks"
+
+
 
 
 

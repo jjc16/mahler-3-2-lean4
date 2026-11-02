@@ -1,0 +1,17 @@
+import ShiftSlackDecompositionAndKneading42
+
+/-!
+# Verification Checks for `ShiftSlackDecompositionAndKneading42`
+-/
+
+open Mahler.ShiftSlackAndKneading42
+
+#check @renewalIntSlack_shift_eq_three_pow_centered_add_two_pow_slack
+#check @subCeiling_subword_escape_inheritance
+#check @universal_subCeiling_two_six_two_and_two_six_three_two_forbidden
+#check @forty_to_fortytwo_block_kneading_corridor_and_two_pow_209_uniqueness
+
+#print axioms renewalIntSlack_shift_eq_three_pow_centered_add_two_pow_slack
+#print axioms subCeiling_subword_escape_inheritance
+#print axioms universal_subCeiling_two_six_two_and_two_six_three_two_forbidden
+#print axioms forty_to_fortytwo_block_kneading_corridor_and_two_pow_209_uniqueness
