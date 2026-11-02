@@ -1,6 +1,6 @@
-# Mahler $3/2$ Problem — 210-File Lean 4 Formalization (`mahler_demand_a`)
+# Mahler $3/2$ Problem — 212-File Lean 4 Formalization (`mahler_demand_a`)
 
-This repository contains a **210-file (`sorry`-free) Lean 4.19.0 + Mathlib v4.19.0 formalization** of the reduced Mahler $3/2$ dynamical system ($Z$-numbers) and its interval- and union-confinement relaxations ([`MAHLER_FORMALIZATION_PAPER.pdf`](./MAHLER_FORMALIZATION_PAPER.pdf)).
+This repository contains a **212-file (`sorry`-free) Lean 4.19.0 + Mathlib v4.19.0 formalization** of the reduced Mahler $3/2$ dynamical system ($Z$-numbers) and its interval- and union-confinement relaxations ([`MAHLER_FORMALIZATION_PAPER.pdf`](./MAHLER_FORMALIZATION_PAPER.pdf)).
 
 ---
 
@@ -222,6 +222,8 @@ not a completed proof; its Part III corrects earlier overstatements and controls
   Universal closed form $19\Sigma_{N+j} = 27^j(19\Sigma_N - 16 \cdot 2^{T_N}) + 16 \cdot 2^{T_N} \cdot 8^j$ and $19\widehat{\Sigma}_{N+j} = 27^j(19\Sigma_N - 16 \cdot 2^{T_N}) - 3 \cdot 2^{T_N} \cdot 8^j$ for any $j$-run of $3$'s from any state $N$, non-vanishing of the repelling fixed point $(3^m - 2^m)\Sigma_N \ne 2^{T_N+m+1}$ ($19\Sigma_N \ne 16 \cdot 2^{T_N}$), upward vs. downward drift bifurcation around $\frac{16}{19}$, and certification of blocks 25–27 ($s_{24} = 5, s_{25} = 8, s_{26} = 8$, crossing $2^{128}$ at $T_{27} = 139$, forcing $2^{140} \le b_2$).
 - **Universal Constant-Rung $m^j$ Closed Form, General $\rho_*(m) = \frac{2^{m+1}}{3^m - 2^m}$ Bifurcation & 30-Block ($T_{30} = 152$) Kneading Certification (`UniversalConstantRungRunAndKneading30.lean`, Campaign 2 Outer Loop 12):**
   Bellman equality $(3^m - 2^m)A_{0,j} = 2^m(3^{mj} - 2^{mj})$ for any constant-$m$ run $m^j$, universal closed forms for $(3^m - 2^m)\Sigma_{N+j}$ and $(3^m - 2^m)\widehat{\Sigma}_{N+j}$ from arbitrary state $N$, general rung-$m$ ($m \ge 3$) upward vs. downward drift bifurcation around $\rho_*(m)$, and certification of blocks 28–30 ($s_{27} = 3, s_{28} = 6, s_{29} = 4$, $T_{30} = 152$, forcing $2^{153} \le b_2$).
+- **Explicit Finite Run Bound $m j < 2 T_N + 3 m + 2$, Exclusion of Eventually-Constant Sub-Ceiling Words & 33-Block ($T_{33} = 164$) Kneading Certification (`ConstantRungFiniteRunBoundAndKneading33.lean`, Campaign 2 Outer Loop 13):**
+  Two-parameter exponential dominance $2 \cdot 2^{A+B} < 3^B$ ($2 A + 2 \le B$), proof that every constant-$m$ run from an odd-slack state $N$ with $m j \ge 2 T_N + 3 m + 2$ either escapes ($\Sigma_{N+j} < 0$) or restores full ceiling ($\widehat{\Sigma}_{N+j} > 0$), unconditional exclusion of eventually-constant sub-ceiling trajectories, and certification of blocks 31–33 ($s_{30} = 5, s_{31} = 3, s_{32} = 4$, $T_{33} = 164$, forcing $2^{165} \le b_2$).
 
 ## Acknowledgments
 
