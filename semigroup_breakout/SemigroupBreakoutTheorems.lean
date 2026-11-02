@@ -2103,6 +2103,67 @@ theorem sliding_cut_point_past_future_crt_pinch
   have h2Tr_lt : 2 ^ T_r * P r < 2 ^ T_r * M_r := by omega
   exact Nat.lt_of_mul_lt_mul_left h2Tr_lt
 
+/-! ## 27. Theorem SB.27: The Zero-Carry Base-3 Horner Remainder Ladder -/
+
+/-- **The Zero-Carry Base-3 Horner Remainder Ladder
+(`zero_carry_base3_horner_remainder_ladder`, Theorem SB.27)**:
+Suppose `ValidBlockChain b_0 s u (r + 1 + M + 1)` holds with `∀ k < M, 2 ≤ s (r + 1 + k)`.
+Let `s' t = s (r + 1 + t)`, `d = blockSteps s' M`, `S = d + s (r + 1 + M)`,
+`T = s r + d`, `A' = renewalNumerator s' M`, and `R = 3 ^ d + A'`:
+1. **Unconditional Sub-$3^d$ Inner Remainder Bound**:
+   `A' < 3 ^ d`,
+2. **Exact Inner Quotient & Remainder Recovery**:
+   `R / 3 ^ d = 1` and `R % 3 ^ d = A'`
+   (the top Base-3 digit of `R` at position `d` is **identically `1`**, above all digits of `A'`!),
+3. **Zero-Carry Inner Remainder Base-3 Splitting**:
+   `base3DigitSum R = 1 + base3DigitSum A'`, and
+4. **Three-Zone Zero-Carry All-$K$-Step Base-3 Digit-Sum Decomposition**:
+   `base3DigitSum (2 ^ S * u (r + 1 + M)) = base3DigitSum (u r) + 1 + base3DigitSum A'`
+   (every multi-step block transition splits `2 ^ S * u (r + 1 + M)` in Base 3 into three
+   **completely non-overlapping, zero-carry zones**: the frozen top digits `u r` at `[s_r + d, ∞)`,
+   a single separator trit `1` at position `d`, and the inner renewal numerator `A'` in `[0, d - 1]`)! -/
+theorem zero_carry_base3_horner_remainder_ladder
+    {b_0 r M : ℕ} {s u : ℕ → ℕ}
+    (hchain : ValidBlockChain b_0 s u (r + 1 + M + 1))
+    (hs2 : ∀ k < M, 2 ≤ s (r + 1 + k)) :
+    let s' := fun t => s (r + 1 + t)
+    let d := blockSteps s' M
+    let S := d + s (r + 1 + M)
+    let R := 3 ^ d + renewalNumerator s' M
+    renewalNumerator s' M < 3 ^ d ∧
+      R / 3 ^ d = 1 ∧
+      R % 3 ^ d = renewalNumerator s' M ∧
+      base3DigitSum R = 1 + base3DigitSum (renewalNumerator s' M) ∧
+      base3DigitSum (2 ^ S * u (r + 1 + M)) =
+        base3DigitSum (u r) + 1 + base3DigitSum (renewalNumerator s' M) := by
+  intro s' d S R
+  have h25 := unconditional_all_k_step_odd_leftover_recovery_and_nine_fifths_bound hchain hs2
+  have hinv_M : 5 * renewalNumerator s' M + 4 * 2 ^ d ≤ 4 * 3 ^ d :=
+    five_mul_renewalNumerator_add_four_mul_two_pow_le s' M hs2
+  have h2d_pos : 1 ≤ 2 ^ d := Nat.one_le_pow _ 2 (by decide)
+  have hA_lt : renewalNumerator s' M < 3 ^ d := by omega
+  have h3d_pos : 0 < 3 ^ d := by omega
+  have hR_eq : R = 3 ^ d * 1 + renewalNumerator s' M := by
+    change 3 ^ d + renewalNumerator s' M = 3 ^ d * 1 + renewalNumerator s' M
+    ring
+  have hdiv : R / 3 ^ d = 1 := by
+    rw [hR_eq, Nat.mul_add_div h3d_pos, Nat.div_eq_of_lt hA_lt, add_zero]
+  have hmod : R % 3 ^ d = renewalNumerator s' M := by
+    rw [hR_eq, Nat.mul_add_mod, Nat.mod_eq_of_lt hA_lt]
+  have hs3_1 : base3DigitSum 1 = 1 := by
+    have h := base3DigitSum_three_mul_add_digit 0 (r := 1) (by decide)
+    have hz : base3DigitSum 0 = 0 := by simp [base3DigitSum]
+    simpa [hz] using h
+  have hs3_R : base3DigitSum R = 1 + base3DigitSum (renewalNumerator s' M) := by
+    rw [hR_eq, base3DigitSum_three_pow_mul_add d 1 hA_lt, hs3_1]
+  have hs3_total :
+      base3DigitSum (2 ^ S * u (r + 1 + M)) =
+        base3DigitSum (u r) + 1 + base3DigitSum (renewalNumerator s' M) := by
+    have hsplit := h25.2.2.2.2.2
+    change base3DigitSum (2 ^ S * u (r + 1 + M)) = base3DigitSum (u r) + base3DigitSum R at hsplit
+    omega
+  exact ⟨hA_lt, hdiv, hmod, hs3_R, hs3_total⟩
+
 
 #check @archimedean_rung_ceiling_and_stepSum_bound
 #check @unit_quotient_even_rung_instant_death_and_odd_rung_mod64_identity
@@ -2130,6 +2191,7 @@ theorem sliding_cut_point_past_future_crt_pinch
 #check @unconditional_four_fifths_renewal_ceiling_and_past_base3_recovery
 #check @unconditional_all_k_step_odd_leftover_recovery_and_nine_fifths_bound
 #check @sliding_cut_point_past_future_crt_pinch
+#check @zero_carry_base3_horner_remainder_ladder
 
 #print axioms archimedean_rung_ceiling_and_stepSum_bound
 #print axioms unit_quotient_even_rung_instant_death_and_odd_rung_mod64_identity

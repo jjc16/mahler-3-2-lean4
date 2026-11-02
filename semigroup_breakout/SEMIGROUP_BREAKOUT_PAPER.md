@@ -340,6 +340,13 @@ Across any $(r + M + 1)$-block chain (`ValidBlockChain b_0 s u (r + M + 1)` with
    so whenever $P_0 < 2^{T_r + D_r + 1}$ (the post-bit-length horizon!), at **every** cut point $r$:
    $$\boxed{P_r < 3^{T_r} \cdot 2^{D_r + 1} = \mathcal{M}_r!}$$
 
+### 9.4 Theorem SB.27: The Zero-Carry Base-3 Horner Remainder Ladder (`zero_carry_base3_horner_remainder_ladder`)
+
+Peeling the cumulative remainder $R = 3^d + A_{r+1, r+1+M}$ one level deeper using Theorem SB.24 ($A_{r+1, r+1+M} < \frac{4}{5} \cdot 3^d < 3^d$) proves that $R$ itself splits in Base 3 with **zero carries**:
+$$\boxed{\left\lfloor \frac{R}{3^d} \right\rfloor = 1, \qquad R \bmod 3^d = A_{r+1, r+1+M}, \qquad s_3(R) = 1 + s_3\big(A_{r+1, r+1+M}\big),}$$
+giving a **three-zone zero-carry Base-3 decomposition** across every multi-step window $M$:
+$$\boxed{s_3\big(2^S u_{r+1+M}\big) = s_3(u_r) + 1 + s_3\big(A_{r+1, r+1+M}\big)!}$$
+
 ---
 
 ## 10. Verification Instructions
