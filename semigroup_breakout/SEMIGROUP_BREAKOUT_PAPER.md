@@ -196,6 +196,22 @@ By intersecting the Base-2 Hamming-weight tower $s_2(n) = \operatorname{base2Dig
 3. **Base-3 Parity Dichotomy & Non-Vanishing Jump:** Because $s_3(n) \equiv n \pmod 2$, every odd quotient $u_r$ has odd ternary digit sum ($s_3(u_r) \bmod 2 = 1$) while $P_r = 2^{s_r} u_r$ has even ternary digit sum ($s_3(P_r) \bmod 2 = 0$), so $s_3(P_r) \ne s_3(u_r)$ at every block, and the block jumps $\Delta_3(r) := s_3(2^{s_r} u_r) - s_3(u_r)$ telescope across $N$ blocks via:
    $$\boxed{s_3(u_N) + \sum_{r=0}^{N} \Big(s_3\big(2^{s_r} u_r\big) - s_3(u_r)\Big) = s_3(b_0) + N + 1.}$$
 
+### 5.5 Theorem SB.13: One-Step Base-3 Doubling Identity & Exact $2^k$-Weighted Telescoping Law (`one_step_and_weighted_telescoping_base3_carry_identity`)
+
+From our 5-loop unconstrained Python sandbox ([`sandbox_symmetry_breaking_loops.py`](./sandbox_symmetry_breaking_loops.py)), applying $s_3$ to both sides of the raw binary step $2 g_{k+1} = 3 g_k + \varepsilon_k$ ($\varepsilon_k = g_k \bmod 2 \in \{0, 1\} < 3$) yields the **zero-carry one-step doubling identity**:
+$$s_3\big(2 g_{k+1}\big) = s_3(g_k) + \varepsilon_k,$$
+and therefore the one-step Kummer carry balance:
+$$2 s_3(g_{k+1}) - s_3(g_k) = \varepsilon_k + \Big(2 s_3(g_{k+1}) - s_3(2 g_{k+1})\Big), \qquad \text{with } s_3(2 g_{k+1}) \le 2 s_3(g_{k+1}).$$
+Multiplying by $2^k$ and summing from $k = 0$ to $N - 1$ telescopes the left-hand side identically:
+$$\boxed{2^N s_3(g_N) = s_3(g_0) + \sum_{k=0}^{N-1} 2^k \varepsilon_k + \sum_{k=0}^{N-1} 2^k \Big(2 s_3(g_{k+1}) - s_3(2 g_{k+1})\Big) \ge s_3(g_0) + \sum_{k=0}^{N-1} 2^k \varepsilon_k!}$$
+Notice that $\sum_{k=0}^{N-1} 2^k \varepsilon_k = \operatorname{parityBinaryInt}(g_0, N)$ is **literally the $N$-bit binary integer whose bits are the parity sequence $(\varepsilon_0, \dots, \varepsilon_{N-1})$**.
+
+### 5.6 Theorem SB.14: Top-Down Senge–Straus / Stewart Joint $(s_2, s_3)$ Blueprint (`top_down_senge_straus_stewart_joint_digitsum_blueprint`)
+
+Combining Base-2 division invariance ($s_2(P_r) = s_2(u_r)$) with Base-3 multiplication invariance ($s_3(P_{r+1}) = s_3(u_r) + 1$) proves that the **single odd integer $u_r$ simultaneously controls the Base-2 Hamming weight of $P_r$ and the Base-3 digit sum of $P_{r+1}$**:
+$$\boxed{s_2(P_r) + s_3(P_{r+1}) = s_2(u_r) + s_3(u_r) + 1,}$$
+so any Senge–Straus / Stewart joint digit-sum lower bound $M \le s_2(u_r) + s_3(u_r)$ transfers directly to $M + 1 \le s_2(P_r) + s_3(P_{r+1})$, and any lower bound $s_3(g_0) + B < s_3(2^N g_N)$ forces $B < s_3(K_N)$.
+
 ---
 
 ## 6. Verification Instructions

@@ -125,4 +125,13 @@ Across any \texttt{ValidBlockChain b\_0 s u (r + 2)} with $b_k = \operatorname{o
 with $s_3(u_r) \bmod 2 = 1$, $s_3(P_r) \bmod 2 = 0$, and $s_3(P_r) \ne s_3(u_r)$.
 \end{theorem}
 
+\begin{theorem}[$2^k$-Weighted Base-3 Carry Telescoping \& Joint $(s_2, s_3)$ Senge--Straus Blueprint, \texttt{one\_step\_and\_weighted\_telescoping\_base3\_carry\_identity}, \texttt{top\_down\_senge\_straus\_stewart\_joint\_digitsum\_blueprint}]
+For every $g_0, k, N \in \mathbb{N}$:
+\[
+  s_3(2 g_{k+1}) = s_3(g_k) + (g_k \bmod 2),\qquad
+  2^N s_3(g_N) = s_3(g_0) + \sum_{k=0}^{N-1} 2^k (g_k \bmod 2) + \sum_{k=0}^{N-1} 2^k\big(2 s_3(g_{k+1}) - s_3(2 g_{k+1})\big),
+\]
+and at every block $r$, $s_2(P_r) + s_3(P_{r+1}) = s_2(u_r) + s_3(u_r) + 1$.
+\end{theorem}
+
 \end{document}

@@ -992,6 +992,172 @@ theorem dual_base2_base3_block_digitsum_conservation_and_parity
     omega
   exact ⟨⟨hs2_P, hs2_u1⟩, ⟨hs3_b1, hs3_Pr, hs3_u1⟩, ⟨hs3_u_odd, hs3_P_even, by omega⟩⟩
 
+/-! ## 13. Theorem SB.13: The One-Step Base-3 Doubling Identity & $2^k$-Weighted Telescoping Law -/
+
+/-- Binary integer formed by the first $N$ parity bits $\varepsilon_k = \operatorname{orbit}(g_0, k) \bmod 2$:
+$E_N(g_0) = \sum_{k=0}^{N-1} 2^k (\operatorname{orbit}(g_0, k) \bmod 2)$. -/
+def parityBinaryInt (g_0 : ℕ) : ℕ → ℕ
+  | 0 => 0
+  | N + 1 => parityBinaryInt g_0 N + 2 ^ N * (orbit g_0 N % 2)
+
+/-- Weighted base-3 doubling carry sum
+$\mathcal{C}_N(g_0) = \sum_{k=0}^{N-1} 2^k (2 s_3(g_{k+1}) - s_3(2 g_{k+1}))$. -/
+def weightedBase3CarrySum (g_0 : ℕ) : ℕ → ℕ
+  | 0 => 0
+  | N + 1 =>
+      weightedBase3CarrySum g_0 N +
+        2 ^ N * (2 * base3DigitSum (orbit g_0 (N + 1)) - base3DigitSum (2 * orbit g_0 (N + 1)))
+
+/-- Subadditivity of `base3DigitSum` under doubling: `base3DigitSum (2 * n) ≤ 2 * base3DigitSum n`. -/
+theorem base3DigitSum_two_mul_le (n : ℕ) :
+    base3DigitSum (2 * n) ≤ 2 * base3DigitSum n := by
+  induction n using Nat.strong_induction_on with
+  | h n ih =>
+      rcases Nat.eq_zero_or_pos n with rfl | hn_pos
+      · simp [base3DigitSum]
+      · have hdiv_lt : n / 3 < n := Nat.div_lt_self hn_pos (by decide)
+        have ih_div := ih (n / 3) hdiv_lt
+        rw [base3DigitSum_eq n]
+        have hdecomp : n = 3 * (n / 3) + n % 3 := by omega
+        have hrem : n % 3 = 0 ∨ n % 3 = 1 ∨ n % 3 = 2 := by omega
+        rcases hrem with hr0 | hr1 | hr2
+        · have h2n : 2 * n = 3 * (2 * (n / 3)) + 0 := by omega
+          rw [h2n, base3DigitSum_three_mul_add_digit _ (by decide)]
+          omega
+        · have h2n : 2 * n = 3 * (2 * (n / 3)) + 2 := by omega
+          rw [h2n, base3DigitSum_three_mul_add_digit _ (by decide)]
+          omega
+        · have h2n : 2 * n = 3 * (2 * (n / 3) + 1) + 1 := by omega
+          have hsucc_le : base3DigitSum (2 * (n / 3) + 1) ≤ base3DigitSum (2 * (n / 3)) + 1 := by
+            clear ih hdecomp hr2 h2n
+            generalize 2 * (n / 3) = m
+            induction m using Nat.strong_induction_on with
+            | h m ihm =>
+                rw [base3DigitSum_eq m, base3DigitSum_eq (m + 1)]
+                have hm_mod : m % 3 = 0 ∨ m % 3 = 1 ∨ m % 3 = 2 := by omega
+                rcases hm_mod with hm0 | hm1 | hm2
+                · have hd : (m + 1) / 3 = m / 3 := by omega
+                  rw [hd]; omega
+                · have hd : (m + 1) / 3 = m / 3 := by omega
+                  rw [hd]; omega
+                · have hm_pos : 0 < m := by omega
+                  have hd_lt : m / 3 < m := Nat.div_lt_self hm_pos (by decide)
+                  have hd : (m + 1) / 3 = m / 3 + 1 := by omega
+                  have ihm' := ihm (m / 3) hd_lt
+                  rw [hd]; omega
+          rw [h2n, base3DigitSum_three_mul_add_digit _ (by decide)]
+          omega
+
+/-- **One-Step Base-3 Doubling Identity & Exact $2^k$-Weighted Telescoping Law
+(`one_step_and_weighted_telescoping_base3_carry_identity`, Theorem SB.13)**:
+For every seed `g_0 : ℕ`, step `k : ℕ`, and horizon `N : ℕ`:
+1. **One-Step Zero-Carry Base-3 Identity**:
+   `base3DigitSum (2 * orbit g_0 (k + 1)) = base3DigitSum (orbit g_0 k) + orbit g_0 k % 2`,
+2. **One-Step Kummer Carry Balance**:
+   `2 * base3DigitSum (orbit g_0 (k + 1)) =
+     base3DigitSum (orbit g_0 k) + orbit g_0 k % 2 +
+       (2 * base3DigitSum (orbit g_0 (k + 1)) - base3DigitSum (2 * orbit g_0 (k + 1)))`,
+3. **Exact $2^k$-Weighted Telescoping Law Across $N$ Steps**:
+   `2 ^ N * base3DigitSum (orbit g_0 N) =
+     base3DigitSum g_0 + parityBinaryInt g_0 N + weightedBase3CarrySum g_0 N`, and
+4. **Unconditional Lower Bound from the Binary Parity Word**:
+   `base3DigitSum g_0 + parityBinaryInt g_0 N ≤ 2 ^ N * base3DigitSum (orbit g_0 N)`. -/
+theorem one_step_and_weighted_telescoping_base3_carry_identity
+    (g_0 k N : ℕ) :
+    base3DigitSum (2 * orbit g_0 (k + 1)) =
+        base3DigitSum (orbit g_0 k) + orbit g_0 k % 2 ∧
+      2 * base3DigitSum (orbit g_0 (k + 1)) =
+        base3DigitSum (orbit g_0 k) + orbit g_0 k % 2 +
+          (2 * base3DigitSum (orbit g_0 (k + 1)) - base3DigitSum (2 * orbit g_0 (k + 1))) ∧
+      2 ^ N * base3DigitSum (orbit g_0 N) =
+        base3DigitSum g_0 + parityBinaryInt g_0 N + weightedBase3CarrySum g_0 N ∧
+      base3DigitSum g_0 + parityBinaryInt g_0 N ≤
+        2 ^ N * base3DigitSum (orbit g_0 N) := by
+  have h1_step : ∀ j : ℕ,
+      base3DigitSum (2 * orbit g_0 (j + 1)) =
+        base3DigitSum (orbit g_0 j) + orbit g_0 j % 2 := by
+    intro j
+    have hstep := two_mul_orbit_succ_eq g_0 j
+    have hrem_lt : orbit g_0 j % 2 < 3 := by omega
+    rw [hstep, base3DigitSum_three_mul_add_digit (orbit g_0 j) hrem_lt]
+    omega
+  have h2_step : ∀ j : ℕ,
+      2 * base3DigitSum (orbit g_0 (j + 1)) =
+        base3DigitSum (orbit g_0 j) + orbit g_0 j % 2 +
+          (2 * base3DigitSum (orbit g_0 (j + 1)) - base3DigitSum (2 * orbit g_0 (j + 1))) := by
+    intro j
+    have hle := base3DigitSum_two_mul_le (orbit g_0 (j + 1))
+    have h1 := h1_step j
+    omega
+  have htel :
+      2 ^ N * base3DigitSum (orbit g_0 N) =
+        base3DigitSum g_0 + parityBinaryInt g_0 N + weightedBase3CarrySum g_0 N := by
+    induction N with
+    | zero =>
+        simp [parityBinaryInt, weightedBase3CarrySum, orbit]
+    | succ N ih =>
+        have hstepN := h2_step N
+        simp only [parityBinaryInt, weightedBase3CarrySum]
+        have hpow : 2 ^ (N + 1) * base3DigitSum (orbit g_0 (N + 1)) =
+            2 ^ N * (2 * base3DigitSum (orbit g_0 (N + 1))) := by
+          rw [Nat.pow_succ]
+          ring
+        have hdist :
+            2 ^ N * (2 * base3DigitSum (orbit g_0 (N + 1))) =
+              2 ^ N * base3DigitSum (orbit g_0 N) +
+                2 ^ N * (orbit g_0 N % 2) +
+                2 ^ N * (2 * base3DigitSum (orbit g_0 (N + 1)) - base3DigitSum (2 * orbit g_0 (N + 1))) := by
+          calc
+            2 ^ N * (2 * base3DigitSum (orbit g_0 (N + 1)))
+                = 2 ^ N *
+                    (base3DigitSum (orbit g_0 N) + orbit g_0 N % 2 +
+                      (2 * base3DigitSum (orbit g_0 (N + 1)) - base3DigitSum (2 * orbit g_0 (N + 1)))) := by
+                  rw [← hstepN]
+            _ = 2 ^ N * base3DigitSum (orbit g_0 N) +
+                  2 ^ N * (orbit g_0 N % 2) +
+                  2 ^ N * (2 * base3DigitSum (orbit g_0 (N + 1)) - base3DigitSum (2 * orbit g_0 (N + 1))) := by
+                  ring
+        omega
+  exact ⟨h1_step k, h2_step k, htel, by omega⟩
+
+/-! ## 14. Theorem SB.14: Top-Down Senge–Straus / Stewart Joint $(s_2, s_3)$ Blueprint -/
+
+/-- **Top-Down Senge–Straus / Stewart Joint $(s_2, s_3)$ Digit-Sum Blueprint
+(`top_down_senge_straus_stewart_joint_digitsum_blueprint`, Theorem SB.14)**:
+Suppose `ValidBlockChain b_0 s u (r + 2)` holds. Setting
+`b k = orbit b_0 (blockSteps s k)` and `P k = oddReturnP (b k)`:
+1. **Joint $(s_2, s_3)$ Consecutive-Block Sum Identity**:
+   `base2DigitSum (P r) + base3DigitSum (P (r + 1)) =
+     base2DigitSum (u r) + base3DigitSum (u r) + 1`, and
+2. **Conditional Senge–Straus / Stewart Growth Transfer**:
+   Whenever `M ≤ base2DigitSum (u r) + base3DigitSum (u r)`, we have
+   `M + 1 ≤ base2DigitSum (P r) + base3DigitSum (P (r + 1))`, and at the raw-orbit level
+   (`2 ^ N * g_N = 3 ^ N * g_0 + K_N` with `K_N < 3 ^ N`), any Senge–Straus lower bound
+   `base3DigitSum g_0 + B < base3DigitSum (2 ^ N * g_N)` forces `B < base3DigitSum K_N`! -/
+theorem top_down_senge_straus_stewart_joint_digitsum_blueprint
+    {b_0 r M N g_0 g_N K_N B : ℕ} {s u : ℕ → ℕ}
+    (hchain : ValidBlockChain b_0 s u (r + 2))
+    (hid : 2 ^ N * g_N = 3 ^ N * g_0 + K_N)
+    (hK : K_N < 3 ^ N) :
+    let b := fun k => orbit b_0 (blockSteps s k)
+    let P := fun k => oddReturnP (b k)
+    base2DigitSum (P r) + base3DigitSum (P (r + 1)) =
+        base2DigitSum (u r) + base3DigitSum (u r) + 1 ∧
+      (M ≤ base2DigitSum (u r) + base3DigitSum (u r) →
+        M + 1 ≤ base2DigitSum (P r) + base3DigitSum (P (r + 1))) ∧
+      (base3DigitSum g_0 + B < base3DigitSum (2 ^ N * g_N) →
+        B < base3DigitSum K_N) := by
+  intro b P
+  have h12 := dual_base2_base3_block_digitsum_conservation_and_parity hchain
+  have hs2 : base2DigitSum (P r) = base2DigitSum (u r) := h12.1.1
+  have hr1 := hchain (r + 1) (by omega)
+  have hP_r1 : P (r + 1) = 2 ^ (s (r + 1)) * u (r + 1) := hr1.2.2
+  have hs3 : base3DigitSum (P (r + 1)) = base3DigitSum (u r) + 1 := by
+    rw [hP_r1]
+    exact h12.2.1.2.2
+  have h9 := (zero_carry_base3_digit_sum_and_even_step_invariance hid hK 0).1
+  exact ⟨by omega, fun hM => by omega, fun hB => by omega⟩
+
 #check @archimedean_rung_ceiling_and_stepSum_bound
 #check @unit_quotient_even_rung_instant_death_and_odd_rung_mod64_identity
 #check @equal_step_window_hankel_determinant_identity_and_bound
@@ -1004,6 +1170,8 @@ theorem dual_base2_base3_block_digitsum_conservation_and_parity
 #check @late_step_cauchy_pinch_and_odd_quotient_gcd_dvd
 #check @affine_counter_mahler_conjugacy_and_closed_bb6_non_halting
 #check @dual_base2_base3_block_digitsum_conservation_and_parity
+#check @one_step_and_weighted_telescoping_base3_carry_identity
+#check @top_down_senge_straus_stewart_joint_digitsum_blueprint
 
 #print axioms archimedean_rung_ceiling_and_stepSum_bound
 #print axioms unit_quotient_even_rung_instant_death_and_odd_rung_mod64_identity
@@ -1017,5 +1185,7 @@ theorem dual_base2_base3_block_digitsum_conservation_and_parity
 #print axioms late_step_cauchy_pinch_and_odd_quotient_gcd_dvd
 #print axioms affine_counter_mahler_conjugacy_and_closed_bb6_non_halting
 #print axioms dual_base2_base3_block_digitsum_conservation_and_parity
+#print axioms one_step_and_weighted_telescoping_base3_carry_identity
+#print axioms top_down_senge_straus_stewart_joint_digitsum_blueprint
 
 end Mahler.SemigroupBreakout
