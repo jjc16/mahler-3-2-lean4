@@ -1,6 +1,6 @@
-# Mahler $3/2$ Problem — 218-File Lean 4 Formalization (`mahler_demand_a`)
+# Mahler $3/2$ Problem — 220-File Lean 4 Formalization (`mahler_demand_a`)
 
-This repository contains a **218-file (`sorry`-free) Lean 4.19.0 + Mathlib v4.19.0 formalization** of the reduced Mahler $3/2$ dynamical system ($Z$-numbers) and its interval- and union-confinement relaxations ([`MAHLER_FORMALIZATION_PAPER.pdf`](./MAHLER_FORMALIZATION_PAPER.pdf)).
+This repository contains a **220-file (`sorry`-free) Lean 4.19.0 + Mathlib v4.19.0 formalization** of the reduced Mahler $3/2$ dynamical system ($Z$-numbers) and its interval- and union-confinement relaxations ([`MAHLER_FORMALIZATION_PAPER.pdf`](./MAHLER_FORMALIZATION_PAPER.pdf)).
 
 ---
 
@@ -230,6 +230,8 @@ not a completed proof; its Part III corrects earlier overstatements and controls
   Pure multiplicative eigenvalue law $\Delta^{(q, A_p)}_{N+Rp} = 3^{qR}\Delta^{(q, A_p)}_N$ for the periodic fixed-point defect $\Delta^{(q, A_p)}_N = (3^q - 2^q)\Sigma_N - 2^{T_N+1}A_p$ (and constant-rung special case $\Delta^{(m)}_{N+j} = 3^{mj}\Delta^{(m)}_N$), proof that upward exit from a $3$-run forces $s_k = 2$ uniquely while downward exit forces $4 \le s_k$, and certification of the 4-fold consecutive $3$-run at blocks 37–39 ($s_{36} = 3, s_{37} = 3, s_{38} = 3$, $T_{39} = 188$, forcing $2^{189} \le b_2$).
 - **Mixed Shift-Slack Cocycle $\Sigma_{N+M} = 3^d \widehat{\Sigma}_N + 2^{T_N}\Sigma_M(s')$, Universal Subword Escape Inheritance & 42-Block ($T_{42} = 208$) Kneading Certification (`ShiftSlackDecompositionAndKneading42.lean`, Campaign 2 Outer Loop 16):**
   Mixed shift-slack identity $\Sigma_{N+M}(s) = 3^d\widehat{\Sigma}_N(s) + 2^{T_N}\Sigma_M(s')$, universal subword escape inheritance ($\widehat{\Sigma}_N < 0 \wedge \Sigma_M(s') \le 0 \implies \Sigma_{N+M} < 0$), universal exclusion of $(2, 6, 2)$ and $(2, 6, 3, 2)$ at arbitrary sub-ceiling steps, and certification of blocks 40–42 ($s_{39} = 5, s_{40} = 4, s_{41} = 11$, crossing the 200-step horizon at $T_{42} = 208$, forcing $2^{209} \le b_2$).
+- **The Universal Parry–Kneading Shift Domination Theorem ($w_M \le s_{N+M}$) & 45-Block ($T_{45} = 223$) Kneading Certification (`ParryKneadingShiftDominationAndKneading45.lean`, Campaign 2 Outer Loop 17):**
+  Prefix-congruence invariance of `blockSteps`/`renewalNumerator`/$\Sigma_M$/$\widehat{\Sigma}_M$, monotone rung-death below a sub-ceiling rung, the universal Parry–Milnor–Thurston shift domination theorem (`subCeiling_shift_lexicographic_domination`: if $\widehat{\Sigma}_N(s) < 0$, $\forall t < M,\, s(N+t) = w(t)$, $\widehat{\Sigma}_{M+1}(w) \le 0$, and $0 < \Sigma_{N+M+1}(s)$, then $w(M) \le s(N+M)$), and certification of blocks 43–45 ($s_{42} = 6, s_{43} = 6, s_{44} = 3$, $T_{45} = 223$, forcing $2^{224} \le b_2$).
 
 ## Acknowledgments
 
