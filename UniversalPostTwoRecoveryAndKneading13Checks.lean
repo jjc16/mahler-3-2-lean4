@@ -1,0 +1,17 @@
+import UniversalPostTwoRecoveryAndKneading13
+
+namespace Mahler.Checks
+
+open Mahler.UniversalPostTwoAndKneading13
+
+#check @short_block_two_slack_and_eight_ninths_threshold
+#check @universal_post_two_two_step_slack_identity
+#check @universal_subCeiling_post_two_requires_six_le
+#check @eleven_twelve_thirteen_block_kneading_corridor_certification
+
+#print axioms short_block_two_slack_and_eight_ninths_threshold
+#print axioms universal_post_two_two_step_slack_identity
+#print axioms universal_subCeiling_post_two_requires_six_le
+#print axioms eleven_twelve_thirteen_block_kneading_corridor_certification
+
+end Mahler.Checks

@@ -595,6 +595,13 @@ name = "RungShiftIdentityAndExistsUniqueKneadingRung"
 [[lean_lib]]
 name = "RungShiftIdentityAndExistsUniqueKneadingRungChecks"
 
+[[lean_lib]]
+name = "UniversalPostTwoRecoveryAndKneading13"
+
+[[lean_lib]]
+name = "UniversalPostTwoRecoveryAndKneading13Checks"
+
+
 
 
 

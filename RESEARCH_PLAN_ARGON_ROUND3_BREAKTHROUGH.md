@@ -1776,6 +1776,31 @@ Here is why, in plain terms:
 ## C2.O5.5 Inner Loop 5 / 5 — Explore & Exploit: Complete 10-Block Sub-Ceiling Kneading Uniqueness Theorem
 - **Explore & Exploit (Priority 5):** Bundle all 10 blocks into `unique_ten_block_subCeiling_kneading_corridor`: starting from $s_0 = 2$, $(2, 6, 3, 3, 2, 10, 7, 5, 7, 3)$ is the **unique** 10-block sequence staying in the sub-ceiling survival corridor!
 
+---
+
+# Part XXI — Second Campaign (`m = 5, n = 20`) — Outer Loop 6 / 20 (Inner Loops 1–5): Universal $8/9$ Short-Block Threshold, Universal Post-`2` $s_{N+1} \ge 6$ Recovery Law & 13-Block ($T_{13} = 65$) Kneading Certification
+
+## C2.O6.1 Inner Loop 1 / 5 — Explore & Exploit: Exact $8/9$ Threshold for $s_N = 2$ Survival at Any Step $N$
+- **Explore:** Compute $\Sigma_{N+1}$ when $s_N = 2$ at an arbitrary step $N$ of any trajectory.
+- **Exploit (Priority 1):** Prove $\Sigma_{N+1}(s_N = 2) = 9 \Sigma_N - 8 \cdot 2^{T_N} = 2^{T_N} + 9 \widehat{\Sigma}_N$, so $s_N = 2$ survives ($\Sigma_{N+1} > 0$) if and only if $8 \cdot 2^{T_N} < 9 \Sigma_N$ (equivalently $-9 \widehat{\Sigma}_N < 2^{T_N}$).
+
+## C2.O6.2 Inner Loop 2 / 5 — Explore & Exploit: Universal Two-Step Post-`2` Slack Identity $\Sigma_{N+2}(2, r)$
+- **Explore:** Compose $s_N = 2$ with $s_{N+1} = r$ at an arbitrary step $N$.
+- **Exploit (Priority 2):** Prove the universal two-step identity:
+  $$\boxed{\Sigma_{N+2} \;=\; 3^r\big(9 \Sigma_N - 8 \cdot 2^{T_N}\big) - 8 \cdot 2^{T_N + r} \;=\; 9 \cdot 3^r \Sigma_N - 8\big(3^r + 2^r\big) 2^{T_N}!}$$
+
+## C2.O6.3 Inner Loop 3 / 5 — Explore & Exploit: Universal Post-`2` Recovery Lower Bound $s_{N+1} \ge 6$ whenever $\Sigma_N \le 2^{T_N}$
+- **Explore:** Use $\Sigma_N \le 2^{T_N}$ in $\Sigma_{N+2} = 9 \cdot 3^r \Sigma_N - 8(3^r + 2^r) 2^{T_N}$.
+- **Exploit (Priority 3):** Whenever $\Sigma_N \le 2^{T_N}$ ($\widehat{\Sigma}_N \le 0$) and $s_N = 2$, prove that $\Sigma_{N+2} \le (3^r - 8 \cdot 2^r) 2^{T_N}$, which is $\le 0$ for all $r \le 5$. Thus **at every sub-ceiling step $N$ of any trajectory, $s_N = 2 \land \Sigma_{N+2} > 0 \implies 6 \le s_{N+1}$**!
+
+## C2.O6.4 Inner Loop 4 / 5 — Explore & Exploit: Strengthened Post-`2` Recovery Bound $s_{N+1} \ge 7$ Whenever $729 \Sigma_{N+1} \le 512 \cdot 2^{T_N}$
+- **Explore:** Determine when $s_{N+1} = 6$ also fails after a sub-ceiling $s_N = 2$ block.
+- **Exploit (Priority 4):** Prove that if $s_N = 2$ and $217 \cdot 2^{T_N} + 6561 \widehat{\Sigma}_N \le 0$, then even $s_{N+1} = 6$ fails ($\Sigma_{N+2}(2, 6) \le 0$), forcing $s_{N+1} \ge 7$!
+
+## C2.O6.5 Inner Loop 5 / 5 — Explore & Exploit: Certification of Blocks 11, 12, and 13 ($s_{10} = 3, s_{11} = 2, s_{12} = 12$, $T_{13} = 65$)
+- **Explore & Exploit (Priority 5):** Certify that after $(2, 6, 3, 3, 2, 10, 7, 5, 7, 3)$, the unique 11th, 12th, and 13th sub-ceiling kneading rungs are $s_{10} = 3$ ($T_{11} = 51$), $s_{11} = 2$ ($T_{12} = 53$), and $s_{12} = 12$ ($T_{13} = 65 > 64$), where the third $s = 2$ block forces a 12-step recovery $s_{12} = 12$!
+
+
 
 
 
