@@ -3,7 +3,7 @@
 **Authors:** Joshua Coon (with Astra, Fable, and Argon AI in GitHub Copilot)  
 **Date:** November 2026  
 **Cordoned-Off Verification Artifact:** [`semigroup_breakout/SemigroupBreakoutTheorems.lean`](./SemigroupBreakoutTheorems.lean) (`0` `sorry`s, `0` warnings, Lean 4.19.0 + Mathlib v4.19.0)  
-**Computational Suite:** [`loop1_product_formula_and_pade.py`](./loop1_product_formula_and_pade.py), [`loop1_beukers_pade_and_hankel.py`](./loop1_beukers_pade_and_hankel.py), [`loop2_pade_lll_and_divergence.py`](./loop2_pade_lll_and_divergence.py), [`loop3_archimedean_ceiling_and_small_u.py`](./loop3_archimedean_ceiling_and_small_u.py), [`loop4_flp_sparsity_and_repulsion.py`](./loop4_flp_sparsity_and_repulsion.py), [`sandbox_symmetry_breaking_loops.py`](./sandbox_symmetry_breaking_loops.py), [`sandbox_wave2_towers.py`](./sandbox_wave2_towers.py), [`sandbox_wave3_towers.py`](./sandbox_wave3_towers.py), [`sandbox_wave4_canyon_view.py`](./sandbox_wave4_canyon_view.py), [`sandbox_wave5_multi_block_crt.py`](./sandbox_wave5_multi_block_crt.py), [`sandbox_wave6_both_bridges.py`](./sandbox_wave6_both_bridges.py)
+**Computational Suite:** [`loop1_product_formula_and_pade.py`](./loop1_product_formula_and_pade.py), [`loop1_beukers_pade_and_hankel.py`](./loop1_beukers_pade_and_hankel.py), [`loop2_pade_lll_and_divergence.py`](./loop2_pade_lll_and_divergence.py), [`loop3_archimedean_ceiling_and_small_u.py`](./loop3_archimedean_ceiling_and_small_u.py), [`loop4_flp_sparsity_and_repulsion.py`](./loop4_flp_sparsity_and_repulsion.py), [`sandbox_symmetry_breaking_loops.py`](./sandbox_symmetry_breaking_loops.py), [`sandbox_wave2_towers.py`](./sandbox_wave2_towers.py), [`sandbox_wave3_towers.py`](./sandbox_wave3_towers.py), [`sandbox_wave4_canyon_view.py`](./sandbox_wave4_canyon_view.py), [`sandbox_wave5_multi_block_crt.py`](./sandbox_wave5_multi_block_crt.py), [`sandbox_wave6_both_bridges.py`](./sandbox_wave6_both_bridges.py), [`sandbox_wave7_binary_carry_bridge.py`](./sandbox_wave7_binary_carry_bridge.py)
 
 ---
 
@@ -387,7 +387,38 @@ $$\boxed{s_3\big(2^{s_r} X\big) + s_3(u_r) + s_3(R) = s_3(X) + s_3\big(2^{s_r} u
 
 ---
 
-## 11. Verification Instructions
+## 11. Wave-7 Symmetry-Breaking Towers (Bridge C): The Binary Trailing-Ones Depletion & Halving-Budget Bridge
+
+In [`sandbox_wave7_binary_carry_bridge.py`](./sandbox_wave7_binary_carry_bridge.py) and Sections 31–33 of [`SemigroupBreakoutTheorems.lean`](./SemigroupBreakoutTheorems.lean), we discovered the **Base-2 counterpart** to the Base-3 Zero-Carry Firewall (`SB.24–SB.30`):
+
+### 11.1 Theorem SB.31 (Bridge C1): One-Step Binary Trailing-Ones Depletion Law (`bridge_c_one_step_binary_trailing_ones_depletion_law`)
+
+At every block $r$, because $3^{s_r} u_r + 1 = 2^{s_{r+1}} u_{r+1}$ and $u_{r+1}$ is odd:
+$$3^{s_r} u_r = 2^{s_{r+1}}\big(u_{r+1} - 1\big) + \big(2^{s_{r+1}} - 1\big).$$
+In Base 2, the bottom $s_{r+1}$ bits of $3^{s_r} u_r$ are **all `1`s** ($2^{s_{r+1}} - 1$, with binary digit sum $s_{r+1}$), and the bits above $2^{s_{r+1}}$ are $u_{r+1} - 1$ (with binary digit sum $s_2(u_{r+1}) - 1$ since $u_{r+1}$ is odd). Consequently:
+1. **Exact Base-2 Quotient & All-Ones Remainder:**
+   $$\boxed{\left\lfloor \frac{3^{s_r} u_r}{2^{s_{r+1}}} \right\rfloor = u_{r+1} - 1 \qquad\text{and}\qquad \big(3^{s_r} u_r\big) \bmod 2^{s_{r+1}} = 2^{s_{r+1}} - 1.}$$
+2. **Exact Binary Carry-Depletion Law:**
+   $$\boxed{s_2\big(3^{s_r} u_r\big) + 1 = s_2(u_{r+1}) + s_{r+1}!}$$
+   In words: adding $+1$ to $3^{s_r} u_r$ consumes **exactly $s_{r+1}$ trailing binary `1`-bits** and replaces them with a single `1`-bit at position $s_{r+1}$.
+
+### 11.2 Theorem SB.32 (Bridge C2): Multi-Step Dual Base-2 / Base-3 Zero-Carry Split of $N_K$ (`bridge_c_multi_step_dual_base2_base3_zero_carry_split`)
+
+For the multi-block quantity $N_K := 3^{T_K} P_0 + A_{0, K} = 2^{T_{K+1}} u_K$:
+1. **In Base 3 ($N_K$ splits at $3^{T_K}$ with zero carries):**
+   $$\boxed{\left\lfloor \frac{N_K}{3^{T_K}} \right\rfloor = P_0, \qquad N_K \bmod 3^{T_K} = A_{0, K}, \qquad s_3(N_K) = s_3(P_0) + s_3(A_{0, K}).}$$
+2. **In Base 2 ($N_K - 1$ splits at $2^{T_{K+1}}$ with zero carries):**
+   $$\boxed{\left\lfloor \frac{N_K - 1}{2^{T_{K+1}}} \right\rfloor = u_K - 1, \qquad (N_K - 1) \bmod 2^{T_{K+1}} = 2^{T_{K+1}} - 1, \qquad s_2(N_K - 1) + 1 = T_{K+1} + s_2(u_K)!}$$
+
+### 11.3 Theorem SB.33 (Bridge C3): The Telescoped Binary Halving-Budget Law (`bridge_c_telescoped_binary_halving_budget_law`)
+
+Telescoping Theorem SB.31 across $K$ blocks ($r = 0, \dots, K-1$) yields the **Exact $K$-Block Binary Halving-Budget Law**:
+$$\boxed{\big(T_{K+1} - s_0\big) + s_2(u_K) + \sum_{r=0}^{K-1} s_2(u_r) = s_2(u_0) + K + \sum_{r=0}^{K-1} s_2\big(3^{s_r} u_r\big)!}$$
+In plain English: every single halving step in $T_{K+1} - s_0 = s_1 + \dots + s_K$ (beyond $+1$ per block) **must be paid for** out of the initial binary `1`-bits $s_2(u_0)$ and the net binary `1`-bits manufactured by multiplying $u_r$ by $3^{s_r}$!
+
+---
+
+## 12. Verification Instructions
 
 To verify the cordoned-off Lean 4 proofs without modifying the root 226-file build:
 

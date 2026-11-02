@@ -2408,6 +2408,192 @@ theorem bridge_b_additive_carry_isolation_and_horner_step
     rw [hscaled_id, base3DigitSum_three_pow_mul_add T (2 ^ (s r) * u r) hscaled_lt]
   exact ⟨hX_eq, hR_lt_T, hs3_X, h5_scaled, hscaled_lt, hs3_scaled, by omega⟩
 
+/-! ## 31. Theorem SB.31 (Bridge C1): One-Step Binary Trailing-Ones Depletion Law -/
+
+/-- Helper: For any `s : ℕ` and odd `u : ℕ` (`u % 2 = 1`),
+`base2DigitSum (2 ^ s * u - 1) + 1 = base2DigitSum u + s`. -/
+theorem base2DigitSum_two_pow_mul_sub_one (s : ℕ) {u : ℕ} (hu_odd : u % 2 = 1) :
+    base2DigitSum (2 ^ s * u - 1) + 1 = base2DigitSum u + s := by
+  induction s with
+  | zero =>
+      simp only [Nat.pow_zero, one_mul, add_zero]
+      have hu_decomp : u - 1 = 2 * (u / 2) := by omega
+      rw [hu_decomp, base2DigitSum_eq (2 * (u / 2)), base2DigitSum_eq u]
+      have hmod : (2 * (u / 2)) % 2 = 0 := by omega
+      have hdiv : (2 * (u / 2)) / 2 = u / 2 := by omega
+      rw [hmod, hdiv, hu_odd]
+      omega
+  | succ s ih =>
+      have hu_pos : 1 ≤ u := by omega
+      have h2s_pos : 1 ≤ 2 ^ s := Nat.one_le_pow _ 2 (by decide)
+      have hmul_pos : 1 ≤ 2 ^ s * u := Nat.mul_le_mul h2s_pos hu_pos
+      have hmul2 : 2 ^ (s + 1) * u = 2 * (2 ^ s * u) := by
+        rw [Nat.pow_succ]
+        ring
+      have hstep : 2 ^ (s + 1) * u - 1 = 2 * (2 ^ s * u - 1) + 1 := by omega
+      rw [hstep, base2DigitSum_eq (2 * (2 ^ s * u - 1) + 1)]
+      have hmod : (2 * (2 ^ s * u - 1) + 1) % 2 = 1 := by omega
+      have hdiv : (2 * (2 ^ s * u - 1) + 1) / 2 = 2 ^ s * u - 1 := by omega
+      rw [hmod, hdiv]
+      omega
+
+/-- **Bridge C1: One-Step Binary Trailing-Ones Depletion Law
+(`bridge_c_one_step_binary_trailing_ones_depletion_law`, Theorem SB.31)**:
+Suppose `ValidBlockChain b_0 s u (r + 2)` holds:
+1. **Disjoint Binary Block Decomposition of `3 ^ (s r) * u r`**:
+   `3 ^ (s r) * u r = 2 ^ (s (r + 1)) * (u (r + 1) - 1) + (2 ^ (s (r + 1)) - 1)`,
+2. **Exact Base-2 Quotient & All-Ones Remainder**:
+   `(3 ^ (s r) * u r) / 2 ^ (s (r + 1)) = u (r + 1) - 1` and
+   `(3 ^ (s r) * u r) % 2 ^ (s (r + 1)) = 2 ^ (s (r + 1)) - 1`, and
+3. **Exact Binary Carry-Depletion Law**:
+   `base2DigitSum (3 ^ (s r) * u r) + 1 = base2DigitSum (u (r + 1)) + s (r + 1)`
+   (multiplying `u r` by `3 ^ (s r)` and adding `1` consumes exactly `s (r + 1)` trailing
+   binary `1`-bits and replaces them with a single `1`-bit at position `s (r + 1)`)! -/
+theorem bridge_c_one_step_binary_trailing_ones_depletion_law
+    {b_0 r : ℕ} {s u : ℕ → ℕ}
+    (hchain : ValidBlockChain b_0 s u (r + 2)) :
+    3 ^ (s r) * u r = 2 ^ (s (r + 1)) * (u (r + 1) - 1) + (2 ^ (s (r + 1)) - 1) ∧
+      (3 ^ (s r) * u r) / 2 ^ (s (r + 1)) = u (r + 1) - 1 ∧
+      (3 ^ (s r) * u r) % 2 ^ (s (r + 1)) = 2 ^ (s (r + 1)) - 1 ∧
+      base2DigitSum (3 ^ (s r) * u r) + 1 = base2DigitSum (u (r + 1)) + s (r + 1) := by
+  have hstep := (one_step_backward_quotient_recovery_and_mod_three_pow_one hchain).1
+  have hu1_odd : u (r + 1) % 2 = 1 := (hchain (r + 1) (by omega)).2.1
+  have hu1_pos : 1 ≤ u (r + 1) := by omega
+  have h2s_pos : 1 ≤ 2 ^ (s (r + 1)) := Nat.one_le_pow _ 2 (by decide)
+  have hdecomp :
+      3 ^ (s r) * u r = 2 ^ (s (r + 1)) * (u (r + 1) - 1) + (2 ^ (s (r + 1)) - 1) := by
+    have hmul : 2 ^ (s (r + 1)) * u (r + 1) = 2 ^ (s (r + 1)) * (u (r + 1) - 1) + 2 ^ (s (r + 1)) := by
+      rw [Nat.mul_sub_left_distrib, mul_one]
+      have hle : 2 ^ (s (r + 1)) ≤ 2 ^ (s (r + 1)) * u (r + 1) :=
+        Nat.le_mul_of_pos_right _ hu1_pos
+      omega
+    omega
+  have hrem_lt : 2 ^ (s (r + 1)) - 1 < 2 ^ (s (r + 1)) := by omega
+  have hdiv_pos : 0 < 2 ^ (s (r + 1)) := by omega
+  have hdiv : (3 ^ (s r) * u r) / 2 ^ (s (r + 1)) = u (r + 1) - 1 := by
+    rw [hdecomp, Nat.mul_add_div hdiv_pos, Nat.div_eq_of_lt hrem_lt, add_zero]
+  have hmod : (3 ^ (s r) * u r) % 2 ^ (s (r + 1)) = 2 ^ (s (r + 1)) - 1 := by
+    rw [hdecomp, Nat.mul_add_mod, Nat.mod_eq_of_lt hrem_lt]
+  have hs2 : base2DigitSum (3 ^ (s r) * u r) + 1 = base2DigitSum (u (r + 1)) + s (r + 1) := by
+    have hsub : 3 ^ (s r) * u r = 2 ^ (s (r + 1)) * u (r + 1) - 1 := by omega
+    rw [hsub]
+    exact base2DigitSum_two_pow_mul_sub_one (s (r + 1)) hu1_odd
+  exact ⟨hdecomp, hdiv, hmod, hs2⟩
+
+/-! ## 32. Theorem SB.32 (Bridge C2): Multi-Step Dual Base-2 / Base-3 Zero-Carry Split of $N_K$ -/
+
+/-- **Bridge C2: Multi-Step Dual Base-2 / Base-3 Zero-Carry Split of $N_K$
+(`bridge_c_multi_step_dual_base2_base3_zero_carry_split`, Theorem SB.32)**:
+Suppose `ValidBlockChain b_0 s u (K + 1)` holds with `∀ k < K, 2 ≤ s k`.
+Let `P k = oddReturnP (orbit b_0 (blockSteps s k))`, `T_K = blockSteps s K`,
+`T_K1 = T_K + s K`, `A_K = renewalNumerator s K`, and `N_K = 3 ^ T_K * P 0 + A_K`:
+1. **Base-3 Zero-Carry Split of `N_K` at `3 ^ T_K`:**
+   `N_K = 2 ^ T_K1 * u K`, `N_K / 3 ^ T_K = P 0`, `N_K % 3 ^ T_K = A_K`, and
+   `base3DigitSum N_K = base3DigitSum (P 0) + base3DigitSum A_K`, and
+2. **Base-2 Zero-Carry Split of `N_K - 1` at `2 ^ T_K1`:**
+   `N_K - 1 = 2 ^ T_K1 * (u K - 1) + (2 ^ T_K1 - 1)`,
+   `(N_K - 1) / 2 ^ T_K1 = u K - 1`,
+   `(N_K - 1) % 2 ^ T_K1 = 2 ^ T_K1 - 1`, and
+   `base2DigitSum (N_K - 1) + 1 = T_K1 + base2DigitSum (u K)`! -/
+theorem bridge_c_multi_step_dual_base2_base3_zero_carry_split
+    {b_0 K : ℕ} {s u : ℕ → ℕ}
+    (hchain : ValidBlockChain b_0 s u (K + 1))
+    (hs2 : ∀ k < K, 2 ≤ s k) :
+    let P := fun k => oddReturnP (orbit b_0 (blockSteps s k))
+    let T_K := blockSteps s K
+    let T_K1 := T_K + s K
+    let A_K := renewalNumerator s K
+    let N_K := 3 ^ T_K * P 0 + A_K
+    (N_K = 2 ^ T_K1 * u K ∧
+      N_K / 3 ^ T_K = P 0 ∧
+      N_K % 3 ^ T_K = A_K ∧
+      base3DigitSum N_K = base3DigitSum (P 0) + base3DigitSum A_K) ∧
+      (N_K - 1 = 2 ^ T_K1 * (u K - 1) + (2 ^ T_K1 - 1) ∧
+        (N_K - 1) / 2 ^ T_K1 = u K - 1 ∧
+        (N_K - 1) % 2 ^ T_K1 = 2 ^ T_K1 - 1 ∧
+        base2DigitSum (N_K - 1) + 1 = T_K1 + base2DigitSum (u K)) := by
+  intro P T_K T_K1 A_K N_K
+  have h28 := bridge_a_dual_universe_series_lowest_terms_and_uniqueness hchain hs2
+  have h29 := (bridge_b_seed_independent_base3_step_evolution hchain hs2).1 K (le_refl K)
+  have hid : N_K = 2 ^ T_K1 * u K := h28.1.symm
+  have hdiv3 : N_K / 3 ^ T_K = P 0 := by
+    rw [hid]
+    exact h28.2.2.2.1
+  have hmod3 : N_K % 3 ^ T_K = A_K := by
+    rw [hid]
+    exact h28.2.2.2.2.1
+  have hs3 : base3DigitSum N_K = base3DigitSum (P 0) + base3DigitSum A_K := by
+    rw [hid]
+    exact h29
+  have huK_odd : u K % 2 = 1 := (hchain K (by omega)).2.1
+  have huK_pos : 1 ≤ u K := by omega
+  have h2_pos : 1 ≤ 2 ^ T_K1 := Nat.one_le_pow _ 2 (by decide)
+  have hdecomp2 : N_K - 1 = 2 ^ T_K1 * (u K - 1) + (2 ^ T_K1 - 1) := by
+    have hmul : 2 ^ T_K1 * u K = 2 ^ T_K1 * (u K - 1) + 2 ^ T_K1 := by
+      rw [Nat.mul_sub_left_distrib, mul_one]
+      have hle : 2 ^ T_K1 ≤ 2 ^ T_K1 * u K := Nat.le_mul_of_pos_right _ huK_pos
+      omega
+    omega
+  have hrem_lt : 2 ^ T_K1 - 1 < 2 ^ T_K1 := by omega
+  have hdiv2_pos : 0 < 2 ^ T_K1 := by omega
+  have hdiv2 : (N_K - 1) / 2 ^ T_K1 = u K - 1 := by
+    rw [hdecomp2, Nat.mul_add_div hdiv2_pos, Nat.div_eq_of_lt hrem_lt, add_zero]
+  have hmod2 : (N_K - 1) % 2 ^ T_K1 = 2 ^ T_K1 - 1 := by
+    rw [hdecomp2, Nat.mul_add_mod, Nat.mod_eq_of_lt hrem_lt]
+  have hs2_eq : base2DigitSum (N_K - 1) + 1 = T_K1 + base2DigitSum (u K) := by
+    rw [hid]
+    have h := base2DigitSum_two_pow_mul_sub_one T_K1 huK_odd
+    omega
+  exact ⟨⟨hid, hdiv3, hmod3, hs3⟩, ⟨hdecomp2, hdiv2, hmod2, hs2_eq⟩⟩
+
+/-! ## 33. Theorem SB.33 (Bridge C3): The Telescoped Binary Halving-Budget Law -/
+
+/-- Cumulative binary `1`-bit budget $\sum_{r=0}^{K-1} s_2(u_r)$. -/
+def sumBase2Quotient (u : ℕ → ℕ) : ℕ → ℕ
+  | 0 => 0
+  | K + 1 => sumBase2Quotient u K + base2DigitSum (u K)
+
+/-- Cumulative triadic-multiplied binary `1`-bit supply $\sum_{r=0}^{K-1} s_2(3^{s_r} u_r)$. -/
+def sumBase2TriadicScaled (s u : ℕ → ℕ) : ℕ → ℕ
+  | 0 => 0
+  | K + 1 => sumBase2TriadicScaled s u K + base2DigitSum (3 ^ (s K) * u K)
+
+/-- Helper: `s 0 ≤ blockSteps s (K + 1)` for every `K : ℕ`. -/
+theorem s_zero_le_blockSteps_succ (s : ℕ → ℕ) (K : ℕ) :
+    s 0 ≤ blockSteps s (K + 1) := by
+  induction K with
+  | zero => simp [blockSteps]
+  | succ m ihm =>
+      change s 0 ≤ blockSteps s (m + 1) + s (m + 1)
+      omega
+
+/-- **Bridge C3: The Telescoped Binary Halving-Budget Law
+(`bridge_c_telescoped_binary_halving_budget_law`, Theorem SB.33)**:
+Suppose `ValidBlockChain b_0 s u (K + 1)` holds for `K : ℕ`:
+$$\big(\operatorname{blockSteps}(s, K + 1) - s_0\big) + s_2(u_K) + \sum_{r=0}^{K-1} s_2(u_r) =
+  s_2(u_0) + K + \sum_{r=0}^{K-1} s_2\big(3^{s_r} u_r\big)!$$
+In words: across any $K$ blocks, every halving step in $T_{K+1} - s_0 = s_1 + \dots + s_K$
+beyond $+1$ per block is paid for out of the initial binary `1`-bits $s_2(u_0)$ and the net
+binary `1`-bits manufactured by multiplying $u_r$ by $3^{s_r}$! -/
+theorem bridge_c_telescoped_binary_halving_budget_law
+    {b_0 K : ℕ} {s u : ℕ → ℕ}
+    (hchain : ValidBlockChain b_0 s u (K + 1)) :
+    (blockSteps s (K + 1) - s 0) + base2DigitSum (u K) + sumBase2Quotient u K =
+      base2DigitSum (u 0) + K + sumBase2TriadicScaled s u K := by
+  induction K with
+  | zero =>
+      have hb1 : blockSteps s 1 = s 0 := by simp [blockSteps]
+      simp [hb1, sumBase2Quotient, sumBase2TriadicScaled]
+  | succ K ih =>
+      have hch_K : ValidBlockChain b_0 s u (K + 1) := fun k hk => hchain k (by omega)
+      have ihK := ih hch_K
+      have hch_step : ValidBlockChain b_0 s u (K + 2) := hchain
+      have h31 := (bridge_c_one_step_binary_trailing_ones_depletion_law hch_step).2.2.2
+      have hbs_succ : blockSteps s (K + 2) = blockSteps s (K + 1) + s (K + 1) := rfl
+      have hs0_le : s 0 ≤ blockSteps s (K + 1) := s_zero_le_blockSteps_succ s K
+      simp only [sumBase2Quotient, sumBase2TriadicScaled, hbs_succ]
+      omega
+
 
 #check @archimedean_rung_ceiling_and_stepSum_bound
 #check @unit_quotient_even_rung_instant_death_and_odd_rung_mod64_identity
@@ -2439,6 +2625,9 @@ theorem bridge_b_additive_carry_isolation_and_horner_step
 #check @bridge_a_dual_universe_series_lowest_terms_and_uniqueness
 #check @bridge_b_seed_independent_base3_step_evolution
 #check @bridge_b_additive_carry_isolation_and_horner_step
+#check @bridge_c_one_step_binary_trailing_ones_depletion_law
+#check @bridge_c_multi_step_dual_base2_base3_zero_carry_split
+#check @bridge_c_telescoped_binary_halving_budget_law
 
 #print axioms archimedean_rung_ceiling_and_stepSum_bound
 #print axioms unit_quotient_even_rung_instant_death_and_odd_rung_mod64_identity
