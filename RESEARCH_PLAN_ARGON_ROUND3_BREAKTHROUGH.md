@@ -1905,6 +1905,33 @@ Here is why, in plain terms:
 ## C2.O10.5 Inner Loop 5 / 5 — Explore & Exploit: Mod-$2^{119}$ Seed Uniqueness for the 24-Block Sub-Ceiling Corridor
 - **Explore & Exploit (Priority 5):** Prove that any two seeds $b_1 < b_2$ realizing the 24-block sub-ceiling kneading corridor satisfy $2^{119} \mid (b_2 - b_1)$ and $2^{119} \le b_2$.
 
+---
+
+# Part XXVI — Second Campaign (`m = 5, n = 20`) — Outer Loop 11 / 20 (Inner Loops 1–5): Universal All-$3$ Run Closed Form from Arbitrary State, the $\frac{16}{19}$ Repelling Fixed-Point Bifurcation & 27-Block ($T_{27} = 139$) Kneading Certification
+
+## C2.O11.1 Inner Loop 1 / 5 — Explore & Exploit: Universal Closed Form for a $j$-Run of $3$'s from Arbitrary State $N$
+- **Explore:** Generalize the post-$(2, 6)$ $3^j$ formula of Campaign 1 Outer Loop 5 and Campaign 2 Outer Loop 3 to a $j$-run of $3$'s starting at **any** step $N$ with arbitrary $(T_N, \Sigma_N)$.
+- **Exploit (Priority 1):** Prove `universal_all_three_run_from_step_closed_form`: whenever $\forall t < j,\, s(N+t) = 3$,
+  $$19 \Sigma_{N+j} = 27^j\big(19 \Sigma_N - 16 \cdot 2^{T_N}\big) + 16 \cdot 2^{T_N} \cdot 8^j,$$
+  $$19 \widehat{\Sigma}_{N+j} = 27^j\big(19 \Sigma_N - 16 \cdot 2^{T_N}\big) - 3 \cdot 2^{T_N} \cdot 8^j.$$
+
+## C2.O11.2 Inner Loop 2 / 5 — Explore & Exploit: Non-Vanishing of the Repelling Fixed Point $\rho_*(m) = \frac{2^{m+1}}{3^m - 2^m}$
+- **Explore:** Observe that the constant-$m$ sub-ceiling map $\rho \mapsto (3/2)^m \rho - 2$ has repelling fixed point $\rho_*(m) = \frac{2^{m+1}}{3^m - 2^m}$ ($\frac{16}{19}$ for $m = 3$).
+- **Exploit (Priority 2):** Prove `repelling_fixed_point_non_vanishing_for_all_rungs`: for any odd slack $\Sigma_N \equiv 1 \pmod 2$ and any $m \ge 1$, $(3^m - 2^m)\Sigma_N \ne 2^{T_N + m + 1}$, and in particular $19 \Sigma_N \ne 16 \cdot 2^{T_N}$.
+
+## C2.O11.3 Inner Loop 3 / 5 — Explore & Exploit: Upward vs. Downward Drift Bifurcation Around $\frac{16}{19}$
+- **Explore:** Explain why $(s_2, s_3) = (3, 3)$ and $(s_9, s_{10}) = (3, 3)$ exit upward to $s = 2$ whereas $(s_{35}, s_{36}, s_{37}, s_{38}) = (3, 3, 3, 3)$ exits downward to $s_{39} = 5 \ge 4$.
+- **Exploit (Priority 3):** Prove `all_three_run_fixed_point_bifurcation`:
+  - Above $\frac{16}{19}$ ($16 \cdot 2^{T_N} < 19 \Sigma_N$): $\Sigma_{N+j} > 0$ holds unconditionally for all $j$, and $\widehat{\Sigma}_{N+j} < 0 \iff 27^j(19 \Sigma_N - 16 \cdot 2^{T_N}) < 3 \cdot 2^{T_N} \cdot 8^j$.
+  - Below $\frac{16}{19}$ ($19 \Sigma_N < 16 \cdot 2^{T_N}$): $\widehat{\Sigma}_{N+j} < 0$ holds unconditionally for all $j$, and $\Sigma_{N+j} > 0 \iff 27^j(16 \cdot 2^{T_N} - 19 \Sigma_N) < 16 \cdot 2^{T_N} \cdot 8^j$.
+
+## C2.O11.4 Inner Loop 4 / 5 — Explore & Exploit: Certification of Blocks 25, 26, and 27 ($s_{24} = 5, s_{25} = 8, s_{26} = 8$, $T_{27} = 139$)
+- **Explore & Exploit (Priority 4):** Certify blocks 25–27 of the sub-ceiling kneading cascade ($s_{24} = 5, T_{25} = 123$; $s_{25} = 8, T_{26} = 131$; $s_{26} = 8, T_{27} = 139$, crossing the 128-bit horizon $2^{128}$).
+
+## C2.O11.5 Inner Loop 5 / 5 — Explore & Exploit: Mod-$2^{140}$ Seed Uniqueness for the 27-Block Sub-Ceiling Corridor
+- **Explore & Exploit (Priority 5):** Prove that any two seeds $b_1 < b_2$ realizing the 27-block sub-ceiling kneading corridor satisfy $2^{140} \mid (b_2 - b_1)$ and $2^{140} \le b_2$.
+
+
 
 
 

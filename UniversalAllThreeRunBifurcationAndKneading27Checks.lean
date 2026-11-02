@@ -1,0 +1,17 @@
+import UniversalAllThreeRunBifurcationAndKneading27
+
+/-!
+# Verification Checks for `UniversalAllThreeRunBifurcationAndKneading27`
+-/
+
+open Mahler.UniversalAllThreeRunAndKneading27
+
+#check @universal_all_three_run_from_step_closed_form
+#check @repelling_fixed_point_non_vanishing_for_all_rungs
+#check @all_three_run_fixed_point_bifurcation
+#check @twentyfive_to_twentyseven_block_kneading_corridor_and_two_pow_140_uniqueness
+
+#print axioms universal_all_three_run_from_step_closed_form
+#print axioms repelling_fixed_point_non_vanishing_for_all_rungs
+#print axioms all_three_run_fixed_point_bifurcation
+#print axioms twentyfive_to_twentyseven_block_kneading_corridor_and_two_pow_140_uniqueness
