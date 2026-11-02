@@ -1823,6 +1823,32 @@ Here is why, in plain terms:
 ## C2.O7.5 Inner Loop 5 / 5 — Explore & Exploit: At-Most-One Seed Below $2^{73}$ for the 15-Block Sub-Ceiling Kneading Cascade
 - **Explore & Exploit (Priority 5):** Combine the mod-$2^{T_N+1}$ uniqueness theorem with $T_{15} = 72$ to prove that any two seeds $b_1 < b_2$ realizing the 15-block sub-ceiling kneading cascade satisfy $2^{73} \mid (b_2 - b_1)$, so $b_2 \ge 2^{73}$!
 
+---
+
+# Part XXIII — Second Campaign (`m = 5, n = 20`) — Outer Loop 8 / 20 (Inner Loops 1–5): Dyadic-Triadic Rung Partition, Two-Step $(3, 2)$ Window, 2-Adic Prefix Congruence & 18-Block ($T_{18} = 89$) Kneading Certification
+
+## C2.O8.1 Inner Loop 1 / 5 — Explore & Exploit: Dyadic-Triadic Partition Characterization of the Sub-Ceiling Window & Non-Vanishing Boundaries
+- **Explore:** Factor $3^{s_N} \Sigma_N < 3 \cdot 2^{T_N + s_N}$ ($1 \le s_N$) by dividing by $3$ to reveal why consecutive candidate rungs $m$ and $m - 1$ share an exact boundary.
+- **Exploit (Priority 1):** Prove `subCeiling_dyadic_triadic_partition_and_odd_boundary_non_vanishing`:
+  $$\big(0 < \Sigma_{N+1} \;\wedge\; \widehat{\Sigma}_{N+1} < 0\big) \iff \Big(2^{T_N + s_N + 1} < 3^{s_N} \Sigma_N \;\wedge\; 3^{s_N - 1} \Sigma_N < 2^{T_N + s_N}\Big),$$
+  and prove that for odd $\Sigma_N$ and $1 \le T_N + m$, the shared boundary $3^{m-1} \Sigma_N = 2^{T_N + m}$ is impossible (`(3 : ℤ) ^ (m - 1) * S_N ≠ (2 : ℤ) ^ (T_N + m)`).
+
+## C2.O8.2 Inner Loop 2 / 5 — Explore & Exploit: Exact Sub-Ceiling Rung-$2$ Criterion ($8 \cdot 2^{T_N} < 9 \Sigma_N$)
+- **Explore:** Show that in any sub-ceiling state ($\widehat{\Sigma}_N < 0$), choosing $s_N = 2$ automatically preserves $\widehat{\Sigma}_{N+1} < 0$.
+- **Exploit (Priority 2):** Prove that when $\widehat{\Sigma}_N < 0$ and $s_N = 2$, $\widehat{\Sigma}_{N+1} \le -3 \cdot 2^{T_N} - 9 < 0$ holds unconditionally, so $s_N = 2$ is the sub-ceiling rung at step $N$ if and only if $8 \cdot 2^{T_N} < 9 \Sigma_N$.
+
+## C2.O8.3 Inner Loop 3 / 5 — Explore & Exploit: Exact Two-Step $(s_N = 3, s_{N+1} = 2)$ Sub-Ceiling Window $\big(\frac{208}{243}, \frac{8}{9}\big)$
+- **Explore:** Contrast post-`2` recovery ($s_N = 2 \implies s_{N+1} \ge 6$) with post-`3` transitions, where $(s_3, s_4) = (3, 2)$ and $(s_{10}, s_{11}) = (3, 2)$ occur in the kneading cascade.
+- **Exploit (Priority 3):** Prove `subCeiling_rung_eq_two_iff_and_two_step_three_two_window`: when $s_N = 3$ and $s_{N+1} = 2$, $\Sigma_{N+2} = 243 \Sigma_N - 208 \cdot 2^{T_N}$ and $\widehat{\Sigma}_{N+2} = 243 \Sigma_N - 240 \cdot 2^{T_N}$, and both steps $N+1$ and $N+2$ remain sub-ceiling if and only if $208 \cdot 2^{T_N} < 243 \Sigma_N \wedge 27 \Sigma_N < 24 \cdot 2^{T_N}$ ($\Sigma_N / 2^{T_N} \in (208/243, 216/243)$).
+
+## C2.O8.4 Inner Loop 4 / 5 — Explore & Exploit: 2-Adic Prefix Congruence $2^{T_K+1} \mid (3^d \Sigma_K - \Sigma_{K+M})$ and Mod-8 Law
+- **Explore:** Reduce the multi-step cocycle law $\Sigma_{K+M} = 3^d \Sigma_K - 2^{T_K+1} A_{K,K+M}$ modulo $2^{T_K+1}$.
+- **Exploit (Priority 4):** Prove `renewalIntSlack_two_adic_prefix_congruence_and_mod_eight`: for all $K, M \in \mathbb{N}$, $(2 : \mathbb{Z})^{T_K+1} \mid (3^d \Sigma_K - \Sigma_{K+M})$, and for every sequence with $s_0 = 2$ and $N \ge 1$, $8 \mid (3^{T_N - 2} - \Sigma_N)$.
+
+## C2.O8.5 Inner Loop 5 / 5 — Explore & Exploit: Certification of Blocks 16, 17, and 18 ($s_{15} = 8, s_{16} = 3, s_{17} = 6$, $T_{18} = 89$) & Mod-$2^{90}$ Uniqueness
+- **Explore & Exploit (Priority 5):** Certify that after the 15-block prefix $(2, 6, 3, 3, 2, 10, 7, 5, 7, 3, 3, 2, 12, 4, 3)$, the unique 16th, 17th, and 18th sub-ceiling kneading rungs are $s_{15} = 8$ ($T_{16} = 80$), $s_{16} = 3$ ($T_{17} = 83$), and $s_{17} = 6$ ($T_{18} = 89$), and any two seeds realizing this 18-block prefix satisfy $2^{90} \mid (b_2 - b_1)$ and $2^{90} \le b_2$.
+
+
 
 
 

@@ -1,0 +1,17 @@
+import DyadicTriadicRungPartitionAndKneading18
+
+/-!
+# Verification Checks for `DyadicTriadicRungPartitionAndKneading18`
+-/
+
+open Mahler.DyadicTriadicAndKneading18
+
+#check @subCeiling_dyadic_triadic_partition_and_odd_boundary_non_vanishing
+#check @subCeiling_rung_eq_two_iff_and_two_step_three_two_window
+#check @renewalIntSlack_two_adic_prefix_congruence_and_mod_eight
+#check @sixteen_to_eighteen_block_kneading_corridor_and_two_pow_90_uniqueness
+
+#print axioms subCeiling_dyadic_triadic_partition_and_odd_boundary_non_vanishing
+#print axioms subCeiling_rung_eq_two_iff_and_two_step_three_two_window
+#print axioms renewalIntSlack_two_adic_prefix_congruence_and_mod_eight
+#print axioms sixteen_to_eighteen_block_kneading_corridor_and_two_pow_90_uniqueness
