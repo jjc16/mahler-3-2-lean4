@@ -171,4 +171,13 @@ Across any \texttt{ValidBlockChain b\_0 s u}:
 \end{enumerate}
 \end{theorem}
 
+\begin{theorem}[Bridge A ($\mathbb{R} \times \mathbb{Q}_2$ Dual-Universe Series) \& Bridge B (Seed-Independent Base-3 Evolution \& Additive Carry-Isolation), \texttt{bridge\_a\_dual\_universe\_series\_lowest\_terms\_and\_uniqueness}, \texttt{bridge\_b\_seed\_independent\_base3\_step\_evolution}, \texttt{bridge\_b\_additive\_carry\_isolation\_and\_horner\_step}]
+Across any \texttt{ValidBlockChain b\_0 s u} with $s_k \ge 2$:
+\begin{enumerate}
+  \item $Q_K = (2^{T_{K+1}} u_K) / 3^{T_K} = P_0 + A_{0,K}/3^{T_K}$ is in strict lowest terms ($\gcd(2^{T_{K+1}} u_K, 3^{T_K}) = 1$), with $\lfloor 2^{T_{K+1}} u_K / 3^{T_K} \rfloor = P_0$ in $\mathbb{R}$, $(3^{T_K} P_0 + A_{0,K}) \bmod 2^{T_{K+1}+1} = 2^{T_{K+1}}$ in $\mathbb{Q}_2$, and unique modular root $P_0' = P_0$ below $2^{T_{K+1}}$ whenever $P_0 < 2^{T_{K+1}}$.
+  \item For every $r \le K$, $s_3(2^{T_{r+1}} u_r) = s_3(P_0) + s_3(A_{0,r})$, so $s_3(2^{T_{r_2+1}} u_{r_2}) + s_3(A_{0,r_1}) = s_3(2^{T_{r_1+1}} u_{r_1}) + s_3(A_{0,r_2})$ is independent of $b_0$.
+  \item For $X = 2^S u_{r+1+M} = 3^T u_r + R$, even after multiplying by $2^{s_r}$ we have $5(2^{s_r} R) < 4 \cdot 3^T$, $s_3(2^{s_r} X) = s_3(2^{s_r} u_r) + s_3(2^{s_r} R)$, and $s_3(2^{s_r} X) + s_3(u_r) + s_3(R) = s_3(X) + s_3(2^{s_r} u_r) + s_3(2^{s_r} R)$.
+\end{enumerate}
+\end{theorem}
+
 \end{document}

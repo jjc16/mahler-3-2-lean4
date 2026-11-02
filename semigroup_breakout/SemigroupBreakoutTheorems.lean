@@ -2164,6 +2164,250 @@ theorem zero_carry_base3_horner_remainder_ladder
     omega
   exact ⟨hA_lt, hdiv, hmod, hs3_R, hs3_total⟩
 
+/-! ## 28. Theorem SB.28 (Bridge A): Dual-Universe Series Lowest-Terms & $\mathbb{R} \times \mathbb{Q}_2$ Uniqueness of $P_0$ -/
+
+/-- **Bridge A: Dual-Universe Series Lowest-Terms & $\mathbb{R} \times \mathbb{Q}_2$ Uniqueness of $P_0$
+(`bridge_a_dual_universe_series_lowest_terms_and_uniqueness`, Theorem SB.28)**:
+Suppose `ValidBlockChain b_0 s u (K + 1)` holds with `∀ k < K, 2 ≤ s k`.
+Let `P k = oddReturnP (orbit b_0 (blockSteps s k))`, `T_K = blockSteps s K`,
+`T_K1 = T_K + s K`, and `A_K = renewalNumerator s K`:
+1. **Dual-Series Master Equation (`F_K(2/3) = A_K / 3^{T_K}`):**
+   `2 ^ T_K1 * u K = 3 ^ T_K * P 0 + A_K`,
+2. **Strict Lowest Terms of `Q_K = (2^{T_{K+1}} u_K) / 3^{T_K}`:**
+   `Nat.Coprime (2 ^ T_K1 * u K) 3` and `Nat.Coprime (2 ^ T_K1 * u K) (3 ^ T_K)`,
+3. **Archimedean ($\mathbb{R}$) Recovery of `P_0` from `2^{T_{K+1}} u_K`:**
+   `(2 ^ T_K1 * u K) / 3 ^ T_K = P 0` and `(2 ^ T_K1 * u K) % 3 ^ T_K = A_K`,
+4. **Exact 2-Adic ($\mathbb{Q}_2$) Valuation Distance to `-P_0`:**
+   `(3 ^ T_K * P 0 + A_K) % 2 ^ (T_K1 + 1) = 2 ^ T_K1`, and
+5. **2-Adic ($\mathbb{Q}_2$) Uniqueness of `P_0` in the Post-Bit-Length Regime (`P_0 < 2^{T_{K+1}}`):**
+   Whenever `P 0 < 2 ^ T_K1`, for any candidate `P_0' < 2 ^ T_K1` satisfying
+   `(3 ^ T_K * P_0' + A_K) % 2 ^ T_K1 = 0`, we have `P_0' = P 0` identically! -/
+theorem bridge_a_dual_universe_series_lowest_terms_and_uniqueness
+    {b_0 K : ℕ} {s u : ℕ → ℕ}
+    (hchain : ValidBlockChain b_0 s u (K + 1))
+    (hs2 : ∀ k < K, 2 ≤ s k) :
+    let P := fun k => oddReturnP (orbit b_0 (blockSteps s k))
+    let T_K := blockSteps s K
+    let T_K1 := T_K + s K
+    let A_K := renewalNumerator s K
+    2 ^ T_K1 * u K = 3 ^ T_K * P 0 + A_K ∧
+      Nat.Coprime (2 ^ T_K1 * u K) 3 ∧
+      Nat.Coprime (2 ^ T_K1 * u K) (3 ^ T_K) ∧
+      (2 ^ T_K1 * u K) / 3 ^ T_K = P 0 ∧
+      (2 ^ T_K1 * u K) % 3 ^ T_K = A_K ∧
+      (3 ^ T_K * P 0 + A_K) % 2 ^ (T_K1 + 1) = 2 ^ T_K1 ∧
+      (P 0 < 2 ^ T_K1 →
+        ∀ P_0' : ℕ, P_0' < 2 ^ T_K1 →
+          (3 ^ T_K * P_0' + A_K) % 2 ^ T_K1 = 0 → P_0' = P 0) := by
+  intro P T_K T_K1 A_K
+  have h24 := unconditional_four_fifths_renewal_ceiling_and_past_base3_recovery hchain hs2
+  have hPK : P K = 2 ^ (s K) * u K := (hchain K (by omega)).2.2
+  have huK_odd : u K % 2 = 1 := (hchain K (by omega)).2.1
+  have hmul_eq : 2 ^ T_K1 * u K = 2 ^ T_K * P K := by
+    change 2 ^ (T_K + s K) * u K = 2 ^ T_K * P K
+    rw [hPK, Nat.pow_add]
+    ring
+  have hch_K : ValidBlockChain b_0 s u K := fun k hk => hchain k (by omega)
+  have hm : 2 ^ T_K * P K = 3 ^ T_K * P 0 + A_K := renewal_prefix_master_identity hch_K
+  have hid : 2 ^ T_K1 * u K = 3 ^ T_K * P 0 + A_K := by rw [hmul_eq, hm]
+  have hPK_mod3 : P K % 3 = 1 := by
+    change (3 * orbit b_0 T_K + 1) % 3 = 1
+    omega
+  have huK_cop3 : Nat.Coprime (u K) 3 := by
+    have hnot3 : ¬ (3 ∣ u K) := not_three_dvd_odd_part hPK
+    rw [Nat.Coprime, Nat.gcd_comm]
+    exact (Nat.Prime.coprime_iff_not_dvd (by decide)).2 hnot3
+  have h2_cop3 : Nat.Coprime (2 ^ T_K1) 3 := (by decide : Nat.Coprime 2 3).pow_left T_K1
+  have hnum_cop3 : Nat.Coprime (2 ^ T_K1 * u K) 3 := Nat.Coprime.mul h2_cop3 huK_cop3
+  have hnum_cop3K : Nat.Coprime (2 ^ T_K1 * u K) (3 ^ T_K) := hnum_cop3.pow_right T_K
+  have hdiv : (2 ^ T_K1 * u K) / 3 ^ T_K = P 0 := by
+    rw [hmul_eq]
+    exact h24.2.2.2.1
+  have hmod : (2 ^ T_K1 * u K) % 3 ^ T_K = A_K := by
+    rw [hmul_eq]
+    exact h24.2.2.2.2.1
+  have h2adic_mod : (3 ^ T_K * P 0 + A_K) % 2 ^ (T_K1 + 1) = 2 ^ T_K1 := by
+    rw [← hid]
+    obtain ⟨m, hm_u⟩ : ∃ m : ℕ, u K = 2 * m + 1 := ⟨u K / 2, by omega⟩
+    have hexp : 2 ^ T_K1 * u K = 2 ^ (T_K1 + 1) * m + 2 ^ T_K1 := by
+      rw [hm_u, Nat.pow_succ]
+      ring
+    have hlt : 2 ^ T_K1 < 2 ^ (T_K1 + 1) := by
+      have hpos : 1 ≤ 2 ^ T_K1 := Nat.one_le_pow _ 2 (by decide)
+      rw [Nat.pow_succ]
+      omega
+    rw [hexp, Nat.mul_add_mod, Nat.mod_eq_of_lt hlt]
+  refine ⟨hid, hnum_cop3, hnum_cop3K, hdiv, hmod, h2adic_mod, ?_⟩
+  intro hP0_lt P_0' hP0'_lt hmod'
+  have hmod0 : (3 ^ T_K * P 0 + A_K) % 2 ^ T_K1 = 0 := by
+    rw [← hid]
+    exact Nat.dvd_iff_mod_eq_zero.1 ⟨u K, rfl⟩
+  have hcop_3_2 : Nat.Coprime (3 ^ T_K) (2 ^ T_K1) :=
+    ((by decide : Nat.Coprime 3 2).pow_left T_K).pow_right T_K1
+  rcases le_or_gt P_0' (P 0) with hle | hgt
+  · have hdvd_diff : 2 ^ T_K1 ∣ 3 ^ T_K * (P 0 - P_0') := by
+      obtain ⟨q₁, hq₁⟩ : 2 ^ T_K1 ∣ 3 ^ T_K * P 0 + A_K := Nat.dvd_iff_mod_eq_zero.2 hmod0
+      obtain ⟨q₂, hq₂⟩ : 2 ^ T_K1 ∣ 3 ^ T_K * P_0' + A_K := Nat.dvd_iff_mod_eq_zero.2 hmod'
+      have hsub :
+          3 ^ T_K * (P 0 - P_0') = (3 ^ T_K * P 0 + A_K) - (3 ^ T_K * P_0' + A_K) := by
+        rw [Nat.mul_sub_left_distrib]
+        omega
+      rw [hsub]
+      exact Nat.dvd_sub ⟨q₁, hq₁⟩ ⟨q₂, hq₂⟩
+    have hdvd_P : 2 ^ T_K1 ∣ (P 0 - P_0') := hcop_3_2.symm.dvd_of_dvd_mul_left hdvd_diff
+    obtain ⟨k, hk⟩ := hdvd_P
+    rcases Nat.eq_zero_or_pos k with rfl | hk_pos
+    · omega
+    · have hge : 2 ^ T_K1 ≤ P 0 - P_0' := by
+        rw [hk]
+        exact Nat.le_mul_of_pos_right _ hk_pos
+      omega
+  · have hdvd_diff : 2 ^ T_K1 ∣ 3 ^ T_K * (P_0' - P 0) := by
+      obtain ⟨q₁, hq₁⟩ : 2 ^ T_K1 ∣ 3 ^ T_K * P 0 + A_K := Nat.dvd_iff_mod_eq_zero.2 hmod0
+      obtain ⟨q₂, hq₂⟩ : 2 ^ T_K1 ∣ 3 ^ T_K * P_0' + A_K := Nat.dvd_iff_mod_eq_zero.2 hmod'
+      have hsub :
+          3 ^ T_K * (P_0' - P 0) = (3 ^ T_K * P_0' + A_K) - (3 ^ T_K * P 0 + A_K) := by
+        rw [Nat.mul_sub_left_distrib]
+        omega
+      rw [hsub]
+      exact Nat.dvd_sub ⟨q₂, hq₂⟩ ⟨q₁, hq₁⟩
+    have hdvd_P : 2 ^ T_K1 ∣ (P_0' - P 0) := hcop_3_2.symm.dvd_of_dvd_mul_left hdvd_diff
+    obtain ⟨k, hk⟩ := hdvd_P
+    rcases Nat.eq_zero_or_pos k with rfl | hk_pos
+    · omega
+    · have hge : 2 ^ T_K1 ≤ P_0' - P 0 := by
+        rw [hk]
+        exact Nat.le_mul_of_pos_right _ hk_pos
+      omega
+
+/-! ## 29. Theorem SB.29 (Bridge B1): Seed-Independent Step-to-Step Base-3 Evolution Law -/
+
+/-- **Bridge B1: Seed-Independent Step-to-Step Base-3 Evolution Law
+(`bridge_b_seed_independent_base3_step_evolution`, Theorem SB.29)**:
+Suppose `ValidBlockChain b_0 s u (K + 1)` holds with `∀ k < K, 2 ≤ s k`.
+Let `P k = oddReturnP (orbit b_0 (blockSteps s k))`:
+1. **Unconditional Odd-Leftover Base-3 Law at Every Block `r ≤ K`:**
+   `base3DigitSum (2 ^ (blockSteps s r + s r) * u r) = base3DigitSum (P 0) + base3DigitSum (renewalNumerator s r)`, and
+2. **Seed-Independent Two-Block Base-3 Evolution Law:**
+   For ANY two blocks `r₁ ≤ K` and `r₂ ≤ K`:
+   `base3DigitSum (2 ^ (blockSteps s r₂ + s r₂) * u r₂) + base3DigitSum (renewalNumerator s r₁) = base3DigitSum (2 ^ (blockSteps s r₁ + s r₁) * u r₁) + base3DigitSum (renewalNumerator s r₂)`
+   (the Base-3 digit-sum change of `2 ^ T_{r+1} * u_r` between any two blocks `r₁` and `r₂`
+   is **100% independent of the seed `b_0` and `P 0`**, depending **only** on `renewalNumerator s`!). -/
+theorem bridge_b_seed_independent_base3_step_evolution
+    {b_0 K : ℕ} {s u : ℕ → ℕ}
+    (hchain : ValidBlockChain b_0 s u (K + 1))
+    (hs2 : ∀ k < K, 2 ≤ s k) :
+    let P := fun k => oddReturnP (orbit b_0 (blockSteps s k))
+    (∀ r ≤ K,
+      base3DigitSum (2 ^ (blockSteps s r + s r) * u r) =
+        base3DigitSum (P 0) + base3DigitSum (renewalNumerator s r)) ∧
+      (∀ r₁ ≤ K, ∀ r₂ ≤ K,
+        base3DigitSum (2 ^ (blockSteps s r₂ + s r₂) * u r₂) +
+            base3DigitSum (renewalNumerator s r₁) =
+          base3DigitSum (2 ^ (blockSteps s r₁ + s r₁) * u r₁) +
+            base3DigitSum (renewalNumerator s r₂)) := by
+  intro P
+  have h1 : ∀ r ≤ K,
+      base3DigitSum (2 ^ (blockSteps s r + s r) * u r) =
+        base3DigitSum (P 0) + base3DigitSum (renewalNumerator s r) := by
+    intro r hr
+    have hch_r : ValidBlockChain b_0 s u (r + 1) := fun k hk => hchain k (by omega)
+    have hs2_r : ∀ k < r, 2 ≤ s k := fun k hk => hs2 k (by omega)
+    have h24 := unconditional_four_fifths_renewal_ceiling_and_past_base3_recovery hch_r hs2_r
+    have hPr : P r = 2 ^ (s r) * u r := (hchain r (by omega)).2.2
+    have hmul : 2 ^ (blockSteps s r + s r) * u r = 2 ^ (blockSteps s r) * P r := by
+      rw [hPr, Nat.pow_add]
+      ring
+    rw [hmul]
+    exact h24.2.2.2.2.2
+  refine ⟨h1, ?_⟩
+  intro r₁ hr₁ r₂ hr₂
+  have eq1 := h1 r₁ hr₁
+  have eq2 := h1 r₂ hr₂
+  omega
+
+/-! ## 30. Theorem SB.30 (Bridge B2): Additive Carry-Isolation Law Across the Multi-Step Boundary -/
+
+/-- **Bridge B2: Additive Carry-Isolation Law Across the Multi-Step Boundary
+(`bridge_b_additive_carry_isolation_and_horner_step`, Theorem SB.30)**:
+Suppose `ValidBlockChain b_0 s u (r + 1 + M + 1)` holds with `∀ k < M, 2 ≤ s (r + 1 + k)` and `2 ≤ s r`.
+Let `s' t = s (r + 1 + t)`, `d = blockSteps s' M`, `S = d + s (r + 1 + M)`,
+`T = s r + d`, `A' = renewalNumerator s' M`, `R = 3 ^ d + A'`, and `X = 2 ^ S * u (r + 1 + M)`:
+1. **Pre-Multiplication Zero-Carry Split:**
+   `X = 3 ^ T * u r + R`, `R < 3 ^ T`, and `base3DigitSum X = base3DigitSum (u r) + base3DigitSum R`,
+2. **Post-Multiplication Zero-Carry Split (`2^{s_r} * R < 3^T`):**
+   Even after multiplying `X` by `2 ^ (s r)`, the scaled remainder `2 ^ (s r) * R` satisfies
+   `5 * (2 ^ (s r) * R) < 4 * 3 ^ T` and `2 ^ (s r) * R < 3 ^ T`, so it **still never carries**
+   into `3 ^ T * (2 ^ (s r) * u r)`:
+   `base3DigitSum (2 ^ (s r) * X) = base3DigitSum (2 ^ (s r) * u r) + base3DigitSum (2 ^ (s r) * R)`, and
+3. **Exact Additive Carry-Isolation Law (`Δ_{2^{s_r}}(X) = Δ_{2^{s_r}}(u_r) + Δ_{2^{s_r}}(R)`):**
+   `base3DigitSum (2 ^ (s r) * X) + base3DigitSum (u r) + base3DigitSum R = base3DigitSum X + base3DigitSum (2 ^ (s r) * u r) + base3DigitSum (2 ^ (s r) * R)`! -/
+theorem bridge_b_additive_carry_isolation_and_horner_step
+    {b_0 r M : ℕ} {s u : ℕ → ℕ}
+    (hchain : ValidBlockChain b_0 s u (r + 1 + M + 1))
+    (hs2 : ∀ k < M, 2 ≤ s (r + 1 + k))
+    (hsr : 2 ≤ s r) :
+    let s' := fun t => s (r + 1 + t)
+    let d := blockSteps s' M
+    let S := d + s (r + 1 + M)
+    let T := s r + d
+    let R := 3 ^ d + renewalNumerator s' M
+    let X := 2 ^ S * u (r + 1 + M)
+    X = 3 ^ T * u r + R ∧
+      R < 3 ^ T ∧
+      base3DigitSum X = base3DigitSum (u r) + base3DigitSum R ∧
+      5 * (2 ^ (s r) * R) < 4 * 3 ^ T ∧
+      2 ^ (s r) * R < 3 ^ T ∧
+      base3DigitSum (2 ^ (s r) * X) =
+        base3DigitSum (2 ^ (s r) * u r) + base3DigitSum (2 ^ (s r) * R) ∧
+      base3DigitSum (2 ^ (s r) * X) + base3DigitSum (u r) + base3DigitSum R =
+        base3DigitSum X + base3DigitSum (2 ^ (s r) * u r) + base3DigitSum (2 ^ (s r) * R) := by
+  intro s' d S T R X
+  have h25 := unconditional_all_k_step_odd_leftover_recovery_and_nine_fifths_bound hchain hs2
+  have h10 := late_step_cauchy_pinch_and_odd_quotient_gcd_dvd (N := r + 1) (M := M) hchain
+  have hu_id :
+      X = 3 ^ d * 2 ^ (s (r + 1)) * u (r + 1) + renewalNumerator s' M := h10.2.1
+  have hch_r2 : ValidBlockChain b_0 s u (r + 2) := fun k hk => hchain k (by omega)
+  have hstep1 : 2 ^ (s (r + 1)) * u (r + 1) = 3 ^ (s r) * u r + 1 :=
+    (one_step_backward_quotient_recovery_and_mod_three_pow_one hch_r2).1
+  have hX_eq : X = 3 ^ T * u r + R := by
+    calc
+      X = 3 ^ d * (2 ^ (s (r + 1)) * u (r + 1)) + renewalNumerator s' M := by
+        rw [hu_id]
+        ring
+      _ = 3 ^ d * (3 ^ (s r) * u r + 1) + renewalNumerator s' M := by rw [hstep1]
+      _ = 3 ^ T * u r + R := by
+        change 3 ^ d * (3 ^ (s r) * u r + 1) + renewalNumerator s' M =
+          3 ^ (s r + d) * u r + (3 ^ d + renewalNumerator s' M)
+        rw [Nat.pow_add]
+        ring
+  have h95 : 5 * R + 4 * 2 ^ d ≤ 9 * 3 ^ d := h25.1
+  have hR_lt_T : R < 3 ^ T := h25.2.2.1
+  have hs3_X : base3DigitSum X = base3DigitSum (u r) + base3DigitSum R := h25.2.2.2.2.2
+  have h2d_pos : 1 ≤ 2 ^ d := Nat.one_le_pow _ 2 (by decide)
+  have h5R_lt : 5 * R < 9 * 3 ^ d := by omega
+  have h9_2 : 9 * 2 ^ (s r) ≤ 4 * 3 ^ (s r) := nine_mul_two_pow_le_four_mul_three_pow hsr
+  have h2sr_pos : 0 < 2 ^ (s r) := Nat.pow_pos (by decide)
+  have h5_scaled : 5 * (2 ^ (s r) * R) < 4 * 3 ^ T := by
+    have h1 : 2 ^ (s r) * (5 * R) < 2 ^ (s r) * (9 * 3 ^ d) :=
+      Nat.mul_lt_mul_of_pos_left h5R_lt h2sr_pos
+    have h2 : (9 * 2 ^ (s r)) * 3 ^ d ≤ (4 * 3 ^ (s r)) * 3 ^ d :=
+      Nat.mul_le_mul_right (3 ^ d) h9_2
+    have hpow : 3 ^ T = 3 ^ (s r) * 3 ^ d := Nat.pow_add 3 (s r) d
+    have hlhs : 5 * (2 ^ (s r) * R) = 2 ^ (s r) * (5 * R) := by ring
+    have hmid : 2 ^ (s r) * (9 * 3 ^ d) = (9 * 2 ^ (s r)) * 3 ^ d := by ring
+    have hrhs : (4 * 3 ^ (s r)) * 3 ^ d = 4 * 3 ^ T := by rw [hpow]; ring
+    omega
+  have hscaled_lt : 2 ^ (s r) * R < 3 ^ T := by omega
+  have hscaled_id : 2 ^ (s r) * X = 3 ^ T * (2 ^ (s r) * u r) + 2 ^ (s r) * R := by
+    rw [hX_eq]
+    ring
+  have hs3_scaled :
+      base3DigitSum (2 ^ (s r) * X) =
+        base3DigitSum (2 ^ (s r) * u r) + base3DigitSum (2 ^ (s r) * R) := by
+    rw [hscaled_id, base3DigitSum_three_pow_mul_add T (2 ^ (s r) * u r) hscaled_lt]
+  exact ⟨hX_eq, hR_lt_T, hs3_X, h5_scaled, hscaled_lt, hs3_scaled, by omega⟩
+
 
 #check @archimedean_rung_ceiling_and_stepSum_bound
 #check @unit_quotient_even_rung_instant_death_and_odd_rung_mod64_identity
@@ -2192,6 +2436,9 @@ theorem zero_carry_base3_horner_remainder_ladder
 #check @unconditional_all_k_step_odd_leftover_recovery_and_nine_fifths_bound
 #check @sliding_cut_point_past_future_crt_pinch
 #check @zero_carry_base3_horner_remainder_ladder
+#check @bridge_a_dual_universe_series_lowest_terms_and_uniqueness
+#check @bridge_b_seed_independent_base3_step_evolution
+#check @bridge_b_additive_carry_isolation_and_horner_step
 
 #print axioms archimedean_rung_ceiling_and_stepSum_bound
 #print axioms unit_quotient_even_rung_instant_death_and_odd_rung_mod64_identity

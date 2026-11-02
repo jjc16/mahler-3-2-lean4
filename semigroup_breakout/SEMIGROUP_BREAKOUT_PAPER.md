@@ -3,7 +3,7 @@
 **Authors:** Joshua Coon (with Astra, Fable, and Argon AI in GitHub Copilot)  
 **Date:** November 2026  
 **Cordoned-Off Verification Artifact:** [`semigroup_breakout/SemigroupBreakoutTheorems.lean`](./SemigroupBreakoutTheorems.lean) (`0` `sorry`s, `0` warnings, Lean 4.19.0 + Mathlib v4.19.0)  
-**Computational Suite:** [`loop1_product_formula_and_pade.py`](./loop1_product_formula_and_pade.py), [`loop1_beukers_pade_and_hankel.py`](./loop1_beukers_pade_and_hankel.py), [`loop2_pade_lll_and_divergence.py`](./loop2_pade_lll_and_divergence.py), [`loop3_archimedean_ceiling_and_small_u.py`](./loop3_archimedean_ceiling_and_small_u.py), [`loop4_flp_sparsity_and_repulsion.py`](./loop4_flp_sparsity_and_repulsion.py), [`sandbox_symmetry_breaking_loops.py`](./sandbox_symmetry_breaking_loops.py), [`sandbox_wave2_towers.py`](./sandbox_wave2_towers.py), [`sandbox_wave3_towers.py`](./sandbox_wave3_towers.py), [`sandbox_wave4_canyon_view.py`](./sandbox_wave4_canyon_view.py), [`sandbox_wave5_multi_block_crt.py`](./sandbox_wave5_multi_block_crt.py)
+**Computational Suite:** [`loop1_product_formula_and_pade.py`](./loop1_product_formula_and_pade.py), [`loop1_beukers_pade_and_hankel.py`](./loop1_beukers_pade_and_hankel.py), [`loop2_pade_lll_and_divergence.py`](./loop2_pade_lll_and_divergence.py), [`loop3_archimedean_ceiling_and_small_u.py`](./loop3_archimedean_ceiling_and_small_u.py), [`loop4_flp_sparsity_and_repulsion.py`](./loop4_flp_sparsity_and_repulsion.py), [`sandbox_symmetry_breaking_loops.py`](./sandbox_symmetry_breaking_loops.py), [`sandbox_wave2_towers.py`](./sandbox_wave2_towers.py), [`sandbox_wave3_towers.py`](./sandbox_wave3_towers.py), [`sandbox_wave4_canyon_view.py`](./sandbox_wave4_canyon_view.py), [`sandbox_wave5_multi_block_crt.py`](./sandbox_wave5_multi_block_crt.py), [`sandbox_wave6_both_bridges.py`](./sandbox_wave6_both_bridges.py)
 
 ---
 
@@ -349,7 +349,45 @@ $$\boxed{s_3\big(2^S u_{r+1+M}\big) = s_3(u_r) + 1 + s_3\big(A_{r+1, r+1+M}\big)
 
 ---
 
-## 10. Verification Instructions
+## 10. Wave-6 Symmetry-Breaking Towers: Exploring Bridge A ($\mathbb{R} \times \mathbb{Q}_2$ Dual-Universe Series) and Bridge B (Additive Carry-Isolation & Horner Transducer)
+
+In [`sandbox_wave6_both_bridges.py`](./sandbox_wave6_both_bridges.py) and Sections 28–30 of [`SemigroupBreakoutTheorems.lean`](./SemigroupBreakoutTheorems.lean), we formalized both candidate bridges across the middle of the canyon:
+
+### 10.1 Theorem SB.28 (Bridge A): Dual-Universe Series Lowest-Terms & $\mathbb{R} \times \mathbb{Q}_2$ Uniqueness of $P_0$ (`bridge_a_dual_universe_series_lowest_terms_and_uniqueness`)
+
+At every surviving block $K \ge 0$ (`ValidBlockChain b_0 s u (K + 1)` with $\forall k < K,\, 2 \le s_k$), consider the rational approximant
+$$Q_K := P_0 + \sum_{j=1}^{K} \left(\frac{2}{3}\right)^{T_j} = \frac{3^{T_K} P_0 + A_{0, K}}{3^{T_K}} = \frac{2^{T_{K+1}} u_K}{3^{T_K}}$$
+of the dual-universe lacunary series $F(2/3) = \sum_{j=1}^\infty (2/3)^{T_j}$:
+1. **Strict Lowest Terms & Exact Weil Height:**
+   $$\boxed{\gcd\big(2^{T_{K+1}} u_K,\; 3\big) = 1 \qquad\text{and}\qquad \gcd\big(2^{T_{K+1}} u_K,\; 3^{T_K}\big) = 1,}$$
+   so $Q_K = (2^{T_{K+1}} u_K) / 3^{T_K}$ is in **strict lowest terms** at every block $K$.
+2. **Simultaneous Archimedean ($\mathbb{R}$) and 2-Adic ($\mathbb{Q}_2$) Pinning of $P_0$:**
+   - **In $\mathbb{R}$:** $\lfloor 2^{T_{K+1}} u_K / 3^{T_K} \rfloor = P_0$ and $(2^{T_{K+1}} u_K) \bmod 3^{T_K} = A_{0, K}$.
+   - **In $\mathbb{Q}_2$:** $(3^{T_K} P_0 + A_{0, K}) \bmod 2^{T_{K+1} + 1} = 2^{T_{K+1}}$ (exact 2-adic distance $|F_K(2/3) - (-P_0)|_2 = 2^{-T_{K+1}}$), and in the post-bit-length regime ($P_0 < 2^{T_{K+1}}$), for **any** candidate $P_0' < 2^{T_{K+1}}$ satisfying $(3^{T_K} P_0' + A_{0, K}) \bmod 2^{T_{K+1}} = 0$, we have **$P_0' = P_0$ identically!**
+
+### 10.2 Theorem SB.29 (Bridge B1): Seed-Independent Step-to-Step Base-3 Evolution Law (`bridge_b_seed_independent_base3_step_evolution`)
+
+Across any `ValidBlockChain b_0 s u (K + 1)` with $\forall k < K,\, 2 \le s_k$:
+1. **Unconditional Odd-Leftover Base-3 Law:**
+   $$\boxed{s_3\big(2^{T_{r+1}} u_r\big) = s_3(P_0) + s_3(A_{0, r}) \qquad\text{for all } r \le K.}$$
+2. **Seed-Independent Two-Block Base-3 Evolution:**
+   For **any** two blocks $r_1, r_2 \le K$:
+   $$\boxed{s_3\big(2^{T_{r_2+1}} u_{r_2}\big) + s_3(A_{0, r_1}) = s_3\big(2^{T_{r_1+1}} u_{r_1}\big) + s_3(A_{0, r_2}),}$$
+   proving that the change in $s_3(2^{T_{r+1}} u_r)$ between any two blocks $r_1$ and $r_2$ is **100% independent of the initial seed $b_0$ (and $P_0$)** and depends **only** on the step sequence $s$!
+
+### 10.3 Theorem SB.30 (Bridge B2): Additive Carry-Isolation Law Across the Multi-Step Boundary (`bridge_b_additive_carry_isolation_and_horner_step`)
+
+For $X = 2^S u_{r+1+M} = 3^T u_r + R$ (where $T = s_r + d$ and $R = 3^d + A_{r+1, r+1+M}$):
+Because $5 R < 9 \cdot 3^d$ (`SB.25`) and $9 \cdot 2^{s_r} \le 4 \cdot 3^{s_r}$ ($s_r \ge 2$), even **after** multiplying $X$ by $2^{s_r}$, the scaled remainder $2^{s_r} R$ satisfies:
+$$\boxed{5 \cdot \big(2^{s_r} R\big) < 4 \cdot 3^T \qquad\Longrightarrow\qquad 2^{s_r} R < 3^T!}$$
+Therefore, $2^{s_r} R$ **still never carries** into $3^T (2^{s_r} u_r)$ in Base 3:
+$$\boxed{s_3\big(2^{s_r} X\big) = s_3\big(2^{s_r} u_r\big) + s_3\big(2^{s_r} R\big),}$$
+and the Base-3 carry defect $\Delta_{2^{s_r}}(n) := s_3(2^{s_r} n) - s_3(n)$ splits **additively with zero cross-talk** across the multi-step boundary:
+$$\boxed{s_3\big(2^{s_r} X\big) + s_3(u_r) + s_3(R) = s_3(X) + s_3\big(2^{s_r} u_r\big) + s_3\big(2^{s_r} R\big)!}$$
+
+---
+
+## 11. Verification Instructions
 
 To verify the cordoned-off Lean 4 proofs without modifying the root 226-file build:
 
