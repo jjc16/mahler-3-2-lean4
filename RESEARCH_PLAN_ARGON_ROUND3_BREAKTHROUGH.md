@@ -1931,6 +1931,32 @@ Here is why, in plain terms:
 ## C2.O11.5 Inner Loop 5 / 5 — Explore & Exploit: Mod-$2^{140}$ Seed Uniqueness for the 27-Block Sub-Ceiling Corridor
 - **Explore & Exploit (Priority 5):** Prove that any two seeds $b_1 < b_2$ realizing the 27-block sub-ceiling kneading corridor satisfy $2^{140} \mid (b_2 - b_1)$ and $2^{140} \le b_2$.
 
+---
+
+# Part XXVII — Second Campaign (`m = 5, n = 20`) — Outer Loop 12 / 20 (Inner Loops 1–5): Universal Constant-Rung $m^j$ Closed Form, General $\rho_*(m) = \frac{2^{m+1}}{3^m - 2^m}$ Bifurcation & 30-Block ($T_{30} = 152$) Kneading Certification
+
+## C2.O12.1 Inner Loop 1 / 5 — Explore & Exploit: Bellman Equality Case for Any Constant-Rung Segment $m^j$
+- **Explore:** Combine `renewalNumerator_bellman_lower_sandwich` ($H = m$) and `renewalNumerator_bellman_upper_sandwich` ($L = m$) when $\forall t < j,\, s'(t) = m$.
+- **Exploit (Priority 1):** Prove `constant_rung_run_renewalNumerator_closed_form`: for any $m, j \in \mathbb{N}$ and any sequence $s'$ with $\forall t < j,\, s'(t) = m$,
+  $$\operatorname{blockSteps}(s', j) = m j \quad\text{and}\quad \big(3^m - 2^m\big) A_{0, j}(s') = 2^m\big(3^{m j} - 2^{m j}\big).$$
+
+## C2.O12.2 Inner Loop 2 / 5 — Explore & Exploit: Universal Closed Form for $\Sigma_{N+j}$ and $\widehat{\Sigma}_{N+j}$ Across Any $m^j$ Run
+- **Explore:** Substitute the constant-$m$ `renewalNumerator` identity into the cocycle law at arbitrary step $N$.
+- **Exploit (Priority 2):** Prove `universal_constant_rung_run_from_step_closed_form`: whenever $\forall t < j,\, s(N+t) = m$,
+  $$\big(3^m - 2^m\big)\Sigma_{N+j} = 3^{m j}\Big(\big(3^m - 2^m\big)\Sigma_N - 2^{T_N + m + 1}\Big) + 2^{T_N + m + 1 + m j},$$
+  $$\big(3^m - 2^m\big)\widehat{\Sigma}_{N+j} = 3^{m j}\Big(\big(3^m - 2^m\big)\Sigma_N - 2^{T_N + m + 1}\Big) - \big(3^m - 3 \cdot 2^m\big) 2^{T_N + m j}.$$
+
+## C2.O12.3 Inner Loop 3 / 5 — Explore & Exploit: General Rung-$m$ ($m \ge 3$) Repelling Fixed-Point Bifurcation
+- **Explore:** Show that $3^m - 3 \cdot 2^m > 0$ for all $m \ge 3$, placing the repelling fixed point $\rho_*(m) = \frac{2^{m+1}}{3^m - 2^m}$ strictly inside the sub-ceiling interval $(0, 1)$.
+- **Exploit (Priority 3):** Prove `constant_rung_run_fixed_point_bifurcation`: for any $m \ge 3$ and $\forall t < j,\, s(N+t) = m$, above $\rho_*(m)$ we have $\Sigma_{N+j} > 0$ unconditionally, while below $\rho_*(m)$ we have $\widehat{\Sigma}_{N+j} < 0$ unconditionally, with exact finite-horizon exit inequalities on each side.
+
+## C2.O12.4 Inner Loop 4 / 5 — Explore & Exploit: Certification of Blocks 28, 29, and 30 ($s_{27} = 3, s_{28} = 6, s_{29} = 4$, $T_{30} = 152$)
+- **Explore & Exploit (Priority 4):** Certify blocks 28–30 of the sub-ceiling kneading cascade ($s_{27} = 3, T_{28} = 142$; $s_{28} = 6, T_{29} = 148$; $s_{29} = 4, T_{30} = 152$, crossing the 150-step binary horizon).
+
+## C2.O12.5 Inner Loop 5 / 5 — Explore & Exploit: Mod-$2^{153}$ Seed Uniqueness for the 30-Block Sub-Ceiling Corridor
+- **Explore & Exploit (Priority 5):** Prove that any two seeds $b_1 < b_2$ realizing the 30-block sub-ceiling kneading corridor satisfy $2^{153} \mid (b_2 - b_1)$ and $2^{153} \le b_2$.
+
+
 
 
 

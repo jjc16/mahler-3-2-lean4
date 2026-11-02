@@ -631,6 +631,13 @@ name = "UniversalAllThreeRunBifurcationAndKneading27"
 [[lean_lib]]
 name = "UniversalAllThreeRunBifurcationAndKneading27Checks"
 
+[[lean_lib]]
+name = "UniversalConstantRungRunAndKneading30"
+
+[[lean_lib]]
+name = "UniversalConstantRungRunAndKneading30Checks"
+
+
 
 
 

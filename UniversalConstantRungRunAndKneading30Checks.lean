@@ -1,0 +1,17 @@
+import UniversalConstantRungRunAndKneading30
+
+/-!
+# Verification Checks for `UniversalConstantRungRunAndKneading30`
+-/
+
+open Mahler.UniversalConstantRungAndKneading30
+
+#check @constant_rung_run_renewalNumerator_closed_form
+#check @universal_constant_rung_run_from_step_closed_form
+#check @constant_rung_run_fixed_point_bifurcation
+#check @twentyeight_to_thirty_block_kneading_corridor_and_two_pow_153_uniqueness
+
+#print axioms constant_rung_run_renewalNumerator_closed_form
+#print axioms universal_constant_rung_run_from_step_closed_form
+#print axioms constant_rung_run_fixed_point_bifurcation
+#print axioms twentyeight_to_thirty_block_kneading_corridor_and_two_pow_153_uniqueness
