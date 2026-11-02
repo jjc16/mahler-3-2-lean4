@@ -2080,6 +2080,33 @@ Here is why, in plain terms:
 ## C2.O17.5 Inner Loop 5 / 5 — Explore & Exploit: Mod-$2^{224}$ Seed Uniqueness for the 45-Block Sub-Ceiling Corridor
 - **Explore & Exploit (Priority 5):** Prove that any two seeds $b_1 < b_2$ realizing the 45-block sub-ceiling kneading corridor satisfy $2^{224} \mid (b_2 - b_1)$ and $2^{224} \le b_2$.
 
+---
+
+# Part XXXIII — Second Campaign (`m = 5, n = 20`) — Outer Loop 18 / 20 (Inner Loops 1–5): Universal $(2, r, 2)$ Sandwich $(104 : 108)$, Exclusion of $(2, \le 6, 2)$, Sharpness at $(2, 7, 2)$ & 48-Block ($T_{48} = 234$) Kneading Certification
+
+## C2.O18.1 Inner Loop 1 / 5 — Explore & Exploit: Exact Three-Step Closed Form for $(s_N = 2, s_{N+1} = r, s_{N+2} = 2)$
+- **Explore:** Compose `post_two_recovery_rung_from_centered_slack_iff` ($s_N = 2, s_{N+1} = r$) with `short_block_two_step_eq_nine_centered_add_two_pow` ($s_{N+2} = 2$).
+- **Exploit (Priority 1):** Prove `three_step_two_r_two_closed_form_and_window`: whenever $s_N = 2$, $r = s_{N+1}$, and $s_{N+2} = 2$, setting $T_N = \operatorname{blockSteps}(s, N)$ and $C_N = \widehat{\Sigma}_N(s)$:
+  $$\Sigma_{N+3} = 9 \cdot 3^r\big(2^{T_N} + 9 C_N\big) - 104 \cdot 2^{T_N + r}, \qquad \widehat{\Sigma}_{N+3} = 9 \cdot 3^r\big(2^{T_N} + 9 C_N\big) - 120 \cdot 2^{T_N + r},$$
+  and both steps $N+2$ and $N+3$ lie in the sub-ceiling corridor if and only if
+  $$104 \cdot 2^{T_N + r} < 9 \cdot 3^r\big(2^{T_N} + 9 C_N\big) < 108 \cdot 2^{T_N + r}.$$
+
+## C2.O18.2 Inner Loop 2 / 5 — Explore & Exploit: Universal Exclusion of $(2, r, 2)$ for All $r \le 6$
+- **Explore:** Compare $9 \cdot 3^r$ and $104 \cdot 2^r$ for $r \le 6$: at $r = 6$, $9 \cdot 3^6 = 6561 < 6656 = 104 \cdot 2^6$ (deficit $-95$), whereas at $r = 7$, $9 \cdot 3^7 = 19683 > 13312 = 104 \cdot 2^7$.
+- **Exploit (Priority 2):** Prove `universal_subCeiling_two_r_two_requires_seven_le`: at any sub-ceiling step $N$ ($C_N < 0$), if $s_N = 2$, $s_{N+2} = 2$, and $0 < \Sigma_{N+3}$, then **$7 \le s_{N+1}$**!
+
+## C2.O18.3 Inner Loop 3 / 5 — Explore & Exploit: Exact $(2, 7, 2)$ Sub-Ceiling Window $(13312 : 13824)$
+- **Explore:** Specialize the $(104 : 108)$ window to the minimal allowed bridge $r = 7$ ($2^7 = 128$, $3^7 = 2187$, $9 \cdot 3^7 = 19683$).
+- **Exploit (Priority 3):** Prove `two_seven_two_subCeiling_window_iff`: when $s_N = 2, s_{N+1} = 7, s_{N+2} = 2$, steps $N+2$ and $N+3$ are both sub-ceiling if and only if
+  $$13312 \cdot 2^{T_N} < 19683\big(2^{T_N} + 9 C_N\big) < 13824 \cdot 2^{T_N}.$$
+
+## C2.O18.4 Inner Loop 4 / 5 — Explore & Exploit: Certification of the $(2, 7, 2)$ Kneading Subword at Blocks 46, 47, and 48 ($s_{45} = 2, s_{46} = 7, s_{47} = 2$, $T_{48} = 234$)
+- **Explore & Exploit (Priority 4):** Certify blocks 46–48 of the sub-ceiling kneading cascade ($s_{45} = 2, T_{46} = 225$; $s_{46} = 7, T_{47} = 232$; $s_{47} = 2, T_{48} = 234$), proving that the minimal $(2, 7, 2)$ bridge actually occurs in the kneading sequence!
+
+## C2.O18.5 Inner Loop 5 / 5 — Explore & Exploit: Mod-$2^{235}$ Seed Uniqueness for the 48-Block Sub-Ceiling Corridor
+- **Explore & Exploit (Priority 5):** Prove that any two seeds $b_1 < b_2$ realizing the 48-block sub-ceiling kneading corridor satisfy $2^{235} \mid (b_2 - b_1)$ and $2^{235} \le b_2$.
+
+
 
 
 

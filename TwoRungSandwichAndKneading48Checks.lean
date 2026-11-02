@@ -1,0 +1,15 @@
+import TwoRungSandwichAndKneading48
+
+/-!
+# Verification Checks for `TwoRungSandwichAndKneading48`
+-/
+
+open Mahler.TwoRungSandwichAndKneading48
+
+#check @three_step_two_r_two_closed_form_and_window
+#check @universal_subCeiling_two_r_two_requires_seven_le_and_seven_window
+#check @fortysix_to_fortyeight_block_kneading_corridor_and_two_pow_235_uniqueness
+
+#print axioms three_step_two_r_two_closed_form_and_window
+#print axioms universal_subCeiling_two_r_two_requires_seven_le_and_seven_window
+#print axioms fortysix_to_fortyeight_block_kneading_corridor_and_two_pow_235_uniqueness
