@@ -1848,6 +1848,35 @@ Here is why, in plain terms:
 ## C2.O8.5 Inner Loop 5 / 5 — Explore & Exploit: Certification of Blocks 16, 17, and 18 ($s_{15} = 8, s_{16} = 3, s_{17} = 6$, $T_{18} = 89$) & Mod-$2^{90}$ Uniqueness
 - **Explore & Exploit (Priority 5):** Certify that after the 15-block prefix $(2, 6, 3, 3, 2, 10, 7, 5, 7, 3, 3, 2, 12, 4, 3)$, the unique 16th, 17th, and 18th sub-ceiling kneading rungs are $s_{15} = 8$ ($T_{16} = 80$), $s_{16} = 3$ ($T_{17} = 83$), and $s_{17} = 6$ ($T_{18} = 89$), and any two seeds realizing this 18-block prefix satisfy $2^{90} \mid (b_2 - b_1)$ and $2^{90} \le b_2$.
 
+---
+
+# Part XXIV — Second Campaign (`m = 5, n = 20`) — Outer Loop 9 / 20 (Inner Loops 1–5): Sharpened $2^{T_{K+1}+1}$ Exact Valuation Shift, Mod-512 $(2, 6)$ Corridor Law, Two-Step $(4, 2)$ Window & 21-Block ($T_{21} = 105$) Kneading Certification
+
+## C2.O9.1 Inner Loop 1 / 5 — Explore & Exploit: First-Block Factoring of `renewalNumerator`
+- **Explore:** Factor $A_{0, 1+m}$ across the split $1 + m$ using `renewalNumerator_cocycle_composition s 1 m`.
+- **Exploit (Priority 1):** Prove `renewalNumerator_succ_split_factor`: for any sequence $s$ and horizon $m$, setting $s_1(t) = s(1+t)$ and $d_m = \operatorname{blockSteps}(s_1, m)$,
+  $$A_{0, 1+m} = 2^{s_0}\big(3^{d_m} + A_{1, 1+m}\big),$$
+  so $2^{s_0} \mid A_{0, 1+m}$ and $A_{0, 1+m}$ is even whenever $s_0 \ge 1$.
+
+## C2.O9.2 Inner Loop 2 / 5 — Explore & Exploit: Sharpened $2^{T_{K+1}+1}$ Exact Valuation Shift for $\Sigma_N$
+- **Explore:** Substitute the $2^{s_K}$ factoring of $A_{K, K+1+m}$ into the multi-step cocycle law $3^d \Sigma_K - \Sigma_{K+1+m} = 2^{T_K+1} A_{K, K+1+m}$.
+- **Exploit (Priority 2):** Prove `renewalIntSlack_sharpened_two_pow_next_step_factor`:
+  $$3^{s_K + d_m} \Sigma_K - \Sigma_{K+1+m} = 2^{T_{K+1} + 1}\big(3^{d_m} + A_{K+1, K+1+m}\big),$$
+  where the cofactor $3^{d_m} + A_{K+1, K+1+m}$ is odd whenever $m = 0$ or $s_{K+1} \ge 1$.
+
+## C2.O9.3 Inner Loop 3 / 5 — Explore & Exploit: Universal Mod-512 Law on the $(2, 6)$ Sub-Ceiling Corridor
+- **Explore:** Specialize the sharpened $2^{T_{K+1}+1}$ shift to $K = 1$ on any trajectory starting with $(s_0, s_1) = (2, 6)$ ($T_2 = 8, \Sigma_1 = 1$).
+- **Exploit (Priority 3):** Prove `two_six_corridor_mod_512_slack_congruence`: for all $m \in \mathbb{N}$ on any sequence starting with $s_0 = 2, s_1 = 6$,
+  $$512 \;\Big|\; \big(3^{T_{2+m} - 2} - \Sigma_{2+m}\big).$$
+
+## C2.O9.4 Inner Loop 4 / 5 — Explore & Exploit: Universal Two-Step $(s_N = 4, s_{N+1} = 2)$ Sub-Ceiling Window
+- **Explore:** Determine when a $4$-step block $s_N = 4$ can be immediately followed by $s_{N+1} = 2$ in the sub-ceiling corridor.
+- **Exploit (Priority 4):** Prove `subCeiling_two_step_four_two_window`: when $s_N = 4$ and $s_{N+1} = 2$, $\Sigma_{N+2} = 729 \Sigma_N - 416 \cdot 2^{T_N}$ and $\widehat{\Sigma}_{N+2} = 729 \Sigma_N - 480 \cdot 2^{T_N}$, and both steps $N+1$ and $N+2$ remain sub-ceiling if and only if $416 \cdot 2^{T_N} < 729 \Sigma_N \wedge 81 \Sigma_N < 48 \cdot 2^{T_N}$.
+
+## C2.O9.5 Inner Loop 5 / 5 — Explore & Exploit: Certification of Blocks 19, 20, and 21 ($s_{18} = 5, s_{19} = 7, s_{20} = 4$, $T_{21} = 105$) & Mod-$2^{106}$ Uniqueness
+- **Explore & Exploit (Priority 5):** Cross the 100-step binary horizon by certifying blocks 19–21 ($s_{18} = 5, T_{19} = 94$; $s_{19} = 7, T_{20} = 101$; $s_{20} = 4, T_{21} = 105$) and proving that any two seeds realizing this 21-block prefix satisfy $2^{106} \mid (b_2 - b_1)$ and $2^{106} \le b_2$.
+
+
 
 
 

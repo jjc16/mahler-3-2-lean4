@@ -1,0 +1,19 @@
+import ExactValuationShiftAndKneading21
+
+/-!
+# Verification Checks for `ExactValuationShiftAndKneading21`
+-/
+
+open Mahler.ExactValuationAndKneading21
+
+#check @renewalNumerator_succ_split_factor
+#check @renewalIntSlack_sharpened_two_pow_next_step_factor
+#check @two_six_corridor_mod_512_slack_congruence
+#check @subCeiling_two_step_four_two_window
+#check @nineteen_to_twentyone_block_kneading_corridor_and_two_pow_106_uniqueness
+
+#print axioms renewalNumerator_succ_split_factor
+#print axioms renewalIntSlack_sharpened_two_pow_next_step_factor
+#print axioms two_six_corridor_mod_512_slack_congruence
+#print axioms subCeiling_two_step_four_two_window
+#print axioms nineteen_to_twentyone_block_kneading_corridor_and_two_pow_106_uniqueness
