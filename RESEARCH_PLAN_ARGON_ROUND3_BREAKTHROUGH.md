@@ -2056,6 +2056,31 @@ Here is why, in plain terms:
 ## C2.O16.5 Inner Loop 5 / 5 — Explore & Exploit: Mod-$2^{209}$ Seed Uniqueness for the 42-Block Sub-Ceiling Corridor
 - **Explore & Exploit (Priority 5):** Prove that any two seeds $b_1 < b_2$ realizing the 42-block sub-ceiling kneading corridor satisfy $2^{209} \mid (b_2 - b_1)$ and $2^{209} \le b_2$.
 
+---
+
+# Part XXXII — Second Campaign (`m = 5, n = 20`) — Outer Loop 17 / 20 (Inner Loops 1–5): The Universal Parry–Kneading Shift Domination Theorem ($w_M \le s_{N+M}$) & 45-Block ($T_{45} = 223$) Kneading Certification
+
+## C2.O17.1 Inner Loop 1 / 5 — Explore & Exploit: Prefix-Congruence Invariance of `blockSteps`, `renewalNumerator`, $\Sigma_M$, and $\widehat{\Sigma}_M$
+- **Explore:** Show that if two sequences $s'$ and $w$ agree on $[0, M)$ ($\forall t < M,\, s'(t) = w(t)$), then their step sums, renewal numerators, slacks, and centered slacks at horizon $M$ are identical.
+- **Exploit (Priority 1):** Prove `prefix_congr_blockSteps_renewalNumerator_slack`: $\forall t < M,\, s'(t) = w(t)$ implies $\operatorname{blockSteps}(s', M) = \operatorname{blockSteps}(w, M)$, $A_{0,M}(s') = A_{0,M}(w)$, $\Sigma_M(s') = \Sigma_M(w)$, and $\widehat{\Sigma}_M(s') = \widehat{\Sigma}_M(w)$.
+
+## C2.O17.2 Inner Loop 2 / 5 — Explore & Exploit: Monotone Rung-Death Below a Sub-Ceiling Rung
+- **Explore:** Show that if candidate rung $m$ satisfies $\widehat{\Sigma}_{M+1}(m) = 3^m \Sigma_M - 3 \cdot 2^{d+m} \le 0$, then every strictly smaller candidate rung $r < m$ satisfies $\Sigma_{M+1}(r) = 3^r \Sigma_M - 2 \cdot 2^{d+r} \le 0$.
+- **Exploit (Priority 2):** Prove `candidateSlack_nonpos_of_lt_of_candidateCenteredSlack_nonpos`: writing $m = r + k + 1$, $3^m \Sigma_M = 3 \cdot 3^k(3^r \Sigma_M)$ and $3 \cdot 2^{d+m} = 3 \cdot 2^k(2 \cdot 2^{d+r})$, so $2^k \le 3^k$ forces $3^r \Sigma_M \le 2 \cdot 2^{d+r}$.
+
+## C2.O17.3 Inner Loop 3 / 5 — Explore & Exploit: The Universal Parry–Kneading Shift Domination Theorem ($w_M \le s_{N+M}$)
+- **Explore:** Combine the mixed shift-slack cocycle $\Sigma_{N+M}(s) = 3^d \widehat{\Sigma}_N(s) + 2^{T_N} \Sigma_M(w)$ with one more step at $N + M$.
+- **Exploit (Priority 3):** Prove `subCeiling_shift_lexicographic_domination`: if $\widehat{\Sigma}_N(s) < 0$, $\forall t < M,\, s(N+t) = w(t)$, $\widehat{\Sigma}_{M+1}(w) \le 0$, and $0 < \Sigma_{N+M+1}(s)$, then
+  $$\Sigma_{N+M+1}(s) = 3^{d + s(N+M)} \widehat{\Sigma}_N(s) + 2^{T_N}\operatorname{candidateSlack}\big(\Sigma_M(w),\, d,\, s(N+M)\big)$$
+  and **$w(M) \le s(N + M)$**! In particular, every shift $\sigma^N(w)$ ($N \ge 1$) of the sub-ceiling kneading sequence $w$ is lexicographically $\ge w$!
+
+## C2.O17.4 Inner Loop 4 / 5 — Explore & Exploit: Certification of Blocks 43, 44, and 45 ($s_{42} = 6, s_{43} = 6, s_{44} = 3$, $T_{45} = 223$)
+- **Explore & Exploit (Priority 4):** Certify blocks 43–45 of the sub-ceiling kneading cascade ($s_{42} = 6, T_{43} = 214$; $s_{43} = 6, T_{44} = 220$; $s_{44} = 3, T_{45} = 223$).
+
+## C2.O17.5 Inner Loop 5 / 5 — Explore & Exploit: Mod-$2^{224}$ Seed Uniqueness for the 45-Block Sub-Ceiling Corridor
+- **Explore & Exploit (Priority 5):** Prove that any two seeds $b_1 < b_2$ realizing the 45-block sub-ceiling kneading corridor satisfy $2^{224} \mid (b_2 - b_1)$ and $2^{224} \le b_2$.
+
+
 
 
 

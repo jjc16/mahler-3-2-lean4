@@ -1,0 +1,17 @@
+import ParryKneadingShiftDominationAndKneading45
+
+/-!
+# Verification Checks for `ParryKneadingShiftDominationAndKneading45`
+-/
+
+open Mahler.ParryKneadingDominationAndKneading45
+
+#check @prefix_congr_blockSteps_renewalNumerator_slack
+#check @candidateSlack_nonpos_of_lt_of_candidateCenteredSlack_nonpos
+#check @subCeiling_shift_lexicographic_domination
+#check @fortythree_to_fortyfive_block_kneading_corridor_and_two_pow_224_uniqueness
+
+#print axioms prefix_congr_blockSteps_renewalNumerator_slack
+#print axioms candidateSlack_nonpos_of_lt_of_candidateCenteredSlack_nonpos
+#print axioms subCeiling_shift_lexicographic_domination
+#print axioms fortythree_to_fortyfive_block_kneading_corridor_and_two_pow_224_uniqueness

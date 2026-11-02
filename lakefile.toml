@@ -661,6 +661,13 @@ name = "ShiftSlackDecompositionAndKneading42"
 [[lean_lib]]
 name = "ShiftSlackDecompositionAndKneading42Checks"
 
+[[lean_lib]]
+name = "ParryKneadingShiftDominationAndKneading45"
+
+[[lean_lib]]
+name = "ParryKneadingShiftDominationAndKneading45Checks"
+
+
 
 
 
