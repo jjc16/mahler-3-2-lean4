@@ -2157,6 +2157,66 @@ Here is why, in plain terms:
 ## C2.O20.5 Inner Loop 5 / 5 — Explore & Exploit: 226-File Campaign 2 Grand Synthesis Theorem
 - **Explore & Exploit (Priority 5):** Package the complete Campaign 2 formalization into `campaign_two_226_file_grand_synthesis`.
 
+---
+
+# Part XXXVI — Plain-English Summary of Campaign 2 (`m = 5, n = 20`) Advances & Honest Assessment of the $3/2 \bmod 1$ Wall
+
+## 1. Plain-English Summary of What Was Accomplished in Campaign 2 (`186 → 226` Lean 4 Files)
+
+In Campaign 2, we executed **20 Outer Loops**, each consisting of **5 Inner Explore/Exploit Loops** ($5 \times 20 = 100$ inner explore/exploit steps), formalizing 20 new core Lean 4 modules and 20 new `*Checks.lean` verification modules (growing the codebase from **186** to **226 `sorry`-free, warning-free Lean 4.19.0 files**):
+
+1. **The All-Block Constant of Motion & Backward Recovery (`AllBlockConstantOfMotionAndBackwardRecovery.lean`, Outer Loop 1):**
+   In Round 3, we had a constant of motion only on $s_k \ge 3$ segments. In Campaign 2, we discovered that because $A_{0,N} \le \frac{4}{5}(3^{T_N} - 2^{T_N}) < 3^{T_N}$ for **every** sequence of blocks $s_k \ge 2$ (including $s = 2$ recovery blocks!), the integer division identity
+   $$\left\lfloor \frac{2^{T_N} P_N}{3^{T_N}} \right\rfloor = P_0 \quad\text{and}\quad \big(2^{T_N} P_N\big) \bmod 3^{T_N} = A_{0,N}$$
+   holds across **all** blocks! This means a single future state $P_N$ uniquely encodes the entire past trajectory $P_0, P_1, \dots, P_{N-1}$ by repeated integer division by powers of $3$.
+
+2. **The Centered Renewal Slack $\widehat{\Sigma}_N = \Sigma_N - 2^{T_N}$ & the Non-Branching Sub-Ceiling Kneading Corridor (`CenteredRenewalSlackAndUniqueSubCeilingRung.lean` .. `SubCeilingKneadingAutomatonAndGrandSynthesis54.lean`, Outer Loops 2–20):**
+   Why is the recovery cascade $(2, 6, 3, 3, 2, 10, 7, 5, 7, 3, 3, 2, 12, \dots)$ forced to look the way it does?
+   - Whenever an orbit takes a short step $s_0 = 2$, its renewal slack $\Sigma_N = 3^{T_N} - 2 A_{0,N}$ drops below the "ceiling" $2^{T_N}$, making the **centered slack** $\widehat{\Sigma}_N := \Sigma_N - 2^{T_N}$ **negative** ($\widehat{\Sigma}_1 = -3 < 0$).
+   - We proved that $\widehat{\Sigma}_N$ satisfies a **homogeneous cocycle law** $\widehat{\Sigma}_{0, K+M} = 3^d \widehat{\Sigma}_{0, K} + 2^{T_K} \widehat{\Sigma}_{K, K+M}$ and can **never equal zero** ($\widehat{\Sigma}_N \equiv 3 \pmod 6$ for all $N \ge 1$).
+   - Most remarkably, inside the **sub-ceiling corridor** ($0 < \Sigma_N < 2^{T_N}$, i.e., $\Sigma_N > 0$ and $\widehat{\Sigma}_N < 0$), we proved the **Universal Rung-Shift Identity**
+     $$\widehat{\Sigma}_{N+1}(m + 1) = 3 \Sigma_{N+1}(m).$$
+     This identity means the upper boundary of candidate rung $m + 1$ is *literally three times* the lower boundary of candidate rung $m$! Because $\Sigma_N$ is odd, no boundary can ever be hit ($3^{m-1} \Sigma_N \ne 2^{T_N + m}$), so **at every step $N$ in the sub-ceiling corridor, there exists a UNIQUE block length $s_N = s_* \in [2, 2 T_N + 2]$ that keeps the trajectory inside the sub-ceiling corridor** (`exists_unique_subCeiling_rung_of_odd_subCeiling_slack` and `all_horizon_subCeiling_corridor_unique_sequence`)!
+   - In Outer Loop 20 (`SubCeilingKneadingAutomatonAndGrandSynthesis54.lean`), we constructed the **total infinite sub-ceiling kneading sequence $\kappa = \operatorname{canonicalKneadingSeq} : \mathbb{N} \to \mathbb{N}$** and proved unconditionally that $\kappa$ survives in the sub-ceiling corridor for all $N \ge 1$, is the **unique** infinite sub-ceiling sequence, and certified its first **54 blocks ($T_{54} = 258 > 256$ binary steps)**:
+     $$\kappa_{0..53} = (2, 6, 3, 3, 2, 10, 7, 5, 7, 3, 3, 2, 12, 4, 3, 8, 3, 6, 5, 7, 4, 4, 6, 3, 5, 8, 8, 3, 6, 4, 5, 3, 4, 6, 6, 3, 3, 3, 3, 5, 4, 11, 6, 6, 3, 2, 7, 2, 6, 3, 4, 3, 4, 4).$$
+
+3. **Strict Aperiodicity, Eigen-Defects, Mixed Shift-Slack Cocycle & The Parry–Kneading Shift Domination Law (Outer Loops 11–19):**
+   - **Pure Eigen-Defects & Strict Aperiodicity (Outer Loops 11–15):** For any period $p \ge 1$ with step sum $q \ge 1$ and window numerator $A_p$, we discovered that the periodic fixed-point defect $\Delta^{(q, A_p)}_N := (3^q - 2^q)\Sigma_N - 2^{T_N+1} A_p$ obeys the **pure multiplicative eigenvalue law** $\Delta^{(q, A_p)}_{N + R p} = 3^{q R} \Delta^{(q, A_p)}_N$ (`constant_rung_and_periodic_fixed_point_eigenDefect_law`). Because $(3^q - 2^q)\Sigma_N$ is odd while $2^{T_N+1} A_p$ is even, $\Delta^{(q, A_p)}_N \ne 0$, forcing any $(p, q, A_p)$-periodic tail to exit the sub-ceiling corridor once $q R \ge 2 T_N + 3 q + 2$ (`no_subCeiling_periodic_tail_exceeds_horizon`). Thus **no sub-ceiling trajectory can ever be eventually periodic**!
+   - **Mixed Shift-Slack Cocycle & Universal Subword Escape Inheritance (Outer Loop 16):** We discovered the identity
+     $$\Sigma_{N+M}(s) = 3^d \widehat{\Sigma}_N(s) + 2^{T_N} \Sigma_M\big(\text{shift}_N s\big).$$
+     Because $\widehat{\Sigma}_N(s) < 0$ at every sub-ceiling step $N$, **every word that escapes at the root $N = 0$ ($\Sigma_M(w) \le 0$) also escapes with strictly negative slack at every sub-ceiling step $N$ of every trajectory** (`subCeiling_subword_escape_inheritance`)!
+   - **Universal Parry–Milnor–Thurston Shift Domination & Strict Jump Dichotomy (Outer Loops 17–19):** Using the mixed shift-slack cocycle, we proved that whenever a sub-ceiling trajectory $s$ at step $N$ matches a sub-ceiling prefix $w$ for $M$ blocks ($\forall t < M,\, s(N+t) = w(t)$) and survives at step $N + M + 1$, its next rung must satisfy **$w(M) \le s(N + M)$** (`subCeiling_shift_lexicographic_domination`), with a strict jump **$w(M) + 1 \le s(N + M)$** whenever $\Sigma_{M+1}(w) \cdot 2^{T_N} \le 3^{d_{M+1}}(-\widehat{\Sigma}_N(s))$ (`subCeiling_shift_strict_rung_jump_dichotomy`). We also proved that $(2, r, 2)$ is universally forbidden for all $r \le 6$ (`universal_subCeiling_two_r_two_requires_seven_le_and_seven_window`), while $(2, 7, 2)$ is sharp and occurs at blocks 46–48!
+   - **Backward Extra-Bit Propagation & Mod-$2^{259}$ Seed Uniqueness (Outer Loops 7–20):** We proved that any two seeds $b_1 < b_2$ realizing the same $N$-block prefix satisfy $2^{T_N + 1} \mid (b_2 - b_1)$ (`two_seeds_same_validBlockChain_mod_two_pow_succ_dvd`). Across our 54 certified kneading blocks ($T_{54} = 258$), this forces $2^{259} \mid (b_2 - b_1)$ and $b_2 \ge 2^{259} > 9.2 \times 10^{77}$!
+
+---
+
+## 2. Honest Assessment: Has Campaign 2 Made Real Progress Toward Breaking Through the $3/2 \bmod 1$ Wall?
+
+### What Is Genuinely New and Stronger After Campaign 2
+1. **Complete Structural Solution of the Sub-Ceiling Corridor ($0 < \Sigma_N < 2^{T_N}$):**
+   Before Campaign 2, the recovery cascade $(2, 6, 3, 3, 2, 10, \dots)$ was only understood through finite case-by-case calculations. Campaign 2 discovered the **Centered Renewal Slack $\widehat{\Sigma}_N = \Sigma_N - 2^{T_N}$**, the **Universal Rung-Shift Identity $\widehat{\Sigma}_{N+1}(m+1) = 3\Sigma_{N+1}(m)$**, the **Mixed Shift-Slack Cocycle $\Sigma_{N+M}(s) = 3^d \widehat{\Sigma}_N(s) + 2^{T_N}\Sigma_M(s')$**, and the **Parry–Kneading Shift Domination Theorem $w_M \le s_{N+M}$**. As a result, the entire sub-ceiling corridor is now proved to be a **single, non-branching, strictly aperiodic, Parry-self-dominating deterministic trajectory $\kappa : \mathbb{N} \to \mathbb{N}$**.
+2. **Elimination of All Periodic and Sub-Kneading Words at Every Sub-Ceiling Step:**
+   Because of `no_subCeiling_periodic_tail_exceeds_horizon` and `subCeiling_shift_lexicographic_domination`, if an orbit enters the sub-ceiling corridor ($s_0 = 2$) and stays sub-ceiling, it has **zero branching freedom** (it must follow $\kappa$ block-for-block), and if it ever deviates from $\kappa$ at step $M$, it can **only deviate upward** ($s_M \ge \kappa(M) + 1$), which immediately restores full ceiling ($\widehat{\Sigma}_{M+1} > 0$).
+
+### Why Mahler's $3/2$ Problem Is Still Open (The Exact Remaining Wall)
+Despite these major structural advances, **Mahler's $3/2$ problem ($Z = \emptyset$) remains open**, and it is important to be completely transparent about why:
+
+1. **Symbolic Existence of $\kappa$ vs. Natural-Seed Realizability (`canonicalBlockS b_0`):**
+   In Outer Loop 20, we proved that the symbolic sequence $\kappa = \operatorname{canonicalKneadingSeq} : \mathbb{N} \to \mathbb{N}$ satisfies $0 < \Sigma_N(\kappa) < 2^{T_N(\kappa)}$ for **all** $N \ge 1$. That means the real number $\xi_* = \sup_N A_{0,N}(\kappa)/3^{T_N(\kappa)} = 1/2$ is the archimedean kneading boundary!
+   However, a genuine $Z$-number seed $b_0 \in \mathbb{N}$ does not get to *choose* its block lengths $s_k$ freely to stay in the sub-ceiling corridor or to jump above $\kappa(k)$: its block lengths are fixed by the **2-adic valuation of the integer orbit**
+   $$s_r(b_0) = v_2\big(3 b_r + 1\big) = v_2\big(P_r\big).$$
+   To prove $Z = \emptyset$, one must show that for **every** odd integer $b_0 \ge 1$, the deterministic 2-adic valuation sequence $s(b_0) = \operatorname{canonicalBlockS}(b_0)$ eventually violates the Parry–Mahler survival inequality $\Sigma_N(s(b_0)) > 0$ (i.e., at some step $N$ where $\widehat{\Sigma}_N < 0$, the 2-adic valuation $v_2(3 b_N + 1)$ lands **below** the required recovery threshold $\kappa(M)$, triggering $\Sigma_{N+1} \le 0$).
+
+2. **Why the Wall Between 2-Adic Valuations $v_2(P_r)$ and Archimedean Slack $\Sigma_r$ Persists:**
+   - By `two_seeds_same_validBlockChain_mod_two_pow_succ_dvd`, matching any 54-block prefix up to $T_{54} = 258$ only constrains $b_0$ modulo $2^{259}$. Because $3$ is a unit in $\mathbb{Z}_2$, Hensel's lemma guarantees that **for every finite horizon $N$, there exist infinitely many natural numbers $b_0 \equiv b_* \pmod{2^{T_N + 1}}$ that realize $\kappa_{0..N-1}$**!
+   - Conversely, for a **fixed** integer seed $b_0$, once $2^{T_N} > b_0$, the high bits of $b_N$ are governed by how close $b_0$ is to the 2-adic limit $-K_N / 3^{T_N} \in \mathbb{Z}_2$, while survival $\Sigma_N > 0$ is governed by the archimedean limit $\mathcal{H}_\infty = P_0 + \sup_N A_{0,N}/3^{T_N} \in \mathbb{R}$.
+   - Proving that a single positive integer $b_0 \in \mathbb{N}$ cannot simultaneously satisfy the archimedean Parry bound $s_r(b_0) \ge \text{recovery threshold}$ and the 2-adic valuation identity $s_r(b_0) = v_2(3 b_r + 1)$ for all $r \ge 0$ requires an **effective non-archimedean/archimedean repulsion theorem** (beyond Subspace Theorem ineffectivity and beyond current two-term Baker bounds) showing that no rational integer $P_0 = 3 b_0 + 1$ can have its $\times(3/2)$ fractional parts avoid $[1/2, 1)$ forever.
+
+### Bottom-Line Verdict
+- **Did Campaign 2 make real mathematical progress?** **Yes:** it completely solved the combinatorics of the sub-ceiling corridor ($0 < \Sigma_N < 2^{T_N}$), proving that it contains a unique, total, strictly aperiodic infinite kneading sequence $\kappa : \mathbb{N} \to \mathbb{N}$, proving the exact Parry–Milnor–Thurston shift-domination law $w_M \le s_{N+M}$ and strict jump dichotomy via the mixed cocycle $\Sigma_{N+M} = 3^d \widehat{\Sigma}_N + 2^{T_N}\Sigma_M(s')$, and certifying $\kappa$ through 54 blocks ($T_{54} = 258 > 256$, forcing $b_2 \ge 2^{259}$).
+- **Did Campaign 2 complete the proof of Mahler's $3/2$ problem?** **No:** because `canonicalKneadingSeq` proves that valid symbolic block sequences exist to $\infty$, no purely symbolic or local cocycle argument on $s$ alone can prove $Z = \emptyset$; the final step requires coupling the global integrality of $P_0 = 3 b_0 + 1 \in \mathbb{N}$ against the Parry–Mahler lower bound on $v_2(P_r)$.
+
+
 
 
 

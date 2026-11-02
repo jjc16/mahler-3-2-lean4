@@ -1,6 +1,6 @@
-# Mahler $3/2$ Problem — 224-File Lean 4 Formalization (`mahler_demand_a`)
+# Mahler $3/2$ Problem — 226-File Lean 4 Formalization (`mahler_demand_a`)
 
-This repository contains a **224-file (`sorry`-free) Lean 4.19.0 + Mathlib v4.19.0 formalization** of the reduced Mahler $3/2$ dynamical system ($Z$-numbers) and its interval- and union-confinement relaxations ([`MAHLER_FORMALIZATION_PAPER.pdf`](./MAHLER_FORMALIZATION_PAPER.pdf)).
+This repository contains a **226-file (`sorry`-free) Lean 4.19.0 + Mathlib v4.19.0 formalization** of the reduced Mahler $3/2$ dynamical system ($Z$-numbers) and its interval- and union-confinement relaxations ([`MAHLER_FORMALIZATION_PAPER.pdf`](./MAHLER_FORMALIZATION_PAPER.pdf)).
 
 ---
 
@@ -236,6 +236,8 @@ not a completed proof; its Part III corrects earlier overstatements and controls
   Exact three-step closed form $\Sigma_{N+3} = 9 \cdot 3^r(2^{T_N} + 9C_N) - 104 \cdot 2^{T_N+r}$ and $(104 : 108)$ sub-ceiling window for $(2, r, 2)$, proof that $C_N < 0 \wedge 0 < \Sigma_{N+3}$ forces $7 \le s_{N+1}$ (excluding $(2, r, 2)$ for all $r \le 6$), and certification of the $(2, 7, 2)$ subword at blocks 46–48 ($s_{45} = 2, s_{46} = 7, s_{47} = 2$, $T_{48} = 234$, forcing $2^{235} \le b_2$).
 - **Subword Return-Proximity Law $3^{d_M}(-\widehat{\Sigma}_N) < \Sigma_M(w)\cdot 2^{T_N}$, Strict Parry Rung-Jump Dichotomy ($s_{N+M} = w_M$ vs. $w_M + 1 \le s_{N+M}$) & 51-Block ($T_{51} = 247$) Kneading Certification (`StrictParryJumpDichotomyAndKneading51.lean`, Campaign 2 Outer Loop 19):**
   Exact return-proximity survival equivalence $3^{d_M}(-\widehat{\Sigma}_N) < \Sigma_M(w)\cdot 2^{T_N}$, strict Parry rung-jump dichotomy ($\Sigma_{M+1}(w)\cdot 2^{T_N} \le 3^{d_{M+1}}(-\widehat{\Sigma}_N) \implies w_M + 1 \le s_{N+M}$), explicit $(2, 6, 3, 3)$ vs. $(2, 6, 3, \ge 4)$ threshold $14833 \cdot 2^{T_N} \le 4782969(-\widehat{\Sigma}_N)$, and certification of blocks 49–51 ($s_{48} = 6, s_{49} = 3, s_{50} = 4$, $T_{51} = 247$, forcing $2^{248} \le b_2$).
+- **Total Construction of the Infinite Sub-Ceiling Kneading Sequence $\kappa : \mathbb{N} \to \mathbb{N}$, 54-Block ($T_{54} = 258 > 256$) Certification & 226-File Grand Synthesis (`SubCeilingKneadingAutomatonAndGrandSynthesis54.lean`, Campaign 2 Outer Loop 20):**
+  Total recursive sub-ceiling automaton (`canonicalKneadingSeq`), unconditional all-horizon sub-ceiling survival (`1 ≤ renewalIntSlack canonicalKneadingSeq N ∧ centeredRenewalSlack canonicalKneadingSeq N < 0` for all $N \ge 1$), universal uniqueness and Parry–Milnor–Thurston shift self-domination (`canonicalKneadingSeq M ≤ canonicalKneadingSeq (N + M)`), certification of blocks 52–54 ($s_{51} = 3, s_{52} = 4, s_{53} = 4$, crossing the 256-bit horizon at $T_{54} = 258$, forcing $2^{259} \le b_2$), and `campaign_two_226_file_grand_synthesis` (see [Part XXXVI of the Research Plan](./RESEARCH_PLAN_ARGON_ROUND3_BREAKTHROUGH.md) for the plain-English summary and honest assessment of the $3/2 \bmod 1$ wall).
 
 ## Acknowledgments
 
