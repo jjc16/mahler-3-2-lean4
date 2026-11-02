@@ -865,6 +865,133 @@ theorem affine_counter_mahler_conjugacy_and_closed_bb6_non_halting
   simp only [bb6EvenSweepOrbit]
   omega
 
+/-! ## 12. Theorem SB.12: The Dual Base-2 / Base-3 Odd-Block Digit-Sum Conservation Tower -/
+
+/-- Sum of base-2 (binary) digits $s_2(n)$ (Hamming weight) of a natural number $n \in \mathbb{N}$. -/
+def base2DigitSum (n : ℕ) : ℕ :=
+  if n = 0 then 0 else n % 2 + base2DigitSum (n / 2)
+termination_by n
+decreasing_by
+  exact Nat.div_lt_self (Nat.pos_of_ne_zero ‹n ≠ 0›) (by decide)
+
+/-- Unconditional unfolding equation `base2DigitSum n = n % 2 + base2DigitSum (n / 2)`. -/
+theorem base2DigitSum_eq (n : ℕ) :
+    base2DigitSum n = n % 2 + base2DigitSum (n / 2) := by
+  rw [base2DigitSum]
+  split_ifs with h0
+  · subst h0
+    simp [base2DigitSum]
+  · rfl
+
+/-- Dyadic shift invariance of `base2DigitSum`: `base2DigitSum (2 ^ s * u) = base2DigitSum u`. -/
+theorem base2DigitSum_two_pow_mul (s u : ℕ) :
+    base2DigitSum (2 ^ s * u) = base2DigitSum u := by
+  induction s with
+  | zero => simp
+  | succ s ih =>
+      have hmul : 2 ^ (s + 1) * u = 2 * (2 ^ s * u) := by
+        rw [Nat.pow_succ]
+        ring
+      rw [hmul, base2DigitSum_eq (2 * (2 ^ s * u))]
+      have hmod : (2 * (2 ^ s * u)) % 2 = 0 := by omega
+      have hdiv : (2 * (2 ^ s * u)) / 2 = 2 ^ s * u := by omega
+      rw [hmod, hdiv, zero_add, ih]
+
+/-- Triadic shift invariance of `base3DigitSum`: `base3DigitSum (3 ^ k * u) = base3DigitSum u`. -/
+theorem base3DigitSum_three_pow_mul (k u : ℕ) :
+    base3DigitSum (3 ^ k * u) = base3DigitSum u := by
+  have h0 := base3DigitSum_three_pow_mul_add k u (K := 0)
+    (Nat.pos_of_ne_zero (pow_ne_zero k (by decide)))
+  have hz : base3DigitSum 0 = 0 := by simp [base3DigitSum]
+  rw [add_zero, hz, add_zero] at h0
+  exact h0
+
+/-- Parity conservation of `base3DigitSum`: `base3DigitSum n % 2 = n % 2` for every `n : ℕ`. -/
+theorem base3DigitSum_mod_two_eq (n : ℕ) :
+    base3DigitSum n % 2 = n % 2 := by
+  induction n using Nat.strong_induction_on with
+  | h n ih =>
+      rcases Nat.eq_zero_or_pos n with rfl | hn_pos
+      · simp [base3DigitSum]
+      · have hdiv_lt : n / 3 < n := Nat.div_lt_self hn_pos (by decide)
+        have ih_div := ih (n / 3) hdiv_lt
+        rw [base3DigitSum_eq n]
+        omega
+
+/-- **The Dual Base-2 / Base-3 Odd-Block Digit-Sum Conservation & Parity Law
+(`dual_base2_base3_block_digitsum_conservation_and_parity`, Theorem SB.12)**:
+Suppose `ValidBlockChain b_0 s u (r + 2)` holds. Setting
+`b k = orbit b_0 (blockSteps s k)` and `P k = oddReturnP (b k)`:
+1. **Base-2 Division Invariance & Step Law**:
+   `base2DigitSum (P r) = base2DigitSum (u r)` and
+   `base2DigitSum (u (r + 1)) = base2DigitSum (3 ^ (s r) * u r + 1)`,
+2. **Base-3 Multiplication Invariance & $+1$ Step Law**:
+   `base3DigitSum (b (r + 1)) = base3DigitSum (u r)`,
+   `base3DigitSum (P r) = base3DigitSum (b r) + 1`, and
+   `base3DigitSum (2 ^ (s (r + 1)) * u (r + 1)) = base3DigitSum (u r) + 1`,
+3. **Base-3 Parity Dichotomy & Non-Vanishing Jump (`s_3(P_r) ≠ s_3(u_r)`)**:
+   `base3DigitSum (u r) % 2 = 1`, `base3DigitSum (P r) % 2 = 0`, and
+   `base3DigitSum (P r) ≠ base3DigitSum (u r)`. -/
+theorem dual_base2_base3_block_digitsum_conservation_and_parity
+    {b_0 r : ℕ} {s u : ℕ → ℕ}
+    (hchain : ValidBlockChain b_0 s u (r + 2)) :
+    let b := fun k => orbit b_0 (blockSteps s k)
+    let P := fun k => oddReturnP (b k)
+    (base2DigitSum (P r) = base2DigitSum (u r) ∧
+      base2DigitSum (u (r + 1)) = base2DigitSum (3 ^ (s r) * u r + 1)) ∧
+      (base3DigitSum (b (r + 1)) = base3DigitSum (u r) ∧
+        base3DigitSum (P r) = base3DigitSum (b r) + 1 ∧
+        base3DigitSum (2 ^ (s (r + 1)) * u (r + 1)) = base3DigitSum (u r) + 1) ∧
+      (base3DigitSum (u r) % 2 = 1 ∧
+        base3DigitSum (P r) % 2 = 0 ∧
+        base3DigitSum (P r) ≠ base3DigitSum (u r)) := by
+  intro b P
+  have hr := hchain r (by omega)
+  have hr1 := hchain (r + 1) (by omega)
+  have hs_r : 1 ≤ s r := hr.1
+  have hu_r_odd : u r % 2 = 1 := hr.2.1
+  have hP_r : P r = 2 ^ (s r) * u r := hr.2.2
+  have hP_r1 : P (r + 1) = 2 ^ (s (r + 1)) * u (r + 1) := hr1.2.2
+  have hb_r1 : b (r + 1) = 3 ^ (s r - 1) * u r := by
+    change orbit b_0 (blockSteps s r + s r) = 3 ^ (s r - 1) * u r
+    rw [orbit_add]
+    exact orbit_odd_block_return hs_r hP_r
+  have hP_r1_from_u : P (r + 1) = 3 ^ (s r) * u r + 1 := by
+    change 3 * b (r + 1) + 1 = 3 ^ (s r) * u r + 1
+    rw [hb_r1]
+    have hpow : 3 * (3 ^ (s r - 1) * u r) = 3 ^ (s r) * u r := by
+      rw [← mul_assoc]
+      have h3 : 3 * 3 ^ (s r - 1) = 3 ^ (s r) := by
+        conv_rhs => rw [← Nat.sub_add_cancel hs_r, Nat.pow_succ']
+      rw [h3]
+    rw [hpow]
+  have hs2_P : base2DigitSum (P r) = base2DigitSum (u r) := by
+    rw [hP_r, base2DigitSum_two_pow_mul]
+  have hs2_u1 : base2DigitSum (u (r + 1)) = base2DigitSum (3 ^ (s r) * u r + 1) := by
+    rw [← base2DigitSum_two_pow_mul (s (r + 1)) (u (r + 1)), ← hP_r1, hP_r1_from_u]
+  have hs3_b1 : base3DigitSum (b (r + 1)) = base3DigitSum (u r) := by
+    rw [hb_r1, base3DigitSum_three_pow_mul]
+  have hs3_Pr : base3DigitSum (P r) = base3DigitSum (b r) + 1 := by
+    change base3DigitSum (3 * b r + 1) = base3DigitSum (b r) + 1
+    rw [base3DigitSum_three_mul_add_digit (b r) (r := 1) (by decide)]
+    omega
+  have hs3_u1 : base3DigitSum (2 ^ (s (r + 1)) * u (r + 1)) = base3DigitSum (u r) + 1 := by
+    rw [← hP_r1]
+    change base3DigitSum (3 * b (r + 1) + 1) = base3DigitSum (u r) + 1
+    rw [base3DigitSum_three_mul_add_digit (b (r + 1)) (r := 1) (by decide), hs3_b1]
+    omega
+  have hs3_u_odd : base3DigitSum (u r) % 2 = 1 := by
+    rw [base3DigitSum_mod_two_eq, hu_r_odd]
+  have hs3_P_even : base3DigitSum (P r) % 2 = 0 := by
+    rw [base3DigitSum_mod_two_eq, hP_r]
+    obtain ⟨k, hk⟩ : ∃ k : ℕ, s r = k + 1 := ⟨s r - 1, by omega⟩
+    have hmul2 : 2 ^ (s r) * u r = 2 * (2 ^ k * u r) := by
+      rw [hk, Nat.pow_succ]
+      ring
+    rw [hmul2]
+    omega
+  exact ⟨⟨hs2_P, hs2_u1⟩, ⟨hs3_b1, hs3_Pr, hs3_u1⟩, ⟨hs3_u_odd, hs3_P_even, by omega⟩⟩
+
 #check @archimedean_rung_ceiling_and_stepSum_bound
 #check @unit_quotient_even_rung_instant_death_and_odd_rung_mod64_identity
 #check @equal_step_window_hankel_determinant_identity_and_bound
@@ -876,6 +1003,7 @@ theorem affine_counter_mahler_conjugacy_and_closed_bb6_non_halting
 #check @zero_carry_base3_digit_sum_and_even_step_invariance
 #check @late_step_cauchy_pinch_and_odd_quotient_gcd_dvd
 #check @affine_counter_mahler_conjugacy_and_closed_bb6_non_halting
+#check @dual_base2_base3_block_digitsum_conservation_and_parity
 
 #print axioms archimedean_rung_ceiling_and_stepSum_bound
 #print axioms unit_quotient_even_rung_instant_death_and_odd_rung_mod64_identity
@@ -888,5 +1016,6 @@ theorem affine_counter_mahler_conjugacy_and_closed_bb6_non_halting
 #print axioms zero_carry_base3_digit_sum_and_even_step_invariance
 #print axioms late_step_cauchy_pinch_and_odd_quotient_gcd_dvd
 #print axioms affine_counter_mahler_conjugacy_and_closed_bb6_non_halting
+#print axioms dual_base2_base3_block_digitsum_conservation_and_parity
 
 end Mahler.SemigroupBreakout

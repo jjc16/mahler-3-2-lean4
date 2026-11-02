@@ -117,4 +117,12 @@ and when $0 < \Sigma_M(s')$, $2(2^{d + s_{N+M}} u_{N+M} - 3^d \cdot 2^{s_N} u_N)
 For every $m, c_0, k \in \mathbb{N}$, $\operatorname{affineCounterOrbit}(m, c_0, k) + 2m = \operatorname{orbit}(c_0 + 2m, k)$ and $\operatorname{affineCounterOrbit}(m, c_0, k) \bmod 2 = \operatorname{orbit}(c_0 + 2m, k) \bmod 2$.
 \end{theorem}
 
+\begin{theorem}[Dual Base-2 / Base-3 Odd-Block Digit-Sum Conservation, \texttt{dual\_base2\_base3\_block\_digitsum\_conservation\_and\_parity}]
+Across any \texttt{ValidBlockChain b\_0 s u (r + 2)} with $b_k = \operatorname{orbit}(b_0, T_k)$ and $P_k = 3 b_k + 1 = 2^{s_k} u_k$:
+\[
+  s_2(P_r) = s_2(u_r),\quad s_2(u_{r+1}) = s_2(3^{s_r} u_r + 1),\quad s_3(b_{r+1}) = s_3(u_r),\quad s_3(P_r) = s_3(b_r) + 1,\quad s_3(2^{s_{r+1}} u_{r+1}) = s_3(u_r) + 1,
+\]
+with $s_3(u_r) \bmod 2 = 1$, $s_3(P_r) \bmod 2 = 0$, and $s_3(P_r) \ne s_3(u_r)$.
+\end{theorem}
+
 \end{document}

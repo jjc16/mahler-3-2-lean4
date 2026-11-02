@@ -186,6 +186,16 @@ is **100% conjugate to Mahler's ceiling map** via a constant shift $+2m$:
 $$\boxed{\operatorname{affineCounterOrbit}(m, c_0, k) + 2 m = \operatorname{orbit}(c_0 + 2 m, k) \quad\text{and}\quad \operatorname{affineCounterOrbit}(m, c_0, k) \bmod 2 = \operatorname{orbit}(c_0 + 2 m, k) \bmod 2 \quad (\forall k \in \mathbb{N}),}$$
 and along the even sub-lattice $4 a$, the $BB(6)$ sweep counter `bb6EvenSweepOrbit` preserves evenness (`% 2 = 0`, avoiding the odd halting condition) while growing strictly (`4 * a < 6 * a + 2`).
 
+### 5.4 Theorem SB.12: The Dual Base-2 / Base-3 Odd-Block Digit-Sum Conservation Tower (`dual_base2_base3_block_digitsum_conservation_and_parity`)
+
+By intersecting the Base-2 Hamming-weight tower $s_2(n) = \operatorname{base2DigitSum}(n)$ with the Base-3 digit-sum tower $s_3(n) = \operatorname{base3DigitSum}(n)$ across the odd-block transition $2^{s_{r+1}} u_{r+1} = 3^{s_r} u_r + 1$ ([`vibe_mathing_dual_digitsum_tower.py`](./vibe_mathing_dual_digitsum_tower.py)), we proved the **Dual Base-2 / Base-3 Conservation Laws**:
+1. **Base-2 Division Invariance & Step Law:** Across $P_r = 2^{s_r} u_r$, dividing by $2^{s_r}$ preserves the binary Hamming weight identically:
+   $$s_2(P_r) = s_2(u_r), \qquad\text{and}\qquad s_2(u_{r+1}) = s_2\big(3^{s_r} u_r + 1\big).$$
+2. **Base-3 Multiplication Invariance & $+1$ Step Law:** Across $b_{r+1} = 3^{s_r - 1} u_r$ and $P_{r+1} = 3 b_{r+1} + 1 = 2^{s_{r+1}} u_{r+1}$, multiplying by $3^{s_r - 1}$ preserves the ternary digit sum while $+1$ increments it by exactly $1$:
+   $$\boxed{s_3(b_{r+1}) = s_3(u_r), \qquad s_3(P_r) = s_3(b_r) + 1, \qquad s_3\big(2^{s_{r+1}} u_{r+1}\big) = s_3(u_r) + 1!}$$
+3. **Base-3 Parity Dichotomy & Non-Vanishing Jump:** Because $s_3(n) \equiv n \pmod 2$, every odd quotient $u_r$ has odd ternary digit sum ($s_3(u_r) \bmod 2 = 1$) while $P_r = 2^{s_r} u_r$ has even ternary digit sum ($s_3(P_r) \bmod 2 = 0$), so $s_3(P_r) \ne s_3(u_r)$ at every block, and the block jumps $\Delta_3(r) := s_3(2^{s_r} u_r) - s_3(u_r)$ telescope across $N$ blocks via:
+   $$\boxed{s_3(u_N) + \sum_{r=0}^{N} \Big(s_3\big(2^{s_r} u_r\big) - s_3(u_r)\Big) = s_3(b_0) + N + 1.}$$
+
 ---
 
 ## 6. Verification Instructions
