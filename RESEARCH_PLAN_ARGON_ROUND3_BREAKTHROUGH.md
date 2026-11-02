@@ -1956,6 +1956,31 @@ Here is why, in plain terms:
 ## C2.O12.5 Inner Loop 5 / 5 — Explore & Exploit: Mod-$2^{153}$ Seed Uniqueness for the 30-Block Sub-Ceiling Corridor
 - **Explore & Exploit (Priority 5):** Prove that any two seeds $b_1 < b_2$ realizing the 30-block sub-ceiling kneading corridor satisfy $2^{153} \mid (b_2 - b_1)$ and $2^{153} \le b_2$.
 
+---
+
+# Part XXVIII — Second Campaign (`m = 5, n = 20`) — Outer Loop 13 / 20 (Inner Loops 1–5): Explicit Finite Run Bound $m j < 2 T_N + 3 m + 2$, Exclusion of Eventually-Constant Sub-Ceiling Words & 33-Block ($T_{33} = 164$) Kneading Certification
+
+## C2.O13.1 Inner Loop 1 / 5 — Explore & Exploit: Two-Parameter Exponential Dominance $2 \cdot 2^{A+B} < 3^B$ ($2 A + 2 \le B$)
+- **Explore:** Generalize $2 \cdot 2^{3 A + 2} < 3^{2 A + 2}$ by inducting on $r = B - (2 A + 2) \ge 0$.
+- **Exploit (Priority 1):** Prove `two_mul_two_pow_add_lt_three_pow_of_two_mul_add_two_le`: for all $A, B \in \mathbb{N}$ with $2 A + 2 \le B$, $2 \cdot 2^{A + B} < 3^B$.
+
+## C2.O13.2 Inner Loop 2 / 5 — Explore & Exploit: Finite-Horizon Escape Below $\rho_*(m)$ and Ceiling Restoration Above $\rho_*(m)$
+- **Explore:** Combine `universal_constant_rung_run_from_step_closed_form` with $2 \cdot 2^{A+B} < 3^B$ when $m j \ge 2 T_N + 3 m + 2$.
+- **Exploit (Priority 2):** Prove `constant_rung_run_escapes_or_restores_ceiling_at_horizon`: whenever $1 \le m$, $\forall t < j,\, s(N+t) = m$, and $2 T_N + 3 m + 2 \le m j$:
+  - Below $\rho_*(m)$: $\Sigma_{N+j} < 0$ (Escape),
+  - Above $\rho_*(m)$: $\widehat{\Sigma}_{N+j} > 0$ (Full Ceiling Restoration).
+
+## C2.O13.3 Inner Loop 3 / 5 — Explore & Exploit: Unconditional Exclusion of Eventually-Constant Sub-Ceiling Words
+- **Explore:** Combine the oddness non-vanishing law $(3^m - 2^m)\Sigma_N \ne 2^{T_N+m+1}$ with the finite-horizon bound $m j \ge 2 T_N + 3 m + 2$.
+- **Exploit (Priority 3):** Prove `no_subCeiling_constant_rung_run_exceeds_horizon`: any constant-$m$ run from an odd-slack state $N$ with $m j \ge 2 T_N + 3 m + 2$ exits the sub-ceiling corridor ($\neg(0 < \Sigma_{N+j} \wedge \widehat{\Sigma}_{N+j} < 0)$), so no sub-ceiling trajectory with $s_k \ge 1$ can ever become eventually constant!
+
+## C2.O13.4 Inner Loop 4 / 5 — Explore & Exploit: Certification of Blocks 31, 32, and 33 ($s_{30} = 5, s_{31} = 3, s_{32} = 4$, $T_{33} = 164$)
+- **Explore & Exploit (Priority 4):** Certify blocks 31–33 of the sub-ceiling kneading cascade ($s_{30} = 5, T_{31} = 157$; $s_{31} = 3, T_{32} = 160$; $s_{32} = 4, T_{33} = 164$).
+
+## C2.O13.5 Inner Loop 5 / 5 — Explore & Exploit: Mod-$2^{165}$ Seed Uniqueness for the 33-Block Sub-Ceiling Corridor
+- **Explore & Exploit (Priority 5):** Prove that any two seeds $b_1 < b_2$ realizing the 33-block sub-ceiling kneading corridor satisfy $2^{165} \mid (b_2 - b_1)$ and $2^{165} \le b_2$.
+
+
 
 
 

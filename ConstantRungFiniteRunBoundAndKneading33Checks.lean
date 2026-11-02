@@ -1,0 +1,17 @@
+import ConstantRungFiniteRunBoundAndKneading33
+
+/-!
+# Verification Checks for `ConstantRungFiniteRunBoundAndKneading33`
+-/
+
+open Mahler.ConstantRungBoundAndKneading33
+
+#check @two_mul_two_pow_add_lt_three_pow_of_two_mul_add_two_le
+#check @constant_rung_run_escapes_or_restores_ceiling_at_horizon
+#check @no_subCeiling_constant_rung_run_exceeds_horizon
+#check @thirtyone_to_thirtythree_block_kneading_corridor_and_two_pow_165_uniqueness
+
+#print axioms two_mul_two_pow_add_lt_three_pow_of_two_mul_add_two_le
+#print axioms constant_rung_run_escapes_or_restores_ceiling_at_horizon
+#print axioms no_subCeiling_constant_rung_run_exceeds_horizon
+#print axioms thirtyone_to_thirtythree_block_kneading_corridor_and_two_pow_165_uniqueness
