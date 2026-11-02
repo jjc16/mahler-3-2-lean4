@@ -1,0 +1,17 @@
+import UniversalTwoRungWindowAndKneading24
+
+/-!
+# Verification Checks for `UniversalTwoRungWindowAndKneading24`
+-/
+
+open Mahler.UniversalTwoRungAndKneading24
+
+#check @short_block_two_step_eq_nine_centered_add_two_pow
+#check @universal_two_step_any_then_two_subCeiling_window
+#check @post_two_recovery_rung_from_centered_slack_iff
+#check @twentytwo_to_twentyfour_block_kneading_corridor_and_two_pow_119_uniqueness
+
+#print axioms short_block_two_step_eq_nine_centered_add_two_pow
+#print axioms universal_two_step_any_then_two_subCeiling_window
+#print axioms post_two_recovery_rung_from_centered_slack_iff
+#print axioms twentytwo_to_twentyfour_block_kneading_corridor_and_two_pow_119_uniqueness

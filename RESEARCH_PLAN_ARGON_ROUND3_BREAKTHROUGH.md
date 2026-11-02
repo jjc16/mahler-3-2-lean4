@@ -1876,6 +1876,36 @@ Here is why, in plain terms:
 ## C2.O9.5 Inner Loop 5 / 5 — Explore & Exploit: Certification of Blocks 19, 20, and 21 ($s_{18} = 5, s_{19} = 7, s_{20} = 4$, $T_{21} = 105$) & Mod-$2^{106}$ Uniqueness
 - **Explore & Exploit (Priority 5):** Cross the 100-step binary horizon by certifying blocks 19–21 ($s_{18} = 5, T_{19} = 94$; $s_{19} = 7, T_{20} = 101$; $s_{20} = 4, T_{21} = 105$) and proving that any two seeds realizing this 21-block prefix satisfy $2^{106} \mid (b_2 - b_1)$ and $2^{106} \le b_2$.
 
+---
+
+# Part XXV — Second Campaign (`m = 5, n = 20`) — Outer Loop 10 / 20 (Inner Loops 1–5): Universal Two-Step $(s_N, 2)$ Window $(26 : 27)$, Centered-Deficit Post-`2` Recovery Formula & 24-Block ($T_{24} = 118$) Kneading Certification
+
+## C2.O10.1 Inner Loop 1 / 5 — Explore & Exploit: Centered-Deficit Formula $\Sigma_{N+1}(2) = 9 \widehat{\Sigma}_N + 2^{T_N}$
+- **Explore:** Substitute $\Sigma_N = \widehat{\Sigma}_N + 2^{T_N}$ into $\Sigma_{N+1}(2) = 9 \Sigma_N - 8 \cdot 2^{T_N}$ and $\widehat{\Sigma}_{N+1}(2) = 9 \Sigma_N - 12 \cdot 2^{T_N}$.
+- **Exploit (Priority 1):** Prove `short_block_two_step_eq_nine_centered_add_two_pow`: when $s_N = 2$,
+  $$\Sigma_{N+1} = 9 \widehat{\Sigma}_N + 2^{T_N}, \qquad \widehat{\Sigma}_{N+1} = 9 \widehat{\Sigma}_N - 3 \cdot 2^{T_N},$$
+  so in any sub-ceiling state ($\widehat{\Sigma}_N < 0$), $s_N = 2$ is sub-ceiling if and only if $-9 \widehat{\Sigma}_N < 2^{T_N}$.
+
+## C2.O10.2 Inner Loop 2 / 5 — Explore & Exploit: Universal Two-Step $(s_N, s_{N+1} = 2)$ Sub-Ceiling Window $(26 : 27)$
+- **Explore:** Unify the $(3, 2)$ and $(4, 2)$ two-step windows into a single universal law for arbitrary $s_N \in \mathbb{N}$ followed by $s_{N+1} = 2$.
+- **Exploit (Priority 2):** Prove `universal_two_step_any_then_two_subCeiling_window`: when $s_{N+1} = 2$,
+  $$\Sigma_{N+2} = 9 \cdot 3^{s_N} \Sigma_N - 26 \cdot 2^{T_N + s_N}, \qquad \widehat{\Sigma}_{N+2} = 9 \cdot 3^{s_N} \Sigma_N - 30 \cdot 2^{T_N + s_N},$$
+  and both steps $N+1$ and $N+2$ lie in the sub-ceiling corridor if and only if
+  $$26 \cdot 2^{T_N + s_N} < 9 \cdot 3^{s_N} \Sigma_N \;\wedge\; 3^{s_N} \Sigma_N < 3 \cdot 2^{T_N + s_N}.$$
+
+## C2.O10.3 Inner Loop 3 / 5 — Explore & Exploit: Exact Post-`2` Recovery Rung Formula in Terms of $\widehat{\Sigma}_N$
+- **Explore:** Express the post-`2` recovery step $N + 2$ directly in terms of the pre-`2` centered slack $C_N = \widehat{\Sigma}_N$ and recovery rung $r = s_{N+1}$.
+- **Exploit (Priority 3):** Prove `post_two_recovery_rung_from_centered_slack_iff`: when $s_N = 2$ and $r = s_{N+1}$,
+  $$\Sigma_{N+2} = 3^r\big(2^{T_N} + 9 C_N\big) - 8 \cdot 2^{T_N + r}, \qquad \widehat{\Sigma}_{N+2} = 3^r\big(2^{T_N} + 9 C_N\big) - 12 \cdot 2^{T_N + r},$$
+  so $r = s_{N+1}$ is sub-ceiling if and only if $8 \cdot 2^{T_N + r} < 3^r(2^{T_N} + 9 C_N) < 12 \cdot 2^{T_N + r}$.
+
+## C2.O10.4 Inner Loop 4 / 5 — Explore & Exploit: Certification of Blocks 22, 23, and 24 ($s_{21} = 4, s_{22} = 6, s_{23} = 3$, $T_{24} = 118$)
+- **Explore & Exploit (Priority 4):** Certify blocks 22–24 of the sub-ceiling kneading cascade ($s_{21} = 4, T_{22} = 109$; $s_{22} = 6, T_{23} = 115$; $s_{23} = 3, T_{24} = 118$).
+
+## C2.O10.5 Inner Loop 5 / 5 — Explore & Exploit: Mod-$2^{119}$ Seed Uniqueness for the 24-Block Sub-Ceiling Corridor
+- **Explore & Exploit (Priority 5):** Prove that any two seeds $b_1 < b_2$ realizing the 24-block sub-ceiling kneading corridor satisfy $2^{119} \mid (b_2 - b_1)$ and $2^{119} \le b_2$.
+
+
 
 
 
