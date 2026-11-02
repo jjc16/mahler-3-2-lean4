@@ -3,7 +3,7 @@
 **Authors:** Joshua Coon (with Astra, Fable, and Argon AI in GitHub Copilot)  
 **Date:** November 2026  
 **Cordoned-Off Verification Artifact:** [`semigroup_breakout/SemigroupBreakoutTheorems.lean`](./SemigroupBreakoutTheorems.lean) (`0` `sorry`s, `0` warnings, Lean 4.19.0 + Mathlib v4.19.0)  
-**Computational Suite:** [`loop1_product_formula_and_pade.py`](./loop1_product_formula_and_pade.py), [`loop1_beukers_pade_and_hankel.py`](./loop1_beukers_pade_and_hankel.py), [`loop2_pade_lll_and_divergence.py`](./loop2_pade_lll_and_divergence.py), [`loop3_archimedean_ceiling_and_small_u.py`](./loop3_archimedean_ceiling_and_small_u.py), [`loop4_flp_sparsity_and_repulsion.py`](./loop4_flp_sparsity_and_repulsion.py), [`sandbox_symmetry_breaking_loops.py`](./sandbox_symmetry_breaking_loops.py), [`sandbox_wave2_towers.py`](./sandbox_wave2_towers.py), [`sandbox_wave3_towers.py`](./sandbox_wave3_towers.py), [`sandbox_wave4_canyon_view.py`](./sandbox_wave4_canyon_view.py)
+**Computational Suite:** [`loop1_product_formula_and_pade.py`](./loop1_product_formula_and_pade.py), [`loop1_beukers_pade_and_hankel.py`](./loop1_beukers_pade_and_hankel.py), [`loop2_pade_lll_and_divergence.py`](./loop2_pade_lll_and_divergence.py), [`loop3_archimedean_ceiling_and_small_u.py`](./loop3_archimedean_ceiling_and_small_u.py), [`loop4_flp_sparsity_and_repulsion.py`](./loop4_flp_sparsity_and_repulsion.py), [`sandbox_symmetry_breaking_loops.py`](./sandbox_symmetry_breaking_loops.py), [`sandbox_wave2_towers.py`](./sandbox_wave2_towers.py), [`sandbox_wave3_towers.py`](./sandbox_wave3_towers.py), [`sandbox_wave4_canyon_view.py`](./sandbox_wave4_canyon_view.py), [`sandbox_wave5_multi_block_crt.py`](./sandbox_wave5_multi_block_crt.py)
 
 ---
 
@@ -310,7 +310,39 @@ locking $u_{r+1}$ into a unique Chinese Remainder class modulo $M_{r+1} = 3^{s_r
 
 ---
 
-## 9. Verification Instructions
+## 9. Wave-5 Symmetry-Breaking Towers: The Unconditional $4/5$ Renewal Ceiling (Slack-Free!), $9/5$ All-$K$-Step Recovery, and the Sliding Cut-Point Past–Future Chinese Remainder Pinch
+
+In [`sandbox_wave5_multi_block_crt.py`](./sandbox_wave5_multi_block_crt.py) and Sections 24–26 of [`SemigroupBreakoutTheorems.lean`](./SemigroupBreakoutTheorems.lean), our Python sandbox revealed that even when $2 A_{0,r} > 3^{T_r}$ (e.g., $s = (2, 2)$ where $A_{0,2}/3^4 = 52/81 \approx 0.642 > 1/2$), the geometric sum $\sum_{j=0}^{r-1} (2/3)^{T_{j+1}}$ for surviving blocks ($s_k \ge 2$) is bounded by $\sum_{j=1}^r (4/9)^j < 4/5 < 1$. Formalizing this eliminated the sub-ceiling slack hypothesis (`0 < renewalIntSlack`) across the entire multi-block tower:
+
+### 9.1 Theorem SB.24: The Unconditional $4/5$ Renewal Ceiling & Past Base-3 Recovery (`unconditional_four_fifths_renewal_ceiling_and_past_base3_recovery`)
+
+For **every** surviving block chain (`ValidBlockChain b_0 s u (r + 1)` with $\forall k < r,\, 2 \le s_k$, **with no `0 < renewalIntSlack` hypothesis needed!**):
+1. **Exact $4/5$ Inductive Invariant:**
+   $$\boxed{5 A_{0, r} + 4 \cdot 2^{T_r} \le 4 \cdot 3^{T_r} \qquad\Longrightarrow\qquad 5 A_{0, r} < 4 \cdot 3^{T_r} \quad\wedge\quad A_{0, r} < 3^{T_r}.}$$
+2. **Unconditional Past Base-3 Quotient, Remainder & Zero-Carry Digit-Sum Law:**
+   $$\boxed{\left\lfloor \frac{2^{T_r} P_r}{3^{T_r}} \right\rfloor = P_0, \qquad \big(2^{T_r} P_r\big) \bmod 3^{T_r} = A_{0, r}, \qquad s_3\big(2^{T_r} P_r\big) = s_3(P_0) + s_3(A_{0, r}).}$$
+
+### 9.2 Theorem SB.25: Unconditional All-$K$-Step Odd-Leftover Recovery & $9/5$ Geometric Remainder Bound (`unconditional_all_k_step_odd_leftover_recovery_and_nine_fifths_bound`)
+
+For **every** surviving block chain (`ValidBlockChain b_0 s u (r + 1 + M + 1)` with $\forall k < M,\, 2 \le s_{r+1+k}$, **eliminating `0 < renewalIntSlack` from Theorem SB.22!**), with $s'(t) = s_{r+1+t}$, $d = \sum_{t=0}^{M-1} s_{r+1+t}$, $S = d + s_{r+1+M}$, $T = s_r + d$, and $R = 3^d + A_{r+1, r+1+M}$:
+1. **Universal $9/5$ Geometric Remainder Bound:**
+   $$\boxed{5 R + 4 \cdot 2^d \le 9 \cdot 3^d \qquad\Longrightarrow\qquad R < 2 \cdot 3^d < 3^T.}$$
+2. **Unconditional Multi-Step Quotient, Remainder & Zero-Carry Digit-Sum Law:**
+   $$\boxed{\left\lfloor \frac{2^S u_{r+1+M}}{3^T} \right\rfloor = u_r, \qquad \big(2^S u_{r+1+M}\big) \bmod 3^T = R, \qquad s_3\big(2^S u_{r+1+M}\big) = s_3(u_r) + s_3(R).}$$
+
+### 9.3 Theorem SB.26: Sliding Cut-Point Past–Future Chinese Remainder Pinch & Post-Bit-Length Uniqueness (`sliding_cut_point_past_future_crt_pinch`)
+
+Across any $(r + M + 1)$-block chain (`ValidBlockChain b_0 s u (r + M + 1)` with $\forall k < r,\, 2 \le s_k$), at any interior cut point $r$ with past step sum $T_r = \sum_{k=0}^{r-1} s_k$, future interior step sum $d_r = \sum_{t=0}^{M-1} s_{r+t}$, total future halvings $D_r = d_r + s_{r+M}$, and combined Past-Base-3 $\times$ Future-Base-2 modulus $\mathcal{M}_r = 3^{T_r} \cdot 2^{D_r + 1}$:
+1. **Simultaneous Coprime Past Base-3 & Future Base-2 Congruences at Cut Point $r$:**
+   $$\boxed{\big(2^{T_r} P_r\big) \bmod 3^{T_r} = A_{0, r}, \qquad \big(3^{d_r} P_r + A_{r, r+M}\big) \bmod 2^{D_r + 1} = 2^{D_r}, \qquad \gcd\big(3^{T_r}, 2^{D_r + 1}\big) = 1.}$$
+2. **Unconditional Sliding Cut-Point Archimedean Bound & Post-Bit-Length Pinch:**
+   $$2^{T_r} P_r < 3^{T_r}(P_0 + 1) \qquad\text{and}\qquad 5 \cdot 2^{T_r + D_r} P_r < 3^{T_r} \cdot 2^{D_r}(5 P_0 + 4),$$
+   so whenever $P_0 < 2^{T_r + D_r + 1}$ (the post-bit-length horizon!), at **every** cut point $r$:
+   $$\boxed{P_r < 3^{T_r} \cdot 2^{D_r + 1} = \mathcal{M}_r!}$$
+
+---
+
+## 10. Verification Instructions
 
 To verify the cordoned-off Lean 4 proofs without modifying the root 226-file build:
 

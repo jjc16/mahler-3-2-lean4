@@ -161,4 +161,13 @@ Across any \texttt{ValidBlockChain b\_0 s u}:
 \end{enumerate}
 \end{theorem}
 
+\begin{theorem}[Unconditional $4/5$ Renewal Ceiling, $9/5$ All-$K$-Step Recovery \& Sliding Cut-Point Past--Future CRT Pinch, \texttt{unconditional\_four\_fifths\_renewal\_ceiling\_and\_past\_base3\_recovery}, \texttt{unconditional\_all\_k\_step\_odd\_leftover\_recovery\_and\_nine\_fifths\_bound}, \texttt{sliding\_cut\_point\_past\_future\_crt\_pinch}]
+Across any \texttt{ValidBlockChain b\_0 s u}:
+\begin{enumerate}
+  \item Whenever $\forall k < r,\, 2 \le s_k$ (with no slack hypothesis needed), $5 A_{0,r} + 4 \cdot 2^{T_r} \le 4 \cdot 3^{T_r}$, $A_{0,r} < 3^{T_r}$, $\lfloor 2^{T_r} P_r / 3^{T_r} \rfloor = P_0$, $(2^{T_r} P_r) \bmod 3^{T_r} = A_{0,r}$, and $s_3(2^{T_r} P_r) = s_3(P_0) + s_3(A_{0,r})$.
+  \item Whenever $\forall k < M,\, 2 \le s_{r+1+k}$, $R = 3^d + A_{r+1, r+1+M}$ satisfies $5 R + 4 \cdot 2^d \le 9 \cdot 3^d$, $R < 2 \cdot 3^d < 3^T$, $\lfloor 2^S u_{r+1+M} / 3^T \rfloor = u_r$, $(2^S u_{r+1+M}) \bmod 3^T = R$, and $s_3(2^S u_{r+1+M}) = s_3(u_r) + s_3(R)$.
+  \item At every interior cut point $r$ with $\mathcal{M}_r = 3^{T_r} \cdot 2^{D_r + 1}$, $(2^{T_r} P_r) \bmod 3^{T_r} = A_{0,r}$, $(3^{d_r} P_r + A_{r, r+M}) \bmod 2^{D_r + 1} = 2^{D_r}$, $\gcd(3^{T_r}, 2^{D_r + 1}) = 1$, $5 \cdot 2^{T_r + D_r} P_r < 3^{T_r} \cdot 2^{D_r}(5 P_0 + 4)$, and whenever $P_0 < 2^{T_r + D_r + 1}$, $P_r < \mathcal{M}_r$.
+\end{enumerate}
+\end{theorem}
+
 \end{document}

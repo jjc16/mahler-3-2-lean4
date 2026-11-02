@@ -1831,6 +1831,278 @@ theorem two_sided_past_future_crt_pinch
   have hmul : 9 * 8 ≤ 3 ^ (s r) * 2 ^ (s (r + 2) + 1) := Nat.mul_le_mul h3_ge_9 h2_ge_8
   omega
 
+/-! ## 24. Theorem SB.24: Unconditional $4/5$ Renewal Ceiling & Past Base-3 Recovery (Slack-Free!) -/
+
+/-- Helper: `9 * 2 ^ n ≤ 4 * 3 ^ n` for every `2 ≤ n`. -/
+theorem nine_mul_two_pow_le_four_mul_three_pow {n : ℕ} (hn : 2 ≤ n) :
+    9 * 2 ^ n ≤ 4 * 3 ^ n := by
+  obtain ⟨k, rfl⟩ : ∃ k : ℕ, n = k + 2 := ⟨n - 2, by omega⟩
+  have hle : 2 ^ k ≤ 3 ^ k := Nat.pow_le_pow_left (by decide) k
+  have hmul : 36 * 2 ^ k ≤ 36 * 3 ^ k := Nat.mul_le_mul_left 36 hle
+  rw [Nat.pow_add 2 k 2, Nat.pow_add 3 k 2]
+  omega
+
+/-- Helper: Unconditional $4/5$ inductive invariant for `renewalNumerator`:
+whenever `∀ k < r, 2 ≤ s k`, `5 * renewalNumerator s r + 4 * 2 ^ (blockSteps s r) ≤ 4 * 3 ^ (blockSteps s r)`. -/
+theorem five_mul_renewalNumerator_add_four_mul_two_pow_le
+    (s : ℕ → ℕ) (r : ℕ) (hs : ∀ k < r, 2 ≤ s k) :
+    5 * renewalNumerator s r + 4 * 2 ^ (blockSteps s r) ≤ 4 * 3 ^ (blockSteps s r) := by
+  induction r with
+  | zero => simp [renewalNumerator, blockSteps]
+  | succ r ih =>
+      have ihr := ih (fun k hk => hs k (by omega))
+      have hsr : 2 ≤ s r := hs r (by omega)
+      have h9 : 9 * 2 ^ (s r) ≤ 4 * 3 ^ (s r) := nine_mul_two_pow_le_four_mul_three_pow hsr
+      set T := blockSteps s r
+      set A := renewalNumerator s r
+      have hexp :
+          5 * renewalNumerator s (r + 1) + 4 * 2 ^ (blockSteps s (r + 1)) =
+            3 ^ (s r) * (5 * A) + (9 * 2 ^ (s r)) * 2 ^ T := by
+        change 5 * (3 ^ (s r) * A + 2 ^ (T + s r)) + 4 * 2 ^ (T + s r) =
+          3 ^ (s r) * (5 * A) + (9 * 2 ^ (s r)) * 2 ^ T
+        rw [Nat.pow_add 2 T (s r)]
+        ring
+      have hstep1 :
+          3 ^ (s r) * (5 * A) + (9 * 2 ^ (s r)) * 2 ^ T ≤
+            3 ^ (s r) * (5 * A) + (4 * 3 ^ (s r)) * 2 ^ T := by
+        have hm := Nat.mul_le_mul_right (2 ^ T) h9
+        omega
+      have hfactor :
+          3 ^ (s r) * (5 * A) + (4 * 3 ^ (s r)) * 2 ^ T =
+            3 ^ (s r) * (5 * A + 4 * 2 ^ T) := by ring
+      have hstep2 :
+          3 ^ (s r) * (5 * A + 4 * 2 ^ T) ≤ 3 ^ (s r) * (4 * 3 ^ T) :=
+        Nat.mul_le_mul_left (3 ^ (s r)) ihr
+      have hpow3 :
+          3 ^ (s r) * (4 * 3 ^ T) = 4 * 3 ^ (blockSteps s (r + 1)) := by
+        change 3 ^ (s r) * (4 * 3 ^ T) = 4 * 3 ^ (T + s r)
+        rw [Nat.pow_add 3 T (s r)]
+        ring
+      omega
+
+/-- **Unconditional $4/5$ Renewal Ceiling & Past Base-3 Recovery
+(`unconditional_four_fifths_renewal_ceiling_and_past_base3_recovery`, Theorem SB.24)**:
+Suppose `ValidBlockChain b_0 s u (r + 1)` holds with `∀ k < r, 2 ≤ s k`
+(**with no `0 < renewalIntSlack` hypothesis needed!**).
+Setting `P k = oddReturnP (orbit b_0 (blockSteps s k))`, `T_r = blockSteps s r`, and
+`A_r = renewalNumerator s r`:
+1. **Exact $4/5$ Inductive Invariant**:
+   `5 * A_r + 4 * 2 ^ T_r ≤ 4 * 3 ^ T_r`,
+2. **Unconditional Sub-$3^{T_r}$ Bound**:
+   `5 * A_r < 4 * 3 ^ T_r` and `A_r < 3 ^ T_r`,
+3. **Unconditional Past Base-3 Quotient & Remainder Recovery**:
+   `(2 ^ T_r * P r) / 3 ^ T_r = P 0` and `(2 ^ T_r * P r) % 3 ^ T_r = A_r`, and
+4. **Unconditional Zero-Carry Base-3 Digit-Sum Splitting**:
+   `base3DigitSum (2 ^ T_r * P r) = base3DigitSum (P 0) + base3DigitSum A_r`! -/
+theorem unconditional_four_fifths_renewal_ceiling_and_past_base3_recovery
+    {b_0 r : ℕ} {s u : ℕ → ℕ}
+    (hchain : ValidBlockChain b_0 s u (r + 1))
+    (hs2 : ∀ k < r, 2 ≤ s k) :
+    let P := fun k => oddReturnP (orbit b_0 (blockSteps s k))
+    let T_r := blockSteps s r
+    let A_r := renewalNumerator s r
+    5 * A_r + 4 * 2 ^ T_r ≤ 4 * 3 ^ T_r ∧
+      5 * A_r < 4 * 3 ^ T_r ∧
+      A_r < 3 ^ T_r ∧
+      (2 ^ T_r * P r) / 3 ^ T_r = P 0 ∧
+      (2 ^ T_r * P r) % 3 ^ T_r = A_r ∧
+      base3DigitSum (2 ^ T_r * P r) = base3DigitSum (P 0) + base3DigitSum A_r := by
+  intro P T_r A_r
+  have hinv : 5 * A_r + 4 * 2 ^ T_r ≤ 4 * 3 ^ T_r :=
+    five_mul_renewalNumerator_add_four_mul_two_pow_le s r hs2
+  have h2_pos : 1 ≤ 2 ^ T_r := Nat.one_le_pow _ 2 (by decide)
+  have h5_lt : 5 * A_r < 4 * 3 ^ T_r := by omega
+  have hA_lt : A_r < 3 ^ T_r := by omega
+  have hch_r : ValidBlockChain b_0 s u r := fun k hk => hchain k (by omega)
+  have hm : 2 ^ T_r * P r = 3 ^ T_r * P 0 + A_r := renewal_prefix_master_identity hch_r
+  have hdiv_pos : 0 < 3 ^ T_r := by omega
+  have hdiv : (2 ^ T_r * P r) / 3 ^ T_r = P 0 := by
+    rw [hm, Nat.mul_add_div hdiv_pos, Nat.div_eq_of_lt hA_lt, add_zero]
+  have hmod : (2 ^ T_r * P r) % 3 ^ T_r = A_r := by
+    rw [hm, Nat.mul_add_mod, Nat.mod_eq_of_lt hA_lt]
+  have hs3 : base3DigitSum (2 ^ T_r * P r) = base3DigitSum (P 0) + base3DigitSum A_r := by
+    rw [hm, base3DigitSum_three_pow_mul_add T_r (P 0) hA_lt]
+  exact ⟨hinv, h5_lt, hA_lt, hdiv, hmod, hs3⟩
+
+/-! ## 25. Theorem SB.25: Unconditional All-$K$-Step Odd-Leftover Recovery & $9/5$ Geometric Remainder Law -/
+
+/-- **Unconditional All-$K$-Step Odd-Leftover Recovery & $9/5$ Geometric Remainder Law
+(`unconditional_all_k_step_odd_leftover_recovery_and_nine_fifths_bound`, Theorem SB.25)**:
+Suppose `ValidBlockChain b_0 s u (r + 1 + M + 1)` holds with `∀ k < M, 2 ≤ s (r + 1 + k)`
+(**eliminating the `0 < renewalIntSlack` hypothesis from Theorem SB.22!**).
+Let `s' t = s (r + 1 + t)`, `d = blockSteps s' M`,
+`S = d + s (r + 1 + M)`, `T = s r + d`, and
+`R = 3 ^ d + renewalNumerator s' M`:
+1. **Universal $9/5$ Geometric Remainder Bound**:
+   `5 * R + 4 * 2 ^ d ≤ 9 * 3 ^ d`, `R < 2 * 3 ^ d`, and `R < 3 ^ T`,
+2. **Unconditional Multi-Step Quotient & Remainder Recovery**:
+   `(2 ^ S * u (r + 1 + M)) / 3 ^ T = u r` and `(2 ^ S * u (r + 1 + M)) % 3 ^ T = R`, and
+3. **Unconditional All-$K$-Step Zero-Carry Base-3 Digit-Sum Splitting**:
+   `base3DigitSum (2 ^ S * u (r + 1 + M)) = base3DigitSum (u r) + base3DigitSum R`! -/
+theorem unconditional_all_k_step_odd_leftover_recovery_and_nine_fifths_bound
+    {b_0 r M : ℕ} {s u : ℕ → ℕ}
+    (hchain : ValidBlockChain b_0 s u (r + 1 + M + 1))
+    (hs2 : ∀ k < M, 2 ≤ s (r + 1 + k)) :
+    let s' := fun t => s (r + 1 + t)
+    let d := blockSteps s' M
+    let S := d + s (r + 1 + M)
+    let T := s r + d
+    let R := 3 ^ d + renewalNumerator s' M
+    5 * R + 4 * 2 ^ d ≤ 9 * 3 ^ d ∧
+      R < 2 * 3 ^ d ∧
+      R < 3 ^ T ∧
+      (2 ^ S * u (r + 1 + M)) / 3 ^ T = u r ∧
+      (2 ^ S * u (r + 1 + M)) % 3 ^ T = R ∧
+      base3DigitSum (2 ^ S * u (r + 1 + M)) = base3DigitSum (u r) + base3DigitSum R := by
+  intro s' d S T R
+  have h10 := late_step_cauchy_pinch_and_odd_quotient_gcd_dvd (N := r + 1) (M := M) hchain
+  have hu_id :
+      2 ^ S * u (r + 1 + M) =
+        3 ^ d * 2 ^ (s (r + 1)) * u (r + 1) + renewalNumerator s' M := h10.2.1
+  have hch_r2 : ValidBlockChain b_0 s u (r + 2) := fun k hk => hchain k (by omega)
+  have hstep1 : 2 ^ (s (r + 1)) * u (r + 1) = 3 ^ (s r) * u r + 1 :=
+    (one_step_backward_quotient_recovery_and_mod_three_pow_one hch_r2).1
+  have hid_all : 2 ^ S * u (r + 1 + M) = 3 ^ T * u r + R := by
+    calc
+      2 ^ S * u (r + 1 + M)
+          = 3 ^ d * (2 ^ (s (r + 1)) * u (r + 1)) + renewalNumerator s' M := by
+            rw [hu_id]
+            ring
+      _ = 3 ^ d * (3 ^ (s r) * u r + 1) + renewalNumerator s' M := by rw [hstep1]
+      _ = 3 ^ T * u r + R := by
+            change 3 ^ d * (3 ^ (s r) * u r + 1) + renewalNumerator s' M =
+              3 ^ (s r + d) * u r + (3 ^ d + renewalNumerator s' M)
+            rw [Nat.pow_add]
+            ring
+  have hinv_M : 5 * renewalNumerator s' M + 4 * 2 ^ d ≤ 4 * 3 ^ d :=
+    five_mul_renewalNumerator_add_four_mul_two_pow_le s' M hs2
+  have h2d_pos : 1 ≤ 2 ^ d := Nat.one_le_pow _ 2 (by decide)
+  have h95 : 5 * R + 4 * 2 ^ d ≤ 9 * 3 ^ d := by omega
+  have hR_lt_2 : R < 2 * 3 ^ d := by omega
+  have hs_r : 1 ≤ s r := (hchain r (by omega)).1
+  have h3_ge_3 : 3 ≤ 3 ^ (s r) := by
+    obtain ⟨k, hk⟩ : ∃ k : ℕ, s r = k + 1 := ⟨s r - 1, by omega⟩
+    have hpos : 1 ≤ 3 ^ k := Nat.one_le_pow _ 3 (by decide)
+    rw [hk, Nat.pow_succ]
+    omega
+  have hR_lt_T : R < 3 ^ T := by
+    have hpow : 3 ^ T = 3 ^ (s r) * 3 ^ d := Nat.pow_add 3 (s r) d
+    have hmul : 3 * 3 ^ d ≤ 3 ^ (s r) * 3 ^ d := Nat.mul_le_mul_right (3 ^ d) h3_ge_3
+    omega
+  have hdiv_pos : 0 < 3 ^ T := by omega
+  have hdiv : (2 ^ S * u (r + 1 + M)) / 3 ^ T = u r := by
+    rw [hid_all, Nat.mul_add_div hdiv_pos, Nat.div_eq_of_lt hR_lt_T, add_zero]
+  have hmod : (2 ^ S * u (r + 1 + M)) % 3 ^ T = R := by
+    rw [hid_all, Nat.mul_add_mod, Nat.mod_eq_of_lt hR_lt_T]
+  have hs3_split :
+      base3DigitSum (2 ^ S * u (r + 1 + M)) = base3DigitSum (u r) + base3DigitSum R := by
+    rw [hid_all, base3DigitSum_three_pow_mul_add T (u r) hR_lt_T]
+  exact ⟨h95, hR_lt_2, hR_lt_T, hdiv, hmod, hs3_split⟩
+
+/-! ## 26. Theorem SB.26: Sliding Cut-Point Past–Future Chinese Remainder Pinch & Post-Bit-Length Uniqueness -/
+
+/-- **Sliding Cut-Point Past–Future Chinese Remainder Pinch & Post-Bit-Length Uniqueness
+(`sliding_cut_point_past_future_crt_pinch`, Theorem SB.26)**:
+Suppose `ValidBlockChain b_0 s u (r + M + 1)` holds with `∀ k < r, 2 ≤ s k`.
+At any interior cut point `r`, let `P k = oddReturnP (orbit b_0 (blockSteps s k))`,
+`T_r = blockSteps s r`, `s' t = s (r + t)`, `d_r = blockSteps s' M`,
+`D_r = d_r + s (r + M)`, and `M_r = 3 ^ T_r * 2 ^ (D_r + 1)`:
+1. **Past Base-3 Congruence at Cut Point $r$**:
+   `(2 ^ T_r * P r) % 3 ^ T_r = renewalNumerator s r`,
+2. **Future Base-2 Congruence at Cut Point $r$**:
+   `(3 ^ d_r * P r + renewalNumerator s' M) % 2 ^ (D_r + 1) = 2 ^ D_r`,
+3. **Exact Coprimality of Past & Future Moduli**:
+   `Nat.Coprime (3 ^ T_r) (2 ^ (D_r + 1))`,
+4. **Unconditional Sliding Cut-Point Archimedean Bound**:
+   `2 ^ T_r * P r < 3 ^ T_r * (P 0 + 1)` and
+   `5 * 2 ^ (T_r + D_r) * P r < 3 ^ T_r * 2 ^ D_r * (5 * P 0 + 4)`, and
+5. **Post-Bit-Length Sliding Cut-Point Pinch (`P_r < M_r`)**:
+   Whenever `P 0 < 2 ^ (T_r + D_r + 1)`, at cut point `r` we have
+   `P r < M_r` (`P r < 3 ^ T_r * 2 ^ (D_r + 1)`)! -/
+theorem sliding_cut_point_past_future_crt_pinch
+    {b_0 r M : ℕ} {s u : ℕ → ℕ}
+    (hchain : ValidBlockChain b_0 s u (r + M + 1))
+    (hs2 : ∀ k < r, 2 ≤ s k) :
+    let P := fun k => oddReturnP (orbit b_0 (blockSteps s k))
+    let T_r := blockSteps s r
+    let s' := fun t => s (r + t)
+    let d_r := blockSteps s' M
+    let D_r := d_r + s (r + M)
+    let M_r := 3 ^ T_r * 2 ^ (D_r + 1)
+    (2 ^ T_r * P r) % 3 ^ T_r = renewalNumerator s r ∧
+      (3 ^ d_r * P r + renewalNumerator s' M) % 2 ^ (D_r + 1) = 2 ^ D_r ∧
+      Nat.Coprime (3 ^ T_r) (2 ^ (D_r + 1)) ∧
+      (2 ^ T_r * P r < 3 ^ T_r * (P 0 + 1) ∧
+        5 * 2 ^ (T_r + D_r) * P r < 3 ^ T_r * 2 ^ D_r * (5 * P 0 + 4)) ∧
+      (P 0 < 2 ^ (T_r + D_r + 1) → P r < M_r) := by
+  intro P T_r s' d_r D_r M_r
+  have hch_r1 : ValidBlockChain b_0 s u (r + 1) := fun k hk => hchain k (by omega)
+  have h24 := unconditional_four_fifths_renewal_ceiling_and_past_base3_recovery hch_r1 hs2
+  have hpast_mod : (2 ^ T_r * P r) % 3 ^ T_r = renewalNumerator s r := h24.2.2.2.2.1
+  have h5A_lt : 5 * renewalNumerator s r < 4 * 3 ^ T_r := h24.2.1
+  have hA_lt : renewalNumerator s r < 3 ^ T_r := h24.2.2.1
+  have h10 := late_step_cauchy_pinch_and_odd_quotient_gcd_dvd (N := r) (M := M) hchain
+  have hfut_eq :
+      2 ^ D_r * u (r + M) = 3 ^ d_r * P r + renewalNumerator s' M := by
+    calc
+      2 ^ D_r * u (r + M) = 2 ^ d_r * (2 ^ (s (r + M)) * u (r + M)) := by
+        change 2 ^ (d_r + s (r + M)) * u (r + M) = 2 ^ d_r * (2 ^ (s (r + M)) * u (r + M))
+        rw [Nat.pow_add]
+        ring
+      _ = 2 ^ d_r * P (r + M) := by
+        have hPM : P (r + M) = 2 ^ (s (r + M)) * u (r + M) := (hchain (r + M) (by omega)).2.2
+        rw [← hPM]
+      _ = 3 ^ d_r * P r + renewalNumerator s' M := h10.1
+  have huM_odd : u (r + M) % 2 = 1 := (hchain (r + M) (by omega)).2.1
+  have hfut_mod :
+      (3 ^ d_r * P r + renewalNumerator s' M) % 2 ^ (D_r + 1) = 2 ^ D_r := by
+    rw [← hfut_eq]
+    obtain ⟨m, hm⟩ : ∃ m : ℕ, u (r + M) = 2 * m + 1 := ⟨u (r + M) / 2, by omega⟩
+    have hexp : 2 ^ D_r * u (r + M) = 2 ^ (D_r + 1) * m + 2 ^ D_r := by
+      rw [hm, Nat.pow_succ]
+      ring
+    have hlt : 2 ^ D_r < 2 ^ (D_r + 1) := by
+      have hpos : 1 ≤ 2 ^ D_r := Nat.one_le_pow _ 2 (by decide)
+      rw [Nat.pow_succ]
+      omega
+    rw [hexp, Nat.mul_add_mod, Nat.mod_eq_of_lt hlt]
+  have hcop : Nat.Coprime (3 ^ T_r) (2 ^ (D_r + 1)) := by
+    have hc0 : Nat.Coprime 3 2 := by decide
+    exact (hc0.pow_left T_r).pow_right (D_r + 1)
+  have hch_r : ValidBlockChain b_0 s u r := fun k hk => hchain k (by omega)
+  have hm_past : 2 ^ T_r * P r = 3 ^ T_r * P 0 + renewalNumerator s r :=
+    renewal_prefix_master_identity hch_r
+  have h1_past : 2 ^ T_r * P r < 3 ^ T_r * (P 0 + 1) := by
+    have hrhs : 3 ^ T_r * (P 0 + 1) = 3 ^ T_r * P 0 + 3 ^ T_r := by ring
+    omega
+  have h5_past : 5 * (2 ^ T_r * P r) < 3 ^ T_r * (5 * P 0 + 4) := by
+    have h : 5 * (2 ^ T_r * P r) = 5 * (3 ^ T_r * P 0) + 5 * renewalNumerator s r := by
+      rw [hm_past]
+      ring
+    have hrhs : 3 ^ T_r * (5 * P 0 + 4) = 5 * (3 ^ T_r * P 0) + 4 * 3 ^ T_r := by ring
+    omega
+  have h2Dr_pos : 0 < 2 ^ D_r := Nat.pow_pos (by decide)
+  have h5_cut :
+      5 * 2 ^ (T_r + D_r) * P r < 3 ^ T_r * 2 ^ D_r * (5 * P 0 + 4) := by
+    have hlhs : 5 * 2 ^ (T_r + D_r) * P r = 2 ^ D_r * (5 * (2 ^ T_r * P r)) := by
+      rw [Nat.pow_add 2 T_r D_r]
+      ring
+    have hrhs : 3 ^ T_r * 2 ^ D_r * (5 * P 0 + 4) = 2 ^ D_r * (3 ^ T_r * (5 * P 0 + 4)) := by
+      ring
+    rw [hlhs, hrhs]
+    exact Nat.mul_lt_mul_of_pos_left h5_past h2Dr_pos
+  refine ⟨hpast_mod, hfut_mod, hcop, ⟨h1_past, h5_cut⟩, ?_⟩
+  intro hP0_lt
+  have hP0_le : P 0 + 1 ≤ 2 ^ (T_r + D_r + 1) := by omega
+  have hmul_le : 3 ^ T_r * (P 0 + 1) ≤ 3 ^ T_r * 2 ^ (T_r + D_r + 1) :=
+    Nat.mul_le_mul_left (3 ^ T_r) hP0_le
+  have hrhs_eq : 3 ^ T_r * 2 ^ (T_r + D_r + 1) = 2 ^ T_r * M_r := by
+    change 3 ^ T_r * 2 ^ (T_r + (D_r + 1)) = 2 ^ T_r * (3 ^ T_r * 2 ^ (D_r + 1))
+    rw [Nat.pow_add 2 T_r (D_r + 1)]
+    ring
+  have h2Tr_lt : 2 ^ T_r * P r < 2 ^ T_r * M_r := by omega
+  exact Nat.lt_of_mul_lt_mul_left h2Tr_lt
+
 
 #check @archimedean_rung_ceiling_and_stepSum_bound
 #check @unit_quotient_even_rung_instant_death_and_odd_rung_mod64_identity
@@ -1855,6 +2127,9 @@ theorem two_sided_past_future_crt_pinch
 #check @two_step_disjoint_base3_digit_block_law_and_quotient_recovery
 #check @all_k_step_zero_carry_top_block_and_quotient_recovery
 #check @two_sided_past_future_crt_pinch
+#check @unconditional_four_fifths_renewal_ceiling_and_past_base3_recovery
+#check @unconditional_all_k_step_odd_leftover_recovery_and_nine_fifths_bound
+#check @sliding_cut_point_past_future_crt_pinch
 
 #print axioms archimedean_rung_ceiling_and_stepSum_bound
 #print axioms unit_quotient_even_rung_instant_death_and_odd_rung_mod64_identity
