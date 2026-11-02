@@ -1,6 +1,6 @@
-# Mahler $3/2$ Problem — 206-File Lean 4 Formalization (`mahler_demand_a`)
+# Mahler $3/2$ Problem — 208-File Lean 4 Formalization (`mahler_demand_a`)
 
-This repository contains a **206-file (`sorry`-free) Lean 4.19.0 + Mathlib v4.19.0 formalization** of the reduced Mahler $3/2$ dynamical system ($Z$-numbers) and its interval- and union-confinement relaxations ([`MAHLER_FORMALIZATION_PAPER.pdf`](./MAHLER_FORMALIZATION_PAPER.pdf)).
+This repository contains a **208-file (`sorry`-free) Lean 4.19.0 + Mathlib v4.19.0 formalization** of the reduced Mahler $3/2$ dynamical system ($Z$-numbers) and its interval- and union-confinement relaxations ([`MAHLER_FORMALIZATION_PAPER.pdf`](./MAHLER_FORMALIZATION_PAPER.pdf)).
 
 ---
 
@@ -218,6 +218,8 @@ not a completed proof; its Part III corrects earlier overstatements and controls
   First-block factoring $A_{0,1+m} = 2^{s_0}(3^{d_m} + A_{1,1+m})$, sharpened valuation shift $3^{s_K+d_m}\Sigma_K - \Sigma_{K+1+m} = 2^{T_{K+1}+1}(3^{d_m} + A_{K+1,K+1+m})$ with odd cofactor, universal mod-512 law $512 \mid (3^{T_{2+m}-2} - \Sigma_{2+m})$ on $(2, 6)$, two-step $(s_N = 4, s_{N+1} = 2)$ window $\Sigma_N / 2^{T_N} \in (416/729, 432/729)$, and certification of blocks 19–21 ($s_{18} = 5, s_{19} = 7, s_{20} = 4$, crossing the 100-step horizon at $T_{21} = 105$, forcing $2^{106} \le b_2$).
 - **Universal Two-Step $(s_N, 2)$ Window $(26 : 27)$, Centered-Deficit Post-`2` Recovery Formula & 24-Block ($T_{24} = 118$) Kneading Certification (`UniversalTwoRungWindowAndKneading24.lean`, Campaign 2 Outer Loop 10):**
   Centered-deficit formula $\Sigma_{N+1}(2) = 9\widehat{\Sigma}_N + 2^{T_N}$ ($s_N = 2$ sub-ceiling iff $-9\widehat{\Sigma}_N < 2^{T_N}$), universal two-step $(s_N, s_{N+1} = 2)$ window $26 \cdot 2^{T_N+s_N} < 9 \cdot 3^{s_N}\Sigma_N < 27 \cdot 2^{T_N+s_N}$, post-`2` recovery sandwich $8 \cdot 2^{T_N+r} < 3^r(2^{T_N} + 9\widehat{\Sigma}_N) < 12 \cdot 2^{T_N+r}$, and certification of blocks 22–24 ($s_{21} = 4, s_{22} = 6, s_{23} = 3$, $T_{24} = 118$, forcing $2^{119} \le b_2$).
+- **Universal All-$3$ Run Closed Form from Arbitrary State, the $\frac{16}{19}$ Repelling Fixed-Point Bifurcation & 27-Block ($T_{27} = 139$) Kneading Certification (`UniversalAllThreeRunBifurcationAndKneading27.lean`, Campaign 2 Outer Loop 11):**
+  Universal closed form $19\Sigma_{N+j} = 27^j(19\Sigma_N - 16 \cdot 2^{T_N}) + 16 \cdot 2^{T_N} \cdot 8^j$ and $19\widehat{\Sigma}_{N+j} = 27^j(19\Sigma_N - 16 \cdot 2^{T_N}) - 3 \cdot 2^{T_N} \cdot 8^j$ for any $j$-run of $3$'s from any state $N$, non-vanishing of the repelling fixed point $(3^m - 2^m)\Sigma_N \ne 2^{T_N+m+1}$ ($19\Sigma_N \ne 16 \cdot 2^{T_N}$), upward vs. downward drift bifurcation around $\frac{16}{19}$, and certification of blocks 25–27 ($s_{24} = 5, s_{25} = 8, s_{26} = 8$, crossing $2^{128}$ at $T_{27} = 139$, forcing $2^{140} \le b_2$).
 
 ## Acknowledgments
 
