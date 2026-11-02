@@ -649,6 +649,13 @@ name = "PeriodicTailExclusionAndKneading36"
 [[lean_lib]]
 name = "PeriodicTailExclusionAndKneading36Checks"
 
+[[lean_lib]]
+name = "FixedPointEigenDefectAndKneading39"
+
+[[lean_lib]]
+name = "FixedPointEigenDefectAndKneading39Checks"
+
+
 
 
 

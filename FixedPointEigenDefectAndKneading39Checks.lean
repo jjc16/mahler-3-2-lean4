@@ -1,0 +1,16 @@
+import FixedPointEigenDefectAndKneading39
+
+/-!
+# Verification Checks for `FixedPointEigenDefectAndKneading39`
+-/
+
+open Mahler.FixedPointEigenDefectAndKneading39
+
+#check @periodicFixedPointDefect
+#check @constant_rung_and_periodic_fixed_point_eigenDefect_law
+#check @three_run_upward_exit_forces_two_and_downward_exit_forces_ge_four
+#check @thirtyseven_to_thirtynine_block_kneading_corridor_and_two_pow_189_uniqueness
+
+#print axioms constant_rung_and_periodic_fixed_point_eigenDefect_law
+#print axioms three_run_upward_exit_forces_two_and_downward_exit_forces_ge_four
+#print axioms thirtyseven_to_thirtynine_block_kneading_corridor_and_two_pow_189_uniqueness

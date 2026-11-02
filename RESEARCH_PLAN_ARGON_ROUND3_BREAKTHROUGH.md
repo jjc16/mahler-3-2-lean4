@@ -2005,6 +2005,33 @@ Here is why, in plain terms:
 ## C2.O14.5 Inner Loop 5 / 5 — Explore & Exploit: Mod-$2^{180}$ Seed Uniqueness for the 36-Block Sub-Ceiling Corridor
 - **Explore & Exploit (Priority 5):** Prove that any two seeds $b_1 < b_2$ realizing the 36-block sub-ceiling kneading corridor satisfy $2^{180} \mid (b_2 - b_1)$ and $2^{180} \le b_2$.
 
+---
+
+# Part XXX — Second Campaign (`m = 5, n = 20`) — Outer Loop 15 / 20 (Inner Loops 1–5): Periodic Fixed-Point Eigen-Defect $\Delta^{(q, A_p)}_{N+Rp} = 3^{qR} \Delta^{(q, A_p)}_N$, Upward/Downward $3$-Run Exit Laws & 39-Block ($T_{39} = 188$) Kneading Certification
+
+## C2.O15.1 Inner Loop 1 / 5 — Explore & Exploit: Pure $3^m$-Eigenvalue Law for the Constant-Rung Fixed-Point Defect $\Delta^{(m)}_N$
+- **Explore:** Define $\Delta^{(m)}_N := (3^m - 2^m)\Sigma_N - 2^{T_N + m + 1}$ and compute $\Delta^{(m)}_{N+1}$ when $s_N = m$.
+- **Exploit (Priority 1):** Prove `constant_rung_fixed_point_eigenDefect_law`: the additive forcing term cancels identically, yielding the pure multiplicative eigenvalue law
+  $$\Delta^{(m)}_{N+1} = 3^m \Delta^{(m)}_N \quad (s_N = m), \qquad \Delta^{(m)}_{N+j} = 3^{m j} \Delta^{(m)}_N \quad (\forall t < j,\, s(N+t) = m).$$
+
+## C2.O15.2 Inner Loop 2 / 5 — Explore & Exploit: Multi-Period Eigen-Defect Law $\Delta^{(q, A_p)}_{N+Rp} = 3^{qR} \Delta^{(q, A_p)}_N$
+- **Explore:** Generalize $\Delta^{(m)}_N$ to the periodic fixed-point defect $\Delta^{(q, A_p)}_N := (3^q - 2^q)\Sigma_N - 2^{T_N+1} A_p$.
+- **Exploit (Priority 2):** Prove `periodic_fixed_point_eigenDefect_law`: across $R$ consecutive $(p, q, A_p)$-windows,
+  $$\Delta^{(q, A_p)}_{N + R p} = 3^{q R} \Delta^{(q, A_p)}_N.$$
+
+## C2.O15.3 Inner Loop 3 / 5 — Explore & Exploit: Exact Upward ($s_{N+j} = 2$) and Downward ($s_{N+j} \ge 4$) Exit Laws for $3^j$ Runs
+- **Explore:** Determine what rung $s_{N+j}$ must follow a $3^j$ run when choosing $3$ one more time at step $N + j$ would exit the sub-ceiling corridor.
+- **Exploit (Priority 3):** Prove `three_run_upward_exit_forces_two_and_downward_exit_forces_ge_four`:
+  - Upward exit ($\widehat{\Sigma}_{N+j} < 0$ and $\operatorname{candidateCenteredSlack} \Sigma_{N+j} \, T_{N+j} \, 3 > 0$): step $N+j+1$ is sub-ceiling **if and only if $s_{N+j} = 2$**!
+  - Downward exit ($\operatorname{candidateSlack} \Sigma_{N+j} \, T_{N+j} \, 3 \le 0$): if step $N+j+1$ is sub-ceiling, then **$4 \le s_{N+j}$**!
+
+## C2.O15.4 Inner Loop 4 / 5 — Explore & Exploit: Certification of the 4-Fold $3$-Run at Blocks 37, 38, and 39 ($s_{36} = 3, s_{37} = 3, s_{38} = 3$, $T_{39} = 188$)
+- **Explore & Exploit (Priority 4):** Certify blocks 37–39 ($s_{36} = 3, T_{37} = 182$; $s_{37} = 3, T_{38} = 185$; $s_{38} = 3, T_{39} = 188$), completing the 4-fold consecutive $3$-run $(s_{35}, s_{36}, s_{37}, s_{38}) = (3, 3, 3, 3)$.
+
+## C2.O15.5 Inner Loop 5 / 5 — Explore & Exploit: Mod-$2^{189}$ Seed Uniqueness for the 39-Block Sub-Ceiling Corridor
+- **Explore & Exploit (Priority 5):** Prove that any two seeds $b_1 < b_2$ realizing the 39-block sub-ceiling kneading corridor satisfy $2^{189} \mid (b_2 - b_1)$ and $2^{189} \le b_2$.
+
+
 
 
 
