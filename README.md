@@ -1,6 +1,6 @@
-# Mahler $3/2$ Problem — 214-File Lean 4 Formalization (`mahler_demand_a`)
+# Mahler $3/2$ Problem — 216-File Lean 4 Formalization (`mahler_demand_a`)
 
-This repository contains a **214-file (`sorry`-free) Lean 4.19.0 + Mathlib v4.19.0 formalization** of the reduced Mahler $3/2$ dynamical system ($Z$-numbers) and its interval- and union-confinement relaxations ([`MAHLER_FORMALIZATION_PAPER.pdf`](./MAHLER_FORMALIZATION_PAPER.pdf)).
+This repository contains a **216-file (`sorry`-free) Lean 4.19.0 + Mathlib v4.19.0 formalization** of the reduced Mahler $3/2$ dynamical system ($Z$-numbers) and its interval- and union-confinement relaxations ([`MAHLER_FORMALIZATION_PAPER.pdf`](./MAHLER_FORMALIZATION_PAPER.pdf)).
 
 ---
 
@@ -226,6 +226,8 @@ not a completed proof; its Part III corrects earlier overstatements and controls
   Two-parameter exponential dominance $2 \cdot 2^{A+B} < 3^B$ ($2 A + 2 \le B$), proof that every constant-$m$ run from an odd-slack state $N$ with $m j \ge 2 T_N + 3 m + 2$ either escapes ($\Sigma_{N+j} < 0$) or restores full ceiling ($\widehat{\Sigma}_{N+j} > 0$), unconditional exclusion of eventually-constant sub-ceiling trajectories, and certification of blocks 31–33 ($s_{30} = 5, s_{31} = 3, s_{32} = 4$, $T_{33} = 164$, forcing $2^{165} \le b_2$).
 - **Multi-Period $(p, q, A_p)$ Closed Form, Strict Aperiodicity of All Sub-Ceiling Trajectories & 36-Block ($T_{36} = 179$) Kneading Certification (`PeriodicTailExclusionAndKneading36.lean`, Campaign 2 Outer Loop 14):**
   Multi-period renewal numerator identity $(3^q - 2^q)A_{0,Rp} = A_p(3^{qR} - 2^{qR})$, universal closed forms for $(3^q - 2^q)\Sigma_{N+Rp}$ and $(3^q - 2^q)\widehat{\Sigma}_{N+Rp}$ across $R$ periods, repelling periodic fixed-point non-vanishing $(3^q - 2^q)\Sigma_N \ne 2^{T_N+1}A_p$ and strict aperiodicity ($qR \ge 2T_N + 3q + 2$ exits the sub-ceiling corridor for any period $p \ge 1$), and certification of blocks 34–36 ($s_{33} = 6, s_{34} = 6, s_{35} = 3$, $T_{36} = 179$, forcing $2^{180} \le b_2$).
+- **Periodic Fixed-Point Eigen-Defect $\Delta^{(q, A_p)}_{N+Rp} = 3^{qR} \Delta^{(q, A_p)}_N$, Upward/Downward $3$-Run Exit Laws & 39-Block ($T_{39} = 188$) Kneading Certification (`FixedPointEigenDefectAndKneading39.lean`, Campaign 2 Outer Loop 15):**
+  Pure multiplicative eigenvalue law $\Delta^{(q, A_p)}_{N+Rp} = 3^{qR}\Delta^{(q, A_p)}_N$ for the periodic fixed-point defect $\Delta^{(q, A_p)}_N = (3^q - 2^q)\Sigma_N - 2^{T_N+1}A_p$ (and constant-rung special case $\Delta^{(m)}_{N+j} = 3^{mj}\Delta^{(m)}_N$), proof that upward exit from a $3$-run forces $s_k = 2$ uniquely while downward exit forces $4 \le s_k$, and certification of the 4-fold consecutive $3$-run at blocks 37–39 ($s_{36} = 3, s_{37} = 3, s_{38} = 3$, $T_{39} = 188$, forcing $2^{189} \le b_2$).
 
 ## Acknowledgments
 
