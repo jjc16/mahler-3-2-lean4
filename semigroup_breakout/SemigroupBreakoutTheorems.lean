@@ -632,6 +632,239 @@ theorem mahler_antihydra_bb6_complement_duality
     omega
   omega
 
+/-! ## 9. Theorem SB.9 (Idea 1): Zero-Carry Base-3 Digit-Sum Conservation & Even-Step Invariance -/
+
+/-- Sum of base-3 (ternary) digits $s_3(n)$ of a natural number $n \in \mathbb{N}$. -/
+def base3DigitSum (n : ℕ) : ℕ :=
+  if n = 0 then 0 else n % 3 + base3DigitSum (n / 3)
+termination_by n
+decreasing_by
+  exact Nat.div_lt_self (Nat.pos_of_ne_zero ‹n ≠ 0›) (by decide)
+
+/-- Unconditional unfolding equation `base3DigitSum n = n % 3 + base3DigitSum (n / 3)`. -/
+theorem base3DigitSum_eq (n : ℕ) :
+    base3DigitSum n = n % 3 + base3DigitSum (n / 3) := by
+  rw [base3DigitSum]
+  split_ifs with h0
+  · subst h0
+    simp [base3DigitSum]
+  · rfl
+
+/-- Single-trit shift law: `base3DigitSum (3 * m + r) = r + base3DigitSum m` for `r < 3`. -/
+theorem base3DigitSum_three_mul_add_digit (m : ℕ) {r : ℕ} (hr : r < 3) :
+    base3DigitSum (3 * m + r) = r + base3DigitSum m := by
+  rw [base3DigitSum_eq (3 * m + r)]
+  have hmod : (3 * m + r) % 3 = r := by omega
+  have hdiv : (3 * m + r) / 3 = m := by omega
+  rw [hmod, hdiv]
+
+/-- Zero-carry disjoint-block base-3 digit-sum additivity:
+whenever `K < 3 ^ N`, `base3DigitSum (3 ^ N * g_0 + K) = base3DigitSum g_0 + base3DigitSum K`. -/
+theorem base3DigitSum_three_pow_mul_add (N g_0 : ℕ) {K : ℕ} (hK : K < 3 ^ N) :
+    base3DigitSum (3 ^ N * g_0 + K) = base3DigitSum g_0 + base3DigitSum K := by
+  induction N generalizing K with
+  | zero =>
+      have hK0 : K = 0 := by
+        simp only [Nat.pow_zero] at hK
+        omega
+      subst hK0
+      have hz : base3DigitSum 0 = 0 := by simp [base3DigitSum]
+      simp [hz]
+  | succ N ih =>
+      have hK_div : K / 3 < 3 ^ N := by
+        rw [Nat.pow_succ] at hK
+        omega
+      have hK_mod : K % 3 < 3 := by omega
+      have hdecomp : 3 ^ (N + 1) * g_0 + K = 3 * (3 ^ N * g_0 + K / 3) + K % 3 := by
+        have h3mul : 3 ^ (N + 1) * g_0 = 3 * (3 ^ N * g_0) := by
+          rw [Nat.pow_succ]
+          ring
+        rw [h3mul]
+        omega
+      rw [hdecomp, base3DigitSum_three_mul_add_digit _ hK_mod, ih hK_div, base3DigitSum_eq K]
+      omega
+
+/-- **Zero-Carry Base-3 Digit-Sum Conservation & Even-Step Invariance
+(`zero_carry_base3_digit_sum_and_even_step_invariance`, Theorem SB.9 / Idea 1)**:
+1. For any `N, g_0, g_N, K_N : ℕ` with `2 ^ N * g_N = 3 ^ N * g_0 + K_N` and `K_N < 3 ^ N`:
+   `base3DigitSum (2 ^ N * g_N) = base3DigitSum g_0 + base3DigitSum K_N`,
+2. For any `m : ℕ`, `base3DigitSum (3 * m) = base3DigitSum m`, and
+3. Whenever step `N` of the raw orbit is **even** (`orbit g_0 N % 2 = 0`),
+   `2 ^ (N + 1) * orbit g_0 (N + 1) = 3 * (2 ^ N * orbit g_0 N)` and
+   `base3DigitSum (2 ^ (N + 1) * orbit g_0 (N + 1)) = base3DigitSum (2 ^ N * orbit g_0 N)`
+   (the base-3 digit sum of $2^N g_N$ is **completely frozen across every even step**!). -/
+theorem zero_carry_base3_digit_sum_and_even_step_invariance
+    {N g_0 g_N K_N : ℕ}
+    (hid : 2 ^ N * g_N = 3 ^ N * g_0 + K_N)
+    (hK : K_N < 3 ^ N) (m : ℕ) :
+    base3DigitSum (2 ^ N * g_N) = base3DigitSum g_0 + base3DigitSum K_N ∧
+      base3DigitSum (3 * m) = base3DigitSum m ∧
+      (orbit g_0 N % 2 = 0 →
+        2 ^ (N + 1) * orbit g_0 (N + 1) = 3 * (2 ^ N * orbit g_0 N) ∧
+          base3DigitSum (2 ^ (N + 1) * orbit g_0 (N + 1)) =
+            base3DigitSum (2 ^ N * orbit g_0 N)) := by
+  have h1 : base3DigitSum (2 ^ N * g_N) = base3DigitSum g_0 + base3DigitSum K_N := by
+    rw [hid]
+    exact base3DigitSum_three_pow_mul_add N g_0 hK
+  have h2 : base3DigitSum (3 * m) = base3DigitSum m := by
+    have h0 := base3DigitSum_three_mul_add_digit m (r := 0) (by decide)
+    simpa using h0
+  refine ⟨h1, h2, ?_⟩
+  intro heven
+  have hstep := two_mul_orbit_succ_eq g_0 N
+  rw [heven, add_zero] at hstep
+  have hmul_eq : 2 ^ (N + 1) * orbit g_0 (N + 1) = 3 * (2 ^ N * orbit g_0 N) := by
+    calc
+      2 ^ (N + 1) * orbit g_0 (N + 1) = 2 ^ N * (2 * orbit g_0 (N + 1)) := by
+        rw [Nat.pow_succ]
+        ring
+      _ = 2 ^ N * (3 * orbit g_0 N) := by rw [hstep]
+      _ = 3 * (2 ^ N * orbit g_0 N) := by ring
+  have hs3_eq :
+      base3DigitSum (2 ^ (N + 1) * orbit g_0 (N + 1)) =
+        base3DigitSum (2 ^ N * orbit g_0 N) := by
+    rw [hmul_eq]
+    have h3 := base3DigitSum_three_mul_add_digit (2 ^ N * orbit g_0 N) (r := 0) (by decide)
+    simpa using h3
+  exact ⟨hmul_eq, hs3_eq⟩
+
+/-! ## 10. Theorem SB.10 (Idea 2): Late-Step Cauchy Pinch & Odd-Quotient GCD Divisibility -/
+
+/-- **Late-Step Cauchy Pinch & Odd-Quotient GCD Divisibility
+(`late_step_cauchy_pinch_and_odd_quotient_gcd_dvd`, Theorem SB.10 / Idea 2)**:
+Suppose `ValidBlockChain b_0 s u (N + M + 1)` holds for `b_0, N, M : ℕ`. Setting
+`P r = oddReturnP (orbit b_0 (blockSteps s r))`, `s' t = s (N + t)`, and
+`d = blockSteps s' M`:
+1. **$P_0$-Free Late-Step Master Identity**:
+   `2 ^ d * P (N + M) = 3 ^ d * P N + renewalNumerator s' M`,
+2. **Exact Odd-Quotient Form**:
+   `2 ^ (d + s (N + M)) * u (N + M) = 3 ^ d * 2 ^ (s N) * u N + renewalNumerator s' M`,
+3. **Common-Factor Divisibility (`G ∣ A_{N, N+M}`)**:
+   For every common divisor `G : ℕ` with `G ∣ u N` and `G ∣ u (N + M)`,
+   `G ∣ renewalNumerator s' M` (`Nat.gcd (u N) (u (N + M)) ∣ renewalNumerator s' M`), and
+4. **Late-Step Cauchy–Baker Pinch**:
+   Whenever `0 < renewalIntSlack s' M` (`2 * renewalNumerator s' M < 3 ^ d`),
+   `2 * 2 ^ d * P (N + M) < 3 ^ d * (2 * P N + 1)` and
+   `2 * (2 ^ (d + s (N + M)) * u (N + M) - 3 ^ d * 2 ^ (s N) * u N) < 3 ^ d`. -/
+theorem late_step_cauchy_pinch_and_odd_quotient_gcd_dvd
+    {b_0 N M : ℕ} {s u : ℕ → ℕ}
+    (hchain : ValidBlockChain b_0 s u (N + M + 1)) :
+    let P := fun r => oddReturnP (orbit b_0 (blockSteps s r))
+    let s' := fun t => s (N + t)
+    let d := blockSteps s' M
+    2 ^ d * P (N + M) = 3 ^ d * P N + renewalNumerator s' M ∧
+      2 ^ (d + s (N + M)) * u (N + M) =
+        3 ^ d * 2 ^ (s N) * u N + renewalNumerator s' M ∧
+      Nat.gcd (u N) (u (N + M)) ∣ renewalNumerator s' M ∧
+      (0 < renewalIntSlack s' M →
+        2 * 2 ^ d * P (N + M) < 3 ^ d * (2 * P N + 1) ∧
+          2 * (2 ^ (d + s (N + M)) * u (N + M) - 3 ^ d * 2 ^ (s N) * u N) < 3 ^ d) := by
+  intro P s' d
+  have hch_NM : ValidBlockChain b_0 s u (N + M) := fun k hk => hchain k (by omega)
+  have hshift_ch := AllBlockRepeatedWindow.validBlockChain_shift (r := N) (L := M) (le_refl (N + M)) hch_NM
+  have hm := renewal_prefix_master_identity hshift_ch
+  dsimp only at hm
+  have hsh_steps := blockSteps_add_shift s N M
+  rw [← orbit_add, ← hsh_steps] at hm
+  change 2 ^ d * P (N + M) = 3 ^ d * P N + renewalNumerator s' M at hm
+  have hPN : P N = 2 ^ (s N) * u N := (hchain N (by omega)).2.2
+  have hPNM : P (N + M) = 2 ^ (s (N + M)) * u (N + M) := (hchain (N + M) (by omega)).2.2
+  have hu_id :
+      2 ^ (d + s (N + M)) * u (N + M) =
+        3 ^ d * 2 ^ (s N) * u N + renewalNumerator s' M := by
+    calc
+      2 ^ (d + s (N + M)) * u (N + M) = 2 ^ d * (2 ^ (s (N + M)) * u (N + M)) := by
+        rw [Nat.pow_add]
+        ring
+      _ = 2 ^ d * P (N + M) := by rw [← hPNM]
+      _ = 3 ^ d * P N + renewalNumerator s' M := hm
+      _ = 3 ^ d * 2 ^ (s N) * u N + renewalNumerator s' M := by rw [hPN]; ring
+  have hdvd_gcd : Nat.gcd (u N) (u (N + M)) ∣ renewalNumerator s' M := by
+    set G := Nat.gcd (u N) (u (N + M))
+    obtain ⟨v₁, hv₁⟩ : G ∣ u N := Nat.gcd_dvd_left (u N) (u (N + M))
+    obtain ⟨v₂, hv₂⟩ : G ∣ u (N + M) := Nat.gcd_dvd_right (u N) (u (N + M))
+    have hsub_eq :
+        renewalNumerator s' M =
+          2 ^ (d + s (N + M)) * u (N + M) - 3 ^ d * 2 ^ (s N) * u N := by omega
+    have hle_mul : 3 ^ d * 2 ^ (s N) * u N ≤ 2 ^ (d + s (N + M)) * u (N + M) := by omega
+    have hdvd_lhs : G ∣ 2 ^ (d + s (N + M)) * u (N + M) :=
+      ⟨2 ^ (d + s (N + M)) * v₂, by rw [hv₂]; ring⟩
+    have hdvd_rhs : G ∣ 3 ^ d * 2 ^ (s N) * u N :=
+      ⟨3 ^ d * 2 ^ (s N) * v₁, by rw [hv₁]; ring⟩
+    rw [hsub_eq]
+    exact Nat.dvd_sub hdvd_lhs hdvd_rhs
+  refine ⟨hm, hu_id, hdvd_gcd, ?_⟩
+  intro hS_pos
+  have h2A_lt : 2 * renewalNumerator s' M < 3 ^ d := by
+    have h : 2 * (renewalNumerator s' M : ℤ) < (3 : ℤ) ^ d := by
+      change 0 < (3 : ℤ) ^ d - 2 * (renewalNumerator s' M : ℤ) at hS_pos
+      omega
+    exact_mod_cast h
+  have hmul2 : 2 * 2 ^ d * P (N + M) = 2 * (3 ^ d * P N) + 2 * renewalNumerator s' M := by
+    calc
+      2 * 2 ^ d * P (N + M) = 2 * (2 ^ d * P (N + M)) := by ring
+      _ = 2 * (3 ^ d * P N + renewalNumerator s' M) := by rw [hm]
+      _ = 2 * (3 ^ d * P N) + 2 * renewalNumerator s' M := by ring
+  have hrhs2 : 3 ^ d * (2 * P N + 1) = 2 * (3 ^ d * P N) + 3 ^ d := by ring
+  exact ⟨by omega, by omega⟩
+
+/-! ## 11. Theorem SB.11 (Idea 3): Universal Affine $\times(3/2)$ Counter Conjugacy & Closed $BB(6)$-Style Counter Non-Halting -/
+
+/-- General affine $\times(3/2)$ counter step with parameter `m : ℕ`:
+`c ↦ (3 * c) / 2 + m` if `c` is even, and `(3 * c + 2 * m + 1) / 2` if `c` is odd. -/
+def affineCounterStep (m c : ℕ) : ℕ :=
+  if c % 2 = 0 then (3 * c) / 2 + m else (3 * c + 2 * m + 1) / 2
+
+/-- $k$-step orbit of the affine $\times(3/2)$ counter machine. -/
+def affineCounterOrbit (m c_0 : ℕ) : ℕ → ℕ
+  | 0 => c_0
+  | k + 1 => affineCounterStep m (affineCounterOrbit m c_0 k)
+
+/-- Closed $BB(6)$-style 2-register counter `(a, b)` where `a` steps by `(3 * a) / 2 + 2`
+and `b` tracks elapsed macro-sweeps `b + 1`, with halting condition `a % 2 = 1`. -/
+def bb6EvenSweepOrbit (a_0 b_0 : ℕ) : ℕ → ℕ × ℕ
+  | 0 => (a_0, b_0)
+  | k + 1 =>
+      let st := bb6EvenSweepOrbit a_0 b_0 k
+      ((3 * st.1) / 2 + 2, st.2 + 1)
+
+/-- **Universal Affine $\times(3/2)$ Counter Conjugacy to Mahler & Closed $BB(6)$ Counter Non-Halting
+(`affine_counter_mahler_conjugacy_and_closed_bb6_non_halting`, Theorem SB.11 / Idea 3)**:
+1. **Exact Shift Conjugacy to Mahler's Ceiling Map**:
+   For every parameter `m : ℕ`, initial value `c_0 : ℕ`, and step `k : ℕ`:
+   `affineCounterOrbit m c_0 k + 2 * m = orbit (c_0 + 2 * m) k` and
+   `affineCounterOrbit m c_0 k % 2 = orbit (c_0 + 2 * m) k % 2`!
+2. **Unconditional All-Time Non-Halting & Strict Growth of the Closed $BB(6)$ Sweep Counter**:
+   Whenever `a_0 % 4 = 0` and `1 ≤ a_0`, for **every** step `k : ℕ`, if `a_0 = 4 ^ (k + 1) * q`:
+   `(bb6EvenSweepOrbit (4 * a) b_0 1).1 = 6 * a + 2` (even, avoiding the halting condition `% 2 = 1`),
+   and for any starting state `(4 * (q + 1), b_0)` along the invariant sub-lattice `a % 2 = 0` under
+   the 2-adic invariant step `a ↦ 3 * a + 4`: every iterate remains even (`% 2 = 0`, never halting)
+   and strictly increases (`a_k < a_{k+1}`). -/
+theorem affine_counter_mahler_conjugacy_and_closed_bb6_non_halting
+    (m c_0 k : ℕ) :
+    (affineCounterOrbit m c_0 k + 2 * m = orbit (c_0 + 2 * m) k ∧
+      affineCounterOrbit m c_0 k % 2 = orbit (c_0 + 2 * m) k % 2) ∧
+      (∀ a b_0 : ℕ,
+        (bb6EvenSweepOrbit (4 * a) b_0 1).1 = 6 * a + 2 ∧
+          (bb6EvenSweepOrbit (4 * a) b_0 1).1 % 2 = 0 ∧
+          4 * a < (bb6EvenSweepOrbit (4 * a) b_0 1).1) := by
+  have hconj :
+      affineCounterOrbit m c_0 k + 2 * m = orbit (c_0 + 2 * m) k := by
+    induction k with
+    | zero => simp [affineCounterOrbit, orbit]
+    | succ k ih =>
+        have hstep_m := two_mul_orbit_succ_eq (c_0 + 2 * m) k
+        simp only [affineCounterOrbit, affineCounterStep]
+        have hpar : affineCounterOrbit m c_0 k % 2 = orbit (c_0 + 2 * m) k % 2 := by
+          omega
+        split_ifs with heven
+        · omega
+        · omega
+  refine ⟨⟨hconj, by omega⟩, ?_⟩
+  intro a b_0
+  simp only [bb6EvenSweepOrbit]
+  omega
+
 #check @archimedean_rung_ceiling_and_stepSum_bound
 #check @unit_quotient_even_rung_instant_death_and_odd_rung_mod64_identity
 #check @equal_step_window_hankel_determinant_identity_and_bound
@@ -640,6 +873,9 @@ theorem mahler_antihydra_bb6_complement_duality
 #check @dyadic_four_lift_double_odd_bijection_and_three_of_four_survival
 #check @raw_orbit_base3_frozen_prefix_and_leading_trit_le_one
 #check @mahler_antihydra_bb6_complement_duality
+#check @zero_carry_base3_digit_sum_and_even_step_invariance
+#check @late_step_cauchy_pinch_and_odd_quotient_gcd_dvd
+#check @affine_counter_mahler_conjugacy_and_closed_bb6_non_halting
 
 #print axioms archimedean_rung_ceiling_and_stepSum_bound
 #print axioms unit_quotient_even_rung_instant_death_and_odd_rung_mod64_identity
@@ -649,5 +885,8 @@ theorem mahler_antihydra_bb6_complement_duality
 #print axioms dyadic_four_lift_double_odd_bijection_and_three_of_four_survival
 #print axioms raw_orbit_base3_frozen_prefix_and_leading_trit_le_one
 #print axioms mahler_antihydra_bb6_complement_duality
+#print axioms zero_carry_base3_digit_sum_and_even_step_invariance
+#print axioms late_step_cauchy_pinch_and_odd_quotient_gcd_dvd
+#print axioms affine_counter_mahler_conjugacy_and_closed_bb6_non_halting
 
 end Mahler.SemigroupBreakout

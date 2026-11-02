@@ -97,4 +97,24 @@ Let $\operatorname{antihydraOrbit}(a_0, k)$ be the $k$-th iterate of Antihydra's
 and for all $k < N$, $\operatorname{orbit}(2^N - a_0, k) \bmod 2 = \operatorname{antihydraOrbit}(a_0, k) \bmod 2$.
 \end{theorem}
 
+\begin{theorem}[Zero-Carry Base-3 Digit-Sum Conservation \& Even-Step Invariance, \texttt{zero\_carry\_base3\_digit\_sum\_and\_even\_step\_invariance}]
+Whenever $2^N g_N = 3^N g_0 + K_N$ with $K_N < 3^N$:
+\[
+  \operatorname{base3DigitSum}(2^N g_N) = \operatorname{base3DigitSum}(g_0) + \operatorname{base3DigitSum}(K_N),
+\]
+and whenever $\operatorname{orbit}(g_0, N) \bmod 2 = 0$, $\operatorname{base3DigitSum}(2^{N+1}\operatorname{orbit}(g_0, N+1)) = \operatorname{base3DigitSum}(2^N\operatorname{orbit}(g_0, N))$.
+\end{theorem}
+
+\begin{theorem}[Late-Step Cauchy Pinch \& Odd-Quotient GCD Divisibility, \texttt{late\_step\_cauchy\_pinch\_and\_odd\_quotient\_gcd\_dvd}]
+Across any late block segment $[N, N+M]$ of step sum $d = T_{N+M} - T_N$:
+\[
+  2^{d + s_{N+M}} u_{N+M} = 3^d \cdot 2^{s_N} u_N + A_{N, N+M},\qquad \gcd(u_N, u_{N+M}) \mid A_{N, N+M},
+\]
+and when $0 < \Sigma_M(s')$, $2(2^{d + s_{N+M}} u_{N+M} - 3^d \cdot 2^{s_N} u_N) < 3^d$.
+\end{theorem}
+
+\begin{theorem}[Universal Affine $\times(3/2)$ Counter Conjugacy to Mahler, \texttt{affine\_counter\_mahler\_conjugacy\_and\_closed\_bb6\_non\_halting}]
+For every $m, c_0, k \in \mathbb{N}$, $\operatorname{affineCounterOrbit}(m, c_0, k) + 2m = \operatorname{orbit}(c_0 + 2m, k)$ and $\operatorname{affineCounterOrbit}(m, c_0, k) \bmod 2 = \operatorname{orbit}(c_0 + 2m, k) \bmod 2$.
+\end{theorem}
+
 \end{document}

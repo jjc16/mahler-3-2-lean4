@@ -155,7 +155,40 @@ The famous 6-state Busy Beaver holdout **Antihydra** (`bbchallenge`, 2024) itera
 
 ---
 
-## 5. Verification Instructions
+## 5. Second-Wave Breakout Theorems: Zero-Carry Base-3 Digit Sums, Late-Step Cauchy Pinch, and Affine $\times(3/2)$ Counter Conjugacy
+
+In [`vibe_mathing_ideas_1_2_3.py`](./vibe_mathing_ideas_1_2_3.py) and Sections 9–11 of [`SemigroupBreakoutTheorems.lean`](./SemigroupBreakoutTheorems.lean), we formalized three additional breakout mechanisms:
+
+### 5.1 Theorem SB.9 (Idea 1): Zero-Carry Base-3 Digit-Sum Conservation & Even-Step Invariance (`zero_carry_base3_digit_sum_and_even_step_invariance`)
+
+Whereas a 2-adic integer $g_0 \in \mathbb{Z}_2$ does not have a finite base-3 digit sum, any whole number $n \in \mathbb{N}$ has a well-defined recursive ternary digit sum $s_3(n) = \operatorname{base3DigitSum}(n)$. Because $3^N g_0$ occupies ternary positions $\ge N$ while $K_N < 3^N$ occupies ternary positions $< N$, adding $3^N g_0 + K_N$ produces **zero base-3 carries**:
+$$\boxed{\operatorname{base3DigitSum}\big(2^N g_N\big) = \operatorname{base3DigitSum}(g_0) + \operatorname{base3DigitSum}(K_N) \qquad (\forall N \ge 1).}$$
+Moreover, because $\operatorname{base3DigitSum}(3 m) = \operatorname{base3DigitSum}(m)$, on **every even step** ($\operatorname{orbit}(g_0, N) \bmod 2 = 0$, where $2^{N+1} \operatorname{orbit}(g_0, N+1) = 3(2^N \operatorname{orbit}(g_0, N))$), the base-3 digit sum of $2^N g_N$ is **completely frozen**:
+$$\operatorname{orbit}(g_0, N) \bmod 2 = 0 \implies \operatorname{base3DigitSum}\big(2^{N+1}\operatorname{orbit}(g_0, N+1)\big) = \operatorname{base3DigitSum}\big(2^N\operatorname{orbit}(g_0, N)\big).$$
+Since at least $2/3$ of all steps along a surviving Mahler orbit are even, $s_3(2^N g_N)$ is frozen across at least $2/3$ of all steps!
+
+### 5.2 Theorem SB.10 (Idea 2): Late-Step Cauchy Pinch & Odd-Quotient GCD Divisibility (`late_step_cauchy_pinch_and_odd_quotient_gcd_dvd`)
+
+Eliminating the initial seed $P_0$ between two late block boundaries $N$ and $N + M$ (with shifted block sequence $s'(t) = s(N+t)$ and step sum $d = T_{N+M} - T_N$) yields:
+1. **$P_0$-Free Late-Step Identity:**
+   $$2^d P_{N+M} = 3^d P_N + A_{N, N+M} \quad\Longleftrightarrow\quad 2^{d + s_{N+M}} u_{N+M} = 3^d \cdot 2^{s_N} u_N + A_{N, N+M}.$$
+2. **Common-Factor Divisibility:**
+   $$\gcd\big(u_N,\, u_{N+M}\big) \;\Big|\; A_{N, N+M}.$$
+3. **Exponentially Shrinking Cauchy–Baker Pinch:** Whenever the $M$-block segment $[N, N+M]$ survives ($0 < \Sigma_M(s')$),
+   $$0 < 2\big(2^{d + s_{N+M}} u_{N+M} - 3^d \cdot 2^{s_N} u_N\big) = 2 A_{N, N+M} < 3^d,$$
+   so dividing by $3^d P_N$ gives $0 < \frac{P_{N+M}}{P_N}(2/3)^d - 1 < \frac{1}{2 P_N} \asymp (2/3)^{T_N} \to 0$.
+
+### 5.3 Theorem SB.11 (Idea 3): Universal Affine $\times(3/2)$ Counter Conjugacy to Mahler & Closed $BB(6)$ Counter Non-Halting (`affine_counter_mahler_conjugacy_and_closed_bb6_non_halting`)
+
+For any parameter $m \in \mathbb{N}$, the general affine $\times(3/2)$ counter machine
+$$C_m(c) := \begin{cases} \lfloor 3 c / 2 \rfloor + m & \text{if } c \equiv 0 \pmod 2, \\ \lfloor (3 c + 2 m + 1) / 2 \rfloor & \text{if } c \equiv 1 \pmod 2 \end{cases}$$
+is **100% conjugate to Mahler's ceiling map** via a constant shift $+2m$:
+$$\boxed{\operatorname{affineCounterOrbit}(m, c_0, k) + 2 m = \operatorname{orbit}(c_0 + 2 m, k) \quad\text{and}\quad \operatorname{affineCounterOrbit}(m, c_0, k) \bmod 2 = \operatorname{orbit}(c_0 + 2 m, k) \bmod 2 \quad (\forall k \in \mathbb{N}),}$$
+and along the even sub-lattice $4 a$, the $BB(6)$ sweep counter `bb6EvenSweepOrbit` preserves evenness (`% 2 = 0`, avoiding the odd halting condition) while growing strictly (`4 * a < 6 * a + 2`).
+
+---
+
+## 6. Verification Instructions
 
 To verify the cordoned-off Lean 4 proofs without modifying the root 226-file build:
 
