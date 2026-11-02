@@ -1,6 +1,6 @@
-# Mahler $3/2$ Problem — 216-File Lean 4 Formalization (`mahler_demand_a`)
+# Mahler $3/2$ Problem — 218-File Lean 4 Formalization (`mahler_demand_a`)
 
-This repository contains a **216-file (`sorry`-free) Lean 4.19.0 + Mathlib v4.19.0 formalization** of the reduced Mahler $3/2$ dynamical system ($Z$-numbers) and its interval- and union-confinement relaxations ([`MAHLER_FORMALIZATION_PAPER.pdf`](./MAHLER_FORMALIZATION_PAPER.pdf)).
+This repository contains a **218-file (`sorry`-free) Lean 4.19.0 + Mathlib v4.19.0 formalization** of the reduced Mahler $3/2$ dynamical system ($Z$-numbers) and its interval- and union-confinement relaxations ([`MAHLER_FORMALIZATION_PAPER.pdf`](./MAHLER_FORMALIZATION_PAPER.pdf)).
 
 ---
 
@@ -228,6 +228,8 @@ not a completed proof; its Part III corrects earlier overstatements and controls
   Multi-period renewal numerator identity $(3^q - 2^q)A_{0,Rp} = A_p(3^{qR} - 2^{qR})$, universal closed forms for $(3^q - 2^q)\Sigma_{N+Rp}$ and $(3^q - 2^q)\widehat{\Sigma}_{N+Rp}$ across $R$ periods, repelling periodic fixed-point non-vanishing $(3^q - 2^q)\Sigma_N \ne 2^{T_N+1}A_p$ and strict aperiodicity ($qR \ge 2T_N + 3q + 2$ exits the sub-ceiling corridor for any period $p \ge 1$), and certification of blocks 34–36 ($s_{33} = 6, s_{34} = 6, s_{35} = 3$, $T_{36} = 179$, forcing $2^{180} \le b_2$).
 - **Periodic Fixed-Point Eigen-Defect $\Delta^{(q, A_p)}_{N+Rp} = 3^{qR} \Delta^{(q, A_p)}_N$, Upward/Downward $3$-Run Exit Laws & 39-Block ($T_{39} = 188$) Kneading Certification (`FixedPointEigenDefectAndKneading39.lean`, Campaign 2 Outer Loop 15):**
   Pure multiplicative eigenvalue law $\Delta^{(q, A_p)}_{N+Rp} = 3^{qR}\Delta^{(q, A_p)}_N$ for the periodic fixed-point defect $\Delta^{(q, A_p)}_N = (3^q - 2^q)\Sigma_N - 2^{T_N+1}A_p$ (and constant-rung special case $\Delta^{(m)}_{N+j} = 3^{mj}\Delta^{(m)}_N$), proof that upward exit from a $3$-run forces $s_k = 2$ uniquely while downward exit forces $4 \le s_k$, and certification of the 4-fold consecutive $3$-run at blocks 37–39 ($s_{36} = 3, s_{37} = 3, s_{38} = 3$, $T_{39} = 188$, forcing $2^{189} \le b_2$).
+- **Mixed Shift-Slack Cocycle $\Sigma_{N+M} = 3^d \widehat{\Sigma}_N + 2^{T_N}\Sigma_M(s')$, Universal Subword Escape Inheritance & 42-Block ($T_{42} = 208$) Kneading Certification (`ShiftSlackDecompositionAndKneading42.lean`, Campaign 2 Outer Loop 16):**
+  Mixed shift-slack identity $\Sigma_{N+M}(s) = 3^d\widehat{\Sigma}_N(s) + 2^{T_N}\Sigma_M(s')$, universal subword escape inheritance ($\widehat{\Sigma}_N < 0 \wedge \Sigma_M(s') \le 0 \implies \Sigma_{N+M} < 0$), universal exclusion of $(2, 6, 2)$ and $(2, 6, 3, 2)$ at arbitrary sub-ceiling steps, and certification of blocks 40–42 ($s_{39} = 5, s_{40} = 4, s_{41} = 11$, crossing the 200-step horizon at $T_{42} = 208$, forcing $2^{209} \le b_2$).
 
 ## Acknowledgments
 
