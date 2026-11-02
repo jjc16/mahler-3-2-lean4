@@ -1,6 +1,6 @@
-# Mahler $3/2$ Problem — 200-File Lean 4 Formalization (`mahler_demand_a`)
+# Mahler $3/2$ Problem — 202-File Lean 4 Formalization (`mahler_demand_a`)
 
-This repository contains a **200-file (`sorry`-free) Lean 4.19.0 + Mathlib v4.19.0 formalization** of the reduced Mahler $3/2$ dynamical system ($Z$-numbers) and its interval- and union-confinement relaxations ([`MAHLER_FORMALIZATION_PAPER.pdf`](./MAHLER_FORMALIZATION_PAPER.pdf)).
+This repository contains a **202-file (`sorry`-free) Lean 4.19.0 + Mathlib v4.19.0 formalization** of the reduced Mahler $3/2$ dynamical system ($Z$-numbers) and its interval- and union-confinement relaxations ([`MAHLER_FORMALIZATION_PAPER.pdf`](./MAHLER_FORMALIZATION_PAPER.pdf)).
 
 ---
 
@@ -212,6 +212,8 @@ not a completed proof; its Part III corrects earlier overstatements and controls
   Exact $8/9$ threshold ($0 < \Sigma_{N+1}(2) \iff 8 \cdot 2^{T_N} < 9 \Sigma_N$), universal post-`2` two-step identity $\Sigma_{N+2} = 3^r(9 \Sigma_N - 8 \cdot 2^{T_N}) - 8 \cdot 2^{T_N+r}$, proof that every sub-ceiling $s_N = 2$ visit requires $s_{N+1} \ge 6$ (`universal_subCeiling_post_two_requires_six_le`), and certification of blocks 11–13 ($s_{10} = 3, s_{11} = 2, s_{12} = 12$, reaching $T_{13} = 65$ binary steps).
 - **Backward Propagation of the Extra-Bit Congruence $2^{T_N+1} \mid (3^{T_N} P_0 + A_{0,N})$, Mod-$2^{T_N+1}$ Seed Uniqueness & 15-Block ($T_{15} = 72$) Kneading Certification (`ExtraBitBackwardPropagationAndKneading15.lean`, Campaign 2 Outer Loop 7):**
   One-step and all-prefix backward propagation showing that a single terminal congruence $2^{T_N+1} \mid (3^{T_N} P_0 + A_{0,N})$ forces exact odd-part decomposition at every intermediate step $k < N$, two-seed mod-$2^{T_N+1}$ divisibility $2^{T_N+1} \mid (b_2 - b_1)$, and certification of blocks 14–15 ($s_{13} = 4, s_{14} = 3$, $T_{15} = 72$, forcing $2^{73} \le b_2$ for any second seed).
+- **Dyadic-Triadic Rung Partition, Two-Step $(3, 2)$ Window, 2-Adic Prefix Congruence & 18-Block ($T_{18} = 89$) Kneading Certification (`DyadicTriadicRungPartitionAndKneading18.lean`, Campaign 2 Outer Loop 8):**
+  Dyadic-triadic partition characterization $2^{T_N+s_N+1} < 3^{s_N}\Sigma_N \wedge 3^{s_N-1}\Sigma_N < 2^{T_N+s_N}$ with odd-parity boundary exclusion $3^{m-1}\Sigma_N \ne 2^{T_N+m}$, exact two-step $(s_N = 3, s_{N+1} = 2)$ window $\Sigma_N / 2^{T_N} \in (208/243, 216/243)$, 2-adic prefix congruence $2^{T_K+1} \mid (3^d\Sigma_K - \Sigma_{K+M})$ ($8 \mid (3^{T_N-2} - \Sigma_N)$ for $s_0 = 2$), and certification of blocks 16–18 ($s_{15} = 8, s_{16} = 3, s_{17} = 6$, $T_{18} = 89$, forcing $2^{90} \le b_2$).
 
 ## Acknowledgments
 
