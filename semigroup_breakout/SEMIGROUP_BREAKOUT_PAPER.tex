@@ -152,4 +152,13 @@ Across any \texttt{ValidBlockChain b\_0 s u (r + 2)} with $2 \le s_{r+1}$:
 \end{enumerate}
 \end{theorem}
 
+\begin{theorem}[Two-Step Disjoint Base-3 Digit-Block Law, All-$K$-Step Zero-Carry Top-Block Recovery \& Two-Sided Past--Future CRT Pinch, \texttt{two\_step\_disjoint\_base3\_digit\_block\_law\_and\_quotient\_recovery}, \texttt{all\_k\_step\_zero\_carry\_top\_block\_and\_quotient\_recovery}, \texttt{two\_sided\_past\_future\_crt\_pinch}]
+Across any \texttt{ValidBlockChain b\_0 s u}:
+\begin{enumerate}
+  \item $2^{s_{r+1}+s_{r+2}} u_{r+2} = 3^{s_r+s_{r+1}} u_r + (3^{s_{r+1}} + 2^{s_{r+1}})$ with $\lfloor 2^{s_{r+1}+s_{r+2}} u_{r+2} / 3^{s_r+s_{r+1}} \rfloor = u_r$ and $s_3(2^{s_{r+1}+s_{r+2}} u_{r+2}) = s_3(u_r) + 1 + s_3(2^{s_{r+1}})$.
+  \item Whenever $0 < \Sigma_M(s')$ with $s'(t) = s_{r+1+t}$, $d = \sum_{t=0}^{M-1} s_{r+1+t}$, $S = d + s_{r+1+M}$, $T = s_r + d$, and $R = 3^d + A_{r+1, r+1+M}$, we have $2^S u_{r+1+M} = 3^T u_r + R$ with $R < 2 \cdot 3^d < 3^T$, $\lfloor 2^S u_{r+1+M} / 3^T \rfloor = u_r$, and $s_3(2^S u_{r+1+M}) = s_3(u_r) + s_3(R)$.
+  \item Every interior odd leftover $u_{r+1}$ satisfies $(2^{s_{r+1}} u_{r+1}) \bmod 3^{s_r} = 1$, $(3^{s_{r+1}} u_{r+1} + 1) \bmod 2^{s_{r+2}+1} = 2^{s_{r+2}}$, and $\gcd(3^{s_r}, 2^{s_{r+2}+1}) = 1$, with combined modulus $3^{s_r} \cdot 2^{s_{r+2}+1} \ge 72$ whenever $s_r, s_{r+2} \ge 2$.
+\end{enumerate}
+\end{theorem}
+
 \end{document}

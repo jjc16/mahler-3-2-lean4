@@ -3,7 +3,7 @@
 **Authors:** Joshua Coon (with Astra, Fable, and Argon AI in GitHub Copilot)  
 **Date:** November 2026  
 **Cordoned-Off Verification Artifact:** [`semigroup_breakout/SemigroupBreakoutTheorems.lean`](./SemigroupBreakoutTheorems.lean) (`0` `sorry`s, `0` warnings, Lean 4.19.0 + Mathlib v4.19.0)  
-**Computational Suite:** [`loop1_product_formula_and_pade.py`](./loop1_product_formula_and_pade.py), [`loop1_beukers_pade_and_hankel.py`](./loop1_beukers_pade_and_hankel.py), [`loop2_pade_lll_and_divergence.py`](./loop2_pade_lll_and_divergence.py), [`loop3_archimedean_ceiling_and_small_u.py`](./loop3_archimedean_ceiling_and_small_u.py), [`loop4_flp_sparsity_and_repulsion.py`](./loop4_flp_sparsity_and_repulsion.py)
+**Computational Suite:** [`loop1_product_formula_and_pade.py`](./loop1_product_formula_and_pade.py), [`loop1_beukers_pade_and_hankel.py`](./loop1_beukers_pade_and_hankel.py), [`loop2_pade_lll_and_divergence.py`](./loop2_pade_lll_and_divergence.py), [`loop3_archimedean_ceiling_and_small_u.py`](./loop3_archimedean_ceiling_and_small_u.py), [`loop4_flp_sparsity_and_repulsion.py`](./loop4_flp_sparsity_and_repulsion.py), [`sandbox_symmetry_breaking_loops.py`](./sandbox_symmetry_breaking_loops.py), [`sandbox_wave2_towers.py`](./sandbox_wave2_towers.py), [`sandbox_wave3_towers.py`](./sandbox_wave3_towers.py), [`sandbox_wave4_canyon_view.py`](./sandbox_wave4_canyon_view.py)
 
 ---
 
@@ -272,7 +272,45 @@ and at $K = 0$, $5 \cdot 2^{s_0} \le 3 b_0 + 1$ ($7 \cdot 2^{s_0} \le 3 b_0 + 1$
 
 ---
 
-## 8. Verification Instructions
+## 8. Wave-4 Symmetry-Breaking Towers: Two-Step Disjoint Base-3 Digit Blocks, All-$K$-Step Zero-Carry Top-Block Recovery, and the Two-Sided Past–Future Chinese Remainder Pinch
+
+In [`sandbox_wave4_canyon_view.py`](./sandbox_wave4_canyon_view.py) and Sections 21–23 of [`SemigroupBreakoutTheorems.lean`](./SemigroupBreakoutTheorems.lean), we extended the backward quotient recovery tower across 2 steps and across arbitrary $M$-block windows, and combined the past and future congruences into a two-sided Chinese Remainder pinch:
+
+### 8.1 Theorem SB.21: Two-Step Disjoint Base-3 Digit-Block Law & Exact Quotient Recovery (`two_step_disjoint_base3_digit_block_law_and_quotient_recovery`)
+
+Across any 2-step block transition $r \to r+1 \to r+2$ (`ValidBlockChain b_0 s u (r + 3)`):
+$$2^{s_{r+1} + s_{r+2}} u_{r+2} = 3^{s_r + s_{r+1}} u_r + 3^{s_{r+1}} + 2^{s_{r+1}}.$$
+Because $2^{s_{r+1}} < 3^{s_{r+1}}$ and $3^{s_{r+1}} + 2^{s_{r+1}} < 3^{s_r + s_{r+1}}$, the three terms on the right-hand side occupy **completely disjoint Base-3 digit ranges**:
+- Trits $[0, s_{r+1}-1]$: the Base-3 digits of $2^{s_{r+1}}$,
+- Trit $s_{r+1}$: a single trit `1` from $3^{s_{r+1}}$,
+- Trits $[s_{r+1}+1, s_r+s_{r+1}-1]$: all `0`s, and
+- Trits $[s_r+s_{r+1}, \infty)$: the Base-3 digits of $u_r$.
+
+Consequently:
+1. **Exact Two-Step Quotient & Remainder Recovery:**
+   $$\boxed{\left\lfloor \frac{2^{s_{r+1} + s_{r+2}} u_{r+2}}{3^{s_r + s_{r+1}}} \right\rfloor = u_r \qquad\text{and}\qquad \big(2^{s_{r+1} + s_{r+2}} u_{r+2}\big) \bmod 3^{s_r + s_{r+1}} = 3^{s_{r+1}} + 2^{s_{r+1}}.}$$
+2. **Universal Zero-Carry Three-Block Base-3 Digit-Sum Splitting:**
+   $$\boxed{s_3\big(2^{s_{r+1} + s_{r+2}} u_{r+2}\big) = s_3(u_r) + 1 + s_3\big(2^{s_{r+1}}\big).}$$
+
+### 8.2 Theorem SB.22: All-$K$-Step Zero-Carry Top-Block Law & Multi-Step Quotient Recovery (`all_k_step_zero_carry_top_block_and_quotient_recovery`)
+
+Across **every** number of future blocks $M \ge 0$ (`ValidBlockChain b_0 s u (r + 1 + M + 1)`) with positive renewal slack $0 < \Sigma_M(s')$ (where $s'(t) = s_{r+1+t}$, $d = \sum_{t=0}^{M-1} s_{r+1+t}$, $S = d + s_{r+1+M}$, $T = s_r + d$, and $R = 3^d + A_{r+1, r+1+M}$):
+1. **All-$K$-Step Identity & Strict Remainder Bound:**
+   $$2^S u_{r+1+M} = 3^T u_r + R \qquad\text{with}\qquad R < 2 \cdot 3^d < 3^T.$$
+2. **Permanent Top-Digit Freezing of $u_r$ Across All Future Blocks:**
+   $$\boxed{\left\lfloor \frac{2^S u_{r+1+M}}{3^T} \right\rfloor = u_r \qquad\text{and}\qquad \big(2^S u_{r+1+M}\big) \bmod 3^T = R.}$$
+3. **All-$K$-Step Zero-Carry Base-3 Digit-Sum Splitting:**
+   $$\boxed{s_3\big(2^S u_{r+1+M}\big) = s_3(u_r) + s_3(R).}$$
+
+### 8.3 Theorem SB.23: Two-Sided Past–Future Chinese Remainder Pinch on Interior Odd Leftovers (`two_sided_past_future_crt_pinch`)
+
+At every interior odd leftover $u_{r+1}$ in a 3-block window (`ValidBlockChain b_0 s u (r + 3)`), $u_{r+1}$ is simultaneously pinched from the **past** (modulo $3^{s_r}$) and from the **future** (modulo $2^{s_{r+2}+1}$):
+$$\boxed{\big(2^{s_{r+1}} u_{r+1}\big) \bmod 3^{s_r} = 1, \qquad \big(3^{s_{r+1}} u_{r+1} + 1\big) \bmod 2^{s_{r+2}+1} = 2^{s_{r+2}}, \qquad \gcd\big(3^{s_r}, 2^{s_{r+2}+1}\big) = 1,}$$
+locking $u_{r+1}$ into a unique Chinese Remainder class modulo $M_{r+1} = 3^{s_r} \cdot 2^{s_{r+2}+1} \ge 72$ whenever $s_r, s_{r+2} \ge 2$.
+
+---
+
+## 9. Verification Instructions
 
 To verify the cordoned-off Lean 4 proofs without modifying the root 226-file build:
 

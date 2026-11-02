@@ -1592,6 +1592,246 @@ theorem sharpened_five_seven_archimedean_rung_ceiling
       rw [hs0_2] at hP0_eq
       omega
 
+/-! ## 21. Theorem SB.21: Two-Step Disjoint Base-3 Digit-Block Law & Exact Quotient Recovery -/
+
+/-- Helper: `2 ^ n < 3 ^ n` for every `1 ≤ n`. -/
+theorem two_pow_lt_three_pow_of_pos {n : ℕ} (hn : 1 ≤ n) : 2 ^ n < 3 ^ n := by
+  obtain ⟨k, rfl⟩ : ∃ k : ℕ, n = k + 1 := ⟨n - 1, by omega⟩
+  induction k with
+  | zero => decide
+  | succ k ih =>
+      have hk1 : 1 ≤ k + 1 := by omega
+      have hlt := ih hk1
+      rw [Nat.pow_succ 2 (k + 1), Nat.pow_succ 3 (k + 1)]
+      omega
+
+/-- **Two-Step Disjoint Base-3 Digit-Block Law & Exact Quotient Recovery
+(`two_step_disjoint_base3_digit_block_law_and_quotient_recovery`, Theorem SB.21)**:
+Suppose `ValidBlockChain b_0 s u (r + 3)` holds:
+1. **Two-Step Exact Identity**:
+   `2 ^ (s (r + 1) + s (r + 2)) * u (r + 2) = 3 ^ (s r + s (r + 1)) * u r + (3 ^ (s (r + 1)) + 2 ^ (s (r + 1)))`,
+2. **Strict Remainder Bound**:
+   `3 ^ (s (r + 1)) + 2 ^ (s (r + 1)) < 3 ^ (s r + s (r + 1))`,
+3. **Exact Two-Step Quotient & Remainder Recovery**:
+   `(2 ^ (s (r + 1) + s (r + 2)) * u (r + 2)) / 3 ^ (s r + s (r + 1)) = u r` and
+   `(2 ^ (s (r + 1) + s (r + 2)) * u (r + 2)) % 3 ^ (s r + s (r + 1)) = 3 ^ (s (r + 1)) + 2 ^ (s (r + 1))`, and
+4. **Universal Zero-Carry Three-Block Base-3 Digit-Sum Splitting**:
+   The three terms `3 ^ (s r + s (r + 1)) * u r`, `3 ^ (s (r + 1))`, and `2 ^ (s (r + 1))`
+   occupy **completely disjoint Base-3 digit ranges** (`[s_r+s_{r+1}, ∞)`, `[s_{r+1}]`, and `[0, s_{r+1}-1]`),
+   so with **zero Base-3 carries**:
+   `base3DigitSum (2 ^ (s (r + 1) + s (r + 2)) * u (r + 2)) = base3DigitSum (u r) + 1 + base3DigitSum (2 ^ (s (r + 1)))`! -/
+theorem two_step_disjoint_base3_digit_block_law_and_quotient_recovery
+    {b_0 r : ℕ} {s u : ℕ → ℕ}
+    (hchain : ValidBlockChain b_0 s u (r + 3)) :
+    2 ^ (s (r + 1) + s (r + 2)) * u (r + 2) =
+        3 ^ (s r + s (r + 1)) * u r + (3 ^ (s (r + 1)) + 2 ^ (s (r + 1))) ∧
+      3 ^ (s (r + 1)) + 2 ^ (s (r + 1)) < 3 ^ (s r + s (r + 1)) ∧
+      (2 ^ (s (r + 1) + s (r + 2)) * u (r + 2)) / 3 ^ (s r + s (r + 1)) = u r ∧
+      (2 ^ (s (r + 1) + s (r + 2)) * u (r + 2)) % 3 ^ (s r + s (r + 1)) =
+        3 ^ (s (r + 1)) + 2 ^ (s (r + 1)) ∧
+      base3DigitSum (2 ^ (s (r + 1) + s (r + 2)) * u (r + 2)) =
+        base3DigitSum (u r) + 1 + base3DigitSum (2 ^ (s (r + 1))) := by
+  have hch1 : ValidBlockChain b_0 s u (r + 2) := fun k hk => hchain k (by omega)
+  have hch2 : ValidBlockChain b_0 s u ((r + 1) + 2) := fun k hk => hchain k (by omega)
+  have hstep1 := (one_step_backward_quotient_recovery_and_mod_three_pow_one hch1).1
+  have hstep2 := (one_step_backward_quotient_recovery_and_mod_three_pow_one hch2).1
+  have hs_r : 1 ≤ s r := (hchain r (by omega)).1
+  have hs_r1 : 1 ≤ s (r + 1) := (hchain (r + 1) (by omega)).1
+  have hid2 :
+      2 ^ (s (r + 1) + s (r + 2)) * u (r + 2) =
+        3 ^ (s r + s (r + 1)) * u r + (3 ^ (s (r + 1)) + 2 ^ (s (r + 1))) := by
+    calc
+      2 ^ (s (r + 1) + s (r + 2)) * u (r + 2)
+          = 2 ^ (s (r + 1)) * (2 ^ (s (r + 2)) * u (r + 2)) := by
+            rw [Nat.pow_add]
+            ring
+      _ = 2 ^ (s (r + 1)) * (3 ^ (s (r + 1)) * u (r + 1) + 1) := by rw [hstep2]
+      _ = 3 ^ (s (r + 1)) * (2 ^ (s (r + 1)) * u (r + 1)) + 2 ^ (s (r + 1)) := by ring
+      _ = 3 ^ (s (r + 1)) * (3 ^ (s r) * u r + 1) + 2 ^ (s (r + 1)) := by rw [hstep1]
+      _ = 3 ^ (s r + s (r + 1)) * u r + (3 ^ (s (r + 1)) + 2 ^ (s (r + 1))) := by
+            rw [Nat.pow_add]
+            ring
+  have h2_lt_3 : 2 ^ (s (r + 1)) < 3 ^ (s (r + 1)) := two_pow_lt_three_pow_of_pos hs_r1
+  have h3_ge_3 : 3 ≤ 3 ^ (s r) := by
+    obtain ⟨k, hk⟩ : ∃ k : ℕ, s r = k + 1 := ⟨s r - 1, by omega⟩
+    have hpos : 1 ≤ 3 ^ k := Nat.one_le_pow _ 3 (by decide)
+    rw [hk, Nat.pow_succ]
+    omega
+  have hrem_lt : 3 ^ (s (r + 1)) + 2 ^ (s (r + 1)) < 3 ^ (s r + s (r + 1)) := by
+    have hpow : 3 ^ (s r + s (r + 1)) = 3 ^ (s r) * 3 ^ (s (r + 1)) := Nat.pow_add 3 (s r) (s (r + 1))
+    have hmul : 3 * 3 ^ (s (r + 1)) ≤ 3 ^ (s r) * 3 ^ (s (r + 1)) :=
+      Nat.mul_le_mul_right (3 ^ (s (r + 1))) h3_ge_3
+    omega
+  have hpos2 : 1 ≤ 2 ^ (s (r + 1)) := Nat.one_le_pow _ 2 (by decide)
+  have hdiv_pos : 0 < 3 ^ (s r + s (r + 1)) := by omega
+  have hdiv :
+      (2 ^ (s (r + 1) + s (r + 2)) * u (r + 2)) / 3 ^ (s r + s (r + 1)) = u r := by
+    rw [hid2, Nat.mul_add_div hdiv_pos, Nat.div_eq_of_lt hrem_lt, add_zero]
+  have hmod :
+      (2 ^ (s (r + 1) + s (r + 2)) * u (r + 2)) % 3 ^ (s r + s (r + 1)) =
+        3 ^ (s (r + 1)) + 2 ^ (s (r + 1)) := by
+    rw [hid2, Nat.mul_add_mod, Nat.mod_eq_of_lt hrem_lt]
+  have hs3_rem :
+      base3DigitSum (3 ^ (s (r + 1)) + 2 ^ (s (r + 1))) =
+        1 + base3DigitSum (2 ^ (s (r + 1))) := by
+    have h1 : 3 ^ (s (r + 1)) + 2 ^ (s (r + 1)) = 3 ^ (s (r + 1)) * 1 + 2 ^ (s (r + 1)) := by ring
+    have hs3_1 : base3DigitSum 1 = 1 := by
+      have h := base3DigitSum_three_mul_add_digit 0 (r := 1) (by decide)
+      have hz : base3DigitSum 0 = 0 := by simp [base3DigitSum]
+      simpa [hz] using h
+    rw [h1, base3DigitSum_three_pow_mul_add (s (r + 1)) 1 h2_lt_3, hs3_1]
+  have hs3_all :
+      base3DigitSum (2 ^ (s (r + 1) + s (r + 2)) * u (r + 2)) =
+        base3DigitSum (u r) + 1 + base3DigitSum (2 ^ (s (r + 1))) := by
+    rw [hid2, base3DigitSum_three_pow_mul_add (s r + s (r + 1)) (u r) hrem_lt, hs3_rem]
+    omega
+  exact ⟨hid2, hrem_lt, hdiv, hmod, hs3_all⟩
+
+/-! ## 22. Theorem SB.22: All-$K$-Step Zero-Carry Top-Block Law & Multi-Step Quotient Recovery -/
+
+/-- **All-$K$-Step Zero-Carry Top-Block Law & Multi-Step Quotient Recovery
+(`all_k_step_zero_carry_top_block_and_quotient_recovery`, Theorem SB.22)**:
+Suppose `ValidBlockChain b_0 s u (r + 1 + M + 1)` holds for `r, M : ℕ` with
+`0 < renewalIntSlack (fun t => s (r + 1 + t)) M`.
+Let `s' t = s (r + 1 + t)`, `d = blockSteps s' M`,
+`S = d + s (r + 1 + M)`, `T = s r + d`, and
+`R = 3 ^ d + renewalNumerator s' M`:
+1. **All-$K$-Step Odd-Leftover Identity**:
+   `2 ^ S * u (r + 1 + M) = 3 ^ T * u r + R`,
+2. **Strict Remainder Bound**:
+   `R < 2 * 3 ^ d` and `R < 3 ^ T`,
+3. **Exact Multi-Step Quotient & Remainder Recovery**:
+   `(2 ^ S * u (r + 1 + M)) / 3 ^ T = u r` and
+   `(2 ^ S * u (r + 1 + M)) % 3 ^ T = R`
+   (the initial odd leftover `u r` is **permanently frozen** as the top Base-3 digits of
+   `2 ^ S * u (r + 1 + M)` across **every** number of future blocks `M`!), and
+4. **All-$K$-Step Zero-Carry Base-3 Digit-Sum Splitting**:
+   `base3DigitSum (2 ^ S * u (r + 1 + M)) = base3DigitSum (u r) + base3DigitSum R`! -/
+theorem all_k_step_zero_carry_top_block_and_quotient_recovery
+    {b_0 r M : ℕ} {s u : ℕ → ℕ}
+    (hchain : ValidBlockChain b_0 s u (r + 1 + M + 1))
+    (hS_pos : 0 < renewalIntSlack (fun t => s (r + 1 + t)) M) :
+    let s' := fun t => s (r + 1 + t)
+    let d := blockSteps s' M
+    let S := d + s (r + 1 + M)
+    let T := s r + d
+    let R := 3 ^ d + renewalNumerator s' M
+    2 ^ S * u (r + 1 + M) = 3 ^ T * u r + R ∧
+      R < 2 * 3 ^ d ∧
+      R < 3 ^ T ∧
+      (2 ^ S * u (r + 1 + M)) / 3 ^ T = u r ∧
+      (2 ^ S * u (r + 1 + M)) % 3 ^ T = R ∧
+      base3DigitSum (2 ^ S * u (r + 1 + M)) = base3DigitSum (u r) + base3DigitSum R := by
+  intro s' d S T R
+  have h10 := late_step_cauchy_pinch_and_odd_quotient_gcd_dvd (N := r + 1) (M := M) hchain
+  have hu_id :
+      2 ^ S * u (r + 1 + M) =
+        3 ^ d * 2 ^ (s (r + 1)) * u (r + 1) + renewalNumerator s' M := h10.2.1
+  have hch_r2 : ValidBlockChain b_0 s u (r + 2) := fun k hk => hchain k (by omega)
+  have hstep1 : 2 ^ (s (r + 1)) * u (r + 1) = 3 ^ (s r) * u r + 1 :=
+    (one_step_backward_quotient_recovery_and_mod_three_pow_one hch_r2).1
+  have hid_all : 2 ^ S * u (r + 1 + M) = 3 ^ T * u r + R := by
+    calc
+      2 ^ S * u (r + 1 + M)
+          = 3 ^ d * (2 ^ (s (r + 1)) * u (r + 1)) + renewalNumerator s' M := by
+            rw [hu_id]
+            ring
+      _ = 3 ^ d * (3 ^ (s r) * u r + 1) + renewalNumerator s' M := by rw [hstep1]
+      _ = 3 ^ T * u r + R := by
+            change 3 ^ d * (3 ^ (s r) * u r + 1) + renewalNumerator s' M =
+              3 ^ (s r + d) * u r + (3 ^ d + renewalNumerator s' M)
+            rw [Nat.pow_add]
+            ring
+  have h2A_lt : 2 * renewalNumerator s' M < 3 ^ d := by
+    have h : 2 * (renewalNumerator s' M : ℤ) < (3 : ℤ) ^ d := by
+      change 0 < (3 : ℤ) ^ d - 2 * (renewalNumerator s' M : ℤ) at hS_pos
+      omega
+    exact_mod_cast h
+  have h3d_pos : 1 ≤ 3 ^ d := Nat.one_le_pow _ 3 (by decide)
+  have hR_lt_2 : R < 2 * 3 ^ d := by omega
+  have hs_r : 1 ≤ s r := (hchain r (by omega)).1
+  have h3_ge_3 : 3 ≤ 3 ^ (s r) := by
+    obtain ⟨k, hk⟩ : ∃ k : ℕ, s r = k + 1 := ⟨s r - 1, by omega⟩
+    have hpos : 1 ≤ 3 ^ k := Nat.one_le_pow _ 3 (by decide)
+    rw [hk, Nat.pow_succ]
+    omega
+  have hR_lt_T : R < 3 ^ T := by
+    have hpow : 3 ^ T = 3 ^ (s r) * 3 ^ d := Nat.pow_add 3 (s r) d
+    have hmul : 3 * 3 ^ d ≤ 3 ^ (s r) * 3 ^ d := Nat.mul_le_mul_right (3 ^ d) h3_ge_3
+    omega
+  have hdiv_pos : 0 < 3 ^ T := by omega
+  have hdiv : (2 ^ S * u (r + 1 + M)) / 3 ^ T = u r := by
+    rw [hid_all, Nat.mul_add_div hdiv_pos, Nat.div_eq_of_lt hR_lt_T, add_zero]
+  have hmod : (2 ^ S * u (r + 1 + M)) % 3 ^ T = R := by
+    rw [hid_all, Nat.mul_add_mod, Nat.mod_eq_of_lt hR_lt_T]
+  have hs3_split :
+      base3DigitSum (2 ^ S * u (r + 1 + M)) = base3DigitSum (u r) + base3DigitSum R := by
+    rw [hid_all, base3DigitSum_three_pow_mul_add T (u r) hR_lt_T]
+  exact ⟨hid_all, hR_lt_2, hR_lt_T, hdiv, hmod, hs3_split⟩
+
+/-! ## 23. Theorem SB.23: Two-Sided Past–Future Chinese Remainder Pinch on Interior Odd Leftovers -/
+
+/-- **Two-Sided Past–Future Chinese Remainder Pinch on Interior Odd Leftovers
+(`two_sided_past_future_crt_pinch`, Theorem SB.23)**:
+Suppose `ValidBlockChain b_0 s u (r + 3)` holds for `r : ℕ`.
+Then the interior odd leftover `u (r + 1)` is simultaneously pinched from the **past**
+(modulo `3 ^ (s r)`) and from the **future** (modulo `2 ^ (s (r + 2) + 1)`):
+1. **Past Base-3 Congruence**:
+   `(2 ^ (s (r + 1)) * u (r + 1)) % 3 ^ (s r) = 1`,
+2. **Future Base-2 Congruence**:
+   `(3 ^ (s (r + 1)) * u (r + 1) + 1) % 2 ^ (s (r + 2) + 1) = 2 ^ (s (r + 2))`,
+3. **Exact Coprimality of Past & Future Moduli**:
+   `Nat.Coprime (3 ^ (s r)) (2 ^ (s (r + 2) + 1))`, and
+4. **Modulus Growth (`72 ≤ M`)**:
+   Whenever `2 ≤ s r` and `2 ≤ s (r + 2)`, the combined past–future modulus satisfies
+   `72 ≤ 3 ^ (s r) * 2 ^ (s (r + 2) + 1)`! -/
+theorem two_sided_past_future_crt_pinch
+    {b_0 r : ℕ} {s u : ℕ → ℕ}
+    (hchain : ValidBlockChain b_0 s u (r + 3)) :
+    (2 ^ (s (r + 1)) * u (r + 1)) % 3 ^ (s r) = 1 ∧
+      (3 ^ (s (r + 1)) * u (r + 1) + 1) % 2 ^ (s (r + 2) + 1) = 2 ^ (s (r + 2)) ∧
+      Nat.Coprime (3 ^ (s r)) (2 ^ (s (r + 2) + 1)) ∧
+      (2 ≤ s r → 2 ≤ s (r + 2) → 72 ≤ 3 ^ (s r) * 2 ^ (s (r + 2) + 1)) := by
+  have hch1 : ValidBlockChain b_0 s u (r + 2) := fun k hk => hchain k (by omega)
+  have hch2 : ValidBlockChain b_0 s u ((r + 1) + 2) := fun k hk => hchain k (by omega)
+  have hpast : (2 ^ (s (r + 1)) * u (r + 1)) % 3 ^ (s r) = 1 :=
+    (one_step_backward_quotient_recovery_and_mod_three_pow_one hch1).2.2
+  have hstep2 : 2 ^ (s (r + 2)) * u (r + 2) = 3 ^ (s (r + 1)) * u (r + 1) + 1 :=
+    (one_step_backward_quotient_recovery_and_mod_three_pow_one hch2).1
+  have hu2_odd : u (r + 2) % 2 = 1 := (hchain (r + 2) (by omega)).2.1
+  have hfut :
+      (3 ^ (s (r + 1)) * u (r + 1) + 1) % 2 ^ (s (r + 2) + 1) = 2 ^ (s (r + 2)) := by
+    rw [← hstep2]
+    obtain ⟨m, hm⟩ : ∃ m : ℕ, u (r + 2) = 2 * m + 1 := ⟨u (r + 2) / 2, by omega⟩
+    have hexpand :
+        2 ^ (s (r + 2)) * u (r + 2) =
+          2 ^ (s (r + 2) + 1) * m + 2 ^ (s (r + 2)) := by
+      rw [hm, Nat.pow_succ]
+      ring
+    have hlt : 2 ^ (s (r + 2)) < 2 ^ (s (r + 2) + 1) := by
+      have hpos : 1 ≤ 2 ^ (s (r + 2)) := Nat.one_le_pow _ 2 (by decide)
+      rw [Nat.pow_succ]
+      omega
+    rw [hexpand, Nat.mul_add_mod, Nat.mod_eq_of_lt hlt]
+  have hcop : Nat.Coprime (3 ^ (s r)) (2 ^ (s (r + 2) + 1)) := by
+    have hc0 : Nat.Coprime 3 2 := by decide
+    exact (hc0.pow_left (s r)).pow_right (s (r + 2) + 1)
+  refine ⟨hpast, hfut, hcop, ?_⟩
+  intro hsr2 hsr2_2
+  have h3_ge_9 : 9 ≤ 3 ^ (s r) := by
+    obtain ⟨k, hk⟩ : ∃ k : ℕ, s r = k + 2 := ⟨s r - 2, by omega⟩
+    have hpos : 1 ≤ 3 ^ k := Nat.one_le_pow _ 3 (by decide)
+    rw [hk, Nat.pow_add]
+    omega
+  have h2_ge_8 : 8 ≤ 2 ^ (s (r + 2) + 1) := by
+    obtain ⟨k, hk⟩ : ∃ k : ℕ, s (r + 2) + 1 = k + 3 := ⟨s (r + 2) - 2, by omega⟩
+    have hpos : 1 ≤ 2 ^ k := Nat.one_le_pow _ 2 (by decide)
+    rw [hk, Nat.pow_add]
+    omega
+  have hmul : 9 * 8 ≤ 3 ^ (s r) * 2 ^ (s (r + 2) + 1) := Nat.mul_le_mul h3_ge_9 h2_ge_8
+  omega
+
+
 #check @archimedean_rung_ceiling_and_stepSum_bound
 #check @unit_quotient_even_rung_instant_death_and_odd_rung_mod64_identity
 #check @equal_step_window_hankel_determinant_identity_and_bound
@@ -1612,6 +1852,9 @@ theorem sharpened_five_seven_archimedean_rung_ceiling
 #check @universal_mod12_quotient_lock_and_joint_digitsum_ge_five
 #check @one_step_backward_quotient_recovery_and_mod_three_pow_one
 #check @sharpened_five_seven_archimedean_rung_ceiling
+#check @two_step_disjoint_base3_digit_block_law_and_quotient_recovery
+#check @all_k_step_zero_carry_top_block_and_quotient_recovery
+#check @two_sided_past_future_crt_pinch
 
 #print axioms archimedean_rung_ceiling_and_stepSum_bound
 #print axioms unit_quotient_even_rung_instant_death_and_odd_rung_mod64_identity
