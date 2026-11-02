@@ -1980,6 +1980,32 @@ Here is why, in plain terms:
 ## C2.O13.5 Inner Loop 5 / 5 — Explore & Exploit: Mod-$2^{165}$ Seed Uniqueness for the 33-Block Sub-Ceiling Corridor
 - **Explore & Exploit (Priority 5):** Prove that any two seeds $b_1 < b_2$ realizing the 33-block sub-ceiling kneading corridor satisfy $2^{165} \mid (b_2 - b_1)$ and $2^{165} \le b_2$.
 
+---
+
+# Part XXIX — Second Campaign (`m = 5, n = 20`) — Outer Loop 14 / 20 (Inner Loops 1–5): Multi-Period $(p, q, A_p)$ Closed Form, Strict Aperiodicity of All Sub-Ceiling Trajectories & 36-Block ($T_{36} = 179$) Kneading Certification
+
+## C2.O14.1 Inner Loop 1 / 5 — Explore & Exploit: Multi-Period Renewal Numerator Identity $(3^q - 2^q) A_{0, R p} = A_p (3^{q R} - 2^{q R})$
+- **Explore:** Generalize the constant-rung $p = 1$ identity to any $R$ consecutive $p$-block windows each having step sum $q$ and window numerator $A_p$.
+- **Exploit (Priority 1):** Prove `repeated_period_renewalNumerator_closed_form`: if for all $r < R$, the $r$-th $p$-block window $w_r(t) = s'(r p + t)$ has $\operatorname{blockSteps}(w_r, p) = q$ and $\operatorname{renewalNumerator}(w_r, p) = A_p$, then
+  $$\operatorname{blockSteps}(s', R p) = q R \quad\text{and}\quad \big(3^q - 2^q\big) A_{0, R p}(s') = A_p\big(3^{q R} - 2^{q R}\big).$$
+
+## C2.O14.2 Inner Loop 2 / 5 — Explore & Exploit: Universal Closed Form for $\Sigma_{N + R p}$ and $\widehat{\Sigma}_{N + R p}$ Across $R$ Periods
+- **Explore:** Substitute the multi-period numerator formula into the cocycle law from step $N$.
+- **Exploit (Priority 2):** Prove `universal_periodic_tail_from_step_closed_form`:
+  $$\big(3^q - 2^q\big)\Sigma_{N + R p} = 3^{q R}\Big(\big(3^q - 2^q\big)\Sigma_N - 2^{T_N + 1} A_p\Big) + A_p \cdot 2^{T_N + 1 + q R},$$
+  $$\big(3^q - 2^q\big)\widehat{\Sigma}_{N + R p} = 3^{q R}\Big(\big(3^q - 2^q\big)\Sigma_N - 2^{T_N + 1} A_p\Big) - \big(3^q - 2^q - 2 A_p\big) 2^{T_N + q R}.$$
+
+## C2.O14.3 Inner Loop 3 / 5 — Explore & Exploit: Repelling Periodic Fixed-Point Non-Vanishing & Strict Aperiodicity ($q R < 2 T_N + 3 q + 2$)
+- **Explore:** Observe that $(3^q - 2^q)\Sigma_N$ is odd whenever $\Sigma_N$ is odd and $q \ge 1$, whereas $2^{T_N+1} A_p$ is always even.
+- **Exploit (Priority 3):** Prove `no_subCeiling_periodic_tail_exceeds_horizon`: for any odd slack $\Sigma_N \equiv 1 \pmod 2$, $q \ge 1$, $A_p \le 3^q$, and $2 T_N + 3 q + 2 \le q R$, $(3^q - 2^q)\Sigma_N \ne 2^{T_N+1} A_p$ and either $\Sigma_{N + R p} < 0$ (Escape) or $\widehat{\Sigma}_{N + R p} > 0$ (Ceiling Restoration). Consequently, **no sub-ceiling trajectory can ever be eventually periodic with any period $p \ge 1$**!
+
+## C2.O14.4 Inner Loop 4 / 5 — Explore & Exploit: Certification of Blocks 34, 35, and 36 ($s_{33} = 6, s_{34} = 6, s_{35} = 3$, $T_{36} = 179$)
+- **Explore & Exploit (Priority 4):** Certify blocks 34–36 of the sub-ceiling kneading cascade ($s_{33} = 6, T_{34} = 170$; $s_{34} = 6, T_{35} = 176$; $s_{35} = 3, T_{36} = 179$).
+
+## C2.O14.5 Inner Loop 5 / 5 — Explore & Exploit: Mod-$2^{180}$ Seed Uniqueness for the 36-Block Sub-Ceiling Corridor
+- **Explore & Exploit (Priority 5):** Prove that any two seeds $b_1 < b_2$ realizing the 36-block sub-ceiling kneading corridor satisfy $2^{180} \mid (b_2 - b_1)$ and $2^{180} \le b_2$.
+
+
 
 
 

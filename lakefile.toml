@@ -643,6 +643,13 @@ name = "ConstantRungFiniteRunBoundAndKneading33"
 [[lean_lib]]
 name = "ConstantRungFiniteRunBoundAndKneading33Checks"
 
+[[lean_lib]]
+name = "PeriodicTailExclusionAndKneading36"
+
+[[lean_lib]]
+name = "PeriodicTailExclusionAndKneading36Checks"
+
+
 
 
 

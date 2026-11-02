@@ -1,0 +1,17 @@
+import PeriodicTailExclusionAndKneading36
+
+/-!
+# Verification Checks for `PeriodicTailExclusionAndKneading36`
+-/
+
+open Mahler.PeriodicTailExclusionAndKneading36
+
+#check @repeated_period_renewalNumerator_closed_form
+#check @universal_periodic_tail_from_step_closed_form
+#check @no_subCeiling_periodic_tail_exceeds_horizon
+#check @thirtyfour_to_thirtysix_block_kneading_corridor_and_two_pow_180_uniqueness
+
+#print axioms repeated_period_renewalNumerator_closed_form
+#print axioms universal_periodic_tail_from_step_closed_form
+#print axioms no_subCeiling_periodic_tail_exceeds_horizon
+#print axioms thirtyfour_to_thirtysix_block_kneading_corridor_and_two_pow_180_uniqueness
