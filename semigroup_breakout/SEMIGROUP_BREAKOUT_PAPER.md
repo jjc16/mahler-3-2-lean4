@@ -3,7 +3,7 @@
 **Authors:** Joshua Coon (with Astra, Fable, and Argon AI in GitHub Copilot)  
 **Date:** November 2026  
 **Cordoned-Off Verification Artifact:** [`semigroup_breakout/SemigroupBreakoutTheorems.lean`](./SemigroupBreakoutTheorems.lean) (`0` `sorry`s, `0` warnings, Lean 4.19.0 + Mathlib v4.19.0)  
-**Computational Suite:** [`loop1_product_formula_and_pade.py`](./loop1_product_formula_and_pade.py), [`loop1_beukers_pade_and_hankel.py`](./loop1_beukers_pade_and_hankel.py), [`loop2_pade_lll_and_divergence.py`](./loop2_pade_lll_and_divergence.py), [`loop3_archimedean_ceiling_and_small_u.py`](./loop3_archimedean_ceiling_and_small_u.py), [`loop4_flp_sparsity_and_repulsion.py`](./loop4_flp_sparsity_and_repulsion.py), [`sandbox_symmetry_breaking_loops.py`](./sandbox_symmetry_breaking_loops.py), [`sandbox_wave2_towers.py`](./sandbox_wave2_towers.py), [`sandbox_wave3_towers.py`](./sandbox_wave3_towers.py), [`sandbox_wave4_canyon_view.py`](./sandbox_wave4_canyon_view.py), [`sandbox_wave5_multi_block_crt.py`](./sandbox_wave5_multi_block_crt.py), [`sandbox_wave6_both_bridges.py`](./sandbox_wave6_both_bridges.py), [`sandbox_wave7_binary_carry_bridge.py`](./sandbox_wave7_binary_carry_bridge.py)
+**Computational Suite:** [`loop1_product_formula_and_pade.py`](./loop1_product_formula_and_pade.py), [`loop1_beukers_pade_and_hankel.py`](./loop1_beukers_pade_and_hankel.py), [`loop2_pade_lll_and_divergence.py`](./loop2_pade_lll_and_divergence.py), [`loop3_archimedean_ceiling_and_small_u.py`](./loop3_archimedean_ceiling_and_small_u.py), [`loop4_flp_sparsity_and_repulsion.py`](./loop4_flp_sparsity_and_repulsion.py), [`sandbox_symmetry_breaking_loops.py`](./sandbox_symmetry_breaking_loops.py), [`sandbox_wave2_towers.py`](./sandbox_wave2_towers.py), [`sandbox_wave3_towers.py`](./sandbox_wave3_towers.py), [`sandbox_wave4_canyon_view.py`](./sandbox_wave4_canyon_view.py), [`sandbox_wave5_multi_block_crt.py`](./sandbox_wave5_multi_block_crt.py), [`sandbox_wave6_both_bridges.py`](./sandbox_wave6_both_bridges.py), [`sandbox_wave7_binary_carry_bridge.py`](./sandbox_wave7_binary_carry_bridge.py), [`sandbox_overnight_20_bridge_loops.py`](./sandbox_overnight_20_bridge_loops.py)
 
 ---
 
@@ -418,7 +418,75 @@ In plain English: every single halving step in $T_{K+1} - s_0 = s_1 + \dots + s_
 
 ---
 
-## 12. Verification Instructions
+## 12. Overnight 20-Loop Bridge Exploration Campaign (Loops 1–20: Theorems `SB.34–SB.53`)
+
+In [`sandbox_overnight_20_bridge_loops.py`](./sandbox_overnight_20_bridge_loops.py) and Sections 34–53 of [`SemigroupBreakoutTheorems.lean`](./SemigroupBreakoutTheorems.lean), we executed a 20-loop campaign across four 5-loop arcs:
+
+### 12.1 Arc I (Loops 1–5, Theorems `SB.34–SB.38`): Kummer Carry & Multi-Block Factorial Valuation Bridges
+1. **Theorem SB.34 (`kummer_legendre_one_step_binary_factorial_bridge`):**
+   $$v_2\big((3^{s_r} u_r)!\big) + s_{r+1} = \big(2^{s_{r+1}} - 1\big) u_{r+1} + v_2(u_{r+1}!) = v_2(P_{r+1}!).$$
+2. **Theorem SB.35 (`zero_carry_three_adic_factorial_and_binomial_valuation_law`):**
+   For $N_K = 3^{T_K} P_0 + A_{0, K} = 2^{T_{K+1}} u_K$:
+   $$\boxed{v_3(N_K!) = v_3\big((3^{T_K} P_0)!\big) + v_3(A_{0, K}!) \qquad\Longleftrightarrow\qquad v_3\!\left(\binom{3^{T_K} P_0 + A_{0, K}}{A_{0, K}}\right) = 0,}$$
+   together with $v_2(N_K!) + s_2(u_K) = N_K$ and $v_2((N_K - 1)!) + T_{K+1} + s_2(u_K) = N_K$.
+3. **Theorem SB.36 (`joint_multi_block_factorial_valuation_syzygy`):**
+   $$\boxed{v_2(N_K!) + s_2(u_K) = 2 v_3(N_K!) + s_3(P_0) + s_3(A_{0, K}).}$$
+4. **Theorem SB.37 (`kummer_base3_two_pow_mul_carry_identity_and_bound`):**
+   For every $s, m \in \mathbb{N}$:
+   $$\boxed{s_3(2^s m) + 2\big(v_3((2^s m)!) - 2^s v_3(m!)\big) = 2^s s_3(m), \qquad s_3(2^s m) \le 2^s s_3(m).}$$
+5. **Theorem SB.38 (`multi_step_base3_horner_digitsum_lower_envelope`):**
+   $$s_3\big(2^S u_{r+1+M}\big) = s_3(u_r) + 1 + s_3\big(A_{r+1, r+1+M}\big) \ge 3 \quad (\ge 4 \text{ whenever } M \ge 1).$$
+
+### 12.2 Arc II (Loops 6–10, Theorems `SB.39–SB.43`): Mod-36, Mod-24, Mod-16 & $79\times$ Interior Floor Bridges
+6. **Theorem SB.39 (`interior_mod36_rung_to_quotient_bijection`):**
+   At every interior block $r+1$ ($s_r \ge 2, s_{r+2} \ge 2$), $(2^{s_{r+1}} u_{r+1}) \bmod 9 = 1$, locking $u_{r+1} \bmod 36$ into a 1-to-1 bijection with $s_{r+1} \bmod 6$:
+   $$\boxed{s_{r+1} \bmod 6 \in \{0, 1, 2, 3, 4, 5\} \;\longleftrightarrow\; u_{r+1} \bmod 36 \in \{19, 5, 7, 17, 31, 29\}!}$$
+   Thus **12 of the 18 odd residue classes modulo 36 are 100% extinct** at every interior surviving block!
+7. **Theorem SB.40 (`interior_extinction_of_five_and_seven_and_seventeen_floor`):**
+   At every interior block $r+1$ surviving two steps ($s_r, s_{r+1}, s_{r+2}, s_{r+3} \ge 2$):
+   - $u_{r+1} = 5 \implies s_{r+1} \ge 7$ (extinct for $2 \le s_{r+1} \le 6$!),
+   - $\neg(s_{r+1} = 2 \wedge u_{r+1} = 7)$ (since $3^2 \cdot 7 + 1 = 64 = 2^6 \cdot 1 \implies u_{r+2} = 1$, dying at block $r+3$),
+   - $u_{r+1} = 7 \implies s_{r+1} \ge 8$ (extinct for $2 \le s_{r+1} \le 7$!), and
+   - **$s_{r+1} \le 6 \implies u_{r+1} \ge 17$** ($s_{r+1} = 2 \implies u_{r+1} \ge 43$)!
+8. **Theorem SB.41 (`even_rung_mod16_trap_and_seventy_nine_floor_at_rung_two`):**
+   At $s_{r+1} = 2$, $u_{r+1} \bmod 16 = 11$ forces $s_{r+2} = 2$ and $u_{r+2} \bmod 4 = 1$, dying at block $r+3$. Since $43 \bmod 16 = 11$, $u_{r+1} = 43$ also dies in 2 blocks, forcing:
+   $$\boxed{s_{r+1} = 2 \implies u_{r+1} \ge 79!}$$
+9. **Theorem SB.42 (`universal_mod8_and_mod24_next_rung_dichotomy`):**
+   The third bit of $u_r$ ($u_r \bmod 8$, and $u_r \bmod 24$) universally determines whether the next block has $s_{r+1} = 2$ or $s_{r+1} \ge 3$:
+   - Even $s_r$: $(u_r \bmod 8 = 3 \iff u_r \bmod 24 = 19 \iff s_{r+1} = 2)$ and $(u_r \bmod 8 = 7 \iff u_r \bmod 24 = 7 \iff s_{r+1} \ge 3)$.
+   - Odd $s_r$: $(u_r \bmod 8 = 1 \iff u_r \bmod 24 = 17 \iff s_{r+1} = 2)$ and $(u_r \bmod 8 = 5 \iff u_r \bmod 24 = 5 \iff s_{r+1} \ge 3)$.
+10. **Theorem SB.43 (`sharpened_seventeen_seventy_nine_interior_archimedean_ceiling`):**
+    At every interior block $r+1$ ($s_k \ge 2$):
+    $$\boxed{s_{r+1} \le 6 \implies 85 \cdot 2^{T_{r+2}} < 3^{T_{r+1}}(5 P_0 + 4), \qquad s_{r+1} = 2 \implies 395 \cdot 2^{T_{r+2}} < 3^{T_{r+1}}(5 P_0 + 4)!}$$
+
+### 12.3 Arc III (Loops 11–15, Theorems `SB.44–SB.48`): Wronskian, Cross-Ratio & Multi-Window Determinant Bridges
+11. **Theorem SB.44 (`adjacent_block_wronskian_and_equal_rung_log_concavity`):**
+    $$2^{s_r} \cdot 3^{s_{r+1}} P_{r+1}(P_{r+1} - 1) = 3^{s_r} \cdot 2^{s_{r+1}} P_r(P_{r+2} - 1),$$
+    and whenever $s_r = s_{r+1}$, $P_{r+1}^2 - P_r P_{r+2} = P_{r+1} - P_r > 0$ (strict log-concavity on equal-rung pairs!).
+12. **Theorem SB.45 (`two_block_odd_leftover_cross_ratio_invariant`):**
+    $$3^{s_{r_1}} \cdot 2^{s_{r_2}} P_{r_1}(P_{r_2+1} - 1) = 2^{s_{r_1}} \cdot 3^{s_{r_2}} P_{r_2}(P_{r_1+1} - 1).$$
+13. **Theorem SB.46 (`three_point_seed_free_linear_eliminator_and_cocycle`):**
+    $$A_{0, r+M} = 3^d A_{0, r} + 2^{T_r} A_{r, r+M} = 3^d A_{0, r} + 2^{T_r}\big(2^d P_{r+M} - 3^d P_r\big).$$
+14. **Theorem SB.47 (`equal_step_odd_leftover_cross_window_determinant_identity`):**
+    $$2^d\big(2^{s_1+s_4} u_1 u_4 - 2^{s_2+s_3} u_2 u_3\big) = 2^{s_1} u_1 A_{34} - 2^{s_3} u_3 A_{12}.$$
+15. **Theorem SB.48 (`unconditional_four_fifths_cross_window_hankel_sandwich`):**
+    $$-4 \cdot 3^d P_3 < 5 \cdot 2^d (P_1 P_4 - P_2 P_3) < 4 \cdot 3^d P_1.$$
+
+### 12.4 Arc IV (Loops 16–20, Theorems `SB.49–SB.53`): Base-2/Base-3 Complement Duality & Grand 53-Bridge Synthesis
+16. **Theorem SB.49 (`mahler_antihydra_base2_complement_digitsum_law`):**
+    For all $m < 2^N$, $s_2(2^N - 1 - m) + s_2(m) = N$, and for all odd $a_0 < 2^N$, $s_2(2^N - a_0) + s_2(a_0) = N + 1$.
+17. **Theorem SB.50 (`mahler_antihydra_base3_complement_digitsum_law`):**
+    For all $m < 3^N$, $s_3(3^N - 1 - m) + s_3(m) = 2 N$, and at step $k = N$ of the Mahler–Antihydra duality ($b_N + a_N = 3^N$), $s_3(b_N - 1) + s_3(a_N) = 2 N$.
+18. **Theorem SB.51 (`post_bitlength_colliding_binary_ternary_window_on_N_K`):**
+    Packages the simultaneous $\mathbb{R} \times \mathbb{Q}_2 \times \mathbb{Q}_3$ pinning and dual Base-2/Base-3 zero-carry splits on $N_K$ with $s_2(N_K - 1) \ge T_{K+1} + 1$.
+19. **Theorem SB.52 (`interior_multi_block_joint_digitsum_and_seventy_nine_floor`):**
+    Combines the consecutive-block joint digit-sum floor $s_2(P_{r+1}) + s_3(P_{r+2}) \ge 5$, seed-independent Base-3 evolution, and the $17\times / 79\times$ interior floors.
+20. **Theorem SB.53 (`grand_semigroup_breakout_53_bridge_synthesis`):**
+    The Grand Synthesis of all 53 $\mathbb{Z}_2$-symmetry-breaking theorems (`SB.1–SB.53`).
+
+---
+
+## 13. Verification Instructions
 
 To verify the cordoned-off Lean 4 proofs without modifying the root 226-file build:
 

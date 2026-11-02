@@ -2594,6 +2594,1050 @@ theorem bridge_c_telescoped_binary_halving_budget_law
       simp only [sumBase2Quotient, sumBase2TriadicScaled, hbs_succ]
       omega
 
+/-! ## 34. Theorem SB.34 (Overnight Loop 1): One-Step Kummer–Legendre Binary Factorial Bridge -/
+
+/-- **Overnight Loop 1: One-Step Kummer–Legendre Binary Factorial Bridge
+(`kummer_legendre_one_step_binary_factorial_bridge`, Theorem SB.34)**:
+Suppose `ValidBlockChain b_0 s u (r + 2)` holds. Setting
+`P k = oddReturnP (orbit b_0 (blockSteps s k))`:
+1. `legendreFactVal2 (3 ^ (s r) * u r) + s (r + 1) = (2 ^ (s (r + 1)) - 1) * u (r + 1) + legendreFactVal2 (u (r + 1))`, and
+2. `legendreFactVal2 (3 ^ (s r) * u r) + s (r + 1) = legendreFactVal2 (P (r + 1))`! -/
+theorem kummer_legendre_one_step_binary_factorial_bridge
+    {b_0 r : ℕ} {s u : ℕ → ℕ}
+    (hchain : ValidBlockChain b_0 s u (r + 2)) :
+    let P := fun k => oddReturnP (orbit b_0 (blockSteps s k))
+    legendreFactVal2 (3 ^ (s r) * u r) + s (r + 1) =
+        (2 ^ (s (r + 1)) - 1) * u (r + 1) + legendreFactVal2 (u (r + 1)) ∧
+      legendreFactVal2 (3 ^ (s r) * u r) + s (r + 1) = legendreFactVal2 (P (r + 1)) := by
+  intro P
+  have hstep := (one_step_backward_quotient_recovery_and_mod_three_pow_one hchain).1
+  have h31 := (bridge_c_one_step_binary_trailing_ones_depletion_law hchain).2.2.2
+  have hleg_val := legendreFactVal2_add_base2DigitSum (3 ^ (s r) * u r)
+  have hleg_u1 := legendreFactVal2_add_base2DigitSum (u (r + 1))
+  have hleg_P1 := legendreFactVal2_add_base2DigitSum (P (r + 1))
+  have hP1 : P (r + 1) = 2 ^ (s (r + 1)) * u (r + 1) := (hchain (r + 1) (by omega)).2.2
+  have hs2_P1 : base2DigitSum (P (r + 1)) = base2DigitSum (u (r + 1)) := by
+    rw [hP1, base2DigitSum_two_pow_mul]
+  have h2_pos : 1 ≤ 2 ^ (s (r + 1)) := Nat.one_le_pow _ 2 (by decide)
+  have hmul : (2 ^ (s (r + 1)) - 1) * u (r + 1) + u (r + 1) = 2 ^ (s (r + 1)) * u (r + 1) := by
+    rw [Nat.sub_mul, one_mul]
+    have hle : u (r + 1) ≤ 2 ^ (s (r + 1)) * u (r + 1) :=
+      Nat.le_mul_of_pos_left _ h2_pos
+    omega
+  exact ⟨by omega, by omega⟩
+
+/-! ## 35. Theorem SB.35 (Overnight Loop 2): Zero-Carry 3-Adic Factorial & Binomial Valuation Law -/
+
+/-- **Overnight Loop 2: Zero-Carry 3-Adic Factorial & Binomial Valuation Law
+(`zero_carry_three_adic_factorial_and_binomial_valuation_law`, Theorem SB.35)**:
+Suppose `ValidBlockChain b_0 s u (K + 1)` holds with `∀ k < K, 2 ≤ s k`.
+Let `P k = oddReturnP (orbit b_0 (blockSteps s k))`, `T_K = blockSteps s K`,
+`T_K1 = T_K + s K`, `A_K = renewalNumerator s K`, and `N_K = 3 ^ T_K * P 0 + A_K`:
+1. **Exact 3-Adic Factorial Decomposition of $N_K!$**:
+   `2 * legendreFactVal3 N_K = (3 ^ T_K - 1) * P 0 + 2 * legendreFactVal3 (P 0) + 2 * legendreFactVal3 A_K` and
+   `legendreFactVal3 N_K = legendreFactVal3 (3 ^ T_K * P 0) + legendreFactVal3 A_K`
+   (meaning the binomial coefficient $\binom{3^{T_K} P_0 + A_{0,K}}{A_{0,K}}$ has **3-adic valuation identically zero**!), and
+2. **Exact 2-Adic Factorial Decomposition of $N_K!$ and $(N_K - 1)!$**:
+   `legendreFactVal2 N_K + base2DigitSum (u K) = N_K` and
+   `legendreFactVal2 (N_K - 1) + T_K1 + base2DigitSum (u K) = N_K`! -/
+theorem zero_carry_three_adic_factorial_and_binomial_valuation_law
+    {b_0 K : ℕ} {s u : ℕ → ℕ}
+    (hchain : ValidBlockChain b_0 s u (K + 1))
+    (hs2 : ∀ k < K, 2 ≤ s k) :
+    let P := fun k => oddReturnP (orbit b_0 (blockSteps s k))
+    let T_K := blockSteps s K
+    let T_K1 := T_K + s K
+    let A_K := renewalNumerator s K
+    let N_K := 3 ^ T_K * P 0 + A_K
+    2 * legendreFactVal3 N_K =
+        (3 ^ T_K - 1) * P 0 + 2 * legendreFactVal3 (P 0) + 2 * legendreFactVal3 A_K ∧
+      legendreFactVal3 N_K = legendreFactVal3 (3 ^ T_K * P 0) + legendreFactVal3 A_K ∧
+      legendreFactVal2 N_K + base2DigitSum (u K) = N_K ∧
+      legendreFactVal2 (N_K - 1) + T_K1 + base2DigitSum (u K) = N_K := by
+  intro P T_K T_K1 A_K N_K
+  have h32 := bridge_c_multi_step_dual_base2_base3_zero_carry_split hchain hs2
+  have hid : N_K = 2 ^ T_K1 * u K := h32.1.1
+  have hs3_N : base3DigitSum N_K = base3DigitSum (P 0) + base3DigitSum A_K := h32.1.2.2.2
+  have hs2_N1 : base2DigitSum (N_K - 1) + 1 = T_K1 + base2DigitSum (u K) := h32.2.2.2.2
+  clear h32
+  have hs3_3P0 : base3DigitSum (3 ^ T_K * P 0) = base3DigitSum (P 0) :=
+    base3DigitSum_three_pow_mul T_K (P 0)
+  have hs2_N : base2DigitSum N_K = base2DigitSum (u K) := by
+    rw [hid, base2DigitSum_two_pow_mul]
+  have hleg3_N := two_mul_legendreFactVal3_add_base3DigitSum N_K
+  have hleg3_P0 := two_mul_legendreFactVal3_add_base3DigitSum (P 0)
+  have hleg3_3P0 := two_mul_legendreFactVal3_add_base3DigitSum (3 ^ T_K * P 0)
+  have hleg3_A := two_mul_legendreFactVal3_add_base3DigitSum A_K
+  have hleg2_N := legendreFactVal2_add_base2DigitSum N_K
+  have hleg2_N1 := legendreFactVal2_add_base2DigitSum (N_K - 1)
+  have h3_pos : 1 ≤ 3 ^ T_K := Nat.one_le_pow _ 3 (by decide)
+  have hmul3 : (3 ^ T_K - 1) * P 0 + P 0 = 3 ^ T_K * P 0 := by
+    rw [Nat.sub_mul, one_mul]
+    have hle : P 0 ≤ 3 ^ T_K * P 0 := Nat.le_mul_of_pos_left _ h3_pos
+    omega
+  have huK_odd : u K % 2 = 1 := (hchain K (by omega)).2.1
+  have huK_pos : 1 ≤ u K := by omega
+  have h2_pos : 1 ≤ 2 ^ T_K1 := Nat.one_le_pow _ 2 (by decide)
+  have hN_pos : 1 ≤ N_K := by
+    rw [hid]
+    have hm := Nat.mul_le_mul h2_pos huK_pos
+    omega
+  have hN_sub : (N_K - 1) + 1 = N_K := Nat.sub_add_cancel hN_pos
+  have h4 : legendreFactVal2 (N_K - 1) + T_K1 + base2DigitSum (u K) = N_K := by
+    calc
+      legendreFactVal2 (N_K - 1) + T_K1 + base2DigitSum (u K)
+          = legendreFactVal2 (N_K - 1) + (T_K1 + base2DigitSum (u K)) := by ring
+      _ = legendreFactVal2 (N_K - 1) + (base2DigitSum (N_K - 1) + 1) := by rw [← hs2_N1]
+      _ = (legendreFactVal2 (N_K - 1) + base2DigitSum (N_K - 1)) + 1 := by ring
+      _ = (N_K - 1) + 1 := by rw [hleg2_N1]
+      _ = N_K := hN_sub
+  have hN_def : N_K = 3 ^ T_K * P 0 + A_K := rfl
+  exact ⟨by omega, by omega, by omega, h4⟩
+
+/-! ## 36. Theorem SB.36 (Overnight Loop 3): Joint $(v_2(N_K!), v_3(N_K!))$ Multi-Block Factorial Syzygy -/
+
+/-- **Overnight Loop 3: Joint $(v_2(N_K!), v_3(N_K!))$ Multi-Block Factorial Syzygy
+(`joint_multi_block_factorial_valuation_syzygy`, Theorem SB.36)**:
+Suppose `ValidBlockChain b_0 s u (K + 1)` holds with `∀ k < K, 2 ≤ s k`.
+Let `P k = oddReturnP (orbit b_0 (blockSteps s k))`, `T_K = blockSteps s K`,
+`A_K = renewalNumerator s K`, and `N_K = 3 ^ T_K * P 0 + A_K`:
+1. `legendreFactVal2 N_K + base2DigitSum (u K) = 2 * legendreFactVal3 N_K + base3DigitSum (P 0) + base3DigitSum A_K`, and
+2. `legendreFactVal2 (N_K - 1) + (T_K + s K) + base2DigitSum (u K) = 2 * legendreFactVal3 (3 ^ T_K * P 0) + 2 * legendreFactVal3 A_K + base3DigitSum (P 0) + base3DigitSum A_K`! -/
+theorem joint_multi_block_factorial_valuation_syzygy
+    {b_0 K : ℕ} {s u : ℕ → ℕ}
+    (hchain : ValidBlockChain b_0 s u (K + 1))
+    (hs2 : ∀ k < K, 2 ≤ s k) :
+    let P := fun k => oddReturnP (orbit b_0 (blockSteps s k))
+    let T_K := blockSteps s K
+    let A_K := renewalNumerator s K
+    let N_K := 3 ^ T_K * P 0 + A_K
+    legendreFactVal2 N_K + base2DigitSum (u K) =
+        2 * legendreFactVal3 N_K + base3DigitSum (P 0) + base3DigitSum A_K ∧
+      legendreFactVal2 (N_K - 1) + (T_K + s K) + base2DigitSum (u K) =
+        2 * legendreFactVal3 (3 ^ T_K * P 0) + 2 * legendreFactVal3 A_K +
+          base3DigitSum (P 0) + base3DigitSum A_K := by
+  intro P T_K A_K N_K
+  have h35 := zero_carry_three_adic_factorial_and_binomial_valuation_law hchain hs2
+  have h32 := bridge_c_multi_step_dual_base2_base3_zero_carry_split hchain hs2
+  have hs3_N : base3DigitSum N_K = base3DigitSum (P 0) + base3DigitSum A_K := h32.1.2.2.2
+  have hleg3_N := two_mul_legendreFactVal3_add_base3DigitSum N_K
+  have hsplit3 : legendreFactVal3 N_K = legendreFactVal3 (3 ^ T_K * P 0) + legendreFactVal3 A_K :=
+    h35.2.1
+  have hv2_N : legendreFactVal2 N_K + base2DigitSum (u K) = N_K := h35.2.2.1
+  have hv2_N1 : legendreFactVal2 (N_K - 1) + (T_K + s K) + base2DigitSum (u K) = N_K := h35.2.2.2
+  exact ⟨by omega, by omega⟩
+
+/-! ## 37. Theorem SB.37 (Overnight Loop 4): Kummer Base-3 Doubling Carry Law for $\times 2^s$ -/
+
+/-- **Overnight Loop 4: Kummer Base-3 Doubling Carry Law for Multiplication by $2^s$
+(`kummer_base3_two_pow_mul_carry_identity_and_bound`, Theorem SB.37)**:
+For every exponent `s : ℕ` and integer `m : ℕ`:
+1. **Submultiplicative Base-3 Bound**:
+   `base3DigitSum (2 ^ s * m) ≤ 2 ^ s * base3DigitSum m`,
+2. **Factorial Valuation Monotonicity**:
+   `2 ^ s * legendreFactVal3 m ≤ legendreFactVal3 (2 ^ s * m)`, and
+3. **Exact Kummer–Legendre Base-3 Carry Identity**:
+   `base3DigitSum (2 ^ s * m) + 2 * (legendreFactVal3 (2 ^ s * m) - 2 ^ s * legendreFactVal3 m) = 2 ^ s * base3DigitSum m`! -/
+theorem kummer_base3_two_pow_mul_carry_identity_and_bound (s m : ℕ) :
+    base3DigitSum (2 ^ s * m) ≤ 2 ^ s * base3DigitSum m ∧
+      2 ^ s * legendreFactVal3 m ≤ legendreFactVal3 (2 ^ s * m) ∧
+      base3DigitSum (2 ^ s * m) +
+          2 * (legendreFactVal3 (2 ^ s * m) - 2 ^ s * legendreFactVal3 m) =
+        2 ^ s * base3DigitSum m := by
+  have hle : base3DigitSum (2 ^ s * m) ≤ 2 ^ s * base3DigitSum m := by
+    induction s generalizing m with
+    | zero => simp
+    | succ s ih =>
+        have hmul : 2 ^ (s + 1) * m = 2 ^ s * (2 * m) := by
+          rw [Nat.pow_succ]
+          ring
+        have ih1 := ih (2 * m)
+        rw [← hmul] at ih1
+        have h2 := base3DigitSum_two_mul_le m
+        have hmul2 : 2 ^ s * base3DigitSum (2 * m) ≤ 2 ^ s * (2 * base3DigitSum m) :=
+          Nat.mul_le_mul_left (2 ^ s) h2
+        have hrhs : 2 ^ (s + 1) * base3DigitSum m = 2 ^ s * (2 * base3DigitSum m) := by
+          rw [Nat.pow_succ]
+          ring
+        omega
+  have hleg_m := two_mul_legendreFactVal3_add_base3DigitSum m
+  have hleg_2s := two_mul_legendreFactVal3_add_base3DigitSum (2 ^ s * m)
+  have hmul_leg :
+      2 * (2 ^ s * legendreFactVal3 m) + 2 ^ s * base3DigitSum m = 2 ^ s * m := by
+    calc
+      2 * (2 ^ s * legendreFactVal3 m) + 2 ^ s * base3DigitSum m
+          = 2 ^ s * (2 * legendreFactVal3 m + base3DigitSum m) := by ring
+      _ = 2 ^ s * m := by rw [hleg_m]
+  exact ⟨hle, by omega, by omega⟩
+
+/-! ## 38. Theorem SB.38 (Overnight Loop 5): Multi-Step Base-3 Horner Digit-Sum Lower Envelope -/
+
+/-- **Overnight Loop 5: Multi-Step Base-3 Horner Digit-Sum Lower Envelope
+(`multi_step_base3_horner_digitsum_lower_envelope`, Theorem SB.38)**:
+Suppose `ValidBlockChain b_0 s u (r + 1 + M + 1)` holds with `∀ k < M, 2 ≤ s (r + 1 + k)` and `2 ≤ s (r + 1)`.
+Let `s' t = s (r + 1 + t)`, `d = blockSteps s' M`, and `S = d + s (r + 1 + M)`:
+1. `base3DigitSum (2 ^ S * u (r + 1 + M)) = base3DigitSum (u r) + 1 + base3DigitSum (renewalNumerator s' M)`,
+2. `3 ≤ base3DigitSum (u r) + 1`, and
+3. `3 ≤ base3DigitSum (2 ^ S * u (r + 1 + M))` (and `4 ≤ base3DigitSum (2 ^ S * u (r + 1 + M))` whenever `1 ≤ M`)! -/
+theorem multi_step_base3_horner_digitsum_lower_envelope
+    {b_0 r M : ℕ} {s u : ℕ → ℕ}
+    (hchain : ValidBlockChain b_0 s u (r + 1 + M + 1))
+    (hs2 : ∀ k < M, 2 ≤ s (r + 1 + k))
+    (hs_r1 : 2 ≤ s (r + 1)) :
+    let s' := fun t => s (r + 1 + t)
+    let d := blockSteps s' M
+    let S := d + s (r + 1 + M)
+    base3DigitSum (2 ^ S * u (r + 1 + M)) =
+        base3DigitSum (u r) + 1 + base3DigitSum (renewalNumerator s' M) ∧
+      3 ≤ base3DigitSum (u r) + 1 ∧
+      3 ≤ base3DigitSum (2 ^ S * u (r + 1 + M)) ∧
+      (1 ≤ M → 4 ≤ base3DigitSum (2 ^ S * u (r + 1 + M))) := by
+  intro s' d S
+  have h27 :
+      base3DigitSum (2 ^ S * u (r + 1 + M)) =
+        base3DigitSum (u r) + 1 + base3DigitSum (renewalNumerator s' M) :=
+    (zero_carry_base3_horner_remainder_ladder hchain hs2).2.2.2.2
+  have hch_r2 : ValidBlockChain b_0 s u (r + 2) := fun k hk => hchain k (by omega)
+  have h18 := universal_mod12_quotient_lock_and_joint_digitsum_ge_five hch_r2 hs_r1
+  have hs3_ur : 2 ≤ base3DigitSum (u r) := h18.2.2.2.2.1
+  refine ⟨h27, by omega, by omega, ?_⟩
+  intro hM1
+  have hA_pos : 1 ≤ renewalNumerator s' M := by
+    obtain ⟨m, hm⟩ : ∃ m : ℕ, M = m + 1 := ⟨M - 1, by omega⟩
+    rw [hm]
+    change 1 ≤ 3 ^ (s' m) * renewalNumerator s' m + 2 ^ (blockSteps s' (m + 1))
+    have h2 : 1 ≤ 2 ^ (blockSteps s' (m + 1)) := Nat.one_le_pow _ 2 (by decide)
+    omega
+  have hs3_A : 1 ≤ base3DigitSum (renewalNumerator s' M) :=
+    base3DigitSum_pos_of_pos hA_pos
+  omega
+
+/-! ## 39. Theorem SB.39 (Overnight Loop 6): Interior Mod-36 Rung-to-Quotient Bijection -/
+
+/-- Helper: `2 ^ n % 9` is periodic with period 6 (`1, 2, 4, 8, 7, 5`). -/
+theorem two_pow_mod_nine_cycle (n : ℕ) :
+    (n % 6 = 0 → 2 ^ n % 9 = 1) ∧
+      (n % 6 = 1 → 2 ^ n % 9 = 2) ∧
+      (n % 6 = 2 → 2 ^ n % 9 = 4) ∧
+      (n % 6 = 3 → 2 ^ n % 9 = 8) ∧
+      (n % 6 = 4 → 2 ^ n % 9 = 7) ∧
+      (n % 6 = 5 → 2 ^ n % 9 = 5) := by
+  induction n with
+  | zero => decide
+  | succ n ih =>
+      have hpow : 2 ^ (n + 1) = 2 * 2 ^ n := by
+        rw [Nat.pow_succ]
+        ring
+      rw [hpow]
+      omega
+
+/-- **Overnight Loop 6: Interior Mod-36 Rung-to-Quotient Bijection
+(`interior_mod36_rung_to_quotient_bijection`, Theorem SB.39)**:
+Suppose `ValidBlockChain b_0 s u (r + 3)` holds with `2 ≤ s r` and `2 ≤ s (r + 2)`.
+Then at the interior block `r + 1`:
+1. `(2 ^ (s (r + 1)) * u (r + 1)) % 9 = 1`, and
+2. **Exact Mod-36 Bijection with `s (r + 1) % 6`:**
+   - `s (r + 1) % 6 = 0 ↔ u (r + 1) % 36 = 19`,
+   - `s (r + 1) % 6 = 1 ↔ u (r + 1) % 36 = 5`,
+   - `s (r + 1) % 6 = 2 ↔ u (r + 1) % 36 = 7`,
+   - `s (r + 1) % 6 = 3 ↔ u (r + 1) % 36 = 17`,
+   - `s (r + 1) % 6 = 4 ↔ u (r + 1) % 36 = 31`, and
+   - `s (r + 1) % 6 = 5 ↔ u (r + 1) % 36 = 29`! -/
+theorem interior_mod36_rung_to_quotient_bijection
+    {b_0 r : ℕ} {s u : ℕ → ℕ}
+    (hchain : ValidBlockChain b_0 s u (r + 3))
+    (hs_r : 2 ≤ s r)
+    (hs_r2 : 2 ≤ s (r + 2)) :
+    (2 ^ (s (r + 1)) * u (r + 1)) % 9 = 1 ∧
+      (s (r + 1) % 6 = 0 ↔ u (r + 1) % 36 = 19) ∧
+      (s (r + 1) % 6 = 1 ↔ u (r + 1) % 36 = 5) ∧
+      (s (r + 1) % 6 = 2 ↔ u (r + 1) % 36 = 7) ∧
+      (s (r + 1) % 6 = 3 ↔ u (r + 1) % 36 = 17) ∧
+      (s (r + 1) % 6 = 4 ↔ u (r + 1) % 36 = 31) ∧
+      (s (r + 1) % 6 = 5 ↔ u (r + 1) % 36 = 29) := by
+  have hch1 : ValidBlockChain b_0 s u (r + 2) := fun k hk => hchain k (by omega)
+  have hch2 : ValidBlockChain b_0 s u ((r + 1) + 2) := fun k hk => hchain k (by omega)
+  have hstep1 := (one_step_backward_quotient_recovery_and_mod_three_pow_one hch1).1
+  have h16 := (universal_mod4_quotient_rung_parity_lock_and_mersenne_trap hch2 hs_r2).1
+  obtain ⟨k, hk⟩ : ∃ k : ℕ, s r = k + 2 := ⟨s r - 2, by omega⟩
+  have h3_9 : 3 ^ (s r) * u r = 9 * (3 ^ k * u r) := by
+    rw [hk, Nat.pow_add]
+    ring
+  have hmod9 : (2 ^ (s (r + 1)) * u (r + 1)) % 9 = 1 := by
+    rw [hstep1, h3_9]
+    omega
+  have hmul_mod9 : ((2 ^ (s (r + 1)) % 9) * (u (r + 1) % 9)) % 9 = 1 := by
+    rw [← Nat.mul_mod, hmod9]
+  have hcyc := two_pow_mod_nine_cycle (s (r + 1))
+  have hcases :
+      s (r + 1) % 6 = 0 ∨ s (r + 1) % 6 = 1 ∨ s (r + 1) % 6 = 2 ∨
+        s (r + 1) % 6 = 3 ∨ s (r + 1) % 6 = 4 ∨ s (r + 1) % 6 = 5 := by omega
+  rcases hcases with h0 | h1 | h2 | h3 | h4 | h5
+  · have hc := hcyc.1 h0
+    rw [hc] at hmul_mod9
+    omega
+  · have hc := hcyc.2.1 h1
+    rw [hc] at hmul_mod9
+    omega
+  · have hc := hcyc.2.2.1 h2
+    rw [hc] at hmul_mod9
+    omega
+  · have hc := hcyc.2.2.2.1 h3
+    rw [hc] at hmul_mod9
+    omega
+  · have hc := hcyc.2.2.2.2.1 h4
+    rw [hc] at hmul_mod9
+    omega
+  · have hc := hcyc.2.2.2.2.2 h5
+    rw [hc] at hmul_mod9
+    omega
+
+/-! ## 40. Theorem SB.40 (Overnight Loop 7): Interior Extinction of $u \in \{5, 7\}$ & the $17 / 43$ Floor -/
+
+/-- **Overnight Loop 7: Interior Extinction of $u \in \{5, 7\}$ & the $17 / 43$ Floor
+(`interior_extinction_of_five_and_seven_and_seventeen_floor`, Theorem SB.40)**:
+Suppose `ValidBlockChain b_0 s u (r + 4)` holds with `2 ≤ s r`, `2 ≤ s (r + 1)`,
+`2 ≤ s (r + 2)`, and `2 ≤ s (r + 3)`.
+Then at the interior block `r + 1`:
+1. `u (r + 1) = 5 → 7 ≤ s (r + 1)` (`u (r + 1) = 5` is **100% extinct** for `2 ≤ s (r + 1) ≤ 6`!),
+2. `¬ (s (r + 1) = 2 ∧ u (r + 1) = 7)` (because `3^2 * 7 + 1 = 64 = 2^6 * 1` forces `u (r + 2) = 1`,
+   which dies at block `r + 3`),
+3. `u (r + 1) = 7 → 8 ≤ s (r + 1)` (`u (r + 1) = 7` is **100% extinct** for `2 ≤ s (r + 1) ≤ 7`!), and
+4. **Universal `17 ≤ u (r + 1)` & `43 ≤ u (r + 1)` Interior Floors:**
+   `(s (r + 1) ≤ 6 → 17 ≤ u (r + 1)) ∧ (s (r + 1) = 2 → 43 ≤ u (r + 1))`! -/
+theorem interior_extinction_of_five_and_seven_and_seventeen_floor
+    {b_0 r : ℕ} {s u : ℕ → ℕ}
+    (hchain : ValidBlockChain b_0 s u (r + 4))
+    (hs_r : 2 ≤ s r)
+    (hs_r1 : 2 ≤ s (r + 1))
+    (hs_r2 : 2 ≤ s (r + 2))
+    (hs_r3 : 2 ≤ s (r + 3)) :
+    (u (r + 1) = 5 → 7 ≤ s (r + 1)) ∧
+      ¬ (s (r + 1) = 2 ∧ u (r + 1) = 7) ∧
+      (u (r + 1) = 7 → 8 ≤ s (r + 1)) ∧
+      (s (r + 1) ≤ 6 → 17 ≤ u (r + 1)) ∧
+      (s (r + 1) = 2 → 43 ≤ u (r + 1)) := by
+  have hch3 : ValidBlockChain b_0 s u (r + 3) := fun k hk => hchain k (by omega)
+  have h39 := interior_mod36_rung_to_quotient_bijection hch3 hs_r hs_r2
+  have hch_next2 : ValidBlockChain b_0 s u ((r + 1) + 2) := fun k hk => hchain k (by omega)
+  have hch_next3 : ValidBlockChain b_0 s u ((r + 2) + 2) := fun k hk => hchain k (by omega)
+  have hstep2 := (one_step_backward_quotient_recovery_and_mod_three_pow_one hch_next2).1
+  have h18_r2 := universal_mod12_quotient_lock_and_joint_digitsum_ge_five hch_next3 hs_r3
+  have hu2_ge5 : 5 ≤ u (r + 2) := h18_r2.2.2.1.1
+  have hnot_2_7 : ¬ (s (r + 1) = 2 ∧ u (r + 1) = 7) := by
+    rintro ⟨hs2_eq, hu7_eq⟩
+    rw [hs2_eq, hu7_eq] at hstep2
+    change 2 ^ (s (r + 2)) * u (r + 2) = 64 at hstep2
+    have hcases : s (r + 2) ≤ 4 ∨ 5 ≤ s (r + 2) := by omega
+    rcases hcases with hle4 | hge5
+    · have : s (r + 2) = 2 ∨ s (r + 2) = 3 ∨ s (r + 2) = 4 := by omega
+      rcases this with h2 | h3 | h4
+      · rw [h2] at hstep2
+        have hu2_odd : u (r + 2) % 2 = 1 := (hchain (r + 2) (by omega)).2.1
+        omega
+      · rw [h3] at hstep2
+        have hu2_odd : u (r + 2) % 2 = 1 := (hchain (r + 2) (by omega)).2.1
+        omega
+      · rw [h4] at hstep2
+        omega
+    · obtain ⟨k, hk⟩ : ∃ k : ℕ, s (r + 2) = k + 5 := ⟨s (r + 2) - 5, by omega⟩
+      have hpow : 32 ≤ 2 ^ (s (r + 2)) := by
+        have hpos : 1 ≤ 2 ^ k := Nat.one_le_pow _ 2 (by decide)
+        rw [hk, Nat.pow_add]
+        omega
+      have hmul : 32 * 5 ≤ 2 ^ (s (r + 2)) * u (r + 2) := Nat.mul_le_mul hpow hu2_ge5
+      omega
+  omega
+
+/-! ## 41. Theorem SB.41 (Overnight Loop 8): Even-Rung Mod-16 Two-Block Trap & $u \ge 79$ Floor at $s = 2$ -/
+
+/-- **Overnight Loop 8: Even-Rung Mod-16 Two-Block Trap & $u \ge 79$ Floor at $s = 2$
+(`even_rung_mod16_trap_and_seventy_nine_floor_at_rung_two`, Theorem SB.41)**:
+Suppose `ValidBlockChain b_0 s u (r + 4)` holds with `2 ≤ s r`, `2 ≤ s (r + 1)`,
+`2 ≤ s (r + 2)`, and `2 ≤ s (r + 3)`:
+1. Whenever `s (r + 1) = 2`, we have `u (r + 1) % 16 ≠ 11`
+   (because `9 * (16 m + 11) + 1 = 4 * (36 m + 25)` forces `s (r + 2) = 2` and `u (r + 2) % 4 = 1`,
+   which dies at block `r + 3`!),
+2. `¬ (s (r + 1) = 2 ∧ u (r + 1) = 43)`, and
+3. **The $79\times$ Interior Floor at $s_{r+1} = 2$:**
+   `s (r + 1) = 2 → 79 ≤ u (r + 1)`! -/
+theorem even_rung_mod16_trap_and_seventy_nine_floor_at_rung_two
+    {b_0 r : ℕ} {s u : ℕ → ℕ}
+    (hchain : ValidBlockChain b_0 s u (r + 4))
+    (hs_r : 2 ≤ s r)
+    (hs_r1 : 2 ≤ s (r + 1))
+    (hs_r2 : 2 ≤ s (r + 2))
+    (hs_r3 : 2 ≤ s (r + 3)) :
+    (s (r + 1) = 2 → u (r + 1) % 16 ≠ 11) ∧
+      ¬ (s (r + 1) = 2 ∧ u (r + 1) = 43) ∧
+      (s (r + 1) = 2 → 79 ≤ u (r + 1)) := by
+  have h40 := interior_extinction_of_five_and_seven_and_seventeen_floor
+    hchain hs_r hs_r1 hs_r2 hs_r3
+  have hch3 : ValidBlockChain b_0 s u (r + 3) := fun k hk => hchain k (by omega)
+  have h39 := interior_mod36_rung_to_quotient_bijection hch3 hs_r hs_r2
+  have hch_next2 : ValidBlockChain b_0 s u ((r + 1) + 2) := fun k hk => hchain k (by omega)
+  have hch_next3 : ValidBlockChain b_0 s u ((r + 2) + 2) := fun k hk => hchain k (by omega)
+  have hstep2 := (one_step_backward_quotient_recovery_and_mod_three_pow_one hch_next2).1
+  have h16_r2 := (universal_mod4_quotient_rung_parity_lock_and_mersenne_trap hch_next3 hs_r3).1
+  have hnot_mod16 : s (r + 1) = 2 → u (r + 1) % 16 ≠ 11 := by
+    intro hs2_eq hmod11
+    rw [hs2_eq] at hstep2
+    change 2 ^ (s (r + 2)) * u (r + 2) = 9 * u (r + 1) + 1 at hstep2
+    have hmod8 : (9 * u (r + 1) + 1) % 8 = 4 := by omega
+    have hnot_ge3 : ¬ (3 ≤ s (r + 2)) := by
+      intro hge3
+      obtain ⟨k, hk⟩ : ∃ k : ℕ, s (r + 2) = k + 3 := ⟨s (r + 2) - 3, by omega⟩
+      have h8 : 2 ^ (s (r + 2)) * u (r + 2) = 8 * (2 ^ k * u (r + 2)) := by
+        rw [hk, Nat.pow_add]
+        ring
+      rw [h8] at hstep2
+      omega
+    have hsr2_eq2 : s (r + 2) = 2 := by omega
+    rw [hsr2_eq2] at hstep2
+    have hu2_mod4 : u (r + 2) % 4 = 3 := h16_r2.1.mp (by omega)
+    omega
+  refine ⟨hnot_mod16, ?_, ?_⟩
+  · rintro ⟨hs2_eq, hu43⟩
+    exact hnot_mod16 hs2_eq (by omega)
+  · intro hs2_eq
+    have hmod36 : u (r + 1) % 36 = 7 := h39.2.2.2.1.mp (by omega)
+    have hge43 : 43 ≤ u (r + 1) := h40.2.2.2.2 hs2_eq
+    have hne43 : u (r + 1) ≠ 43 := fun h => hnot_mod16 hs2_eq (by omega)
+    omega
+
+/-! ## 42. Theorem SB.42 (Overnight Loop 9): Universal Mod-8 & Mod-24 Next-Rung Dichotomy -/
+
+/-- Helper: `3 ^ n % 8 = 1` when `n` is even and `3` when `n` is odd. -/
+theorem three_pow_mod_eight_parity (n : ℕ) :
+    (n % 2 = 0 → 3 ^ n % 8 = 1) ∧ (n % 2 = 1 → 3 ^ n % 8 = 3) := by
+  induction n with
+  | zero => decide
+  | succ n ih =>
+      have hpow : 3 ^ (n + 1) = 3 * 3 ^ n := by
+        rw [Nat.pow_succ]
+        ring
+      rw [hpow]
+      omega
+
+/-- **Overnight Loop 9: Universal Mod-8 & Mod-24 Next-Rung Dichotomy
+(`universal_mod8_and_mod24_next_rung_dichotomy`, Theorem SB.42)**:
+Suppose `ValidBlockChain b_0 s u (r + 2)` holds with `2 ≤ s (r + 1)`.
+Then the third bit of `u r` (`u r % 8`, and `u r % 24`) universally determines whether
+the next block is a minimal recovery step (`s (r + 1) = 2`) or a long jump (`3 ≤ s (r + 1)`):
+1. **Even `s r` (`s r % 2 = 0`):**
+   `(u r % 8 = 3 ↔ s (r + 1) = 2) ∧ (u r % 8 = 7 ↔ 3 ≤ s (r + 1)) ∧ (u r % 24 = 19 ↔ s (r + 1) = 2) ∧ (u r % 24 = 7 ↔ 3 ≤ s (r + 1))`, and
+2. **Odd `s r` (`s r % 2 = 1`):**
+   `(u r % 8 = 1 ↔ s (r + 1) = 2) ∧ (u r % 8 = 5 ↔ 3 ≤ s (r + 1)) ∧ (u r % 24 = 17 ↔ s (r + 1) = 2) ∧ (u r % 24 = 5 ↔ 3 ≤ s (r + 1))`! -/
+theorem universal_mod8_and_mod24_next_rung_dichotomy
+    {b_0 r : ℕ} {s u : ℕ → ℕ}
+    (hchain : ValidBlockChain b_0 s u (r + 2))
+    (hs_r1 : 2 ≤ s (r + 1)) :
+    (s r % 2 = 0 →
+      (u r % 8 = 3 ↔ s (r + 1) = 2) ∧
+        (u r % 8 = 7 ↔ 3 ≤ s (r + 1)) ∧
+        (u r % 24 = 19 ↔ s (r + 1) = 2) ∧
+        (u r % 24 = 7 ↔ 3 ≤ s (r + 1))) ∧
+      (s r % 2 = 1 →
+        (u r % 8 = 1 ↔ s (r + 1) = 2) ∧
+          (u r % 8 = 5 ↔ 3 ≤ s (r + 1)) ∧
+          (u r % 24 = 17 ↔ s (r + 1) = 2) ∧
+          (u r % 24 = 5 ↔ 3 ≤ s (r + 1))) := by
+  have h18 := universal_mod12_quotient_lock_and_joint_digitsum_ge_five hchain hs_r1
+  have hlock12 := h18.2.1
+  have hstep := (one_step_backward_quotient_recovery_and_mod_three_pow_one hchain).1
+  have hu1_odd : u (r + 1) % 2 = 1 := (hchain (r + 1) (by omega)).2.1
+  have h3_8 := three_pow_mod_eight_parity (s r)
+  have hmul8 : ((3 ^ (s r) % 8) * (u r % 8) + 1) % 8 = (2 ^ (s (r + 1)) * u (r + 1)) % 8 := by
+    have h1 : (3 ^ (s r) % 8) * (u r % 8) % 8 = (3 ^ (s r) * u r) % 8 := (Nat.mul_mod _ _ 8).symm
+    have h2 : (3 ^ (s r) * u r + 1) % 8 = (2 ^ (s (r + 1)) * u (r + 1)) % 8 := by rw [hstep]
+    omega
+  have hrung8 :
+      (s (r + 1) = 2 → (2 ^ (s (r + 1)) * u (r + 1)) % 8 = 4) ∧
+        (3 ≤ s (r + 1) → (2 ^ (s (r + 1)) * u (r + 1)) % 8 = 0) := by
+    refine ⟨?_, ?_⟩
+    · intro hs2_eq
+      rw [hs2_eq]
+      omega
+    · intro hge3
+      obtain ⟨k, hk⟩ : ∃ k : ℕ, s (r + 1) = k + 3 := ⟨s (r + 1) - 3, by omega⟩
+      have h8 : 2 ^ (s (r + 1)) * u (r + 1) = 8 * (2 ^ k * u (r + 1)) := by
+        rw [hk, Nat.pow_add]
+        ring
+      rw [h8]
+      omega
+  rcases (by omega : s r % 2 = 0 ∨ s r % 2 = 1) with hev | hodd
+  · have hc := h3_8.1 hev
+    rw [hc] at hmul8
+    omega
+  · have hc := h3_8.2 hodd
+    rw [hc] at hmul8
+    omega
+
+/-! ## 43. Theorem SB.43 (Overnight Loop 10): The $17\times$ / $79\times$ Sharpened Interior Archimedean Rung Ceiling -/
+
+/-- **Overnight Loop 10: The $17\times$ / $79\times$ Sharpened Interior Archimedean Rung Ceiling
+(`sharpened_seventeen_seventy_nine_interior_archimedean_ceiling`, Theorem SB.43)**:
+Suppose `ValidBlockChain b_0 s u (r + 4)` holds with `∀ k < r + 4, 2 ≤ s k`.
+Setting `P k = oddReturnP (orbit b_0 (blockSteps s k))` and `T k = blockSteps s k`:
+1. **Unconditional Interior Ceiling (`25 * 2^{T_{r+2}} < 3^{T_{r+1}} (5 P_0 + 4)`):**
+   `25 * 2 ^ (T (r + 2)) < 3 ^ (T (r + 1)) * (5 * P 0 + 4)`,
+2. **The $17\times$ Sharpened Ceiling on `s (r + 1) ≤ 6`:**
+   `s (r + 1) ≤ 6 → 85 * 2 ^ (T (r + 2)) < 3 ^ (T (r + 1)) * (5 * P 0 + 4)`, and
+3. **The $79\times$ Sharpened Ceiling at `s (r + 1) = 2`:**
+   `s (r + 1) = 2 → 395 * 2 ^ (T (r + 2)) < 3 ^ (T (r + 1)) * (5 * P 0 + 4)`! -/
+theorem sharpened_seventeen_seventy_nine_interior_archimedean_ceiling
+    {b_0 r : ℕ} {s u : ℕ → ℕ}
+    (hchain : ValidBlockChain b_0 s u (r + 4))
+    (hs2 : ∀ k < r + 4, 2 ≤ s k) :
+    let P := fun k => oddReturnP (orbit b_0 (blockSteps s k))
+    let T := fun k => blockSteps s k
+    25 * 2 ^ (T (r + 2)) < 3 ^ (T (r + 1)) * (5 * P 0 + 4) ∧
+      (s (r + 1) ≤ 6 → 85 * 2 ^ (T (r + 2)) < 3 ^ (T (r + 1)) * (5 * P 0 + 4)) ∧
+      (s (r + 1) = 2 → 395 * 2 ^ (T (r + 2)) < 3 ^ (T (r + 1)) * (5 * P 0 + 4)) := by
+  intro P T
+  have hs_r : 2 ≤ s r := hs2 r (by omega)
+  have hs_r1 : 2 ≤ s (r + 1) := hs2 (r + 1) (by omega)
+  have hs_r2 : 2 ≤ s (r + 2) := hs2 (r + 2) (by omega)
+  have hs_r3 : 2 ≤ s (r + 3) := hs2 (r + 3) (by omega)
+  have h40 := interior_extinction_of_five_and_seven_and_seventeen_floor
+    hchain hs_r hs_r1 hs_r2 hs_r3
+  have h41 := even_rung_mod16_trap_and_seventy_nine_floor_at_rung_two
+    hchain hs_r hs_r1 hs_r2 hs_r3
+  have hch_r2 : ValidBlockChain b_0 s u ((r + 1) + 1) := fun k hk => hchain k (by omega)
+  have hs2_r1 : ∀ k < r + 1, 2 ≤ s k := fun k hk => hs2 k (by omega)
+  have h24 := unconditional_four_fifths_renewal_ceiling_and_past_base3_recovery hch_r2 hs2_r1
+  have h5A_lt : 5 * renewalNumerator s (r + 1) < 4 * 3 ^ (T (r + 1)) := h24.2.1
+  have hch_r1 : ValidBlockChain b_0 s u (r + 1) := fun k hk => hchain k (by omega)
+  have hm : 2 ^ (T (r + 1)) * P (r + 1) = 3 ^ (T (r + 1)) * P 0 + renewalNumerator s (r + 1) :=
+    renewal_prefix_master_identity hch_r1
+  have hP_r1 : P (r + 1) = 2 ^ (s (r + 1)) * u (r + 1) := (hchain (r + 1) (by omega)).2.2
+  have hT_r2 : 2 ^ (T (r + 1)) * P (r + 1) = 2 ^ (T (r + 2)) * u (r + 1) := by
+    change 2 ^ (T (r + 1)) * P (r + 1) = 2 ^ (T (r + 1) + s (r + 1)) * u (r + 1)
+    rw [hP_r1, Nat.pow_add]
+    ring
+  have h5_master :
+      5 * (2 ^ (T (r + 2)) * u (r + 1)) < 3 ^ (T (r + 1)) * (5 * P 0 + 4) := by
+    rw [← hT_r2]
+    have hlhs : 5 * (2 ^ (T (r + 1)) * P (r + 1)) =
+        5 * (3 ^ (T (r + 1)) * P 0) + 5 * renewalNumerator s (r + 1) := by
+      rw [hm]
+      ring
+    have hrhs : 3 ^ (T (r + 1)) * (5 * P 0 + 4) =
+        5 * (3 ^ (T (r + 1)) * P 0) + 4 * 3 ^ (T (r + 1)) := by ring
+    omega
+  have hch_next2 : ValidBlockChain b_0 s u ((r + 1) + 2) := fun k hk => hchain k (by omega)
+  have hu_ge5 : 5 ≤ u (r + 1) :=
+    (universal_mod12_quotient_lock_and_joint_digitsum_ge_five hch_next2 hs_r2).2.2.1.1
+  have hmul5 : 25 * 2 ^ (T (r + 2)) ≤ 5 * (2 ^ (T (r + 2)) * u (r + 1)) := by
+    calc
+      25 * 2 ^ (T (r + 2)) = (5 * 2 ^ (T (r + 2))) * 5 := by ring
+      _ ≤ (5 * 2 ^ (T (r + 2))) * u (r + 1) := Nat.mul_le_mul_left _ hu_ge5
+      _ = 5 * (2 ^ (T (r + 2)) * u (r + 1)) := by ring
+  refine ⟨by omega, ?_, ?_⟩
+  · intro hle6
+    have hu17 : 17 ≤ u (r + 1) := h40.2.2.2.1 hle6
+    have hmul17 : 85 * 2 ^ (T (r + 2)) ≤ 5 * (2 ^ (T (r + 2)) * u (r + 1)) := by
+      calc
+        85 * 2 ^ (T (r + 2)) = (5 * 2 ^ (T (r + 2))) * 17 := by ring
+        _ ≤ (5 * 2 ^ (T (r + 2))) * u (r + 1) := Nat.mul_le_mul_left _ hu17
+        _ = 5 * (2 ^ (T (r + 2)) * u (r + 1)) := by ring
+    omega
+  · intro hs2_eq
+    have hu79 : 79 ≤ u (r + 1) := h41.2.2 hs2_eq
+    have hmul79 : 395 * 2 ^ (T (r + 2)) ≤ 5 * (2 ^ (T (r + 2)) * u (r + 1)) := by
+      calc
+        395 * 2 ^ (T (r + 2)) = (5 * 2 ^ (T (r + 2))) * 79 := by ring
+        _ ≤ (5 * 2 ^ (T (r + 2))) * u (r + 1) := Nat.mul_le_mul_left _ hu79
+        _ = 5 * (2 ^ (T (r + 2)) * u (r + 1)) := by ring
+    omega
+
+/-! ## 44. Theorem SB.44 (Overnight Loop 11): Universal Adjacent-Block Wronskian & Equal-Rung Log-Concavity Law -/
+
+/-- **Overnight Loop 11: Universal Adjacent-Block Wronskian & Equal-Rung Log-Concavity Law
+(`adjacent_block_wronskian_and_equal_rung_log_concavity`, Theorem SB.44)**:
+Suppose `ValidBlockChain b_0 s u (r + 3)` holds. Setting
+`P k = oddReturnP (orbit b_0 (blockSteps s k))`:
+1. **Universal Adjacent-Block Wronskian Identity**:
+   `2 ^ (s r) * 3 ^ (s (r + 1)) * P (r + 1) * (P (r + 1) - 1) = 3 ^ (s r) * 2 ^ (s (r + 1)) * P r * (P (r + 2) - 1)`, and
+2. **Equal-Rung Exponent-Free Wronskian & Strict Log-Concavity (`s r = s (r + 1)`)**:
+   Whenever `s r = s (r + 1)`,
+   `P (r + 1) * (P (r + 1) - 1) = P r * (P (r + 2) - 1)` and
+   `P (r + 1) * P (r + 1) + P r = P r * P (r + 2) + P (r + 1)`
+   (with `P r < P (r + 1)`, so `P r * P (r + 2) < P (r + 1) ^ 2`)! -/
+theorem adjacent_block_wronskian_and_equal_rung_log_concavity
+    {b_0 r : ℕ} {s u : ℕ → ℕ}
+    (hchain : ValidBlockChain b_0 s u (r + 3)) :
+    let P := fun k => oddReturnP (orbit b_0 (blockSteps s k))
+    2 ^ (s r) * 3 ^ (s (r + 1)) * P (r + 1) * (P (r + 1) - 1) =
+        3 ^ (s r) * 2 ^ (s (r + 1)) * P r * (P (r + 2) - 1) ∧
+      (s r = s (r + 1) →
+        P (r + 1) * (P (r + 1) - 1) = P r * (P (r + 2) - 1) ∧
+          P (r + 1) * P (r + 1) + P r = P r * P (r + 2) + P (r + 1) ∧
+          P r * P (r + 2) < P (r + 1) * P (r + 1)) := by
+  intro P
+  have hch1 : ValidBlockChain b_0 s u (r + 2) := fun k hk => hchain k (by omega)
+  have hch2 : ValidBlockChain b_0 s u ((r + 1) + 2) := fun k hk => hchain k (by omega)
+  have hstep1 := (one_step_backward_quotient_recovery_and_mod_three_pow_one hch1).1
+  have hstep2 := (one_step_backward_quotient_recovery_and_mod_three_pow_one hch2).1
+  have hPr : P r = 2 ^ (s r) * u r := (hchain r (by omega)).2.2
+  have hPr1 : P (r + 1) = 2 ^ (s (r + 1)) * u (r + 1) := (hchain (r + 1) (by omega)).2.2
+  have hPr2 : P (r + 2) = 2 ^ (s (r + 2)) * u (r + 2) := (hchain (r + 2) (by omega)).2.2
+  have hP1_step : P (r + 1) = 3 ^ (s r) * u r + 1 := by
+    rw [hPr1]
+    exact hstep1
+  have hP2_step : P (r + 2) = 3 ^ (s (r + 1)) * u (r + 1) + 1 := by
+    rw [hPr2]
+    exact hstep2
+  have hsub1 : P (r + 1) - 1 = 3 ^ (s r) * u r := by omega
+  have hsub2 : P (r + 2) - 1 = 3 ^ (s (r + 1)) * u (r + 1) := by omega
+  have hwron :
+      2 ^ (s r) * 3 ^ (s (r + 1)) * P (r + 1) * (P (r + 1) - 1) =
+        3 ^ (s r) * 2 ^ (s (r + 1)) * P r * (P (r + 2) - 1) := by
+    rw [hsub1, hsub2, hPr, hPr1]
+    ring
+  refine ⟨hwron, ?_⟩
+  intro hseq
+  have heq_prod : P (r + 1) * (P (r + 1) - 1) = P r * (P (r + 2) - 1) := by
+    rw [hsub1, hsub2, hPr, hPr1, ← hseq]
+    ring
+  have hPr1_pos : 1 ≤ P (r + 1) := by omega
+  have hPr2_pos : 1 ≤ P (r + 2) := by omega
+  have hexp1 : P (r + 1) * (P (r + 1) - 1) + P (r + 1) = P (r + 1) * P (r + 1) := by
+    rw [Nat.mul_sub_left_distrib, mul_one]
+    have hle : P (r + 1) ≤ P (r + 1) * P (r + 1) := Nat.le_mul_of_pos_right _ hPr1_pos
+    omega
+  have hexp2 : P r * (P (r + 2) - 1) + P r = P r * P (r + 2) := by
+    rw [Nat.mul_sub_left_distrib, mul_one]
+    have hle : P r ≤ P r * P (r + 2) := Nat.le_mul_of_pos_right _ hPr2_pos
+    omega
+  have hPr_lt_Pr1 : P r < P (r + 1) := by
+    rw [hP1_step, hPr]
+    have hpow : 2 ^ (s r) ≤ 3 ^ (s r) := Nat.pow_le_pow_left (by decide) (s r)
+    have hm : 2 ^ (s r) * u r ≤ 3 ^ (s r) * u r := Nat.mul_le_mul_right (u r) hpow
+    omega
+  exact ⟨heq_prod, by omega, by omega⟩
+
+/-! ## 45. Theorem SB.45 (Overnight Loop 12): Universal Two-Block Odd-Leftover Cross-Ratio Invariant -/
+
+/-- **Overnight Loop 12: Universal Two-Block Odd-Leftover Cross-Ratio Invariant
+(`two_block_odd_leftover_cross_ratio_invariant`, Theorem SB.45)**:
+Suppose `ValidBlockChain b_0 s u K` holds, and let `r₁ + 1 < K` and `r₂ + 1 < K`.
+Setting `P k = oddReturnP (orbit b_0 (blockSteps s k))`:
+1. `3 ^ (s r₁) * P r₁ = 2 ^ (s r₁) * (P (r₁ + 1) - 1) = 6 ^ (s r₁) * u r₁`, and
+2. `3 ^ (s r₁) * 2 ^ (s r₂) * P r₁ * (P (r₂ + 1) - 1) = 2 ^ (s r₁) * 3 ^ (s r₂) * P r₂ * (P (r₁ + 1) - 1)`! -/
+theorem two_block_odd_leftover_cross_ratio_invariant
+    {b_0 K r₁ r₂ : ℕ} {s u : ℕ → ℕ}
+    (hchain : ValidBlockChain b_0 s u K)
+    (hr₁ : r₁ + 1 < K)
+    (hr₂ : r₂ + 1 < K) :
+    let P := fun k => oddReturnP (orbit b_0 (blockSteps s k))
+    3 ^ (s r₁) * P r₁ = 2 ^ (s r₁) * (P (r₁ + 1) - 1) ∧
+      3 ^ (s r₂) * P r₂ = 2 ^ (s r₂) * (P (r₂ + 1) - 1) ∧
+      3 ^ (s r₁) * 2 ^ (s r₂) * P r₁ * (P (r₂ + 1) - 1) =
+        2 ^ (s r₁) * 3 ^ (s r₂) * P r₂ * (P (r₁ + 1) - 1) := by
+  intro P
+  have hch1 : ValidBlockChain b_0 s u (r₁ + 2) := fun k hk => hchain k (by omega)
+  have hch2 : ValidBlockChain b_0 s u (r₂ + 2) := fun k hk => hchain k (by omega)
+  have hstep1 := (one_step_backward_quotient_recovery_and_mod_three_pow_one hch1).1
+  have hstep2 := (one_step_backward_quotient_recovery_and_mod_three_pow_one hch2).1
+  have hP1 : P r₁ = 2 ^ (s r₁) * u r₁ := (hchain r₁ (by omega)).2.2
+  have hP1_next : P (r₁ + 1) = 2 ^ (s (r₁ + 1)) * u (r₁ + 1) := (hchain (r₁ + 1) (by omega)).2.2
+  have hP2 : P r₂ = 2 ^ (s r₂) * u r₂ := (hchain r₂ (by omega)).2.2
+  have hP2_next : P (r₂ + 1) = 2 ^ (s (r₂ + 1)) * u (r₂ + 1) := (hchain (r₂ + 1) (by omega)).2.2
+  have hsub1 : P (r₁ + 1) - 1 = 3 ^ (s r₁) * u r₁ := by omega
+  have hsub2 : P (r₂ + 1) - 1 = 3 ^ (s r₂) * u r₂ := by omega
+  have heq1 : 3 ^ (s r₁) * P r₁ = 2 ^ (s r₁) * (P (r₁ + 1) - 1) := by
+    rw [hP1, hsub1]
+    ring
+  have heq2 : 3 ^ (s r₂) * P r₂ = 2 ^ (s r₂) * (P (r₂ + 1) - 1) := by
+    rw [hP2, hsub2]
+    ring
+  have heq3 :
+      3 ^ (s r₁) * 2 ^ (s r₂) * P r₁ * (P (r₂ + 1) - 1) =
+        2 ^ (s r₁) * 3 ^ (s r₂) * P r₂ * (P (r₁ + 1) - 1) := by
+    rw [hP1, hP2, hsub1, hsub2]
+    ring
+  exact ⟨heq1, heq2, heq3⟩
+
+/-! ## 46. Theorem SB.46 (Overnight Loop 13): Three-Point Seed-Free Linear Eliminator & Renewal Cocycle Identity -/
+
+/-- **Overnight Loop 13: Three-Point Seed-Free Linear Eliminator & Renewal Cocycle Identity
+(`three_point_seed_free_linear_eliminator_and_cocycle`, Theorem SB.46)**:
+Suppose `ValidBlockChain b_0 s u (r + M + 1)` holds for `r, M : ℕ`.
+Setting `P k = oddReturnP (orbit b_0 (blockSteps s k))`, `T_r = blockSteps s r`,
+`s' t = s (r + t)`, and `d = blockSteps s' M`:
+1. **Renewal Cocycle Splitting**:
+   `renewalNumerator s (r + M) = 3 ^ d * renewalNumerator s r + 2 ^ T_r * renewalNumerator s' M`, and
+2. **Three-Point Seed-Free Linear Eliminator**:
+   `3 ^ d * renewalNumerator s r + 2 ^ T_r * (2 ^ d * P (r + M) - 3 ^ d * P r) = renewalNumerator s (r + M)`! -/
+theorem three_point_seed_free_linear_eliminator_and_cocycle
+    {b_0 r M : ℕ} {s u : ℕ → ℕ}
+    (hchain : ValidBlockChain b_0 s u (r + M + 1)) :
+    let P := fun k => oddReturnP (orbit b_0 (blockSteps s k))
+    let T_r := blockSteps s r
+    let s' := fun t => s (r + t)
+    let d := blockSteps s' M
+    renewalNumerator s (r + M) =
+        3 ^ d * renewalNumerator s r + 2 ^ T_r * renewalNumerator s' M ∧
+      3 ^ d * renewalNumerator s r + 2 ^ T_r * (2 ^ d * P (r + M) - 3 ^ d * P r) =
+        renewalNumerator s (r + M) := by
+  intro P T_r s' d
+  have hch_r : ValidBlockChain b_0 s u r := fun k hk => hchain k (by omega)
+  have hch_rM : ValidBlockChain b_0 s u (r + M) := fun k hk => hchain k (by omega)
+  have hm_r : 2 ^ T_r * P r = 3 ^ T_r * P 0 + renewalNumerator s r :=
+    renewal_prefix_master_identity hch_r
+  have hm_rM : 2 ^ (blockSteps s (r + M)) * P (r + M) = 3 ^ (blockSteps s (r + M)) * P 0 + renewalNumerator s (r + M) :=
+    renewal_prefix_master_identity hch_rM
+  have h10 := (late_step_cauchy_pinch_and_odd_quotient_gcd_dvd (N := r) (M := M) hchain).1
+  change 2 ^ d * P (r + M) = 3 ^ d * P r + renewalNumerator s' M at h10
+  have hsteps : blockSteps s (r + M) = T_r + d := blockSteps_add_shift s r M
+  rw [hsteps] at hm_rM
+  have hexp_lhs :
+      2 ^ (T_r + d) * P (r + M) =
+        3 ^ (T_r + d) * P 0 + (3 ^ d * renewalNumerator s r + 2 ^ T_r * renewalNumerator s' M) := by
+    calc
+      2 ^ (T_r + d) * P (r + M)
+          = 2 ^ T_r * (2 ^ d * P (r + M)) := by rw [Nat.pow_add]; ring
+      _ = 2 ^ T_r * (3 ^ d * P r + renewalNumerator s' M) := by rw [h10]
+      _ = 3 ^ d * (2 ^ T_r * P r) + 2 ^ T_r * renewalNumerator s' M := by ring
+      _ = 3 ^ d * (3 ^ T_r * P 0 + renewalNumerator s r) + 2 ^ T_r * renewalNumerator s' M := by
+            rw [hm_r]
+      _ = 3 ^ (T_r + d) * P 0 + (3 ^ d * renewalNumerator s r + 2 ^ T_r * renewalNumerator s' M) := by
+            rw [Nat.pow_add 3 T_r d]
+            ring
+  have hcocycle :
+      renewalNumerator s (r + M) =
+        3 ^ d * renewalNumerator s r + 2 ^ T_r * renewalNumerator s' M := by omega
+  have hsub : 2 ^ d * P (r + M) - 3 ^ d * P r = renewalNumerator s' M := by omega
+  rw [hsub]
+  exact ⟨hcocycle, hcocycle.symm⟩
+
+/-! ## 47. Theorem SB.47 (Overnight Loop 14): Equal-Step-Sum Odd-Leftover Cross-Window Determinant Identity -/
+
+/-- **Overnight Loop 14: Equal-Step-Sum Odd-Leftover Cross-Window Determinant Identity
+(`equal_step_odd_leftover_cross_window_determinant_identity`, Theorem SB.47)**:
+For any two windows of equal step sum `d` satisfying
+`2 ^ d * (2 ^ s₂ * u₂) = 3 ^ d * (2 ^ s₁ * u₁) + A₁₂` and
+`2 ^ d * (2 ^ s₄ * u₄) = 3 ^ d * (2 ^ s₃ * u₃) + A₃₄`, we have in `ℤ`:
+`(2 : ℤ) ^ d * ((2 : ℤ) ^ (s₁ + s₄) * (u₁ : ℤ) * (u₄ : ℤ) - (2 : ℤ) ^ (s₂ + s₃) * (u₂ : ℤ) * (u₃ : ℤ)) = (2 : ℤ) ^ s₁ * (u₁ : ℤ) * (A₃₄ : ℤ) - (2 : ℤ) ^ s₃ * (u₃ : ℤ) * (A₁₂ : ℤ)`! -/
+theorem equal_step_odd_leftover_cross_window_determinant_identity
+    {d s₁ s₂ s₃ s₄ u₁ u₂ u₃ u₄ A₁₂ A₃₄ : ℕ}
+    (hw1 : 2 ^ d * (2 ^ s₂ * u₂) = 3 ^ d * (2 ^ s₁ * u₁) + A₁₂)
+    (hw2 : 2 ^ d * (2 ^ s₄ * u₄) = 3 ^ d * (2 ^ s₃ * u₃) + A₃₄) :
+    (2 : ℤ) ^ d *
+        ((2 : ℤ) ^ (s₁ + s₄) * (u₁ : ℤ) * (u₄ : ℤ) -
+          (2 : ℤ) ^ (s₂ + s₃) * (u₂ : ℤ) * (u₃ : ℤ)) =
+      (2 : ℤ) ^ s₁ * (u₁ : ℤ) * (A₃₄ : ℤ) -
+        (2 : ℤ) ^ s₃ * (u₃ : ℤ) * (A₁₂ : ℤ) := by
+  have h3 := (equal_step_window_hankel_determinant_identity_and_bound hw1 hw2).1
+  calc
+    (2 : ℤ) ^ d *
+        ((2 : ℤ) ^ (s₁ + s₄) * (u₁ : ℤ) * (u₄ : ℤ) -
+          (2 : ℤ) ^ (s₂ + s₃) * (u₂ : ℤ) * (u₃ : ℤ))
+        = (2 : ℤ) ^ d *
+            (((2 : ℤ) ^ s₁ * (u₁ : ℤ)) * ((2 : ℤ) ^ s₄ * (u₄ : ℤ)) -
+              ((2 : ℤ) ^ s₂ * (u₂ : ℤ)) * ((2 : ℤ) ^ s₃ * (u₃ : ℤ))) := by
+          rw [pow_add (2 : ℤ) s₁ s₄, pow_add (2 : ℤ) s₂ s₃]
+          ring
+    _ = ((2 : ℤ) ^ s₁ * (u₁ : ℤ)) * (A₃₄ : ℤ) -
+          ((2 : ℤ) ^ s₃ * (u₃ : ℤ)) * (A₁₂ : ℤ) := by
+          exact_mod_cast h3
+    _ = (2 : ℤ) ^ s₁ * (u₁ : ℤ) * (A₃₄ : ℤ) -
+          (2 : ℤ) ^ s₃ * (u₃ : ℤ) * (A₁₂ : ℤ) := by ring
+
+/-! ## 48. Theorem SB.48 (Overnight Loop 15): Unconditional $4/5$ Cross-Window Hankel Sandwich (Slack-Free!) -/
+
+/-- **Overnight Loop 15: Unconditional $4/5$ Cross-Window Hankel Sandwich
+(`unconditional_four_fifths_cross_window_hankel_sandwich`, Theorem SB.48)**:
+Suppose two windows of equal step sum `d` satisfy
+`2 ^ d * P₂ = 3 ^ d * P₁ + A₁₂` and `2 ^ d * P₄ = 3 ^ d * P₃ + A₃₄`,
+with `1 ≤ P₁`, `1 ≤ P₃`, `5 * A₁₂ < 4 * 3 ^ d`, and `5 * A₃₄ < 4 * 3 ^ d`
+(which holds **unconditionally** for every surviving block window by Theorem SB.24!):
+$$-4 \cdot (3 : \mathbb{Z})^d \cdot P_3 < 5 \cdot (2 : \mathbb{Z})^d \cdot (P_1 P_4 - P_2 P_3) < 4 \cdot (3 : \mathbb{Z})^d \cdot P_1!$$ -/
+theorem unconditional_four_fifths_cross_window_hankel_sandwich
+    {d P₁ P₂ P₃ P₄ A₁₂ A₃₄ : ℕ}
+    (hw1 : 2 ^ d * P₂ = 3 ^ d * P₁ + A₁₂)
+    (hw2 : 2 ^ d * P₄ = 3 ^ d * P₃ + A₃₄)
+    (hP1 : 1 ≤ P₁)
+    (hP3 : 1 ≤ P₃)
+    (hA12 : 5 * A₁₂ < 4 * 3 ^ d)
+    (hA34 : 5 * A₃₄ < 4 * 3 ^ d) :
+    -4 * (3 : ℤ) ^ d * (P₃ : ℤ) <
+        5 * (2 : ℤ) ^ d * ((P₁ : ℤ) * (P₄ : ℤ) - (P₂ : ℤ) * (P₃ : ℤ)) ∧
+      5 * (2 : ℤ) ^ d * ((P₁ : ℤ) * (P₄ : ℤ) - (P₂ : ℤ) * (P₃ : ℤ)) <
+        4 * (3 : ℤ) ^ d * (P₁ : ℤ) := by
+  have h3 := (equal_step_window_hankel_determinant_identity_and_bound hw1 hw2).1
+  have h5_id :
+      5 * (2 : ℤ) ^ d * ((P₁ : ℤ) * (P₄ : ℤ) - (P₂ : ℤ) * (P₃ : ℤ)) =
+        (P₁ : ℤ) * (5 * (A₃₄ : ℤ)) - (P₃ : ℤ) * (5 * (A₁₂ : ℤ)) := by
+    calc
+      5 * (2 : ℤ) ^ d * ((P₁ : ℤ) * (P₄ : ℤ) - (P₂ : ℤ) * (P₃ : ℤ))
+          = 5 * ((2 : ℤ) ^ d * ((P₁ : ℤ) * (P₄ : ℤ) - (P₂ : ℤ) * (P₃ : ℤ))) := by ring
+      _ = 5 * ((P₁ : ℤ) * (A₃₄ : ℤ) - (P₃ : ℤ) * (A₁₂ : ℤ)) := by rw [h3]
+      _ = (P₁ : ℤ) * (5 * (A₃₄ : ℤ)) - (P₃ : ℤ) * (5 * (A₁₂ : ℤ)) := by ring
+  have hP1_pos : (0 : ℤ) < (P₁ : ℤ) := by exact_mod_cast hP1
+  have hP3_pos : (0 : ℤ) < (P₃ : ℤ) := by exact_mod_cast hP3
+  have hA12_lt : 5 * (A₁₂ : ℤ) < 4 * (3 : ℤ) ^ d := by exact_mod_cast hA12
+  have hA34_lt : 5 * (A₃₄ : ℤ) < 4 * (3 : ℤ) ^ d := by exact_mod_cast hA34
+  have hA12_nonneg : (0 : ℤ) ≤ 5 * (A₁₂ : ℤ) := by positivity
+  have hA34_nonneg : (0 : ℤ) ≤ 5 * (A₃₄ : ℤ) := by positivity
+  have h1 : (P₃ : ℤ) * (5 * (A₁₂ : ℤ)) < (P₃ : ℤ) * (4 * (3 : ℤ) ^ d) :=
+    mul_lt_mul_of_pos_left hA12_lt hP3_pos
+  have h2 : (0 : ℤ) ≤ (P₁ : ℤ) * (5 * (A₃₄ : ℤ)) :=
+    mul_nonneg (le_of_lt hP1_pos) hA34_nonneg
+  have h3_lt : (P₁ : ℤ) * (5 * (A₃₄ : ℤ)) < (P₁ : ℤ) * (4 * (3 : ℤ) ^ d) :=
+    mul_lt_mul_of_pos_left hA34_lt hP1_pos
+  have h4 : (0 : ℤ) ≤ (P₃ : ℤ) * (5 * (A₁₂ : ℤ)) :=
+    mul_nonneg (le_of_lt hP3_pos) hA12_nonneg
+  rw [h5_id]
+  have hcomm1 : (P₃ : ℤ) * (4 * (3 : ℤ) ^ d) = 4 * (3 : ℤ) ^ d * (P₃ : ℤ) := by ring
+  have hcomm2 : (P₁ : ℤ) * (4 * (3 : ℤ) ^ d) = 4 * (3 : ℤ) ^ d * (P₁ : ℤ) := by ring
+  have hneg : -4 * (3 : ℤ) ^ d * (P₃ : ℤ) = -(4 * (3 : ℤ) ^ d * (P₃ : ℤ)) := by ring
+  rw [hcomm1] at h1
+  rw [hcomm2] at h3_lt
+  rw [hneg]
+  omega
+
+/-! ## 49. Theorem SB.49 (Overnight Loop 16): Exact $N$-Bit Base-2 Complement Digit-Sum Law -/
+
+/-- **Overnight Loop 16: Exact $N$-Bit Base-2 Complement Digit-Sum Law
+(`mahler_antihydra_base2_complement_digitsum_law`, Theorem SB.49)**:
+1. For every `N : ℕ` and `m < 2 ^ N`:
+   `base2DigitSum (2 ^ N - 1 - m) + base2DigitSum m = N`, and
+2. For every `N : ℕ` and odd `a_0 < 2 ^ N` (`a_0 % 2 = 1`):
+   `base2DigitSum (2 ^ N - a_0) + base2DigitSum a_0 = N + 1`! -/
+theorem mahler_antihydra_base2_complement_digitsum_law (N : ℕ) :
+    (∀ m < 2 ^ N, base2DigitSum (2 ^ N - 1 - m) + base2DigitSum m = N) ∧
+      (∀ a_0 < 2 ^ N, a_0 % 2 = 1 →
+        base2DigitSum (2 ^ N - a_0) + base2DigitSum a_0 = N + 1) := by
+  have h1 : ∀ m < 2 ^ N, base2DigitSum (2 ^ N - 1 - m) + base2DigitSum m = N := by
+    induction N with
+    | zero =>
+        intro m hm
+        have hm0 : m = 0 := by
+          simp only [Nat.pow_zero] at hm
+          omega
+        subst hm0
+        simp [base2DigitSum]
+    | succ N ih =>
+        intro m hm
+        have hpow : 2 ^ (N + 1) = 2 * 2 ^ N := by
+          rw [Nat.pow_succ]
+          ring
+        have hm_div : m / 2 < 2 ^ N := by omega
+        have ihm := ih (m / 2) hm_div
+        have hcomp_decomp :
+            2 ^ (N + 1) - 1 - m = 2 * (2 ^ N - 1 - m / 2) + (1 - m % 2) := by omega
+        rw [hcomp_decomp, base2DigitSum_eq (2 * (2 ^ N - 1 - m / 2) + (1 - m % 2)),
+          base2DigitSum_eq m]
+        have hmod : (2 * (2 ^ N - 1 - m / 2) + (1 - m % 2)) % 2 = 1 - m % 2 := by omega
+        have hdiv : (2 * (2 ^ N - 1 - m / 2) + (1 - m % 2)) / 2 = 2 ^ N - 1 - m / 2 := by omega
+        rw [hmod, hdiv]
+        omega
+  refine ⟨h1, ?_⟩
+  intro a_0 ha_lt ha_odd
+  have ha_sub_lt : a_0 - 1 < 2 ^ N := by omega
+  have hcomp_eq : 2 ^ N - 1 - (a_0 - 1) = 2 ^ N - a_0 := by omega
+  have h_sub := h1 (a_0 - 1) ha_sub_lt
+  rw [hcomp_eq] at h_sub
+  have ha_decomp : a_0 - 1 = 2 * (a_0 / 2) := by omega
+  rw [ha_decomp, base2DigitSum_eq (2 * (a_0 / 2))] at h_sub
+  have hmod : (2 * (a_0 / 2)) % 2 = 0 := by omega
+  have hdiv : (2 * (a_0 / 2)) / 2 = a_0 / 2 := by omega
+  rw [hmod, hdiv] at h_sub
+  rw [base2DigitSum_eq a_0, ha_odd]
+  omega
+
+/-! ## 50. Theorem SB.50 (Overnight Loop 17): Exact $N$-Trit Base-3 Complement Digit-Sum Law -/
+
+/-- **Overnight Loop 17: Exact $N$-Trit Base-3 Complement Digit-Sum Law
+(`mahler_antihydra_base3_complement_digitsum_law`, Theorem SB.50)**:
+1. For every `N : ℕ` and `m < 3 ^ N`:
+   `base3DigitSum (3 ^ N - 1 - m) + base3DigitSum m = 2 * N`, and
+2. At step `k = N` of the Mahler–Antihydra complement duality (`b_N + a_N = 3 ^ N` with `1 ≤ b_N` and `1 ≤ a_N`),
+   `base3DigitSum (b_N - 1) + base3DigitSum a_N = 2 * N`! -/
+theorem mahler_antihydra_base3_complement_digitsum_law (N : ℕ) :
+    (∀ m < 3 ^ N, base3DigitSum (3 ^ N - 1 - m) + base3DigitSum m = 2 * N) ∧
+      (∀ b_N a_N : ℕ, 1 ≤ b_N → 1 ≤ a_N → b_N + a_N = 3 ^ N →
+        base3DigitSum (b_N - 1) + base3DigitSum a_N = 2 * N) := by
+  have h1 : ∀ m < 3 ^ N, base3DigitSum (3 ^ N - 1 - m) + base3DigitSum m = 2 * N := by
+    induction N with
+    | zero =>
+        intro m hm
+        have hm0 : m = 0 := by
+          simp only [Nat.pow_zero] at hm
+          omega
+        subst hm0
+        simp [base3DigitSum]
+    | succ N ih =>
+        intro m hm
+        have hpow : 3 ^ (N + 1) = 3 * 3 ^ N := by
+          rw [Nat.pow_succ]
+          ring
+        have hm_div : m / 3 < 3 ^ N := by omega
+        have ihm := ih (m / 3) hm_div
+        have hcomp_decomp :
+            3 ^ (N + 1) - 1 - m = 3 * (3 ^ N - 1 - m / 3) + (2 - m % 3) := by omega
+        have hrem_lt : 2 - m % 3 < 3 := by omega
+        rw [hcomp_decomp, base3DigitSum_three_mul_add_digit _ hrem_lt, base3DigitSum_eq m]
+        omega
+  refine ⟨h1, ?_⟩
+  intro b_N a_N hb_pos ha_pos hsum
+  have ha_lt : a_N < 3 ^ N := by omega
+  have hcomp : 3 ^ N - 1 - a_N = b_N - 1 := by omega
+  have h := h1 a_N ha_lt
+  rw [hcomp] at h
+  exact h
+
+/-! ## 51. Theorem SB.51 (Overnight Loop 18): Post-Bit-Length Colliding Binary/Ternary Window on $N_K$ -/
+
+/-- **Overnight Loop 18: Post-Bit-Length Colliding Binary/Ternary Window on $N_K$
+(`post_bitlength_colliding_binary_ternary_window_on_N_K`, Theorem SB.51)**:
+Suppose `ValidBlockChain b_0 s u (K + 2)` holds with `∀ k < K + 2, 2 ≤ s k`.
+Let `P k = oddReturnP (orbit b_0 (blockSteps s k))`, `T_K = blockSteps s K`,
+`T_K1 = T_K + s K`, `A_K = renewalNumerator s K`, and `N_K = 3 ^ T_K * P 0 + A_K`:
+1. **Simultaneous $\mathbb{R} \times \mathbb{Q}_2 \times \mathbb{Q}_3$ Pinning of $N_K$ and $P_0$**:
+   `N_K = 2 ^ T_K1 * u K`, `Nat.Coprime N_K (3 ^ T_K)`, `N_K / 3 ^ T_K = P 0`, and
+   whenever `P 0 < 2 ^ T_K1`, `P 0` is the unique integer `< 2 ^ T_K1` solving
+   `(3 ^ T_K * P_0' + A_K) % 2 ^ T_K1 = 0`,
+2. **Simultaneous Zero-Carry Base-3 & Base-2 Splits of $N_K$ and $N_K - 1$**:
+   `base3DigitSum N_K = base3DigitSum (P 0) + base3DigitSum A_K` and
+   `base2DigitSum (N_K - 1) + 1 = T_K1 + base2DigitSum (u K)`, and
+3. **Strict Post-Surviving Binary Weight Floor on $N_K - 1$**:
+   `T_K1 + 1 ≤ base2DigitSum (N_K - 1)`! -/
+theorem post_bitlength_colliding_binary_ternary_window_on_N_K
+    {b_0 K : ℕ} {s u : ℕ → ℕ}
+    (hchain : ValidBlockChain b_0 s u (K + 2))
+    (hs2 : ∀ k < K + 2, 2 ≤ s k) :
+    let P := fun k => oddReturnP (orbit b_0 (blockSteps s k))
+    let T_K := blockSteps s K
+    let T_K1 := T_K + s K
+    let A_K := renewalNumerator s K
+    let N_K := 3 ^ T_K * P 0 + A_K
+    (N_K = 2 ^ T_K1 * u K ∧
+      Nat.Coprime N_K (3 ^ T_K) ∧
+      N_K / 3 ^ T_K = P 0 ∧
+      (P 0 < 2 ^ T_K1 →
+        ∀ P_0' : ℕ, P_0' < 2 ^ T_K1 →
+          (3 ^ T_K * P_0' + A_K) % 2 ^ T_K1 = 0 → P_0' = P 0)) ∧
+      (base3DigitSum N_K = base3DigitSum (P 0) + base3DigitSum A_K ∧
+        base2DigitSum (N_K - 1) + 1 = T_K1 + base2DigitSum (u K) ∧
+        T_K1 + 1 ≤ base2DigitSum (N_K - 1)) := by
+  intro P T_K T_K1 A_K N_K
+  have hch_K1 : ValidBlockChain b_0 s u (K + 1) := fun k hk => hchain k (by omega)
+  have hs2_K : ∀ k < K, 2 ≤ s k := fun k hk => hs2 k (by omega)
+  have h28 := bridge_a_dual_universe_series_lowest_terms_and_uniqueness hch_K1 hs2_K
+  have h32 := bridge_c_multi_step_dual_base2_base3_zero_carry_split hch_K1 hs2_K
+  have hid : N_K = 2 ^ T_K1 * u K := h32.1.1
+  have hcop : Nat.Coprime N_K (3 ^ T_K) := by
+    rw [hid]
+    exact h28.2.2.1
+  have hs_K1 : 2 ≤ s (K + 1) := hs2 (K + 1) (by omega)
+  have h18 := universal_mod12_quotient_lock_and_joint_digitsum_ge_five hchain hs_K1
+  have hs2_uK : 2 ≤ base2DigitSum (u K) := h18.2.2.2.1
+  have hs2_N1 : base2DigitSum (N_K - 1) + 1 = T_K1 + base2DigitSum (u K) := h32.2.2.2.2
+  exact ⟨⟨hid, hcop, h32.1.2.1, h28.2.2.2.2.2.2⟩, ⟨h32.1.2.2.2, hs2_N1, by omega⟩⟩
+
+/-! ## 52. Theorem SB.52 (Overnight Loop 19): Interior Multi-Block Joint Digit-Sum & $79\times$ Quotient Synthesis -/
+
+/-- **Overnight Loop 19: Interior Multi-Block Joint Digit-Sum & $79\times$ Quotient Synthesis
+(`interior_multi_block_joint_digitsum_and_seventy_nine_floor`, Theorem SB.52)**:
+Suppose `ValidBlockChain b_0 s u (r + 4)` holds with `∀ k < r + 4, 2 ≤ s k`.
+Setting `P k = oddReturnP (orbit b_0 (blockSteps s k))` and `T k = blockSteps s k`:
+1. `base2DigitSum (P (r + 1)) + base3DigitSum (P (r + 2)) = base2DigitSum (u (r + 1)) + base3DigitSum (u (r + 1)) + 1`,
+2. `5 ≤ base2DigitSum (P (r + 1)) + base3DigitSum (P (r + 2))`,
+3. `base3DigitSum (2 ^ (T (r + 2)) * u (r + 1)) = base3DigitSum (P 0) + base3DigitSum (renewalNumerator s (r + 1))`,
+4. `(s (r + 1) ≤ 6 → 17 ≤ u (r + 1)) ∧ (s (r + 1) = 2 → 79 ≤ u (r + 1))`, and
+5. `s (r + 1) = 2 → 395 * 2 ^ (T (r + 2)) < 3 ^ (T (r + 1)) * (5 * P 0 + 4)`! -/
+theorem interior_multi_block_joint_digitsum_and_seventy_nine_floor
+    {b_0 r : ℕ} {s u : ℕ → ℕ}
+    (hchain : ValidBlockChain b_0 s u (r + 4))
+    (hs2 : ∀ k < r + 4, 2 ≤ s k) :
+    let P := fun k => oddReturnP (orbit b_0 (blockSteps s k))
+    let T := fun k => blockSteps s k
+    base2DigitSum (P (r + 1)) + base3DigitSum (P (r + 2)) =
+        base2DigitSum (u (r + 1)) + base3DigitSum (u (r + 1)) + 1 ∧
+      5 ≤ base2DigitSum (P (r + 1)) + base3DigitSum (P (r + 2)) ∧
+      base3DigitSum (2 ^ (T (r + 2)) * u (r + 1)) =
+        base3DigitSum (P 0) + base3DigitSum (renewalNumerator s (r + 1)) ∧
+      ((s (r + 1) ≤ 6 → 17 ≤ u (r + 1)) ∧ (s (r + 1) = 2 → 79 ≤ u (r + 1))) ∧
+      (s (r + 1) = 2 → 395 * 2 ^ (T (r + 2)) < 3 ^ (T (r + 1)) * (5 * P 0 + 4)) := by
+  intro P T
+  have hs_r : 2 ≤ s r := hs2 r (by omega)
+  have hs_r1 : 2 ≤ s (r + 1) := hs2 (r + 1) (by omega)
+  have hs_r2 : 2 ≤ s (r + 2) := hs2 (r + 2) (by omega)
+  have hs_r3 : 2 ≤ s (r + 3) := hs2 (r + 3) (by omega)
+  have hch_next2 : ValidBlockChain b_0 s u ((r + 1) + 2) := fun k hk => hchain k (by omega)
+  have hjoint :=
+    (top_down_senge_straus_stewart_joint_digitsum_blueprint
+      (M := 4) (N := 0) (g_0 := 0) (g_N := 0) (K_N := 0) (B := 0)
+      hch_next2 (by decide) (by decide)).1
+  change base2DigitSum (P (r + 1)) + base3DigitSum (P (r + 2)) =
+    base2DigitSum (u (r + 1)) + base3DigitSum (u (r + 1)) + 1 at hjoint
+  have h18 := universal_mod12_quotient_lock_and_joint_digitsum_ge_five hch_next2 hs_r2
+  have hge5 : 5 ≤ base2DigitSum (P (r + 1)) + base3DigitSum (P (r + 2)) := h18.2.2.2.2.2
+  have h29 :=
+    (bridge_b_seed_independent_base3_step_evolution (K := r + 3) hchain
+      (fun k hk => hs2 k (by omega))).1 (r + 1) (by omega)
+  change base3DigitSum (2 ^ (T (r + 2)) * u (r + 1)) =
+    base3DigitSum (P 0) + base3DigitSum (renewalNumerator s (r + 1)) at h29
+  have h40 := interior_extinction_of_five_and_seven_and_seventeen_floor
+    hchain hs_r hs_r1 hs_r2 hs_r3
+  have h41 := even_rung_mod16_trap_and_seventy_nine_floor_at_rung_two
+    hchain hs_r hs_r1 hs_r2 hs_r3
+  have h43 := sharpened_seventeen_seventy_nine_interior_archimedean_ceiling hchain hs2
+  exact ⟨hjoint, hge5, h29, ⟨h40.2.2.2.1, h41.2.2⟩, h43.2.2⟩
+
+/-! ## 53. Theorem SB.53 (Overnight Loop 20): Grand 53-Bridge Semigroup-Breakout Synthesis -/
+
+/-- **Overnight Loop 20: Grand 53-Bridge Semigroup-Breakout Synthesis
+(`grand_semigroup_breakout_53_bridge_synthesis`, Theorem SB.53)**:
+Suppose `ValidBlockChain b_0 s u (K + 4)` holds with `∀ k < K + 4, 2 ≤ s k`.
+Setting `P k = oddReturnP (orbit b_0 (blockSteps s k))`, `T k = blockSteps s k`,
+`A k = renewalNumerator s k`, and `N k = 3 ^ (T k) * P 0 + A k`:
+1. **Unconditional $4/5$ Renewal Ceiling & Dual Base-2/Base-3 Zero-Carry Split of $N_K$**:
+   `5 * A K + 4 * 2 ^ (T K) ≤ 4 * 3 ^ (T K)`,
+   `N K = 2 ^ (T (K + 1)) * u K`,
+   `base3DigitSum (N K) = base3DigitSum (P 0) + base3DigitSum (A K)`, and
+   `base2DigitSum (N K - 1) + 1 = T (K + 1) + base2DigitSum (u K)`,
+2. **Telescoped Binary Halving-Budget Law**:
+   `(T (K + 1) - s 0) + base2DigitSum (u K) + sumBase2Quotient u K = base2DigitSum (u 0) + K + sumBase2TriadicScaled s u K`,
+3. **Zero-Carry 3-Adic Factorial & Joint $(v_2, v_3)$ Factorial Syzygy**:
+   `legendreFactVal3 (N K) = legendreFactVal3 (3 ^ (T K) * P 0) + legendreFactVal3 (A K)` and
+   `legendreFactVal2 (N K) + base2DigitSum (u K) = 2 * legendreFactVal3 (N K) + base3DigitSum (P 0) + base3DigitSum (A K)`, and
+4. **Interior Mod-36 / Mod-16 Extinction & $79\times$ Sharpened Ceiling at `K + 1`**:
+   `(s (K + 1) ≤ 6 → 17 ≤ u (K + 1)) ∧ (s (K + 1) = 2 → 79 ≤ u (K + 1))` and
+   `s (K + 1) = 2 → 395 * 2 ^ (T (K + 2)) < 3 ^ (T (K + 1)) * (5 * P 0 + 4)`! -/
+theorem grand_semigroup_breakout_53_bridge_synthesis
+    {b_0 K : ℕ} {s u : ℕ → ℕ}
+    (hchain : ValidBlockChain b_0 s u (K + 4))
+    (hs2 : ∀ k < K + 4, 2 ≤ s k) :
+    let P := fun k => oddReturnP (orbit b_0 (blockSteps s k))
+    let T := fun k => blockSteps s k
+    let A := fun k => renewalNumerator s k
+    let N := fun k => 3 ^ (T k) * P 0 + A k
+    (5 * A K + 4 * 2 ^ (T K) ≤ 4 * 3 ^ (T K) ∧
+      N K = 2 ^ (T (K + 1)) * u K ∧
+      base3DigitSum (N K) = base3DigitSum (P 0) + base3DigitSum (A K) ∧
+      base2DigitSum (N K - 1) + 1 = T (K + 1) + base2DigitSum (u K)) ∧
+      ((T (K + 1) - s 0) + base2DigitSum (u K) + sumBase2Quotient u K =
+        base2DigitSum (u 0) + K + sumBase2TriadicScaled s u K) ∧
+      (legendreFactVal3 (N K) = legendreFactVal3 (3 ^ (T K) * P 0) + legendreFactVal3 (A K) ∧
+        legendreFactVal2 (N K) + base2DigitSum (u K) =
+          2 * legendreFactVal3 (N K) + base3DigitSum (P 0) + base3DigitSum (A K)) ∧
+      (((s (K + 1) ≤ 6 → 17 ≤ u (K + 1)) ∧ (s (K + 1) = 2 → 79 ≤ u (K + 1))) ∧
+        (s (K + 1) = 2 → 395 * 2 ^ (T (K + 2)) < 3 ^ (T (K + 1)) * (5 * P 0 + 4))) := by
+  intro P T A N
+  have hch_K1 : ValidBlockChain b_0 s u (K + 1) := fun k hk => hchain k (by omega)
+  have hs2_K : ∀ k < K, 2 ≤ s k := fun k hk => hs2 k (by omega)
+  have h24 := unconditional_four_fifths_renewal_ceiling_and_past_base3_recovery hch_K1 hs2_K
+  have h32 := bridge_c_multi_step_dual_base2_base3_zero_carry_split hch_K1 hs2_K
+  have h33 := bridge_c_telescoped_binary_halving_budget_law hch_K1
+  have h35 := zero_carry_three_adic_factorial_and_binomial_valuation_law hch_K1 hs2_K
+  have h36 := joint_multi_block_factorial_valuation_syzygy hch_K1 hs2_K
+  have h52 := interior_multi_block_joint_digitsum_and_seventy_nine_floor hchain hs2
+  exact ⟨⟨h24.1, h32.1.1, h32.1.2.2.2, h32.2.2.2.2⟩, h33, ⟨h35.2.1, h36.1⟩, ⟨h52.2.2.2.1, h52.2.2.2.2⟩⟩
+
 
 #check @archimedean_rung_ceiling_and_stepSum_bound
 #check @unit_quotient_even_rung_instant_death_and_odd_rung_mod64_identity
@@ -2628,6 +3672,26 @@ theorem bridge_c_telescoped_binary_halving_budget_law
 #check @bridge_c_one_step_binary_trailing_ones_depletion_law
 #check @bridge_c_multi_step_dual_base2_base3_zero_carry_split
 #check @bridge_c_telescoped_binary_halving_budget_law
+#check @kummer_legendre_one_step_binary_factorial_bridge
+#check @zero_carry_three_adic_factorial_and_binomial_valuation_law
+#check @joint_multi_block_factorial_valuation_syzygy
+#check @kummer_base3_two_pow_mul_carry_identity_and_bound
+#check @multi_step_base3_horner_digitsum_lower_envelope
+#check @interior_mod36_rung_to_quotient_bijection
+#check @interior_extinction_of_five_and_seven_and_seventeen_floor
+#check @even_rung_mod16_trap_and_seventy_nine_floor_at_rung_two
+#check @universal_mod8_and_mod24_next_rung_dichotomy
+#check @sharpened_seventeen_seventy_nine_interior_archimedean_ceiling
+#check @adjacent_block_wronskian_and_equal_rung_log_concavity
+#check @two_block_odd_leftover_cross_ratio_invariant
+#check @three_point_seed_free_linear_eliminator_and_cocycle
+#check @equal_step_odd_leftover_cross_window_determinant_identity
+#check @unconditional_four_fifths_cross_window_hankel_sandwich
+#check @mahler_antihydra_base2_complement_digitsum_law
+#check @mahler_antihydra_base3_complement_digitsum_law
+#check @post_bitlength_colliding_binary_ternary_window_on_N_K
+#check @interior_multi_block_joint_digitsum_and_seventy_nine_floor
+#check @grand_semigroup_breakout_53_bridge_synthesis
 
 #print axioms archimedean_rung_ceiling_and_stepSum_bound
 #print axioms unit_quotient_even_rung_instant_death_and_odd_rung_mod64_identity
