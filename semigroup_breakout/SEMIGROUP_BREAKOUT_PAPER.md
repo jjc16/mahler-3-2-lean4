@@ -214,7 +214,34 @@ so any Senge–Straus / Stewart joint digit-sum lower bound $M \le s_2(u_r) + s_
 
 ---
 
-## 6. Verification Instructions
+## 6. Wave-2 Symmetry-Breaking Towers: Legendre Factorial Valuations, the Universal Mod-4 Quotient-Rung Parity Lock, and Weight-2 Domino Collapse
+
+In [`sandbox_wave2_towers.py`](./sandbox_wave2_towers.py) and Sections 15–17 of [`SemigroupBreakoutTheorems.lean`](./SemigroupBreakoutTheorems.lean), we built three further $\mathbb{Z}_2$-symmetry-breaking towers:
+
+### 6.1 Theorem SB.15: Legendre Factorial Valuation ($v_2(n!), v_3(n!)$) Dual Block Tower (`legendre_factorial_valuation_dual_block_tower`)
+
+Using Legendre's exact factorial identities $v_2(n!) + s_2(n) = n$ and $2 v_3(n!) + s_3(n) = n$ (which are well-defined only for whole numbers $n \in \mathbb{N}$), we proved that across every odd block $r$:
+$$\boxed{v_2(P_r!) - v_2(u_r!) = \big(2^{s_r} - 1\big) u_r, \qquad 2\Big(v_3(P_{r+1}!) - v_3(u_r!)\Big) = \big(3^{s_r} - 1\big) u_r,}$$
+and eliminating $u_r$ yields the **Exact $(2^{s_r} - 1, 3^{s_r} - 1)$ Factorial Cross-Ratio Syzygy**:
+$$\boxed{\big(3^{s_r} - 1\big)\Big(v_2(P_r!) - v_2(u_r!)\Big) = 2\big(2^{s_r} - 1\big)\Big(v_3(P_{r+1}!) - v_3(u_r!)\Big).}$$
+
+### 6.2 Theorem SB.16: Universal Mod-4 Quotient-Rung Parity Lock & Mersenne Trailing-1s Trap (`universal_mod4_quotient_rung_parity_lock_and_mersenne_trap`)
+
+At **every** block $r$ whose successor survives (`2 ≤ s (r + 1)`), the second-lowest binary bit of the odd quotient $u_r$ is 100% locked to the parity of the rung $s_r$:
+$$\boxed{\big(s_r \bmod 2 = 0 \iff u_r \bmod 4 = 3\big) \quad\wedge\quad \big(s_r \bmod 2 = 1 \iff u_r \bmod 4 = 1\big).}$$
+Consequently:
+1. **Even-Rung Hamming Weight Bound (`2 ≤ s_2(u_r)`):** Whenever $s_r$ is even, $u_r \equiv 3 \pmod 4$ ends in `...11_2`, so $\operatorname{base2DigitSum}(u_r) \ge 2$!
+2. **Mersenne Trailing-1s Trap ($u_r \equiv 15 \pmod{16}$):** Whenever $u_r \equiv 15 \pmod{16}$ (ending in four `1`-bits `...1111_2`) at $s_r = 2$, $P_{r+1} \equiv 8 \pmod{16}$ forces $s_{r+1} = 3 \le 5$, which immediately dies by the post-`2` recovery bound ($s_{r+1} \ge 6$)!
+
+### 6.3 Theorem SB.17: Universal Mod-1024 / Hamming-Weight-2 ($u_K = 1024 w + 1$) Three-Block Domino Collapse (`mod1024_and_weight2_odd_quotient_three_block_domino_collapse`)
+
+Generalizing the $u_K = 1$ collapse of Theorem SB.2, we proved that for **every** $u_K = 1024 w + 1$ ($u_K \equiv 1 \pmod{1024}$, which includes **every** Hamming-weight-2 odd integer $u_K = 2^m + 1$ with $m \ge 10$):
+- If $s_K = 2 j$ is **even**: $P_{K+1} \equiv 2 \pmod 4$ ($s_{K+1} = 1$, **dies in 1 block**).
+- If $s_K = 3$: $P_{K+1} = 4(6912 w + 7)$ ($s_{K+1} = 2$), $P_{K+2} = 64(972 w + 1)$ ($s_{K+2} = 6$ even, $u_{K+2} = 972 w + 1 \equiv 1 \pmod 4$), and $P_{K+3} = 708588 w + 730 \equiv 2 \pmod 4$ ($s_{K+3} = 1$, **dies in 3 blocks for every $w \in \mathbb{N}$**!).
+
+---
+
+## 7. Verification Instructions
 
 To verify the cordoned-off Lean 4 proofs without modifying the root 226-file build:
 

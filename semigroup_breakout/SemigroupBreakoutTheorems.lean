@@ -1158,6 +1158,234 @@ theorem top_down_senge_straus_stewart_joint_digitsum_blueprint
   have h9 := (zero_carry_base3_digit_sum_and_even_step_invariance hid hK 0).1
   exact ⟨by omega, fun hM => by omega, fun hB => by omega⟩
 
+/-! ## 15. Theorem SB.15: Legendre Factorial Valuation ($v_2(n!), v_3(n!)$) Dual Block Tower -/
+
+/-- Recursive Legendre 2-adic factorial valuation $v_2(n!) = \sum_{k \ge 1} \lfloor n / 2^k \rfloor$. -/
+def legendreFactVal2 (n : ℕ) : ℕ :=
+  if n = 0 then 0 else n / 2 + legendreFactVal2 (n / 2)
+termination_by n
+decreasing_by
+  exact Nat.div_lt_self (Nat.pos_of_ne_zero ‹n ≠ 0›) (by decide)
+
+/-- Recursive Legendre 3-adic factorial valuation $v_3(n!) = \sum_{k \ge 1} \lfloor n / 3^k \rfloor$. -/
+def legendreFactVal3 (n : ℕ) : ℕ :=
+  if n = 0 then 0 else n / 3 + legendreFactVal3 (n / 3)
+termination_by n
+decreasing_by
+  exact Nat.div_lt_self (Nat.pos_of_ne_zero ‹n ≠ 0›) (by decide)
+
+/-- Legendre's base-2 identity: `legendreFactVal2 n + base2DigitSum n = n`. -/
+theorem legendreFactVal2_add_base2DigitSum (n : ℕ) :
+    legendreFactVal2 n + base2DigitSum n = n := by
+  induction n using Nat.strong_induction_on with
+  | h n ih =>
+      rcases Nat.eq_zero_or_pos n with rfl | hn_pos
+      · simp [legendreFactVal2, base2DigitSum]
+      · have hlt : n / 2 < n := Nat.div_lt_self hn_pos (by decide)
+        have ih' := ih (n / 2) hlt
+        rw [legendreFactVal2, if_neg (by omega), base2DigitSum_eq n]
+        omega
+
+/-- Legendre's base-3 identity: `2 * legendreFactVal3 n + base3DigitSum n = n`. -/
+theorem two_mul_legendreFactVal3_add_base3DigitSum (n : ℕ) :
+    2 * legendreFactVal3 n + base3DigitSum n = n := by
+  induction n using Nat.strong_induction_on with
+  | h n ih =>
+      rcases Nat.eq_zero_or_pos n with rfl | hn_pos
+      · simp [legendreFactVal3, base3DigitSum]
+      · have hlt : n / 3 < n := Nat.div_lt_self hn_pos (by decide)
+        have ih' := ih (n / 3) hlt
+        rw [legendreFactVal3, if_neg (by omega), base3DigitSum_eq n]
+        omega
+
+/-- **Legendre Factorial Valuation Dual Block Tower
+(`legendre_factorial_valuation_dual_block_tower`, Theorem SB.15)**:
+Suppose `ValidBlockChain b_0 s u (r + 2)` holds. Setting
+`b k = orbit b_0 (blockSteps s k)` and `P k = oddReturnP (b k)`:
+1. `legendreFactVal2 (P r) - legendreFactVal2 (u r) = (2 ^ (s r) - 1) * u r`,
+2. `2 * (legendreFactVal3 (P (r + 1)) - legendreFactVal3 (u r)) = (3 ^ (s r) - 1) * u r`, and
+3. **Exact $(2^{s_r} - 1, 3^{s_r} - 1)$ Cross-Ratio Syzygy**:
+   `(3 ^ (s r) - 1) * (legendreFactVal2 (P r) - legendreFactVal2 (u r)) =
+     2 * (2 ^ (s r) - 1) * (legendreFactVal3 (P (r + 1)) - legendreFactVal3 (u r))`. -/
+theorem legendre_factorial_valuation_dual_block_tower
+    {b_0 r : ℕ} {s u : ℕ → ℕ}
+    (hchain : ValidBlockChain b_0 s u (r + 2)) :
+    let b := fun k => orbit b_0 (blockSteps s k)
+    let P := fun k => oddReturnP (b k)
+    legendreFactVal2 (P r) - legendreFactVal2 (u r) = (2 ^ (s r) - 1) * u r ∧
+      2 * (legendreFactVal3 (P (r + 1)) - legendreFactVal3 (u r)) = (3 ^ (s r) - 1) * u r ∧
+      (3 ^ (s r) - 1) * (legendreFactVal2 (P r) - legendreFactVal2 (u r)) =
+        2 * (2 ^ (s r) - 1) * (legendreFactVal3 (P (r + 1)) - legendreFactVal3 (u r)) := by
+  intro b P
+  have h12 := dual_base2_base3_block_digitsum_conservation_and_parity hchain
+  have hs2 : base2DigitSum (P r) = base2DigitSum (u r) := h12.1.1
+  have hr := hchain r (by omega)
+  have hr1 := hchain (r + 1) (by omega)
+  have hs_r : 1 ≤ s r := hr.1
+  have hP_r : P r = 2 ^ (s r) * u r := hr.2.2
+  have hP_r1 : P (r + 1) = 2 ^ (s (r + 1)) * u (r + 1) := hr1.2.2
+  have hs3 : base3DigitSum (P (r + 1)) = base3DigitSum (u r) + 1 := by
+    rw [hP_r1]
+    exact h12.2.1.2.2
+  have hb_r1 : b (r + 1) = 3 ^ (s r - 1) * u r := by
+    change orbit b_0 (blockSteps s r + s r) = 3 ^ (s r - 1) * u r
+    rw [orbit_add]
+    exact orbit_odd_block_return hs_r hP_r
+  have hP_r1_eq : P (r + 1) = 3 ^ (s r) * u r + 1 := by
+    change 3 * b (r + 1) + 1 = 3 ^ (s r) * u r + 1
+    rw [hb_r1, ← mul_assoc]
+    have h3 : 3 * 3 ^ (s r - 1) = 3 ^ (s r) := by
+      conv_rhs => rw [← Nat.sub_add_cancel hs_r, Nat.pow_succ']
+    rw [h3]
+  have hleg2_P := legendreFactVal2_add_base2DigitSum (P r)
+  have hleg2_u := legendreFactVal2_add_base2DigitSum (u r)
+  have hleg3_P1 := two_mul_legendreFactVal3_add_base3DigitSum (P (r + 1))
+  have hleg3_u := two_mul_legendreFactVal3_add_base3DigitSum (u r)
+  have hsub2 : 2 ^ (s r) * u r - u r = (2 ^ (s r) - 1) * u r := by
+    rw [Nat.sub_mul, one_mul]
+  have hsub3 : 3 ^ (s r) * u r - u r = (3 ^ (s r) - 1) * u r := by
+    rw [Nat.sub_mul, one_mul]
+  have hv2_diff : legendreFactVal2 (P r) - legendreFactVal2 (u r) = (2 ^ (s r) - 1) * u r := by
+    omega
+  have hv3_diff :
+      2 * (legendreFactVal3 (P (r + 1)) - legendreFactVal3 (u r)) = (3 ^ (s r) - 1) * u r := by
+    omega
+  have hcross :
+      (3 ^ (s r) - 1) * (legendreFactVal2 (P r) - legendreFactVal2 (u r)) =
+        2 * (2 ^ (s r) - 1) * (legendreFactVal3 (P (r + 1)) - legendreFactVal3 (u r)) := by
+    calc
+      (3 ^ (s r) - 1) * (legendreFactVal2 (P r) - legendreFactVal2 (u r))
+          = (3 ^ (s r) - 1) * ((2 ^ (s r) - 1) * u r) := by rw [hv2_diff]
+      _ = (2 ^ (s r) - 1) * ((3 ^ (s r) - 1) * u r) := by ring
+      _ = (2 ^ (s r) - 1) * (2 * (legendreFactVal3 (P (r + 1)) - legendreFactVal3 (u r))) := by
+            rw [← hv3_diff]
+      _ = 2 * (2 ^ (s r) - 1) * (legendreFactVal3 (P (r + 1)) - legendreFactVal3 (u r)) := by ring
+  exact ⟨hv2_diff, hv3_diff, hcross⟩
+
+/-! ## 16. Theorem SB.16: Universal Mod-4 Quotient-Rung Parity Lock & Mersenne Trailing-1s Trap -/
+
+/-- Auxiliary lemma: `(3 ^ s) % 4 = if s % 2 = 0 then 1 else 3`. -/
+theorem three_pow_mod_four_dichotomy (s : ℕ) :
+    (s % 2 = 0 → (3 ^ s) % 4 = 1) ∧ (s % 2 = 1 → (3 ^ s) % 4 = 3) := by
+  induction s with
+  | zero => decide
+  | succ s ih =>
+      rw [Nat.pow_succ]
+      omega
+
+/-- **Universal Mod-4 Quotient-Rung Parity Lock & Mersenne Trailing-1s Trap
+(`universal_mod4_quotient_rung_parity_lock_and_mersenne_trap`, Theorem SB.16)**:
+Suppose `ValidBlockChain b_0 s u (r + 2)` holds with `2 ≤ s (r + 1)`:
+1. **Universal Mod-4 Quotient-Rung Parity Lock**:
+   `(s r % 2 = 0 ↔ u r % 4 = 3)` and `(s r % 2 = 1 ↔ u r % 4 = 1)`.
+2. **Even-Rung Hamming Weight Lower Bound (`2 ≤ s_2(u_r)`)**:
+   Whenever `s r % 2 = 0`, `2 ≤ base2DigitSum (u r)` (so $u_r$ ends in `...11_2` and can never have
+   Hamming weight $1$).
+3. **Mersenne Trailing-1s Trap ($u_r \equiv 15 \pmod{16}$)**:
+   Whenever `u r % 16 = 15` and `s r = 2`, `oddReturnP (orbit b_0 (blockSteps s (r + 1))) % 16 = 8`,
+   forcing `s (r + 1) = 3`! -/
+theorem universal_mod4_quotient_rung_parity_lock_and_mersenne_trap
+    {b_0 r : ℕ} {s u : ℕ → ℕ}
+    (hchain : ValidBlockChain b_0 s u (r + 2))
+    (hs_next : 2 ≤ s (r + 1)) :
+    ((s r % 2 = 0 ↔ u r % 4 = 3) ∧ (s r % 2 = 1 ↔ u r % 4 = 1)) ∧
+      (s r % 2 = 0 → 2 ≤ base2DigitSum (u r)) ∧
+      (u r % 16 = 15 → s r = 2 →
+        oddReturnP (orbit b_0 (blockSteps s (r + 1))) % 16 = 8 ∧ s (r + 1) = 3) := by
+  have hr := hchain r (by omega)
+  have hr1 := hchain (r + 1) (by omega)
+  have hs_r : 1 ≤ s r := hr.1
+  have hu_r_odd : u r % 2 = 1 := hr.2.1
+  have hu_r1_odd : u (r + 1) % 2 = 1 := hr1.2.1
+  have hP_r : oddReturnP (orbit b_0 (blockSteps s r)) = 2 ^ (s r) * u r := hr.2.2
+  have hP_r1 : oddReturnP (orbit b_0 (blockSteps s (r + 1))) = 2 ^ (s (r + 1)) * u (r + 1) := hr1.2.2
+  have hb_r1 : orbit b_0 (blockSteps s (r + 1)) = 3 ^ (s r - 1) * u r := by
+    change orbit b_0 (blockSteps s r + s r) = 3 ^ (s r - 1) * u r
+    rw [orbit_add]
+    exact orbit_odd_block_return hs_r hP_r
+  have hP_r1_eq : oddReturnP (orbit b_0 (blockSteps s (r + 1))) = 3 ^ (s r) * u r + 1 := by
+    change 3 * orbit b_0 (blockSteps s (r + 1)) + 1 = 3 ^ (s r) * u r + 1
+    rw [hb_r1, ← mul_assoc]
+    have h3 : 3 * 3 ^ (s r - 1) = 3 ^ (s r) := by
+      conv_rhs => rw [← Nat.sub_add_cancel hs_r, Nat.pow_succ']
+    rw [h3]
+  have hdvd4_P1 : (3 ^ (s r) * u r + 1) % 4 = 0 := by
+    obtain ⟨d, hd⟩ : ∃ d : ℕ, s (r + 1) = d + 2 := ⟨s (r + 1) - 2, by omega⟩
+    have hmul4 : 2 ^ (s (r + 1)) * u (r + 1) = 4 * (2 ^ d * u (r + 1)) := by
+      rw [hd, Nat.pow_add]
+      ring
+    rw [← hP_r1_eq, hP_r1, hmul4]
+    omega
+  have h3_mod4 := three_pow_mod_four_dichotomy (s r)
+  have hlock : (s r % 2 = 0 ↔ u r % 4 = 3) ∧ (s r % 2 = 1 ↔ u r % 4 = 1) := by
+    have h_s_par : s r % 2 = 0 ∨ s r % 2 = 1 := by omega
+    have h_u_mod : u r % 4 = 1 ∨ u r % 4 = 3 := by omega
+    rcases h_s_par with hs0 | hs1
+    · have h3_1 := h3_mod4.1 hs0
+      have hprod : (3 ^ (s r) * u r + 1) % 4 = (u r + 1) % 4 := by
+        rw [Nat.add_mod, Nat.mul_mod, h3_1]
+        omega
+      omega
+    · have h3_3 := h3_mod4.2 hs1
+      have hprod : (3 ^ (s r) * u r + 1) % 4 = (3 * (u r % 4) + 1) % 4 := by
+        rw [Nat.add_mod, Nat.mul_mod, h3_3]
+        omega
+      omega
+  refine ⟨hlock, ?_, ?_⟩
+  · intro hs0
+    have hu3 : u r % 4 = 3 := hlock.1.mp hs0
+    rw [base2DigitSum_eq (u r), base2DigitSum_eq (u r / 2)]
+    omega
+  · intro hu15 hs2
+    have hP1_mod16 : oddReturnP (orbit b_0 (blockSteps s (r + 1))) % 16 = 8 := by
+      rw [hP_r1_eq, hs2]
+      omega
+    refine ⟨hP1_mod16, ?_⟩
+    rcases lt_trichotomy (s (r + 1)) 3 with hlt3 | h_eq3 | hgt3
+    · have hs_eq2 : s (r + 1) = 2 := by omega
+      rw [hP_r1, hs_eq2] at hP1_mod16
+      omega
+    · exact h_eq3
+    · obtain ⟨d, hd⟩ : ∃ d : ℕ, s (r + 1) = d + 4 := ⟨s (r + 1) - 4, by omega⟩
+      have hmul16 : 2 ^ (s (r + 1)) * u (r + 1) = 16 * (2 ^ d * u (r + 1)) := by
+        rw [hd, Nat.pow_add]
+        ring
+      rw [hP_r1, hmul16] at hP1_mod16
+      omega
+
+/-! ## 17. Theorem SB.17: Universal Mod-1024 / Hamming-Weight-2 Three-Block Domino Collapse -/
+
+/-- **Universal Mod-1024 / Hamming-Weight-2 ($u_K = 1024 w + 1$) Three-Block Domino Collapse
+(`mod1024_and_weight2_odd_quotient_three_block_domino_collapse`, Theorem SB.17)**:
+For any `w : ℕ`, setting `u_K = 1024 * w + 1` (which includes every Hamming-weight-2 odd quotient
+$u_K = 2^m + 1$ with $m \ge 10$):
+1. **Even Rung ($s_K = 2 j, j \ge 1$)**:
+   `(3 ^ (2 * j) * u_K + 1) % 4 = 2` (forcing $s_{K+1} = 1$, **dies in 1 block**).
+2. **Step-3 Rung ($s_K = 3$)**:
+   - `P_next1 = 3 ^ 3 * u_K + 1 = 4 * (6912 * w + 7)` (so $s_{K+1} = 2$ and $u_{K+1} = 6912 * w + 7$ is odd),
+   - `P_next2 = 3 ^ 2 * (6912 * w + 7) + 1 = 64 * (972 * w + 1)` (so $s_{K+2} = 6$ and $u_{K+2} = 972 * w + 1$ is odd), and
+   - `P_next3 = 3 ^ 6 * (972 * w + 1) + 1 = 708588 * w + 730` with `P_next3 % 4 = 2`
+     (forcing $s_{K+3} = 1$, **dies in 3 blocks for every $w \in \mathbb{N}$**!). -/
+theorem mod1024_and_weight2_odd_quotient_three_block_domino_collapse
+    (w j : ℕ) :
+    let u_K := 1024 * w + 1
+    let u_next1 := 6912 * w + 7
+    let u_next2 := 972 * w + 1
+    (3 ^ (2 * j) * u_K + 1) % 4 = 2 ∧
+      (3 ^ 3 * u_K + 1 = 2 ^ 2 * u_next1 ∧ u_next1 % 2 = 1) ∧
+      (3 ^ 2 * u_next1 + 1 = 2 ^ 6 * u_next2 ∧ u_next2 % 2 = 1) ∧
+      (3 ^ 6 * u_next2 + 1 = 708588 * w + 730 ∧
+        (3 ^ 6 * u_next2 + 1) % 4 = 2) := by
+  intro u_K u_next1 u_next2
+  have h3_even : (3 ^ (2 * j)) % 4 = 1 := (three_pow_mod_four_dichotomy (2 * j)).1 (by omega)
+  have h1 : (3 ^ (2 * j) * u_K + 1) % 4 = 2 := by
+    dsimp [u_K]
+    rw [Nat.add_mod, Nat.mul_mod, h3_even]
+    omega
+  refine ⟨h1, ⟨by dsimp [u_K, u_next1]; ring, by dsimp [u_next1]; omega⟩,
+          ⟨by dsimp [u_next1, u_next2]; ring, by dsimp [u_next2]; omega⟩,
+          ⟨by dsimp [u_next2]; ring, by dsimp [u_next2]; omega⟩⟩
+
 #check @archimedean_rung_ceiling_and_stepSum_bound
 #check @unit_quotient_even_rung_instant_death_and_odd_rung_mod64_identity
 #check @equal_step_window_hankel_determinant_identity_and_bound
@@ -1172,6 +1400,9 @@ theorem top_down_senge_straus_stewart_joint_digitsum_blueprint
 #check @dual_base2_base3_block_digitsum_conservation_and_parity
 #check @one_step_and_weighted_telescoping_base3_carry_identity
 #check @top_down_senge_straus_stewart_joint_digitsum_blueprint
+#check @legendre_factorial_valuation_dual_block_tower
+#check @universal_mod4_quotient_rung_parity_lock_and_mersenne_trap
+#check @mod1024_and_weight2_odd_quotient_three_block_domino_collapse
 
 #print axioms archimedean_rung_ceiling_and_stepSum_bound
 #print axioms unit_quotient_even_rung_instant_death_and_odd_rung_mod64_identity
@@ -1187,5 +1418,8 @@ theorem top_down_senge_straus_stewart_joint_digitsum_blueprint
 #print axioms dual_base2_base3_block_digitsum_conservation_and_parity
 #print axioms one_step_and_weighted_telescoping_base3_carry_identity
 #print axioms top_down_senge_straus_stewart_joint_digitsum_blueprint
+#print axioms legendre_factorial_valuation_dual_block_tower
+#print axioms universal_mod4_quotient_rung_parity_lock_and_mersenne_trap
+#print axioms mod1024_and_weight2_odd_quotient_three_block_domino_collapse
 
 end Mahler.SemigroupBreakout
