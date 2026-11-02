@@ -1,6 +1,6 @@
-# Mahler $3/2$ Problem — 222-File Lean 4 Formalization (`mahler_demand_a`)
+# Mahler $3/2$ Problem — 224-File Lean 4 Formalization (`mahler_demand_a`)
 
-This repository contains a **222-file (`sorry`-free) Lean 4.19.0 + Mathlib v4.19.0 formalization** of the reduced Mahler $3/2$ dynamical system ($Z$-numbers) and its interval- and union-confinement relaxations ([`MAHLER_FORMALIZATION_PAPER.pdf`](./MAHLER_FORMALIZATION_PAPER.pdf)).
+This repository contains a **224-file (`sorry`-free) Lean 4.19.0 + Mathlib v4.19.0 formalization** of the reduced Mahler $3/2$ dynamical system ($Z$-numbers) and its interval- and union-confinement relaxations ([`MAHLER_FORMALIZATION_PAPER.pdf`](./MAHLER_FORMALIZATION_PAPER.pdf)).
 
 ---
 
@@ -234,6 +234,8 @@ not a completed proof; its Part III corrects earlier overstatements and controls
   Prefix-congruence invariance of `blockSteps`/`renewalNumerator`/$\Sigma_M$/$\widehat{\Sigma}_M$, monotone rung-death below a sub-ceiling rung, the universal Parry–Milnor–Thurston shift domination theorem (`subCeiling_shift_lexicographic_domination`: if $\widehat{\Sigma}_N(s) < 0$, $\forall t < M,\, s(N+t) = w(t)$, $\widehat{\Sigma}_{M+1}(w) \le 0$, and $0 < \Sigma_{N+M+1}(s)$, then $w(M) \le s(N+M)$), and certification of blocks 43–45 ($s_{42} = 6, s_{43} = 6, s_{44} = 3$, $T_{45} = 223$, forcing $2^{224} \le b_2$).
 - **Universal $(2, r, 2)$ Sandwich $(104 : 108)$, Exclusion of $(2, \le 6, 2)$, Sharpness at $(2, 7, 2)$ & 48-Block ($T_{48} = 234$) Kneading Certification (`TwoRungSandwichAndKneading48.lean`, Campaign 2 Outer Loop 18):**
   Exact three-step closed form $\Sigma_{N+3} = 9 \cdot 3^r(2^{T_N} + 9C_N) - 104 \cdot 2^{T_N+r}$ and $(104 : 108)$ sub-ceiling window for $(2, r, 2)$, proof that $C_N < 0 \wedge 0 < \Sigma_{N+3}$ forces $7 \le s_{N+1}$ (excluding $(2, r, 2)$ for all $r \le 6$), and certification of the $(2, 7, 2)$ subword at blocks 46–48 ($s_{45} = 2, s_{46} = 7, s_{47} = 2$, $T_{48} = 234$, forcing $2^{235} \le b_2$).
+- **Subword Return-Proximity Law $3^{d_M}(-\widehat{\Sigma}_N) < \Sigma_M(w)\cdot 2^{T_N}$, Strict Parry Rung-Jump Dichotomy ($s_{N+M} = w_M$ vs. $w_M + 1 \le s_{N+M}$) & 51-Block ($T_{51} = 247$) Kneading Certification (`StrictParryJumpDichotomyAndKneading51.lean`, Campaign 2 Outer Loop 19):**
+  Exact return-proximity survival equivalence $3^{d_M}(-\widehat{\Sigma}_N) < \Sigma_M(w)\cdot 2^{T_N}$, strict Parry rung-jump dichotomy ($\Sigma_{M+1}(w)\cdot 2^{T_N} \le 3^{d_{M+1}}(-\widehat{\Sigma}_N) \implies w_M + 1 \le s_{N+M}$), explicit $(2, 6, 3, 3)$ vs. $(2, 6, 3, \ge 4)$ threshold $14833 \cdot 2^{T_N} \le 4782969(-\widehat{\Sigma}_N)$, and certification of blocks 49–51 ($s_{48} = 6, s_{49} = 3, s_{50} = 4$, $T_{51} = 247$, forcing $2^{248} \le b_2$).
 
 ## Acknowledgments
 
