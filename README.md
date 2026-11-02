@@ -1,6 +1,6 @@
-# Mahler $3/2$ Problem — 220-File Lean 4 Formalization (`mahler_demand_a`)
+# Mahler $3/2$ Problem — 222-File Lean 4 Formalization (`mahler_demand_a`)
 
-This repository contains a **220-file (`sorry`-free) Lean 4.19.0 + Mathlib v4.19.0 formalization** of the reduced Mahler $3/2$ dynamical system ($Z$-numbers) and its interval- and union-confinement relaxations ([`MAHLER_FORMALIZATION_PAPER.pdf`](./MAHLER_FORMALIZATION_PAPER.pdf)).
+This repository contains a **222-file (`sorry`-free) Lean 4.19.0 + Mathlib v4.19.0 formalization** of the reduced Mahler $3/2$ dynamical system ($Z$-numbers) and its interval- and union-confinement relaxations ([`MAHLER_FORMALIZATION_PAPER.pdf`](./MAHLER_FORMALIZATION_PAPER.pdf)).
 
 ---
 
@@ -232,6 +232,8 @@ not a completed proof; its Part III corrects earlier overstatements and controls
   Mixed shift-slack identity $\Sigma_{N+M}(s) = 3^d\widehat{\Sigma}_N(s) + 2^{T_N}\Sigma_M(s')$, universal subword escape inheritance ($\widehat{\Sigma}_N < 0 \wedge \Sigma_M(s') \le 0 \implies \Sigma_{N+M} < 0$), universal exclusion of $(2, 6, 2)$ and $(2, 6, 3, 2)$ at arbitrary sub-ceiling steps, and certification of blocks 40–42 ($s_{39} = 5, s_{40} = 4, s_{41} = 11$, crossing the 200-step horizon at $T_{42} = 208$, forcing $2^{209} \le b_2$).
 - **The Universal Parry–Kneading Shift Domination Theorem ($w_M \le s_{N+M}$) & 45-Block ($T_{45} = 223$) Kneading Certification (`ParryKneadingShiftDominationAndKneading45.lean`, Campaign 2 Outer Loop 17):**
   Prefix-congruence invariance of `blockSteps`/`renewalNumerator`/$\Sigma_M$/$\widehat{\Sigma}_M$, monotone rung-death below a sub-ceiling rung, the universal Parry–Milnor–Thurston shift domination theorem (`subCeiling_shift_lexicographic_domination`: if $\widehat{\Sigma}_N(s) < 0$, $\forall t < M,\, s(N+t) = w(t)$, $\widehat{\Sigma}_{M+1}(w) \le 0$, and $0 < \Sigma_{N+M+1}(s)$, then $w(M) \le s(N+M)$), and certification of blocks 43–45 ($s_{42} = 6, s_{43} = 6, s_{44} = 3$, $T_{45} = 223$, forcing $2^{224} \le b_2$).
+- **Universal $(2, r, 2)$ Sandwich $(104 : 108)$, Exclusion of $(2, \le 6, 2)$, Sharpness at $(2, 7, 2)$ & 48-Block ($T_{48} = 234$) Kneading Certification (`TwoRungSandwichAndKneading48.lean`, Campaign 2 Outer Loop 18):**
+  Exact three-step closed form $\Sigma_{N+3} = 9 \cdot 3^r(2^{T_N} + 9C_N) - 104 \cdot 2^{T_N+r}$ and $(104 : 108)$ sub-ceiling window for $(2, r, 2)$, proof that $C_N < 0 \wedge 0 < \Sigma_{N+3}$ forces $7 \le s_{N+1}$ (excluding $(2, r, 2)$ for all $r \le 6$), and certification of the $(2, 7, 2)$ subword at blocks 46–48 ($s_{45} = 2, s_{46} = 7, s_{47} = 2$, $T_{48} = 234$, forcing $2^{235} \le b_2$).
 
 ## Acknowledgments
 
