@@ -1800,6 +1800,30 @@ Here is why, in plain terms:
 ## C2.O6.5 Inner Loop 5 / 5 — Explore & Exploit: Certification of Blocks 11, 12, and 13 ($s_{10} = 3, s_{11} = 2, s_{12} = 12$, $T_{13} = 65$)
 - **Explore & Exploit (Priority 5):** Certify that after $(2, 6, 3, 3, 2, 10, 7, 5, 7, 3)$, the unique 11th, 12th, and 13th sub-ceiling kneading rungs are $s_{10} = 3$ ($T_{11} = 51$), $s_{11} = 2$ ($T_{12} = 53$), and $s_{12} = 12$ ($T_{13} = 65 > 64$), where the third $s = 2$ block forces a 12-step recovery $s_{12} = 12$!
 
+---
+
+# Part XXII — Second Campaign (`m = 5, n = 20`) — Outer Loop 7 / 20 (Inner Loops 1–5): Backward Propagation of the Extra-Bit Congruence $2^{T_N+1} \mid (3^{T_N} P_0 + A_{0,N})$, Mod-$2^{T_N+1}$ Seed Uniqueness & 15-Block ($T_{15} = 72$) Kneading Certification
+
+## C2.O7.1 Inner Loop 1 / 5 — Explore & Exploit: Backward Propagation of the Extra-Bit Congruence
+- **Explore:** Prove that the single terminal congruence $2^{T_{N+1} + 1} \mid (3^{T_{N+1}} P_0 + A_{0,N+1})$ ($s_N \ge 1$) automatically forces both $2^{T_N + 1} \mid (3^{T_N} P_0 + A_{0,N})$ and the exact odd-part decomposition at step $N$.
+- **Exploit (Priority 1):** Because $3^{T_{N+1}} P_0 + A_{0,N+1} = 2^{T_N + s_N}(2 q_{N+1})$ gives $3^{s_N}(3^{T_N} P_0 + A_{0,N}) = 2^{T_N + s_N}(2 q_{N+1} - 1)$ where $2 q_{N+1} - 1$ is odd and coprime to $2^{T_N+s_N}$, prove that $3^{s_N} \mid (2 q_{N+1} - 1)$ with odd quotient $u_N = (2 q_{N+1} - 1)/3^{s_N}$ and $3^{T_N} P_0 + A_{0,N} = 2^{T_N} (2^{s_N} u_N)$!
+
+## C2.O7.2 Inner Loop 2 / 5 — Explore & Exploit: All-Prefix Exact Valuation Recovery from a Single Terminal Congruence
+- **Explore:** Induct the one-step backward propagation over any prefix $k \le N$.
+- **Exploit (Priority 2):** Prove `extra_bit_congruence_propagates_to_all_prefixes`: if $2^{T_N + 1} \mid (3^{T_N} P_0 + A_{0,N})$ and $\forall k < N,\, 1 \le s_k$, then $2^{T_k + 1} \mid (3^{T_k} P_0 + A_{0,k})$ holds for **every** intermediate prefix $k \le N$, and at each step $k < N$ there exists an odd integer $u_k$ (`u_k % 2 = 1`) such that $(3^{T_k} P_0 + A_{0,k}) / 2^{T_k} = 2^{s_k} u_k$!
+
+## C2.O7.3 Inner Loop 3 / 5 — Explore & Exploit: Mod-$2^{T_N+1}$ Two-Seed Uniqueness for Any $N$-Block Prefix
+- **Explore:** Compare two seeds $b_1 \le b_2$ that both realize the same $N$-block gap sequence $s$ ($N \ge 1$).
+- **Exploit (Priority 3):** Because both terminal boundaries $\operatorname{orbit} b_i \, T_N$ are odd, $2 \mid (\operatorname{orbit} b_2 \, T_N - \operatorname{orbit} b_1 \, T_N)$, so subtracting $2^{T_N} \operatorname{orbit} b_i \, T_N = 3^{T_N} b_i + K_N$ proves:
+  $$\boxed{2^{T_N + 1} \;\Big|\; \big(b_2 - b_1\big) \quad\text{and}\quad \big(2 \cdot 3^{T_N}\big) \;\Big|\; \big(\operatorname{orbit} b_2 \, T_N - \operatorname{orbit} b_1 \, T_N\big)!}$$
+
+## C2.O7.4 Inner Loop 4 / 5 — Explore & Exploit: Certification of the 14th ($s_{13} = 4$) & 15th ($s_{14} = 3$) Kneading Rungs ($T_{15} = 72$)
+- **Explore & Exploit (Priority 4):** Certify in one line of `norm_num` per step that after $(2, 6, 3, 3, 2, 10, 7, 5, 7, 3, 3, 2, 12)$, the unique 14th and 15th sub-ceiling kneading rungs are $s_{13} = 4$ ($T_{14} = 69$, $\Sigma_{14} = 367{,}903{,}057{,}540{,}308{,}121{,}883$) and $s_{14} = 3$ ($T_{15} = 72$, $\Sigma_{15} = 488{,}649{,}587{,}849{,}028{,}863{,}449$).
+
+## C2.O7.5 Inner Loop 5 / 5 — Explore & Exploit: At-Most-One Seed Below $2^{73}$ for the 15-Block Sub-Ceiling Kneading Cascade
+- **Explore & Exploit (Priority 5):** Combine the mod-$2^{T_N+1}$ uniqueness theorem with $T_{15} = 72$ to prove that any two seeds $b_1 < b_2$ realizing the 15-block sub-ceiling kneading cascade satisfy $2^{73} \mid (b_2 - b_1)$, so $b_2 \ge 2^{73}$!
+
+
 
 
 

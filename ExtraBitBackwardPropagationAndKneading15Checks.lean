@@ -1,0 +1,17 @@
+import ExtraBitBackwardPropagationAndKneading15
+
+namespace Mahler.Checks
+
+open Mahler.ExtraBitBackwardAndKneading15
+
+#check @extra_bit_congruence_one_step_backward
+#check @extra_bit_congruence_propagates_to_all_prefixes
+#check @two_seeds_same_validBlockChain_mod_two_pow_succ_dvd
+#check @fourteen_and_fifteen_block_kneading_corridor_and_two_pow_73_uniqueness
+
+#print axioms extra_bit_congruence_one_step_backward
+#print axioms extra_bit_congruence_propagates_to_all_prefixes
+#print axioms two_seeds_same_validBlockChain_mod_two_pow_succ_dvd
+#print axioms fourteen_and_fifteen_block_kneading_corridor_and_two_pow_73_uniqueness
+
+end Mahler.Checks
