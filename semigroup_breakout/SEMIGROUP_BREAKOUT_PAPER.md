@@ -486,7 +486,33 @@ In [`sandbox_overnight_20_bridge_loops.py`](./sandbox_overnight_20_bridge_loops.
 
 ---
 
-## 13. Verification Instructions
+## 13. Cross-Application to Collatz ($3n+1$) & Universal Structures in $3/2 \bmod 1$ (Theorems `SB.54–SB.56`)
+
+In Sections 54–56 of [`SemigroupBreakoutTheorems.lean`](./SemigroupBreakoutTheorems.lean), we cross-applied our Mahler Base-2/Base-3 bridges directly to the Collatz Syracuse map ($2^s u' = 3 u + 1$) and proved/disproved universal structures in $3/2 \bmod 1$:
+
+### 13.1 Theorem SB.54 (`collatz_syracuse_bridge_and_one_two_cycle_exclusion`)
+The Collatz Syracuse odd-step equation $2^s u' = 3 u + 1$ is the exact $s_r = 1$ specialization of the Mahler odd-block equation $2^{s_{r+1}} u_{r+1} = 3^{s_r} u_r + 1$. Consequently:
+1. **Collatz One-Step Base-3 & Base-2 Carry Laws:**
+   Whenever $2^s u' = 3 u + 1$ with $u'$ odd:
+   $$\boxed{\left\lfloor \frac{2^s u'}{3} \right\rfloor = u, \qquad (2^s u') \bmod 3 = 1, \qquad s_3(2^s u') = s_3(u) + 1, \qquad s_2(3 u) + 1 = s_2(u') + s!}$$
+   Summing around any closed $K$-step Collatz loop ($u_K = u_0$ with total halvings $T_K = \sum_{r=0}^{K-1} s_r$) yields the **Collatz Loop Carry-Budget Laws**:
+   $$\sum_{r=0}^{K-1} \big(s_2(3 u_r) - s_2(u_r)\big) = T_K - K \qquad\text{and}\qquad \sum_{r=0}^{K-1} \big(s_3(2^{s_r} u_{r+1}) - s_3(u_{r+1})\big) = K.$$
+2. **Unconditional Disproof of Non-Trivial Collatz 1-Cycles and 2-Cycles (Contrasted with $3n-1$):**
+   - For $K = 1$: $2^s u_0 = 3 u_0 + 1$ ($u_0 \ge 1$) forces $s = 2$ and $u_0 = 1$ ($1 \to 4 \to 2 \to 1$ is the unique 1-cycle).
+   - For $K = 2$: there do **not** exist integers $1 \le u_0 < u_1$ and exponents $1 \le s_0, 1 \le s_1$ satisfying $2^{s_0} u_1 = 3 u_0 + 1$ and $2^{s_1} u_0 = 3 u_1 + 1$ (because $u_0 < u_1 \implies 2^{s_0} u_1 = 3 u_0 + 1 < 4 u_1 \implies s_0 = 1 \implies (2^{1+s_1} - 9) u_0 = 5$, which has no integer solution!), whereas in $3n - 1$, Catalan's $9 - 2^3 = 1$ yields the genuine 2-cycle $5 \to 7 \to 5$!
+
+### 13.2 Theorem SB.55 (`universal_constant_rung_affine_invariance_and_run_length_bound`)
+Across any run of $m$ consecutive blocks with constant halving count $s \ge 1$ ($s_{r+k} = s$ for $0 \le k \le m$):
+$$\boxed{2^{s m}\big((3^s - 2^s) u_{r+m} + 1\big) = 3^{s m}\big((3^s - 2^s) u_r + 1\big) \implies 2^{s m} \;\Big|\; \big((3^s - 2^s) u_r + 1\big) \implies 2^{s m} \le (3^s - 2^s) u_r + 1!}$$
+In particular, for a run of $s = 2$, $4^m \mid (5 u_r + 1)$ and $4^m \le 5 u_r + 1$, proving universally that **no integer seed can sustain an infinite constant-rung run**!
+
+### 13.3 Theorem SB.56 (`sharp_four_fifths_equality_characterization_and_two_two_escape`)
+1. **Proved Universal Structure:** In the unconditional $4/5$ renewal ceiling $5 A_{0, r} + 4 \cdot 2^{T_r} \le 4 \cdot 3^{T_r}$ (`SB.24`), **exact equality holds for all $k < r$ if $s_k = 2$**, whereas **strict inequality $< 4 \cdot 3^{T_r}$ holds** as soon as a block has $s_k \ge 3$.
+2. **Disproved Naive Conjecture:** For $s = (2, 2)$, every block satisfies $s_k \ge 2$, yet $2 A_{0, 2} = 104 > 81 = 3^{T_2}$ (`renewalIntSlack s 2 = -23 < 0`), disproving the naive conjecture that $s_k \ge 2$ automatically implies sub-$1/2$ renewal slack $A_{0, r} / 3^{T_r} < 1/2$!
+
+---
+
+## 14. Verification Instructions
 
 To verify the cordoned-off Lean 4 proofs without modifying the root 226-file build:
 

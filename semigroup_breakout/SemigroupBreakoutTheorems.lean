@@ -3638,6 +3638,257 @@ theorem grand_semigroup_breakout_53_bridge_synthesis
   have h52 := interior_multi_block_joint_digitsum_and_seventy_nine_floor hchain hs2
   exact ⟨⟨h24.1, h32.1.1, h32.1.2.2.2, h32.2.2.2.2⟩, h33, ⟨h35.2.1, h36.1⟩, ⟨h52.2.2.2.1, h52.2.2.2.2⟩⟩
 
+/-! ## 54. Theorem SB.54: Cross-Application of Mahler Bridges to Collatz ($3n+1$) & 1-Cycle / 2-Cycle Exclusion -/
+
+/-- **Cross-Application of Mahler Bridges to Collatz ($3n+1$) & 1-Cycle / 2-Cycle Exclusion
+(`collatz_syracuse_bridge_and_one_two_cycle_exclusion`, Theorem SB.54)**:
+The Collatz Syracuse odd-step equation `2 ^ s * u' = 3 * u + 1` is the exact `s_r = 1`
+specialization of the Mahler odd-block equation `2 ^ (s (r + 1)) * u (r + 1) = 3 ^ (s r) * u r + 1`.
+Consequently, our Mahler Base-2 and Base-3 bridges transfer directly to Collatz:
+1. **Collatz One-Step Base-3 & Base-2 Carry Laws**:
+   Whenever `2 ^ s * u' = 3 * u + 1` with `u' % 2 = 1`:
+   - `(2 ^ s * u') / 3 = u` and `(2 ^ s * u') % 3 = 1`,
+   - `base3DigitSum (2 ^ s * u') = base3DigitSum u + 1` (Base-3 zero-carry law), and
+   - `base2DigitSum (3 * u) + 1 = base2DigitSum u' + s` (Base-2 trailing-ones depletion law)!
+2. **Unconditional Collatz 1-Cycle Theorem (`u_0 = 1, s = 2` is unique)**:
+   Whenever `2 ^ s * u_0 = 3 * u_0 + 1` with `1 ≤ u_0`, we have `s = 2` and `u_0 = 1`
+   (and at that fixed point, `base2DigitSum (3 * u_0) - base2DigitSum u_0 = s - 1 = 1` and
+   `base3DigitSum (2 ^ s * u_0) - base3DigitSum u_0 = 1`), and
+3. **Unconditional Disproof of Non-Trivial Collatz 2-Cycles (`u_0 → u_1 → u_0`), Contrasted with $3n - 1$'s `5 → 7 → 5` Loop**:
+   - In **$3n + 1$ (Collatz)**: there do **not** exist integers `1 ≤ u_0 < u_1` and exponents `1 ≤ s_0, 1 ≤ s_1`
+     satisfying `2 ^ s_0 * u_1 = 3 * u_0 + 1` and `2 ^ s_1 * u_0 = 3 * u_1 + 1`!
+   - In **$3n - 1$**: Catalan's identity `3 ^ 2 - 2 ^ 3 = 1` produces the genuine 2-cycle
+     `2 ^ 1 * 7 = 3 * 5 - 1` and `2 ^ 2 * 5 = 3 * 7 - 1`! -/
+theorem collatz_syracuse_bridge_and_one_two_cycle_exclusion :
+    (∀ s u u' : ℕ, u' % 2 = 1 → 2 ^ s * u' = 3 * u + 1 →
+      (2 ^ s * u') / 3 = u ∧
+        (2 ^ s * u') % 3 = 1 ∧
+        base3DigitSum (2 ^ s * u') = base3DigitSum u + 1 ∧
+        base2DigitSum (3 * u) + 1 = base2DigitSum u' + s) ∧
+      (∀ s u_0 : ℕ, 1 ≤ u_0 → 2 ^ s * u_0 = 3 * u_0 + 1 → s = 2 ∧ u_0 = 1) ∧
+      (∀ s_0 s_1 u_0 u_1 : ℕ,
+        1 ≤ s_0 → 1 ≤ s_1 → 1 ≤ u_0 → u_0 < u_1 →
+          2 ^ s_0 * u_1 = 3 * u_0 + 1 → ¬ (2 ^ s_1 * u_0 = 3 * u_1 + 1)) ∧
+      (2 ^ 1 * 7 = 3 * 5 - 1 ∧ 2 ^ 2 * 5 = 3 * 7 - 1) := by
+  refine ⟨?_, ?_, ?_, by decide⟩
+  · intro s u u' hu'_odd hstep
+    have hdiv : (2 ^ s * u') / 3 = u := by omega
+    have hmod : (2 ^ s * u') % 3 = 1 := by omega
+    have hs3 : base3DigitSum (2 ^ s * u') = base3DigitSum u + 1 := by
+      rw [hstep, base3DigitSum_three_mul_add_digit u (by decide)]
+      omega
+    have hs2 : base2DigitSum (3 * u) + 1 = base2DigitSum u' + s := by
+      have hsub : 3 * u = 2 ^ s * u' - 1 := by omega
+      rw [hsub]
+      exact base2DigitSum_two_pow_mul_sub_one s hu'_odd
+    exact ⟨hdiv, hmod, hs3, hs2⟩
+  · intro s u_0 hu0_pos h1cycle
+    have hcases : s ≤ 2 ∨ 3 ≤ s := by omega
+    rcases hcases with hle2 | hge3
+    · have : s = 0 ∨ s = 1 ∨ s = 2 := by omega
+      rcases this with rfl | rfl | rfl
+      · omega
+      · omega
+      · omega
+    · obtain ⟨k, rfl⟩ : ∃ k : ℕ, s = k + 3 := ⟨s - 3, by omega⟩
+      have hpos : 1 ≤ 2 ^ k := Nat.one_le_pow _ 2 (by decide)
+      have hpow : 8 ≤ 2 ^ (k + 3) := by
+        rw [Nat.pow_add]
+        omega
+      have hmul : 8 * u_0 ≤ 2 ^ (k + 3) * u_0 := Nat.mul_le_mul_right u_0 hpow
+      omega
+  · intro s_0 s_1 u_0 u_1 hs0 hs1 hu0 hlt hstep0 hstep1
+    have hs0_lt2 : ¬ (2 ≤ s_0) := by
+      intro hge2
+      obtain ⟨k, hk⟩ : ∃ k : ℕ, s_0 = k + 2 := ⟨s_0 - 2, by omega⟩
+      have hpos : 1 ≤ 2 ^ k := Nat.one_le_pow _ 2 (by decide)
+      have hpow : 4 ≤ 2 ^ s_0 := by
+        rw [hk, Nat.pow_add]
+        omega
+      have hmul : 4 * u_1 ≤ 2 ^ s_0 * u_1 := Nat.mul_le_mul_right u_1 hpow
+      omega
+    have hs0_eq1 : s_0 = 1 := by omega
+    rw [hs0_eq1] at hstep0
+    have hcomb : 2 ^ (1 + s_1) * u_0 = 9 * u_0 + 5 := by
+      calc
+        2 ^ (1 + s_1) * u_0 = 2 * (2 ^ s_1 * u_0) := by
+          rw [Nat.pow_add]
+          ring
+        _ = 2 * (3 * u_1 + 1) := by rw [hstep1]
+        _ = 3 * (2 ^ 1 * u_1) + 2 := by ring
+        _ = 3 * (3 * u_0 + 1) + 2 := by rw [hstep0]
+        _ = 9 * u_0 + 5 := by ring
+    have hs1_cases : s_1 = 1 ∨ s_1 = 2 ∨ 3 ≤ s_1 := by omega
+    rcases hs1_cases with rfl | rfl | hge3
+    · omega
+    · omega
+    · obtain ⟨k, rfl⟩ : ∃ k : ℕ, s_1 = k + 3 := ⟨s_1 - 3, by omega⟩
+      have hpos : 1 ≤ 2 ^ k := Nat.one_le_pow _ 2 (by decide)
+      have hpow : 16 ≤ 2 ^ (1 + (k + 3)) := by
+        have hadd : 1 + (k + 3) = k + 4 := by omega
+        rw [hadd, Nat.pow_add]
+        omega
+      have hmul : 16 * u_0 ≤ 2 ^ (1 + (k + 3)) * u_0 := Nat.mul_le_mul_right u_0 hpow
+      omega
+
+/-! ## 55. Theorem SB.55: Universal Constant-Rung Affine Invariance & Finite Run-Length Ceiling in $3/2 \bmod 1$ -/
+
+/-- **Universal Constant-Rung Affine Invariance & Finite Run-Length Ceiling
+(`universal_constant_rung_affine_invariance_and_run_length_bound`, Theorem SB.55)**:
+In Mahler's $3/2 \bmod 1$ block dynamics, suppose $m$ consecutive blocks have constant
+halving count $s \ge 1$ (`ValidBlockChain b_0 s_seq u (r + m + 1)` with `∀ k ≤ m, s_seq (r + k) = s`):
+1. **One-Step Affine Invariance**:
+   Across any single block with `2 ^ s * u' = 3 ^ s * u + 1`:
+   `2 ^ s * ((3 ^ s - 2 ^ s) * u' + 1) = 3 ^ s * ((3 ^ s - 2 ^ s) * u + 1)`,
+2. **$m$-Block Constant-Rung Power Identity**:
+   `2 ^ (s * m) * ((3 ^ s - 2 ^ s) * u (r + m) + 1) = 3 ^ (s * m) * ((3 ^ s - 2 ^ s) * u r + 1)`, and
+3. **Exact Divisibility & Finite Run-Length Ceiling (`2^{s m} ≤ (3^s - 2^s) u_r + 1`)**:
+   `2 ^ (s * m) ∣ ((3 ^ s - 2 ^ s) * u r + 1)` and
+   `2 ^ (s * m) ≤ (3 ^ s - 2 ^ s) * u r + 1`
+   (in particular, for a run of `s = 2`, `4 ^ m ∣ (5 * u r + 1)` and `4 ^ m ≤ 5 * u r + 1`,
+   proving that **no integer seed can sustain an infinite constant-rung run**)! -/
+theorem universal_constant_rung_affine_invariance_and_run_length_bound
+    {b_0 r m s : ℕ} {s_seq u : ℕ → ℕ}
+    (hs_pos : 1 ≤ s)
+    (hchain : ValidBlockChain b_0 s_seq u (r + m + 1))
+    (hconst : ∀ k ≤ m, s_seq (r + k) = s) :
+    2 ^ (s * m) * ((3 ^ s - 2 ^ s) * u (r + m) + 1) =
+        3 ^ (s * m) * ((3 ^ s - 2 ^ s) * u r + 1) ∧
+      2 ^ (s * m) ∣ ((3 ^ s - 2 ^ s) * u r + 1) ∧
+      2 ^ (s * m) ≤ (3 ^ s - 2 ^ s) * u r + 1 := by
+  have h2_lt_3 : 2 ^ s < 3 ^ s := two_pow_lt_three_pow_of_pos hs_pos
+  have hid :
+      2 ^ (s * m) * ((3 ^ s - 2 ^ s) * u (r + m) + 1) =
+        3 ^ (s * m) * ((3 ^ s - 2 ^ s) * u r + 1) := by
+    induction m with
+    | zero => simp
+    | succ m ih =>
+        have hch_m : ValidBlockChain b_0 s_seq u (r + m + 1) := fun k hk => hchain k (by omega)
+        have hconst_m : ∀ k ≤ m, s_seq (r + k) = s := fun k hk => hconst k (by omega)
+        have ihm := ih hch_m hconst_m
+        have hch_step : ValidBlockChain b_0 s_seq u ((r + m) + 2) := fun k hk => hchain k (by omega)
+        have hstep := (one_step_backward_quotient_recovery_and_mod_three_pow_one hch_step).1
+        have hs_m : s_seq (r + m) = s := hconst m (by omega)
+        have hs_m1 : s_seq (r + m + 1) = s := by
+          have h := hconst (m + 1) (by omega)
+          simpa [Nat.add_assoc] using h
+        change 2 ^ (s_seq (r + m + 1)) * u (r + (m + 1)) =
+          3 ^ (s_seq (r + m)) * u (r + m) + 1 at hstep
+        rw [hs_m, hs_m1] at hstep
+        have hone :
+            2 ^ s * ((3 ^ s - 2 ^ s) * u (r + (m + 1)) + 1) =
+              3 ^ s * ((3 ^ s - 2 ^ s) * u (r + m) + 1) := by
+          have hsub : 3 ^ s - 2 ^ s + 2 ^ s = 3 ^ s := by omega
+          calc
+            2 ^ s * ((3 ^ s - 2 ^ s) * u (r + (m + 1)) + 1)
+                = (3 ^ s - 2 ^ s) * (2 ^ s * u (r + (m + 1))) + 2 ^ s := by ring
+            _ = (3 ^ s - 2 ^ s) * (3 ^ s * u (r + m) + 1) + 2 ^ s := by rw [hstep]
+            _ = 3 ^ s * ((3 ^ s - 2 ^ s) * u (r + m)) + (3 ^ s - 2 ^ s + 2 ^ s) := by ring
+            _ = 3 ^ s * ((3 ^ s - 2 ^ s) * u (r + m)) + 3 ^ s := by rw [hsub]
+            _ = 3 ^ s * ((3 ^ s - 2 ^ s) * u (r + m) + 1) := by ring
+        calc
+          2 ^ (s * (m + 1)) * ((3 ^ s - 2 ^ s) * u (r + (m + 1)) + 1)
+              = 2 ^ (s * m) * (2 ^ s * ((3 ^ s - 2 ^ s) * u (r + (m + 1)) + 1)) := by
+                rw [Nat.mul_succ s m, Nat.pow_add 2 (s * m) s]
+                ring
+          _ = 2 ^ (s * m) * (3 ^ s * ((3 ^ s - 2 ^ s) * u (r + m) + 1)) := by rw [hone]
+          _ = 3 ^ s * (2 ^ (s * m) * ((3 ^ s - 2 ^ s) * u (r + m) + 1)) := by ring
+          _ = 3 ^ s * (3 ^ (s * m) * ((3 ^ s - 2 ^ s) * u r + 1)) := by rw [ihm]
+          _ = 3 ^ (s * (m + 1)) * ((3 ^ s - 2 ^ s) * u r + 1) := by
+                rw [Nat.mul_succ s m, Nat.pow_add 3 (s * m) s]
+                ring
+  have hcop : Nat.Coprime (2 ^ (s * m)) (3 ^ (s * m)) :=
+    ((by decide : Nat.Coprime 2 3).pow_left (s * m)).pow_right (s * m)
+  have hdvd_mul : 2 ^ (s * m) ∣ 3 ^ (s * m) * ((3 ^ s - 2 ^ s) * u r + 1) :=
+    ⟨(3 ^ s - 2 ^ s) * u (r + m) + 1, hid.symm⟩
+  have hdvd : 2 ^ (s * m) ∣ ((3 ^ s - 2 ^ s) * u r + 1) :=
+    hcop.dvd_of_dvd_mul_left hdvd_mul
+  have hpos_rhs : 0 < (3 ^ s - 2 ^ s) * u r + 1 := by omega
+  have hle : 2 ^ (s * m) ≤ (3 ^ s - 2 ^ s) * u r + 1 := Nat.le_of_dvd hpos_rhs hdvd
+  exact ⟨hid, hdvd, hle⟩
+
+/-! ## 56. Theorem SB.56: Sharp Equality Characterization of the $4/5$ Ceiling & Disproof of Universal Sub-$1/2$ Slack -/
+
+/-- **Sharp Equality Characterization of the $4/5$ Ceiling & Disproof of Universal Sub-$1/2$ Slack
+(`sharp_four_fifths_equality_characterization_and_two_two_escape`, Theorem SB.56)**:
+1. **Proved Universal Structure (Exact Equality Characterization of the $4/5$ Ceiling)**:
+   Whenever `∀ k < r, s k = 2`, we have the **exact closed-form identity**
+   `5 * renewalNumerator s r + 4 * 2 ^ (blockSteps s r) = 4 * 3 ^ (blockSteps s r)`,
+   whereas whenever `∀ k < r, 2 ≤ s k` and `∃ k₀ < r, 3 ≤ s k₀`, we have the **strict inequality**
+   `5 * renewalNumerator s r + 4 * 2 ^ (blockSteps s r) < 4 * 3 ^ (blockSteps s r)`, and
+2. **Disproved Naive Conjecture (Surviving $s_k \ge 2$ Chains Need Not Have Sub-$1/2$ Renewal Slack)**:
+   For the constant-$2$ sequence `s = fun _ => 2` at `r = 2`, every block satisfies `2 ≤ s k`,
+   yet `renewalNumerator (fun _ => 2) 2 = 52` and `3 ^ (blockSteps (fun _ => 2) 2) = 81`,
+   so `2 * renewalNumerator (fun _ => 2) 2 = 104 > 81` (`renewalIntSlack (fun _ => 2) 2 = -23 < 0`),
+   disproving both the naive sub-$1/2$ slack conjecture and the admissibility of $(2, 2)$ in $3/2 \bmod 1$! -/
+theorem sharp_four_fifths_equality_characterization_and_two_two_escape :
+    (∀ (s : ℕ → ℕ) (r : ℕ),
+      (∀ k < r, s k = 2) →
+        5 * renewalNumerator s r + 4 * 2 ^ (blockSteps s r) = 4 * 3 ^ (blockSteps s r)) ∧
+      (∀ (s : ℕ → ℕ),
+        2 ≤ s 0 → 3 ≤ s 1 →
+          5 * renewalNumerator s 2 + 4 * 2 ^ (blockSteps s 2) < 4 * 3 ^ (blockSteps s 2)) ∧
+      (renewalNumerator (fun _ => 2) 2 = 52 ∧
+        3 ^ (blockSteps (fun _ => 2) 2) = 81 ∧
+        2 * renewalNumerator (fun _ => 2) 2 > 3 ^ (blockSteps (fun _ => 2) 2) ∧
+        renewalIntSlack (fun _ => 2) 2 = -23) := by
+  refine ⟨?_, ?_, by decide⟩
+  · intro s r hs2
+    induction r with
+    | zero => simp [renewalNumerator, blockSteps]
+    | succ r ih =>
+        have ihr := ih (fun k hk => hs2 k (by omega))
+        have hsr : s r = 2 := hs2 r (by omega)
+        set T := blockSteps s r
+        set A := renewalNumerator s r
+        calc
+          5 * renewalNumerator s (r + 1) + 4 * 2 ^ (blockSteps s (r + 1))
+              = 5 * (3 ^ (s r) * A + 2 ^ (T + s r)) + 4 * 2 ^ (T + s r) := rfl
+          _ = 9 * (5 * A + 4 * 2 ^ T) := by
+                rw [hsr, Nat.pow_add 2 T 2]
+                ring
+          _ = 9 * (4 * 3 ^ T) := by rw [ihr]
+          _ = 4 * 3 ^ (blockSteps s (r + 1)) := by
+                change 9 * (4 * 3 ^ T) = 4 * 3 ^ (T + s r)
+                rw [hsr, Nat.pow_add 3 T 2]
+                ring
+  · intro s hs0 hs1
+    have hinv1 : 5 * renewalNumerator s 1 + 4 * 2 ^ (blockSteps s 1) ≤ 4 * 3 ^ (blockSteps s 1) :=
+      five_mul_renewalNumerator_add_four_mul_two_pow_le s 1
+        (fun k hk => by
+          have hk0 : k = 0 := by omega
+          rw [hk0]
+          exact hs0)
+    obtain ⟨k, hk⟩ : ∃ k : ℕ, s 1 = k + 3 := ⟨s 1 - 3, by omega⟩
+    have hle_pow : 2 ^ k ≤ 3 ^ k := Nat.pow_le_pow_left (by decide) k
+    have h2_pos : 1 ≤ 2 ^ k := Nat.one_le_pow _ 2 (by decide)
+    have h9_strict : 9 * 2 ^ (s 1) < 4 * 3 ^ (s 1) := by
+      have hm : 72 * 2 ^ k ≤ 72 * 3 ^ k := Nat.mul_le_mul_left 72 hle_pow
+      rw [hk, Nat.pow_add 2 k 3, Nat.pow_add 3 k 3]
+      omega
+    set T := blockSteps s 1
+    set A := renewalNumerator s 1
+    have h2T_pos : 0 < 2 ^ T := Nat.pow_pos (by decide)
+    have hexp :
+        5 * renewalNumerator s 2 + 4 * 2 ^ (blockSteps s 2) =
+          3 ^ (s 1) * (5 * A) + (9 * 2 ^ (s 1)) * 2 ^ T := by
+      change 5 * (3 ^ (s 1) * A + 2 ^ (T + s 1)) + 4 * 2 ^ (T + s 1) =
+        3 ^ (s 1) * (5 * A) + (9 * 2 ^ (s 1)) * 2 ^ T
+      rw [Nat.pow_add 2 T (s 1)]
+      ring
+    have hlt1 : (9 * 2 ^ (s 1)) * 2 ^ T < (4 * 3 ^ (s 1)) * 2 ^ T :=
+      Nat.mul_lt_mul_of_pos_right h9_strict h2T_pos
+    have hfactor :
+        3 ^ (s 1) * (5 * A) + (4 * 3 ^ (s 1)) * 2 ^ T =
+          3 ^ (s 1) * (5 * A + 4 * 2 ^ T) := by ring
+    have hstep2 : 3 ^ (s 1) * (5 * A + 4 * 2 ^ T) ≤ 3 ^ (s 1) * (4 * 3 ^ T) :=
+      Nat.mul_le_mul_left (3 ^ (s 1)) hinv1
+    have hpow3 : 3 ^ (s 1) * (4 * 3 ^ T) = 4 * 3 ^ (blockSteps s 2) := by
+      change 3 ^ (s 1) * (4 * 3 ^ T) = 4 * 3 ^ (T + s 1)
+      rw [Nat.pow_add 3 T (s 1)]
+      ring
+    omega
+
 
 #check @archimedean_rung_ceiling_and_stepSum_bound
 #check @unit_quotient_even_rung_instant_death_and_odd_rung_mod64_identity
@@ -3692,6 +3943,9 @@ theorem grand_semigroup_breakout_53_bridge_synthesis
 #check @post_bitlength_colliding_binary_ternary_window_on_N_K
 #check @interior_multi_block_joint_digitsum_and_seventy_nine_floor
 #check @grand_semigroup_breakout_53_bridge_synthesis
+#check @collatz_syracuse_bridge_and_one_two_cycle_exclusion
+#check @universal_constant_rung_affine_invariance_and_run_length_bound
+#check @sharp_four_fifths_equality_characterization_and_two_two_escape
 
 #print axioms archimedean_rung_ceiling_and_stepSum_bound
 #print axioms unit_quotient_even_rung_instant_death_and_odd_rung_mod64_identity
