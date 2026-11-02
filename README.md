@@ -1,6 +1,6 @@
-# Mahler $3/2$ Problem — 212-File Lean 4 Formalization (`mahler_demand_a`)
+# Mahler $3/2$ Problem — 214-File Lean 4 Formalization (`mahler_demand_a`)
 
-This repository contains a **212-file (`sorry`-free) Lean 4.19.0 + Mathlib v4.19.0 formalization** of the reduced Mahler $3/2$ dynamical system ($Z$-numbers) and its interval- and union-confinement relaxations ([`MAHLER_FORMALIZATION_PAPER.pdf`](./MAHLER_FORMALIZATION_PAPER.pdf)).
+This repository contains a **214-file (`sorry`-free) Lean 4.19.0 + Mathlib v4.19.0 formalization** of the reduced Mahler $3/2$ dynamical system ($Z$-numbers) and its interval- and union-confinement relaxations ([`MAHLER_FORMALIZATION_PAPER.pdf`](./MAHLER_FORMALIZATION_PAPER.pdf)).
 
 ---
 
@@ -224,6 +224,8 @@ not a completed proof; its Part III corrects earlier overstatements and controls
   Bellman equality $(3^m - 2^m)A_{0,j} = 2^m(3^{mj} - 2^{mj})$ for any constant-$m$ run $m^j$, universal closed forms for $(3^m - 2^m)\Sigma_{N+j}$ and $(3^m - 2^m)\widehat{\Sigma}_{N+j}$ from arbitrary state $N$, general rung-$m$ ($m \ge 3$) upward vs. downward drift bifurcation around $\rho_*(m)$, and certification of blocks 28–30 ($s_{27} = 3, s_{28} = 6, s_{29} = 4$, $T_{30} = 152$, forcing $2^{153} \le b_2$).
 - **Explicit Finite Run Bound $m j < 2 T_N + 3 m + 2$, Exclusion of Eventually-Constant Sub-Ceiling Words & 33-Block ($T_{33} = 164$) Kneading Certification (`ConstantRungFiniteRunBoundAndKneading33.lean`, Campaign 2 Outer Loop 13):**
   Two-parameter exponential dominance $2 \cdot 2^{A+B} < 3^B$ ($2 A + 2 \le B$), proof that every constant-$m$ run from an odd-slack state $N$ with $m j \ge 2 T_N + 3 m + 2$ either escapes ($\Sigma_{N+j} < 0$) or restores full ceiling ($\widehat{\Sigma}_{N+j} > 0$), unconditional exclusion of eventually-constant sub-ceiling trajectories, and certification of blocks 31–33 ($s_{30} = 5, s_{31} = 3, s_{32} = 4$, $T_{33} = 164$, forcing $2^{165} \le b_2$).
+- **Multi-Period $(p, q, A_p)$ Closed Form, Strict Aperiodicity of All Sub-Ceiling Trajectories & 36-Block ($T_{36} = 179$) Kneading Certification (`PeriodicTailExclusionAndKneading36.lean`, Campaign 2 Outer Loop 14):**
+  Multi-period renewal numerator identity $(3^q - 2^q)A_{0,Rp} = A_p(3^{qR} - 2^{qR})$, universal closed forms for $(3^q - 2^q)\Sigma_{N+Rp}$ and $(3^q - 2^q)\widehat{\Sigma}_{N+Rp}$ across $R$ periods, repelling periodic fixed-point non-vanishing $(3^q - 2^q)\Sigma_N \ne 2^{T_N+1}A_p$ and strict aperiodicity ($qR \ge 2T_N + 3q + 2$ exits the sub-ceiling corridor for any period $p \ge 1$), and certification of blocks 34–36 ($s_{33} = 6, s_{34} = 6, s_{35} = 3$, $T_{36} = 179$, forcing $2^{180} \le b_2$).
 
 ## Acknowledgments
 
