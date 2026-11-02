@@ -241,7 +241,38 @@ Generalizing the $u_K = 1$ collapse of Theorem SB.2, we proved that for **every*
 
 ---
 
-## 7. Verification Instructions
+## 7. Wave-3 Symmetry-Breaking Towers: The Universal Mod-12 `{5, 7}` Lock, One-Step Backward Quotient Recovery, and the $5\times / 7\times$ Sharpened Ceiling
+
+In [`sandbox_wave3_towers.py`](./sandbox_wave3_towers.py) and Sections 18–20 of [`SemigroupBreakoutTheorems.lean`](./SemigroupBreakoutTheorems.lean), we combined the Base-2 and Base-3 congruence locks on the odd leftover $u_r$:
+
+### 7.1 Theorem SB.18: The Universal Mod-12 `{5, 7}` Lock & Joint Digit-Sum Floor (`universal_mod12_quotient_lock_and_joint_digitsum_ge_five`)
+
+At **every** block $r \ge 0$ whose next block survives (`2 ≤ s (r + 1)`):
+1. **Base-3 Ending Lock (from $2^{s_r} u_r = 3 b_r + 1 \equiv 1 \pmod 3$):**
+   $$(s_r \bmod 2 = 0 \iff u_r \bmod 3 = 1) \quad\wedge\quad (s_r \bmod 2 = 1 \iff u_r \bmod 3 = 2).$$
+2. **Chinese Remainder Mod-12 `{5, 7}` Lock (combining mod $3$ with Theorem SB.16 mod $4$):**
+   $$\boxed{\big(s_r \bmod 2 = 0 \iff u_r \bmod 12 = 7\big) \quad\wedge\quad \big(s_r \bmod 2 = 1 \iff u_r \bmod 12 = 5\big)!}$$
+   Thus, out of the 6 odd residue classes modulo $12$ (`1, 3, 5, 7, 9, 11`), **four of them (`1, 3, 9, 11 mod 12`) are 100% extinct at every surviving block**!
+3. **Unconditional Exclusion of $u_r = 1$ and $u_r = 3$ & Digit-Sum Floors:**
+   Because $u_r \equiv 5 \text{ or } 7 \pmod{12}$ at every surviving block:
+   - $u_r \ge 5$ always ($u_r \ge 7$ whenever $s_r$ is even), and **$u_r = 1$ and $u_r = 3$ are impossible for both even and odd $s_r$**!
+   - $s_2(u_r) \ge 2$ and $s_3(u_r) \ge 2$ at every surviving block, forcing the joint consecutive-block sum to satisfy:
+     $$\boxed{s_2(P_r) + s_3(P_{r+1}) = s_2(u_r) + s_3(u_r) + 1 \ge 5!}$$
+
+### 7.2 Theorem SB.19: One-Step Backward Quotient Recovery & Mod-$3^{s_r}$ Remainder Law (`one_step_backward_quotient_recovery_and_mod_three_pow_one`)
+
+From $2^{s_{r+1}} u_{r+1} = 3^{s_r} u_r + 1$ and $1 < 3^{s_r}$ ($s_r \ge 1$), integer division by $3^{s_r}$ recovers the previous odd leftover $u_r$ in one step with remainder identically $1$:
+$$\boxed{\left\lfloor \frac{2^{s_{r+1}} u_{r+1}}{3^{s_r}} \right\rfloor = u_r \qquad\text{and}\qquad \big(2^{s_{r+1}} u_{r+1}\big) \bmod 3^{s_r} = 1.}$$
+
+### 7.3 Theorem SB.20: The $5\times$ / $7\times$ Sharpened Global Archimedean Rung Ceiling (`sharpened_five_seven_archimedean_rung_ceiling`)
+
+Injecting $u_K \ge 5$ (and $u_K \ge 7$ when $s_K$ is even) into the Global Archimedean Rung Ceiling (Theorem SB.1) sharpens the ceiling by a factor of $5\times$ (always) and $7\times$ (for even $s_K$):
+$$\boxed{10 \cdot 2^{T_{K+1}} < 3^{T_K}\big(2 P_0 + 1\big), \qquad \text{and when } s_K \text{ is even:}\quad 14 \cdot 2^{T_{K+1}} < 3^{T_K}\big(2 P_0 + 1\big),}$$
+and at $K = 0$, $5 \cdot 2^{s_0} \le 3 b_0 + 1$ ($7 \cdot 2^{s_0} \le 3 b_0 + 1$ when $s_0$ is even, so $s_0 = 2 \implies b_0 \ge 9$).
+
+---
+
+## 8. Verification Instructions
 
 To verify the cordoned-off Lean 4 proofs without modifying the root 226-file build:
 

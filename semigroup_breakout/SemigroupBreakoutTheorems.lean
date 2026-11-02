@@ -1386,6 +1386,212 @@ theorem mod1024_and_weight2_odd_quotient_three_block_domino_collapse
           ⟨by dsimp [u_next1, u_next2]; ring, by dsimp [u_next2]; omega⟩,
           ⟨by dsimp [u_next2]; ring, by dsimp [u_next2]; omega⟩⟩
 
+/-! ## 18. Theorem SB.18: The Universal Mod-12 `{5, 7}` Lock & Joint Digit-Sum Floor -/
+
+/-- Auxiliary lemma: `(2 ^ s) % 3 = if s % 2 = 0 then 1 else 2`. -/
+theorem two_pow_mod_three_dichotomy (s : ℕ) :
+    (s % 2 = 0 → (2 ^ s) % 3 = 1) ∧ (s % 2 = 1 → (2 ^ s) % 3 = 2) := by
+  induction s with
+  | zero => decide
+  | succ s ih =>
+      rw [Nat.pow_succ]
+      omega
+
+/-- Positivity of `base2DigitSum n` for `1 ≤ n`. -/
+theorem base2DigitSum_pos_of_pos {n : ℕ} (hn : 1 ≤ n) : 1 ≤ base2DigitSum n := by
+  induction n using Nat.strong_induction_on with
+  | h n ih =>
+      rw [base2DigitSum_eq n]
+      rcases Nat.eq_zero_or_pos (n % 2) with h0 | h1
+      · have hdiv_pos : 1 ≤ n / 2 := by omega
+        have hdiv_lt : n / 2 < n := Nat.div_lt_self (by omega) (by decide)
+        have ih' := ih (n / 2) hdiv_lt hdiv_pos
+        omega
+      · omega
+
+/-- Positivity of `base3DigitSum n` for `1 ≤ n`. -/
+theorem base3DigitSum_pos_of_pos {n : ℕ} (hn : 1 ≤ n) : 1 ≤ base3DigitSum n := by
+  induction n using Nat.strong_induction_on with
+  | h n ih =>
+      rw [base3DigitSum_eq n]
+      rcases Nat.eq_zero_or_pos (n % 3) with h0 | h1
+      · have hdiv_pos : 1 ≤ n / 3 := by omega
+        have hdiv_lt : n / 3 < n := Nat.div_lt_self (by omega) (by decide)
+        have ih' := ih (n / 3) hdiv_lt hdiv_pos
+        omega
+      · omega
+
+/-- **The Universal Mod-12 `{5, 7}` Lock & Joint Digit-Sum Floor
+(`universal_mod12_quotient_lock_and_joint_digitsum_ge_five`, Theorem SB.18)**:
+Suppose `ValidBlockChain b_0 s u (r + 2)` holds with `2 ≤ s (r + 1)`. Setting
+`b k = orbit b_0 (blockSteps s k)` and `P k = oddReturnP (b k)`:
+1. **Mod-3 Rung-Quotient Lock**:
+   `(s r % 2 = 0 ↔ u r % 3 = 1)` and `(s r % 2 = 1 ↔ u r % 3 = 2)`.
+2. **Chinese Remainder Mod-12 `{5, 7}` Lock**:
+   `(s r % 2 = 0 ↔ u r % 12 = 7)` and `(s r % 2 = 1 ↔ u r % 12 = 5)`
+   (so residue classes `1, 3, 9, 11 (mod 12)` are **universally extinct**, and `u r ≠ 1` and `u r ≠ 3`!).
+3. **Sharp Quotient Floor (`5 ≤ u r`, and `7 ≤ u r` when `s r` is even)**:
+   `5 ≤ u r` and `(s r % 2 = 0 → 7 ≤ u r)`.
+4. **Universal Digit-Sum Floors (`2 ≤ s_2(u_r)`, `2 ≤ s_3(u_r)`, and `5 ≤ s_2(P_r) + s_3(P_{r+1})`)**:
+   `2 ≤ base2DigitSum (u r)`, `2 ≤ base3DigitSum (u r)`, and
+   `5 ≤ base2DigitSum (P r) + base3DigitSum (P (r + 1))`. -/
+theorem universal_mod12_quotient_lock_and_joint_digitsum_ge_five
+    {b_0 r : ℕ} {s u : ℕ → ℕ}
+    (hchain : ValidBlockChain b_0 s u (r + 2))
+    (hs_next : 2 ≤ s (r + 1)) :
+    let b := fun k => orbit b_0 (blockSteps s k)
+    let P := fun k => oddReturnP (b k)
+    ((s r % 2 = 0 ↔ u r % 3 = 1) ∧ (s r % 2 = 1 ↔ u r % 3 = 2)) ∧
+      ((s r % 2 = 0 ↔ u r % 12 = 7) ∧ (s r % 2 = 1 ↔ u r % 12 = 5)) ∧
+      (5 ≤ u r ∧ (s r % 2 = 0 → 7 ≤ u r) ∧ u r ≠ 1 ∧ u r ≠ 3) ∧
+      (2 ≤ base2DigitSum (u r) ∧
+        2 ≤ base3DigitSum (u r) ∧
+        5 ≤ base2DigitSum (P r) + base3DigitSum (P (r + 1))) := by
+  intro b P
+  have hr := hchain r (by omega)
+  have hu_odd : u r % 2 = 1 := hr.2.1
+  have hP_r : 3 * b r + 1 = 2 ^ (s r) * u r := hr.2.2
+  have hmod3_P : (2 ^ (s r) * u r) % 3 = 1 := by
+    rw [← hP_r]
+    omega
+  have h2_mod3 := two_pow_mod_three_dichotomy (s r)
+  have hlock4 := (universal_mod4_quotient_rung_parity_lock_and_mersenne_trap hchain hs_next).1
+  have hlock3 : (s r % 2 = 0 ↔ u r % 3 = 1) ∧ (s r % 2 = 1 ↔ u r % 3 = 2) := by
+    have h_s_par : s r % 2 = 0 ∨ s r % 2 = 1 := by omega
+    rcases h_s_par with hs0 | hs1
+    · have h2_1 := h2_mod3.1 hs0
+      have hprod : (2 ^ (s r) * u r) % 3 = u r % 3 := by
+        rw [Nat.mul_mod, h2_1]
+        omega
+      omega
+    · have h2_2 := h2_mod3.2 hs1
+      have hprod : (2 ^ (s r) * u r) % 3 = (2 * (u r % 3)) % 3 := by
+        rw [Nat.mul_mod, h2_2]
+      omega
+  have hlock12 : (s r % 2 = 0 ↔ u r % 12 = 7) ∧ (s r % 2 = 1 ↔ u r % 12 = 5) := by
+    omega
+  have hge5 : 5 ≤ u r := by omega
+  have hge7 : s r % 2 = 0 → 7 ≤ u r := by omega
+  have hs2_ge2 : 2 ≤ base2DigitSum (u r) := by
+    rw [base2DigitSum_eq (u r)]
+    have hdiv2 : 1 ≤ base2DigitSum (u r / 2) := base2DigitSum_pos_of_pos (by omega)
+    omega
+  have hs3_ge2 : 2 ≤ base3DigitSum (u r) := by
+    rw [base3DigitSum_eq (u r)]
+    have hdiv3 : 1 ≤ base3DigitSum (u r / 3) := base3DigitSum_pos_of_pos (by omega)
+    have hrem3 : 1 ≤ u r % 3 := by omega
+    omega
+  have hjoint :=
+    (top_down_senge_straus_stewart_joint_digitsum_blueprint
+      (M := 4) (N := 0) (g_0 := 0) (g_N := 0) (K_N := 0) (B := 0)
+      hchain (by decide) (by decide)).1
+  change base2DigitSum (P r) + base3DigitSum (P (r + 1)) =
+    base2DigitSum (u r) + base3DigitSum (u r) + 1 at hjoint
+  exact ⟨hlock3, hlock12, ⟨hge5, hge7, by omega, by omega⟩, ⟨hs2_ge2, hs3_ge2, by omega⟩⟩
+
+/-! ## 19. Theorem SB.19: One-Step Backward Quotient Recovery & Mod-$3^{s_r}$ Remainder Law -/
+
+/-- **One-Step Backward Quotient Recovery & Mod-$3^{s_r}$ Remainder Law
+(`one_step_backward_quotient_recovery_and_mod_three_pow_one`, Theorem SB.19)**:
+Suppose `ValidBlockChain b_0 s u (r + 2)` holds:
+1. `2 ^ (s (r + 1)) * u (r + 1) = 3 ^ (s r) * u r + 1`,
+2. `(2 ^ (s (r + 1)) * u (r + 1)) / 3 ^ (s r) = u r`
+   (the previous odd leftover $u_r$ is recovered by a single integer division!), and
+3. `(2 ^ (s (r + 1)) * u (r + 1)) % 3 ^ (s r) = 1`
+   (the remainder modulo $3^{s_r}$ is **identically $1$**!). -/
+theorem one_step_backward_quotient_recovery_and_mod_three_pow_one
+    {b_0 r : ℕ} {s u : ℕ → ℕ}
+    (hchain : ValidBlockChain b_0 s u (r + 2)) :
+    2 ^ (s (r + 1)) * u (r + 1) = 3 ^ (s r) * u r + 1 ∧
+      (2 ^ (s (r + 1)) * u (r + 1)) / 3 ^ (s r) = u r ∧
+      (2 ^ (s (r + 1)) * u (r + 1)) % 3 ^ (s r) = 1 := by
+  have hr := hchain r (by omega)
+  have hr1 := hchain (r + 1) (by omega)
+  have hs_r : 1 ≤ s r := hr.1
+  have hP_r : oddReturnP (orbit b_0 (blockSteps s r)) = 2 ^ (s r) * u r := hr.2.2
+  have hP_r1 : oddReturnP (orbit b_0 (blockSteps s (r + 1))) = 2 ^ (s (r + 1)) * u (r + 1) := hr1.2.2
+  have hb_r1 : orbit b_0 (blockSteps s (r + 1)) = 3 ^ (s r - 1) * u r := by
+    change orbit b_0 (blockSteps s r + s r) = 3 ^ (s r - 1) * u r
+    rw [orbit_add]
+    exact orbit_odd_block_return hs_r hP_r
+  have hid : 2 ^ (s (r + 1)) * u (r + 1) = 3 ^ (s r) * u r + 1 := by
+    rw [← hP_r1]
+    change 3 * orbit b_0 (blockSteps s (r + 1)) + 1 = 3 ^ (s r) * u r + 1
+    rw [hb_r1, ← mul_assoc]
+    have h3 : 3 * 3 ^ (s r - 1) = 3 ^ (s r) := by
+      conv_rhs => rw [← Nat.sub_add_cancel hs_r, Nat.pow_succ']
+    rw [h3]
+  have h1_lt : 1 < 3 ^ (s r) := by
+    obtain ⟨k, hk⟩ : ∃ k : ℕ, s r = k + 1 := ⟨s r - 1, by omega⟩
+    have hpos : 1 ≤ 3 ^ k := Nat.one_le_pow _ 3 (by decide)
+    rw [hk, Nat.pow_succ]
+    omega
+  have h3_pos : 0 < 3 ^ (s r) := by omega
+  have hdiv : (2 ^ (s (r + 1)) * u (r + 1)) / 3 ^ (s r) = u r := by
+    rw [hid, Nat.mul_add_div h3_pos, Nat.div_eq_of_lt h1_lt, add_zero]
+  have hmod : (2 ^ (s (r + 1)) * u (r + 1)) % 3 ^ (s r) = 1 := by
+    rw [hid, Nat.mul_add_mod, Nat.mod_eq_of_lt h1_lt]
+  exact ⟨hid, hdiv, hmod⟩
+
+/-! ## 20. Theorem SB.20: The $5\times$ / $7\times$ Sharpened Global Archimedean Rung Ceiling -/
+
+/-- **The $5\times$ / $7\times$ Sharpened Global Archimedean Rung Ceiling
+(`sharpened_five_seven_archimedean_rung_ceiling`, Theorem SB.20)**:
+Suppose `ValidBlockChain b_0 s u (K + 2)` holds with `2 ≤ s (K + 1)` and `0 < renewalIntSlack s K`.
+Setting `P r = oddReturnP (orbit b_0 (blockSteps s r))` and `T r = blockSteps s r`:
+1. **Universal $5\times$ Sharpened Ceiling**:
+   `10 * 2 ^ (T (K + 1)) < 3 ^ (T K) * (2 * P 0 + 1)`,
+2. **Even-Rung $7\times$ Sharpened Ceiling**:
+   `s K % 2 = 0 → 14 * 2 ^ (T (K + 1)) < 3 ^ (T K) * (2 * P 0 + 1)`, and
+3. **Initial Seed Floor at $K = 0$**:
+   When `K = 0`, `5 * 2 ^ (s 0) ≤ 3 * b_0 + 1`, and if `s 0 % 2 = 0`, `7 * 2 ^ (s 0) ≤ 3 * b_0 + 1`
+   (in particular, `s 0 = 2 → 9 ≤ b_0`)! -/
+theorem sharpened_five_seven_archimedean_rung_ceiling
+    {b_0 K : ℕ} {s u : ℕ → ℕ}
+    (hchain : ValidBlockChain b_0 s u (K + 2))
+    (hs_next : 2 ≤ s (K + 1))
+    (hS_pos : 0 < renewalIntSlack s K) :
+    let P := fun r => oddReturnP (orbit b_0 (blockSteps s r))
+    let T := fun r => blockSteps s r
+    10 * 2 ^ (T (K + 1)) < 3 ^ (T K) * (2 * P 0 + 1) ∧
+      (s K % 2 = 0 → 14 * 2 ^ (T (K + 1)) < 3 ^ (T K) * (2 * P 0 + 1)) ∧
+      (K = 0 →
+        5 * 2 ^ (s 0) ≤ 3 * b_0 + 1 ∧
+          (s 0 % 2 = 0 → 7 * 2 ^ (s 0) ≤ 3 * b_0 + 1) ∧
+          (s 0 = 2 → 9 ≤ b_0)) := by
+  intro P T
+  have hch1 : ValidBlockChain b_0 s u (K + 1) := fun k hk => hchain k (by omega)
+  have hceil := archimedean_rung_ceiling_and_stepSum_bound hch1
+  have hlt_u : 2 * 2 ^ (T (K + 1)) * u K < 3 ^ (T K) * (2 * P 0 + 1) :=
+    (hceil.2.2.1 hS_pos).1
+  have h18 := universal_mod12_quotient_lock_and_joint_digitsum_ge_five hchain hs_next
+  have hu_ge5 : 5 ≤ u K := h18.2.2.1.1
+  have hu_ge7 : s K % 2 = 0 → 7 ≤ u K := h18.2.2.1.2.1
+  have hmul5 : 10 * 2 ^ (T (K + 1)) ≤ 2 * 2 ^ (T (K + 1)) * u K := by
+    have h : 2 * 2 ^ (T (K + 1)) * 5 ≤ 2 * 2 ^ (T (K + 1)) * u K :=
+      Nat.mul_le_mul_left (2 * 2 ^ (T (K + 1))) hu_ge5
+    omega
+  refine ⟨by omega, ?_, ?_⟩
+  · intro hs0
+    have h7 := hu_ge7 hs0
+    have h : 2 * 2 ^ (T (K + 1)) * 7 ≤ 2 * 2 ^ (T (K + 1)) * u K :=
+      Nat.mul_le_mul_left (2 * 2 ^ (T (K + 1))) h7
+    omega
+  · rintro rfl
+    have hP0_eq : 3 * b_0 + 1 = 2 ^ (s 0) * u 0 := (hchain 0 (by omega)).2.2
+    have h5_0 : 5 * 2 ^ (s 0) ≤ 2 ^ (s 0) * u 0 := by
+      have h := Nat.mul_le_mul_left (2 ^ (s 0)) hu_ge5
+      omega
+    refine ⟨by omega, ?_, ?_⟩
+    · intro hs0_even
+      have h7_0 := hu_ge7 hs0_even
+      have h := Nat.mul_le_mul_left (2 ^ (s 0)) h7_0
+      omega
+    · intro hs0_2
+      have h7_0 := hu_ge7 (by omega)
+      rw [hs0_2] at hP0_eq
+      omega
+
 #check @archimedean_rung_ceiling_and_stepSum_bound
 #check @unit_quotient_even_rung_instant_death_and_odd_rung_mod64_identity
 #check @equal_step_window_hankel_determinant_identity_and_bound
@@ -1403,6 +1609,9 @@ theorem mod1024_and_weight2_odd_quotient_three_block_domino_collapse
 #check @legendre_factorial_valuation_dual_block_tower
 #check @universal_mod4_quotient_rung_parity_lock_and_mersenne_trap
 #check @mod1024_and_weight2_odd_quotient_three_block_domino_collapse
+#check @universal_mod12_quotient_lock_and_joint_digitsum_ge_five
+#check @one_step_backward_quotient_recovery_and_mod_three_pow_one
+#check @sharpened_five_seven_archimedean_rung_ceiling
 
 #print axioms archimedean_rung_ceiling_and_stepSum_bound
 #print axioms unit_quotient_even_rung_instant_death_and_odd_rung_mod64_identity
@@ -1421,5 +1630,8 @@ theorem mod1024_and_weight2_odd_quotient_three_block_domino_collapse
 #print axioms legendre_factorial_valuation_dual_block_tower
 #print axioms universal_mod4_quotient_rung_parity_lock_and_mersenne_trap
 #print axioms mod1024_and_weight2_odd_quotient_three_block_domino_collapse
+#print axioms universal_mod12_quotient_lock_and_joint_digitsum_ge_five
+#print axioms one_step_backward_quotient_recovery_and_mod_three_pow_one
+#print axioms sharpened_five_seven_archimedean_rung_ceiling
 
 end Mahler.SemigroupBreakout
