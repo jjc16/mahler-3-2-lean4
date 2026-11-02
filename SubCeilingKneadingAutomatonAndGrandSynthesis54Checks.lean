@@ -1,0 +1,21 @@
+import SubCeilingKneadingAutomatonAndGrandSynthesis54
+
+/-!
+# Verification Checks for `SubCeilingKneadingAutomatonAndGrandSynthesis54`
+-/
+
+open Mahler.SubCeilingKneadingAutomatonAndSynthesis54
+
+#check @subCeilingNextRung_spec
+#check @kneadingStepState_eq_slack_and_blockSteps
+#check @canonicalKneadingSeq_unconditional_infinite_subCeiling_survival
+#check @canonicalKneadingSeq_uniqueness_and_parry_self_domination
+#check @fiftytwo_to_fiftyfour_block_kneading_corridor_and_two_pow_259_uniqueness
+#check @campaign_two_226_file_grand_synthesis
+
+#print axioms subCeilingNextRung_spec
+#print axioms kneadingStepState_eq_slack_and_blockSteps
+#print axioms canonicalKneadingSeq_unconditional_infinite_subCeiling_survival
+#print axioms canonicalKneadingSeq_uniqueness_and_parry_self_domination
+#print axioms fiftytwo_to_fiftyfour_block_kneading_corridor_and_two_pow_259_uniqueness
+#print axioms campaign_two_226_file_grand_synthesis

@@ -679,6 +679,13 @@ name = "StrictParryJumpDichotomyAndKneading51"
 [[lean_lib]]
 name = "StrictParryJumpDichotomyAndKneading51Checks"
 
+[[lean_lib]]
+name = "SubCeilingKneadingAutomatonAndGrandSynthesis54"
+
+[[lean_lib]]
+name = "SubCeilingKneadingAutomatonAndGrandSynthesis54Checks"
+
+
 
 
 

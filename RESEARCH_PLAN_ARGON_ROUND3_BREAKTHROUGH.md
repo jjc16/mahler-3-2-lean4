@@ -2131,6 +2131,33 @@ Here is why, in plain terms:
 ## C2.O19.5 Inner Loop 5 / 5 — Explore & Exploit: Mod-$2^{248}$ Seed Uniqueness for the 51-Block Sub-Ceiling Corridor
 - **Explore & Exploit (Priority 5):** Prove that any two seeds $b_1 < b_2$ realizing the 51-block sub-ceiling kneading corridor satisfy $2^{248} \mid (b_2 - b_1)$ and $2^{248} \le b_2$.
 
+---
+
+# Part XXXV — Second Campaign (`m = 5, n = 20`) — Outer Loop 20 / 20 (Inner Loops 1–5): Total Construction of the Infinite Sub-Ceiling Kneading Sequence $\kappa : \mathbb{N} \to \mathbb{N}$, 54-Block ($T_{54} = 258 > 256$) Certification & 226-File Grand Synthesis
+
+## C2.O20.1 Inner Loop 1 / 5 — Explore & Exploit: Total Recursive Sub-Ceiling Automaton (`kneadingStepState`, `canonicalKneadingSeq`)
+- **Explore:** Construct a total, hypothesis-free sequence $\kappa = \operatorname{canonicalKneadingSeq} : \mathbb{N} \to \mathbb{N}$ with $\kappa(0) = 2$ and $\kappa(N) = \operatorname{subCeilingNextRung}(\Sigma_N, T_N)$ for all $N \ge 1$.
+- **Exploit (Priority 1):** Prove `kneadingStepState_eq_slack_and_blockSteps`: the primitive-recursive state `kneadingStepState N` equals `(renewalIntSlack canonicalKneadingSeq N, blockSteps canonicalKneadingSeq N)` for every $N \in \mathbb{N}$.
+
+## C2.O20.2 Inner Loop 2 / 5 — Explore & Exploit: Unconditional All-Horizon Sub-Ceiling Survival of $\kappa = \operatorname{canonicalKneadingSeq}$
+- **Explore:** Prove by induction on $N \ge 1$ that $\kappa = \operatorname{canonicalKneadingSeq}$ remains inside the sub-ceiling corridor forever.
+- **Exploit (Priority 2):** Prove `canonicalKneadingSeq_unconditional_infinite_subCeiling_survival`: for **every** $N \ge 1$,
+  $$1 \le \Sigma_N(\kappa), \qquad \widehat{\Sigma}_N(\kappa) < 0, \qquad \Sigma_N(\kappa) \bmod 2 = 1, \qquad 2 \le \kappa(N) \le 2 T_N(\kappa) + 2.$$
+
+## C2.O20.3 Inner Loop 3 / 5 — Explore & Exploit: Uniqueness, Strict Aperiodicity & Parry Self-Domination of $\kappa$
+- **Explore:** Combine the unconditional existence of $\kappa$ with `all_horizon_subCeiling_corridor_unique_sequence`, `no_subCeiling_periodic_tail_exceeds_horizon`, and `subCeiling_shift_lexicographic_domination`.
+- **Exploit (Priority 3):** Prove `canonicalKneadingSeq_uniqueness_aperiodicity_and_parry_domination`:
+  1. Any sequence $s$ with $s(0) = 2$ that stays sub-ceiling up to horizon $K$ satisfies $\forall k < K,\, s(k) = \kappa(k)$,
+  2. Every shift $\sigma^N(\kappa)$ ($N \ge 1$) satisfies the Parry–Milnor–Thurston kneading self-domination law $(\forall t < M,\, \kappa(N+t) = \kappa(t)) \implies \kappa(M) \le \kappa(N+M)$, and
+  3. $\kappa$ is strictly aperiodic (never eventually periodic for any preperiod $N \ge 1$ and period $p \ge 1$).
+
+## C2.O20.4 Inner Loop 4 / 5 — Explore & Exploit: Certification of Blocks 52, 53, and 54 ($s_{51} = 3, s_{52} = 4, s_{53} = 4$, $T_{54} = 258 > 256$)
+- **Explore & Exploit (Priority 4):** Cross the 256-bit binary horizon $2^{256}$ by certifying blocks 52–54 ($s_{51} = 3, T_{52} = 250$; $s_{52} = 4, T_{53} = 254$; $s_{53} = 4, T_{54} = 258$), proving that $\kappa(0), \dots, \kappa(53)$ equal these exact 54 blocks and that any two seeds realizing this 54-block prefix satisfy $2^{259} \mid (b_2 - b_1)$ and $2^{259} \le b_2$.
+
+## C2.O20.5 Inner Loop 5 / 5 — Explore & Exploit: 226-File Campaign 2 Grand Synthesis Theorem
+- **Explore & Exploit (Priority 5):** Package the complete Campaign 2 formalization into `campaign_two_226_file_grand_synthesis`.
+
+
 
 
 
