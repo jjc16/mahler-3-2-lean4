@@ -3889,6 +3889,444 @@ theorem sharp_four_fifths_equality_characterization_and_two_two_escape :
       ring
     omega
 
+/-! ## 57. Theorem SB.57: Two-Window $(j+n, k+n)$ Diagonal Cauchy Tail-Freeze & Quotient Invariance Law -/
+
+/-- **Two-Window $(j+n, k+n)$ Diagonal Cauchy Tail-Freeze & Quotient Invariance Law
+(`two_window_jk_diagonal_cauchy_tail_freeze_and_quotient_invariance`, Theorem SB.57)**:
+Suppose `ValidBlockChain b_0 s u (r + 1 + M_1 + M_2 + 1)` holds with
+`∀ k < M_1, 2 ≤ s (r + 1 + k)` and `∀ k < M_2, 2 ≤ s (r + 1 + M_1 + k)`.
+Starting from block $r$ with $3$-exponent $j = s_r$, advance across two consecutive future
+windows of $M_1$ blocks ($n_1$ steps, ending rung $k_1 = s_{r+1+M_1}$) and $M_2$ blocks
+($n_2$ steps, ending rung $k_2 = s_{r+1+M_1+M_2}$), with $S_1 = n_1 + k_1$,
+$S_{12} = n_1 + n_2 + k_2$, $T_1 = j + n_1$, $T_{12} = j + n_1 + n_2$,
+$R_1 = 3^{n_1} + \text{renewalNumerator}(s_1, M_1)$, $A_2 = \text{renewalNumerator}(s_2, M_2)$,
+and $R_{12} = 3^{n_2} R_1 + 2^{n_1} A_2$:
+1. **First-Horizon $(j+n_1, k_1+n_1)$ Diagonal Identity & Recovery**:
+   `2 ^ S_1 * u (r + 1 + M_1) = 3 ^ T_1 * u r + R_1`, `R_1 < 3 ^ T_1`, and
+   `(2 ^ S_1 * u (r + 1 + M_1)) / 3 ^ T_1 = u r`,
+2. **Second-Horizon $(j+n_1+n_2, k_2+n_1+n_2)$ Diagonal Transition**:
+   `2 ^ S_12 * u (r + 1 + M_1 + M_2) = 3 ^ n_2 * (2 ^ S_1 * u (r + 1 + M_1)) + 2 ^ n_1 * A_2` and
+   `2 ^ S_12 * u (r + 1 + M_1 + M_2) = 3 ^ T_12 * u r + R_12`,
+3. **Unconditional $4/5$ Cauchy Tail-Freeze Bound**:
+   `5 * (R_12 - 3 ^ n_2 * R_1) + 4 * 2 ^ (n_1 + n_2) ≤ 4 * 2 ^ n_1 * 3 ^ n_2` and
+   `5 * R_12 + 4 * 2 ^ (n_1 + n_2) ≤ 9 * 3 ^ (n_1 + n_2)`, and
+4. **Two-Horizon Quotient & Base-3 Top-Block Invariance**:
+   `R_12 < 3 ^ T_12`,
+   `(2 ^ S_12 * u (r + 1 + M_1 + M_2)) / 3 ^ T_12 = u r`,
+   `(2 ^ S_12 * u (r + 1 + M_1 + M_2)) / 3 ^ T_12 = (2 ^ S_1 * u (r + 1 + M_1)) / 3 ^ T_1`, and
+   `base3DigitSum (2 ^ S_12 * u (r + 1 + M_1 + M_2)) = base3DigitSum (u r) + base3DigitSum R_12`! -/
+theorem two_window_jk_diagonal_cauchy_tail_freeze_and_quotient_invariance
+    {b_0 r M_1 M_2 : ℕ} {s u : ℕ → ℕ}
+    (hchain : ValidBlockChain b_0 s u (r + 1 + M_1 + M_2 + 1))
+    (hs1 : ∀ k < M_1, 2 ≤ s (r + 1 + k))
+    (hs2 : ∀ k < M_2, 2 ≤ s (r + 1 + M_1 + k)) :
+    let j := s r
+    let s_1 := fun t => s (r + 1 + t)
+    let s_2 := fun t => s (r + 1 + M_1 + t)
+    let n_1 := blockSteps s_1 M_1
+    let n_2 := blockSteps s_2 M_2
+    let k_1 := s (r + 1 + M_1)
+    let k_2 := s (r + 1 + M_1 + M_2)
+    let S_1 := n_1 + k_1
+    let S_12 := n_1 + n_2 + k_2
+    let T_1 := j + n_1
+    let T_12 := j + n_1 + n_2
+    let R_1 := 3 ^ n_1 + renewalNumerator s_1 M_1
+    let A_2 := renewalNumerator s_2 M_2
+    let R_12 := 3 ^ n_2 * R_1 + 2 ^ n_1 * A_2
+    (2 ^ S_1 * u (r + 1 + M_1) = 3 ^ T_1 * u r + R_1 ∧
+      R_1 < 3 ^ T_1 ∧
+      (2 ^ S_1 * u (r + 1 + M_1)) / 3 ^ T_1 = u r) ∧
+      (2 ^ S_12 * u (r + 1 + M_1 + M_2) =
+          3 ^ n_2 * (2 ^ S_1 * u (r + 1 + M_1)) + 2 ^ n_1 * A_2 ∧
+        2 ^ S_12 * u (r + 1 + M_1 + M_2) = 3 ^ T_12 * u r + R_12) ∧
+      (5 * (R_12 - 3 ^ n_2 * R_1) + 4 * 2 ^ (n_1 + n_2) ≤ 4 * 2 ^ n_1 * 3 ^ n_2 ∧
+        5 * R_12 + 4 * 2 ^ (n_1 + n_2) ≤ 9 * 3 ^ (n_1 + n_2)) ∧
+      (R_12 < 3 ^ T_12 ∧
+        (2 ^ S_12 * u (r + 1 + M_1 + M_2)) / 3 ^ T_12 = u r ∧
+        (2 ^ S_12 * u (r + 1 + M_1 + M_2)) / 3 ^ T_12 =
+          (2 ^ S_1 * u (r + 1 + M_1)) / 3 ^ T_1 ∧
+        base3DigitSum (2 ^ S_12 * u (r + 1 + M_1 + M_2)) =
+          base3DigitSum (u r) + base3DigitSum R_12) := by
+  intro j s_1 s_2 n_1 n_2 k_1 k_2 S_1 S_12 T_1 T_12 R_1 A_2 R_12
+  have hch1 : ValidBlockChain b_0 s u (r + 1 + M_1 + 1) :=
+    fun k hk => hchain k (by omega)
+  have h25_1 := unconditional_all_k_step_odd_leftover_recovery_and_nine_fifths_bound hch1 hs1
+  dsimp only at h25_1
+  have h95_1 : 5 * R_1 + 4 * 2 ^ n_1 ≤ 9 * 3 ^ n_1 := h25_1.1
+  have hR1_lt : R_1 < 3 ^ T_1 := h25_1.2.2.1
+  have hdiv1 : (2 ^ S_1 * u (r + 1 + M_1)) / 3 ^ T_1 = u r := h25_1.2.2.2.1
+  have hmod1 : (2 ^ S_1 * u (r + 1 + M_1)) % 3 ^ T_1 = R_1 := h25_1.2.2.2.2.1
+  have hid1 : 2 ^ S_1 * u (r + 1 + M_1) = 3 ^ T_1 * u r + R_1 := by
+    have hdm := Nat.div_add_mod (2 ^ S_1 * u (r + 1 + M_1)) (3 ^ T_1)
+    rw [hdiv1, hmod1] at hdm
+    exact hdm.symm
+  have h10_2 := late_step_cauchy_pinch_and_odd_quotient_gcd_dvd
+    (N := r + 1 + M_1) (M := M_2) hchain
+  have hu2_raw :
+      2 ^ (n_2 + k_2) * u (r + 1 + M_1 + M_2) =
+        3 ^ n_2 * 2 ^ k_1 * u (r + 1 + M_1) + A_2 := h10_2.2.1
+  have htrans :
+      2 ^ S_12 * u (r + 1 + M_1 + M_2) =
+        3 ^ n_2 * (2 ^ S_1 * u (r + 1 + M_1)) + 2 ^ n_1 * A_2 := by
+    have hm := congrArg (fun x => 2 ^ n_1 * x) hu2_raw
+    dsimp only at hm
+    have hpowL : 2 ^ n_1 * (2 ^ (n_2 + k_2) * u (r + 1 + M_1 + M_2)) =
+        2 ^ S_12 * u (r + 1 + M_1 + M_2) := by
+      change 2 ^ n_1 * (2 ^ (n_2 + k_2) * u (r + 1 + M_1 + M_2)) =
+        2 ^ (n_1 + n_2 + k_2) * u (r + 1 + M_1 + M_2)
+      rw [Nat.add_assoc n_1 n_2 k_2, Nat.pow_add 2 n_1 (n_2 + k_2)]
+      ring
+    have hpowR : 2 ^ n_1 * (3 ^ n_2 * 2 ^ k_1 * u (r + 1 + M_1) + A_2) =
+        3 ^ n_2 * (2 ^ S_1 * u (r + 1 + M_1)) + 2 ^ n_1 * A_2 := by
+      change 2 ^ n_1 * (3 ^ n_2 * 2 ^ k_1 * u (r + 1 + M_1) + A_2) =
+        3 ^ n_2 * (2 ^ (n_1 + k_1) * u (r + 1 + M_1)) + 2 ^ n_1 * A_2
+      rw [Nat.pow_add 2 n_1 k_1]
+      ring
+    rw [hpowL, hpowR] at hm
+    exact hm
+  have hid12 : 2 ^ S_12 * u (r + 1 + M_1 + M_2) = 3 ^ T_12 * u r + R_12 := by
+    calc
+      2 ^ S_12 * u (r + 1 + M_1 + M_2)
+          = 3 ^ n_2 * (3 ^ T_1 * u r + R_1) + 2 ^ n_1 * A_2 := by rw [htrans, hid1]
+      _ = 3 ^ T_12 * u r + R_12 := by
+            change 3 ^ n_2 * (3 ^ (j + n_1) * u r + R_1) + 2 ^ n_1 * A_2 =
+              3 ^ (j + n_1 + n_2) * u r + (3 ^ n_2 * R_1 + 2 ^ n_1 * A_2)
+            rw [Nat.pow_add 3 (j + n_1) n_2]
+            ring
+  have hinv2 : 5 * A_2 + 4 * 2 ^ n_2 ≤ 4 * 3 ^ n_2 :=
+    five_mul_renewalNumerator_add_four_mul_two_pow_le s_2 M_2 hs2
+  have hdiff_eq : R_12 - 3 ^ n_2 * R_1 = 2 ^ n_1 * A_2 := by
+    change (3 ^ n_2 * R_1 + 2 ^ n_1 * A_2) - 3 ^ n_2 * R_1 = 2 ^ n_1 * A_2
+    omega
+  have hcauchy :
+      5 * (R_12 - 3 ^ n_2 * R_1) + 4 * 2 ^ (n_1 + n_2) ≤ 4 * 2 ^ n_1 * 3 ^ n_2 := by
+    have hm := Nat.mul_le_mul_left (2 ^ n_1) hinv2
+    have hpow2 : 2 ^ (n_1 + n_2) = 2 ^ n_1 * 2 ^ n_2 := Nat.pow_add 2 n_1 n_2
+    have hlhs : 5 * (R_12 - 3 ^ n_2 * R_1) + 4 * 2 ^ (n_1 + n_2) =
+        2 ^ n_1 * (5 * A_2 + 4 * 2 ^ n_2) := by
+      rw [hdiff_eq, hpow2]
+      ring
+    have hrhs : 4 * 2 ^ n_1 * 3 ^ n_2 = 2 ^ n_1 * (4 * 3 ^ n_2) := by ring
+    rw [hlhs, hrhs]
+    exact hm
+  have h95_12 : 5 * R_12 + 4 * 2 ^ (n_1 + n_2) ≤ 9 * 3 ^ (n_1 + n_2) := by
+    have hm1 := Nat.mul_le_mul_left (3 ^ n_2) h95_1
+    have hpow3 : 3 ^ n_2 * (9 * 3 ^ n_1) = 9 * 3 ^ (n_1 + n_2) := by
+      rw [Nat.pow_add 3 n_1 n_2]
+      ring
+    have hexp1 : 3 ^ n_2 * (5 * R_1 + 4 * 2 ^ n_1) =
+        5 * (3 ^ n_2 * R_1) + 4 * 2 ^ n_1 * 3 ^ n_2 := by ring
+    have hexp12 : 5 * R_12 = 5 * (3 ^ n_2 * R_1) + 5 * (R_12 - 3 ^ n_2 * R_1) := by
+      rw [hdiff_eq]
+      change 5 * (3 ^ n_2 * R_1 + 2 ^ n_1 * A_2) =
+        5 * (3 ^ n_2 * R_1) + 5 * (2 ^ n_1 * A_2)
+      ring
+    omega
+  have hj_pos : 1 ≤ j := (hchain r (by omega)).1
+  have h3j_ge_3 : 3 ≤ 3 ^ j := by
+    obtain ⟨m, hm⟩ : ∃ m : ℕ, j = m + 1 := ⟨j - 1, by omega⟩
+    have hpos : 1 ≤ 3 ^ m := Nat.one_le_pow _ 3 (by decide)
+    rw [hm, Nat.pow_succ]
+    omega
+  have h2_pos : 1 ≤ 2 ^ (n_1 + n_2) := Nat.one_le_pow _ 2 (by decide)
+  have hR12_lt : R_12 < 3 ^ T_12 := by
+    have hR12_lt2 : R_12 < 2 * 3 ^ (n_1 + n_2) := by omega
+    have hpow : 3 ^ T_12 = 3 ^ j * 3 ^ (n_1 + n_2) := by
+      change 3 ^ (j + n_1 + n_2) = 3 ^ j * 3 ^ (n_1 + n_2)
+      rw [Nat.add_assoc j n_1 n_2, Nat.pow_add 3 j (n_1 + n_2)]
+    have hmul : 3 * 3 ^ (n_1 + n_2) ≤ 3 ^ j * 3 ^ (n_1 + n_2) :=
+      Nat.mul_le_mul_right (3 ^ (n_1 + n_2)) h3j_ge_3
+    omega
+  have hdiv_pos : 0 < 3 ^ T_12 := by omega
+  have hdiv12 : (2 ^ S_12 * u (r + 1 + M_1 + M_2)) / 3 ^ T_12 = u r := by
+    rw [hid12, Nat.mul_add_div hdiv_pos, Nat.div_eq_of_lt hR12_lt, add_zero]
+  have hs3_12 :
+      base3DigitSum (2 ^ S_12 * u (r + 1 + M_1 + M_2)) =
+        base3DigitSum (u r) + base3DigitSum R_12 := by
+    rw [hid12, base3DigitSum_three_pow_mul_add T_12 (u r) hR12_lt]
+  exact ⟨⟨hid1, hR1_lt, hdiv1⟩, ⟨htrans, hid12⟩, ⟨hcauchy, h95_12⟩,
+    ⟨hR12_lt, hdiv12, hdiv12.trans hdiv1.symm, hs3_12⟩⟩
+
+/-! ## 58. Theorem SB.58: The $j \ge k$ Excess-Exponent Explosion, Binary Weight Swelling, & Halving-Debt Law -/
+
+/-- **The $j \ge k$ Excess-Exponent Explosion, Binary Weight Swelling, & Halving-Debt Law
+(`j_ge_k_excess_explosion_binary_swelling_and_halving_debt_law`, Theorem SB.58)**:
+Suppose `ValidBlockChain b_0 s u (r + 3)` holds with `2 ≤ s (r + 1)` and `s (r + 1) ≤ s r`.
+Setting `j = s r`, `k = s (r + 1)`, `k' = s (r + 2)`, and `Δ = j - k`:
+1. **Exact Excess-Exponent Decomposition & Super-Exponential Jump**:
+   `2 ^ k * u (r + 1) = 3 ^ Δ * 3 ^ k * u r + 1`,
+   `9 * 3 ^ Δ * u r + 1 ≤ 4 * u (r + 1)`, and `2 * 3 ^ Δ * u r < u (r + 1)`,
+2. **Binary 1-Bit Budget Law Under $j \ge k$**:
+   `base2DigitSum (u (r + 1)) + k = base2DigitSum (3 ^ j * u r) + 1`,
+3. **Exact Two-Step Halving-Debt Identity**:
+   `2 ^ (k + k') * u (r + 2) = 3 ^ (j + k) * u r + 3 ^ k + 2 ^ k`, and
+4. **Two-Step Halving-Debt Crisis (Return-to-Baseline Barrier)**:
+   Whenever `u (r + 2) ≤ u r`, the subsequent binary valuation `k' = s (r + 2)` must satisfy
+   `3 ^ (j + k) < 2 ^ (k + k')` and `3 ^ j < 2 ^ k'`! -/
+theorem j_ge_k_excess_explosion_binary_swelling_and_halving_debt_law
+    {b_0 r : ℕ} {s u : ℕ → ℕ}
+    (hchain : ValidBlockChain b_0 s u (r + 3))
+    (hk2 : 2 ≤ s (r + 1))
+    (hjk : s (r + 1) ≤ s r) :
+    let j := s r
+    let k := s (r + 1)
+    let k' := s (r + 2)
+    let Δ := j - k
+    (2 ^ k * u (r + 1) = 3 ^ Δ * 3 ^ k * u r + 1 ∧
+      9 * 3 ^ Δ * u r + 1 ≤ 4 * u (r + 1) ∧
+      2 * 3 ^ Δ * u r < u (r + 1)) ∧
+      base2DigitSum (u (r + 1)) + k = base2DigitSum (3 ^ j * u r) + 1 ∧
+      2 ^ (k + k') * u (r + 2) = 3 ^ (j + k) * u r + 3 ^ k + 2 ^ k ∧
+      (u (r + 2) ≤ u r → 3 ^ (j + k) < 2 ^ (k + k') ∧ 3 ^ j < 2 ^ k') := by
+  intro j k k' Δ
+  have hch_r2 : ValidBlockChain b_0 s u (r + 2) := fun t ht => hchain t (by omega)
+  have hstep1 : 2 ^ k * u (r + 1) = 3 ^ j * u r + 1 :=
+    (one_step_backward_quotient_recovery_and_mod_three_pow_one hch_r2).1
+  have hstep2 : 2 ^ k' * u (r + 2) = 3 ^ k * u (r + 1) + 1 :=
+    (one_step_backward_quotient_recovery_and_mod_three_pow_one hchain).1
+  have hj_eq : j = Δ + k := by omega
+  have hdecomp : 2 ^ k * u (r + 1) = 3 ^ Δ * 3 ^ k * u r + 1 := by
+    rw [hstep1, hj_eq, Nat.pow_add 3 Δ k]
+  obtain ⟨m, hm⟩ : ∃ m : ℕ, k = m + 2 := ⟨k - 2, by omega⟩
+  have h2m_pos : 0 < 2 ^ m := Nat.pow_pos (by decide)
+  have hle_m : 2 ^ m ≤ 3 ^ m := Nat.pow_le_pow_left (by decide) m
+  have hjump4 : 9 * 3 ^ Δ * u r + 1 ≤ 4 * u (r + 1) := by
+    have hmul_le : 2 ^ m * (9 * 3 ^ Δ * u r) ≤ 3 ^ m * (9 * 3 ^ Δ * u r) :=
+      Nat.mul_le_mul_right (9 * 3 ^ Δ * u r) hle_m
+    have hpow2 : 2 ^ k * u (r + 1) = 2 ^ m * (4 * u (r + 1)) := by
+      rw [hm, Nat.pow_add 2 m 2]
+      ring
+    have hpow3 : 3 ^ Δ * 3 ^ k * u r = 3 ^ m * (9 * 3 ^ Δ * u r) := by
+      rw [hm, Nat.pow_add 3 m 2]
+      ring
+    have hlt_m : 2 ^ m * (9 * 3 ^ Δ * u r) < 2 ^ m * (4 * u (r + 1)) := by omega
+    exact Nat.lt_of_mul_lt_mul_left hlt_m
+  have hur_odd : u r % 2 = 1 := (hchain r (by omega)).2.1
+  have hur_pos : 1 ≤ u r := by omega
+  have h3d_pos : 1 ≤ 3 ^ Δ := Nat.one_le_pow _ 3 (by decide)
+  have hjump2 : 2 * 3 ^ Δ * u r < u (r + 1) := by
+    have hprod_pos : 1 ≤ 3 ^ Δ * u r := Nat.mul_pos h3d_pos hur_pos
+    have h9_eq : 9 * 3 ^ Δ * u r = 9 * (3 ^ Δ * u r) := by ring
+    have h2_eq : 2 * 3 ^ Δ * u r = 2 * (3 ^ Δ * u r) := by ring
+    omega
+  have hb2 : base2DigitSum (u (r + 1)) + k = base2DigitSum (3 ^ j * u r) + 1 := by
+    have h31 := (bridge_c_one_step_binary_trailing_ones_depletion_law hch_r2).2.2.2
+    change base2DigitSum (3 ^ j * u r) + 1 = base2DigitSum (u (r + 1)) + k at h31
+    omega
+  have h2step : 2 ^ (k + k') * u (r + 2) = 3 ^ (j + k) * u r + 3 ^ k + 2 ^ k := by
+    calc
+      2 ^ (k + k') * u (r + 2)
+          = 2 ^ k * (2 ^ k' * u (r + 2)) := by
+            rw [Nat.pow_add 2 k k']
+            ring
+      _ = 2 ^ k * (3 ^ k * u (r + 1) + 1) := by rw [hstep2]
+      _ = 3 ^ k * (2 ^ k * u (r + 1)) + 2 ^ k := by ring
+      _ = 3 ^ k * (3 ^ j * u r + 1) + 2 ^ k := by rw [hstep1]
+      _ = 3 ^ (j + k) * u r + 3 ^ k + 2 ^ k := by
+            rw [Nat.pow_add 3 j k]
+            ring
+  refine ⟨⟨hdecomp, hjump4, hjump2⟩, hb2, h2step, ?_⟩
+  intro hle_u
+  have hmul_u : 2 ^ (k + k') * u (r + 2) ≤ 2 ^ (k + k') * u r :=
+    Nat.mul_le_mul_left (2 ^ (k + k')) hle_u
+  have h2k_pos : 1 ≤ 2 ^ k := Nat.one_le_pow _ 2 (by decide)
+  have h3k_pos : 1 ≤ 3 ^ k := Nat.one_le_pow _ 3 (by decide)
+  have hlt_prod : 3 ^ (j + k) * u r < 2 ^ (k + k') * u r := by omega
+  have hdebt1 : 3 ^ (j + k) < 2 ^ (k + k') :=
+    Nat.lt_of_mul_lt_mul_right hlt_prod
+  have h2k_le_3k : 2 ^ k ≤ 3 ^ k := Nat.pow_le_pow_left (by decide) k
+  have hlt_k : 3 ^ k * 3 ^ j < 3 ^ k * 2 ^ k' := by
+    calc
+      3 ^ k * 3 ^ j = 3 ^ (j + k) := by
+        rw [Nat.pow_add 3 j k]
+        ring
+      _ < 2 ^ (k + k') := hdebt1
+      _ = 2 ^ k * 2 ^ k' := Nat.pow_add 2 k k'
+      _ ≤ 3 ^ k * 2 ^ k' := Nat.mul_le_mul_right (2 ^ k') h2k_le_3k
+  have hdebt2 : 3 ^ j < 2 ^ k' := Nat.lt_of_mul_lt_mul_left hlt_k
+  exact ⟨hdebt1, hdebt2⟩
+
+/-! ## 59. Theorem SB.59: The $3^{j_0}$ Diagonal Shift & $j_0$-Trit Dead-Zone Invariance Law -/
+
+/-- **The $3^{j_0}$ Diagonal Shift & $j_0$-Trit Dead-Zone Invariance Law
+(`three_adic_seed_diagonal_shift_and_dead_zone_invariance_law`, Theorem SB.59)**:
+1. **Seed-Level Diagonal Shift ($P_0 = 3^{j_0} \cdot m$)**:
+   Suppose `ValidBlockChain b_0 s u (K + 1)` holds with `∀ k < K, 2 ≤ s k`, and suppose
+   `P 0 = 3 ^ j_0 * m` for some `j_0, m : ℕ`. Setting `n = blockSteps s K`, `k = s K`,
+   `A_K = renewalNumerator s K`, and `N_K = 2 ^ (n + k) * u K`:
+   - `N_K = 3 ^ (j_0 + n) * m + A_K`,
+   - `N_K / 3 ^ (j_0 + n) = m` and `N_K % 3 ^ (j_0 + n) = A_K`,
+   - **Exact $j_0$-Trit Dead Zone in $[3^n, 3^{j_0+n})$**:
+     `(N_K / 3 ^ n) % 3 ^ j_0 = 0` and `(N_K % 3 ^ (j_0 + n)) / 3 ^ n = 0`, and
+   - **Base-3 Digit-Sum Invariance in $j_0$**:
+     `base3DigitSum N_K = base3DigitSum m + base3DigitSum A_K`!
+2. **Block-Level Odd-Quotient Diagonal Shift ($u_r = 3^{j_0} \cdot m$)**:
+   Suppose `ValidBlockChain b_0 s u (r + 1 + M + 1)` holds with `∀ k < M, 2 ≤ s (r + 1 + k)`,
+   and `u r = 3 ^ j_0 * m`. Setting `s' t = s (r + 1 + t)`, `n = blockSteps s' M`,
+   `k = s (r + 1 + M)`, `j = j_0 + s r`, and `R = 3 ^ n + renewalNumerator s' M`:
+   - `2 ^ (n + k) * u (r + 1 + M) = 3 ^ (j + n) * m + R`,
+   - `(2 ^ (n + k) * u (r + 1 + M)) / 3 ^ (j + n) = m` and
+     `(2 ^ (n + k) * u (r + 1 + M)) % 3 ^ (j + n) = R`,
+   - `((2 ^ (n + k) * u (r + 1 + M)) / 3 ^ (s r + n)) % 3 ^ j_0 = 0`, and
+   - `base3DigitSum (2 ^ (n + k) * u (r + 1 + M)) = base3DigitSum m + base3DigitSum R`! -/
+theorem three_adic_seed_diagonal_shift_and_dead_zone_invariance_law :
+    (∀ {b_0 K j_0 m : ℕ} {s u : ℕ → ℕ},
+      ValidBlockChain b_0 s u (K + 1) →
+      (∀ t < K, 2 ≤ s t) →
+      oddReturnP (orbit b_0 (blockSteps s 0)) = 3 ^ j_0 * m →
+      let n := blockSteps s K
+      let k := s K
+      let A_K := renewalNumerator s K
+      let N_K := 2 ^ (n + k) * u K
+      N_K = 3 ^ (j_0 + n) * m + A_K ∧
+        N_K / 3 ^ (j_0 + n) = m ∧
+        N_K % 3 ^ (j_0 + n) = A_K ∧
+        (N_K / 3 ^ n) % 3 ^ j_0 = 0 ∧
+        (N_K % 3 ^ (j_0 + n)) / 3 ^ n = 0 ∧
+        base3DigitSum N_K = base3DigitSum m + base3DigitSum A_K) ∧
+    (∀ {b_0 r M j_0 m : ℕ} {s u : ℕ → ℕ},
+      ValidBlockChain b_0 s u (r + 1 + M + 1) →
+      (∀ t < M, 2 ≤ s (r + 1 + t)) →
+      u r = 3 ^ j_0 * m →
+      let s' := fun t => s (r + 1 + t)
+      let n := blockSteps s' M
+      let k := s (r + 1 + M)
+      let j := j_0 + s r
+      let R := 3 ^ n + renewalNumerator s' M
+      2 ^ (n + k) * u (r + 1 + M) = 3 ^ (j + n) * m + R ∧
+        (2 ^ (n + k) * u (r + 1 + M)) / 3 ^ (j + n) = m ∧
+        (2 ^ (n + k) * u (r + 1 + M)) % 3 ^ (j + n) = R ∧
+        ((2 ^ (n + k) * u (r + 1 + M)) / 3 ^ (s r + n)) % 3 ^ j_0 = 0 ∧
+        base3DigitSum (2 ^ (n + k) * u (r + 1 + M)) = base3DigitSum m + base3DigitSum R) := by
+  refine ⟨?_, ?_⟩
+  · intro b_0 K j_0 m s u hchain hs2 hP0 n k A_K N_K
+    have h24 := unconditional_four_fifths_renewal_ceiling_and_past_base3_recovery hchain hs2
+    have h32 := (bridge_c_multi_step_dual_base2_base3_zero_carry_split hchain hs2).1
+    dsimp only at h24 h32
+    have hA_lt_n : A_K < 3 ^ n := h24.2.2.1
+    have h3j0_pos : 1 ≤ 3 ^ j_0 := Nat.one_le_pow _ 3 (by decide)
+    have hpow_jn : 3 ^ (j_0 + n) = 3 ^ n * 3 ^ j_0 := by
+      rw [Nat.pow_add 3 j_0 n]
+      ring
+    have hA_lt_jn : A_K < 3 ^ (j_0 + n) := by
+      have hle : 3 ^ n * 1 ≤ 3 ^ n * 3 ^ j_0 := Nat.mul_le_mul_left (3 ^ n) h3j0_pos
+      omega
+    have hid_N : N_K = 3 ^ (j_0 + n) * m + A_K := by
+      calc
+        N_K = 3 ^ n * oddReturnP (orbit b_0 (blockSteps s 0)) + A_K := h32.1.symm
+        _ = 3 ^ n * (3 ^ j_0 * m) + A_K := by rw [hP0]
+        _ = 3 ^ (j_0 + n) * m + A_K := by
+              rw [Nat.pow_add 3 j_0 n]
+              ring
+    have hdiv_pos : 0 < 3 ^ (j_0 + n) := by omega
+    have hdiv_jn : N_K / 3 ^ (j_0 + n) = m := by
+      rw [hid_N, Nat.mul_add_div hdiv_pos, Nat.div_eq_of_lt hA_lt_jn, add_zero]
+    have hmod_jn : N_K % 3 ^ (j_0 + n) = A_K := by
+      rw [hid_N, Nat.mul_add_mod, Nat.mod_eq_of_lt hA_lt_jn]
+    have hdiv_n : N_K / 3 ^ n = 3 ^ j_0 * m := by
+      have hq := h32.2.1
+      rw [h32.1] at hq
+      change N_K / 3 ^ n = oddReturnP (orbit b_0 (blockSteps s 0)) at hq
+      rw [hq, hP0]
+    have hdead1 : (N_K / 3 ^ n) % 3 ^ j_0 = 0 := by
+      rw [hdiv_n, Nat.mul_mod_right]
+    have hdead2 : (N_K % 3 ^ (j_0 + n)) / 3 ^ n = 0 := by
+      rw [hmod_jn, Nat.div_eq_of_lt hA_lt_n]
+    have hs3 : base3DigitSum N_K = base3DigitSum m + base3DigitSum A_K := by
+      have hs := h32.2.2.2
+      rw [h32.1] at hs
+      change base3DigitSum N_K =
+        base3DigitSum (oddReturnP (orbit b_0 (blockSteps s 0))) + base3DigitSum A_K at hs
+      rw [hs, hP0, base3DigitSum_three_pow_mul]
+    exact ⟨hid_N, hdiv_jn, hmod_jn, hdead1, hdead2, hs3⟩
+  · intro b_0 r M j_0 m s u hchain hs2 hur s' n k j R
+    have h25 := unconditional_all_k_step_odd_leftover_recovery_and_nine_fifths_bound hchain hs2
+    dsimp only at h25
+    have hR_lt_T : R < 3 ^ (s r + n) := h25.2.2.1
+    have hdiv_T : (2 ^ (n + k) * u (r + 1 + M)) / 3 ^ (s r + n) = u r := h25.2.2.2.1
+    have hmod_T : (2 ^ (n + k) * u (r + 1 + M)) % 3 ^ (s r + n) = R := h25.2.2.2.2.1
+    have hid_T : 2 ^ (n + k) * u (r + 1 + M) = 3 ^ (s r + n) * u r + R := by
+      have hdm := Nat.div_add_mod (2 ^ (n + k) * u (r + 1 + M)) (3 ^ (s r + n))
+      rw [hdiv_T, hmod_T] at hdm
+      exact hdm.symm
+    have hid_jn : 2 ^ (n + k) * u (r + 1 + M) = 3 ^ (j + n) * m + R := by
+      calc
+        2 ^ (n + k) * u (r + 1 + M)
+            = 3 ^ (s r + n) * (3 ^ j_0 * m) + R := by rw [hid_T, hur]
+        _ = 3 ^ (j + n) * m + R := by
+              change 3 ^ (s r + n) * (3 ^ j_0 * m) + R = 3 ^ (j_0 + s r + n) * m + R
+              rw [Nat.add_assoc j_0 (s r) n, Nat.pow_add 3 j_0 (s r + n)]
+              ring
+    have h3j0_pos : 1 ≤ 3 ^ j_0 := Nat.one_le_pow _ 3 (by decide)
+    have hR_lt_jn : R < 3 ^ (j + n) := by
+      have hpow : 3 ^ (j + n) = 3 ^ (s r + n) * 3 ^ j_0 := by
+        change 3 ^ (j_0 + s r + n) = 3 ^ (s r + n) * 3 ^ j_0
+        rw [Nat.add_assoc j_0 (s r) n, Nat.pow_add 3 j_0 (s r + n)]
+        ring
+      have hle : 3 ^ (s r + n) * 1 ≤ 3 ^ (s r + n) * 3 ^ j_0 :=
+        Nat.mul_le_mul_left (3 ^ (s r + n)) h3j0_pos
+      omega
+    have hdiv_pos : 0 < 3 ^ (j + n) := by omega
+    have hdiv_jn : (2 ^ (n + k) * u (r + 1 + M)) / 3 ^ (j + n) = m := by
+      rw [hid_jn, Nat.mul_add_div hdiv_pos, Nat.div_eq_of_lt hR_lt_jn, add_zero]
+    have hmod_jn : (2 ^ (n + k) * u (r + 1 + M)) % 3 ^ (j + n) = R := by
+      rw [hid_jn, Nat.mul_add_mod, Nat.mod_eq_of_lt hR_lt_jn]
+    have hdead : ((2 ^ (n + k) * u (r + 1 + M)) / 3 ^ (s r + n)) % 3 ^ j_0 = 0 := by
+      rw [hdiv_T, hur, Nat.mul_mod_right]
+    have hs3 : base3DigitSum (2 ^ (n + k) * u (r + 1 + M)) = base3DigitSum m + base3DigitSum R := by
+      rw [h25.2.2.2.2.2, hur, base3DigitSum_three_pow_mul]
+    exact ⟨hid_jn, hdiv_jn, hmod_jn, hdead, hs3⟩
+
+/-! ## 60. Theorem SB.60: Grand 60-Theorem Synthesis of the $(j+n, k+n)$ Diagonal & $j \gg k$ Regime -/
+
+/-- **Grand 60-Theorem Synthesis of the $(j+n, k+n)$ Diagonal & $j \gg k$ Regime
+(`grand_jk_diagonal_and_three_heavy_regime_60_synthesis`, Theorem SB.60)**:
+Synthesizes the three $(j+n, k+n)$ diagonal and $j \ge k$ / $j \gg k$ laws (`SB.57–SB.59`)
+with the Collatz–Syracuse bridge (`SB.54`), constant-rung run-length bound (`SB.55`),
+and sharp $4/5$ equality characterization (`SB.56`) into a single unified theorem. -/
+theorem grand_jk_diagonal_and_three_heavy_regime_60_synthesis :
+    (∀ {b_0 r M_1 M_2 : ℕ} {s u : ℕ → ℕ},
+      ValidBlockChain b_0 s u (r + 1 + M_1 + M_2 + 1) →
+      (∀ k < M_1, 2 ≤ s (r + 1 + k)) →
+      (∀ k < M_2, 2 ≤ s (r + 1 + M_1 + k)) →
+      let j := s r
+      let s_1 := fun t => s (r + 1 + t)
+      let s_2 := fun t => s (r + 1 + M_1 + t)
+      let n_1 := blockSteps s_1 M_1
+      let n_2 := blockSteps s_2 M_2
+      let S_1 := n_1 + s (r + 1 + M_1)
+      let S_12 := n_1 + n_2 + s (r + 1 + M_1 + M_2)
+      let R_1 := 3 ^ n_1 + renewalNumerator s_1 M_1
+      let R_12 := 3 ^ n_2 * R_1 + 2 ^ n_1 * renewalNumerator s_2 M_2
+      5 * (R_12 - 3 ^ n_2 * R_1) + 4 * 2 ^ (n_1 + n_2) ≤ 4 * 2 ^ n_1 * 3 ^ n_2 ∧
+        (2 ^ S_12 * u (r + 1 + M_1 + M_2)) / 3 ^ (j + n_1 + n_2) = u r ∧
+        (2 ^ S_1 * u (r + 1 + M_1)) / 3 ^ (j + n_1) = u r) ∧
+    (∀ {b_0 r : ℕ} {s u : ℕ → ℕ},
+      ValidBlockChain b_0 s u (r + 3) →
+      2 ≤ s (r + 1) →
+      s (r + 1) ≤ s r →
+      9 * 3 ^ (s r - s (r + 1)) * u r + 1 ≤ 4 * u (r + 1) ∧
+        (u (r + 2) ≤ u r → 3 ^ (s r) < 2 ^ (s (r + 2)))) ∧
+    (∀ {b_0 K j_0 m : ℕ} {s u : ℕ → ℕ},
+      ValidBlockChain b_0 s u (K + 1) →
+      (∀ t < K, 2 ≤ s t) →
+      oddReturnP (orbit b_0 (blockSteps s 0)) = 3 ^ j_0 * m →
+      (2 ^ (blockSteps s K + s K) * u K) / 3 ^ (j_0 + blockSteps s K) = m ∧
+        ((2 ^ (blockSteps s K + s K) * u K) / 3 ^ (blockSteps s K)) % 3 ^ j_0 = 0 ∧
+        base3DigitSum (2 ^ (blockSteps s K + s K) * u K) =
+          base3DigitSum m + base3DigitSum (renewalNumerator s K)) := by
+  refine ⟨?_, ?_, ?_⟩
+  · intro b_0 r M_1 M_2 s u hchain hs1 hs2 j s_1 s_2 n_1 n_2 S_1 S_12 R_1 R_12
+    have h57 := two_window_jk_diagonal_cauchy_tail_freeze_and_quotient_invariance hchain hs1 hs2
+    exact ⟨h57.2.2.1.1, h57.2.2.2.2.1, h57.1.2.2⟩
+  · intro b_0 r s u hchain hk2 hjk
+    have h58 := j_ge_k_excess_explosion_binary_swelling_and_halving_debt_law hchain hk2 hjk
+    exact ⟨h58.1.2.1, fun hle => (h58.2.2.2 hle).2⟩
+  · intro b_0 K j_0 m s u hchain hs2 hP0
+    have h59 := three_adic_seed_diagonal_shift_and_dead_zone_invariance_law.1 hchain hs2 hP0
+    exact ⟨h59.2.1, h59.2.2.2.1, h59.2.2.2.2.2⟩
+
 
 #check @archimedean_rung_ceiling_and_stepSum_bound
 #check @unit_quotient_even_rung_instant_death_and_odd_rung_mod64_identity
@@ -3946,6 +4384,10 @@ theorem sharp_four_fifths_equality_characterization_and_two_two_escape :
 #check @collatz_syracuse_bridge_and_one_two_cycle_exclusion
 #check @universal_constant_rung_affine_invariance_and_run_length_bound
 #check @sharp_four_fifths_equality_characterization_and_two_two_escape
+#check @two_window_jk_diagonal_cauchy_tail_freeze_and_quotient_invariance
+#check @j_ge_k_excess_explosion_binary_swelling_and_halving_debt_law
+#check @three_adic_seed_diagonal_shift_and_dead_zone_invariance_law
+#check @grand_jk_diagonal_and_three_heavy_regime_60_synthesis
 
 #print axioms archimedean_rung_ceiling_and_stepSum_bound
 #print axioms unit_quotient_even_rung_instant_death_and_odd_rung_mod64_identity

@@ -512,7 +512,43 @@ In particular, for a run of $s = 2$, $4^m \mid (5 u_r + 1)$ and $4^m \le 5 u_r +
 
 ---
 
-## 14. Verification Instructions
+## 14. The $(j+n, k+n)$ Diagonal Limit & The $j \ge k$ / $j \gg k$ Regime (Theorems `SB.57–SB.60`)
+
+In Sections 57–60 of [`SemigroupBreakoutTheorems.lean`](./SemigroupBreakoutTheorems.lean) (verified computationally across 122,979 configurations in [`sandbox_wave8_jk_diagonal_asymptotics.py`](./sandbox_wave8_jk_diagonal_asymptotics.py)), we formalized the exact behavior of the Mahler orbit along the diagonal exponent shift $(j, k) \longrightarrow (j + n, k + n)$ and in the $3$-heavy / $2$-starved regime $j \ge k$ and $j \gg k$:
+
+### 14.1 Theorem SB.57 (`two_window_jk_diagonal_cauchy_tail_freeze_and_quotient_invariance`)
+Starting at block $r$ with $3$-exponent $j = s_r$, advance across two consecutive future windows of $M_1$ blocks ($n_1$ steps, ending rung $k_1 = s_{r+1+M_1}$) and $M_2$ blocks ($n_2$ steps, ending rung $k_2 = s_{r+1+M_1+M_2}$), with $S_1 = n_1 + k_1$, $S_{12} = n_1 + n_2 + k_2$, $T_1 = j + n_1$, and $T_{12} = j + n_1 + n_2$:
+1. **Exact Two-Window Diagonal Transition:**
+   $$\boxed{2^{n_1 + n_2 + k_2} u_{r+1+M_1+M_2} = 3^{n_2}\big(2^{n_1 + k_1} u_{r+1+M_1}\big) + 2^{n_1} A^{(2)} = 3^{j + n_1 + n_2} u_r + R_{12},}$$
+   where $R_{12} = 3^{n_2} R_1 + 2^{n_1} A^{(2)}$.
+2. **Unconditional $4/5$ Cauchy Tail-Freeze Bound:**
+   $$\boxed{5\big(R_{12} - 3^{n_2} R_1\big) + 4 \cdot 2^{n_1 + n_2} \le 4 \cdot 2^{n_1} \cdot 3^{n_2} \qquad\text{and}\qquad 5 R_{12} + 4 \cdot 2^{n_1 + n_2} \le 9 \cdot 3^{n_1 + n_2}.}$$
+   Dividing by the main term $3^{j+n_1+n_2} u_r$ shows that the relative tail drift between horizon $n_1$ and horizon $n_1 + n_2$ is bounded by $\frac{4}{5 \cdot 3^j u_r} \left(\frac{2}{3}\right)^{n_1}$, decaying exponentially in **both** $j$ and $n_1$.
+3. **Two-Horizon Quotient & Base-3 Top-Block Invariance:**
+   $$\left\lfloor \frac{2^{n_1 + n_2 + k_2} u_{r+1+M_1+M_2}}{3^{j + n_1 + n_2}} \right\rfloor = u_r = \left\lfloor \frac{2^{n_1 + k_1} u_{r+1+M_1}}{3^{j + n_1}} \right\rfloor \quad\text{and}\quad s_3\big(2^{S_{12}} u_{r+1+M_1+M_2}\big) = s_3(u_r) + s_3(R_{12}).$$
+
+### 14.2 Theorem SB.58 (`j_ge_k_excess_explosion_binary_swelling_and_halving_debt_law`)
+Whenever a block transition $2^k u_{r+1} = 3^j u_r + 1$ has $j = s_r \ge k = s_{r+1} \ge 2$ with excess $\Delta = j - k \ge 0$:
+1. **Excess-Exponent Decomposition & Super-Exponential Floor Jump:**
+   $$\boxed{2^k u_{r+1} = 3^\Delta \cdot 3^k u_r + 1, \qquad 4 u_{r+1} \ge 9 \cdot 3^\Delta u_r + 1, \qquad u_{r+1} > 2 \cdot 3^\Delta u_r.}$$
+2. **Binary 1-Bit Budget Law Under $j \ge k$:**
+   $$s_2(u_{r+1}) + k = s_2(3^j u_r) + 1.$$
+3. **Two-Step Halving-Debt Crisis (Return-to-Baseline Barrier):**
+   Across block $r$ ($j = s_r, k = s_{r+1}$) and block $r+1$ ($k = s_{r+1}, k' = s_{r+2}$):
+   $$\boxed{2^{k + k'} u_{r+2} = 3^{j + k} u_r + 3^k + 2^k, \qquad\text{so}\qquad u_{r+2} \le u_r \implies 2^{k + k'} > 3^{j + k} \;\wedge\; 2^{k'} > 3^j!}$$
+
+### 14.3 Theorem SB.59 (`three_adic_seed_diagonal_shift_and_dead_zone_invariance_law`)
+Whenever the initial return integer $P_0 = 3^{j_0} m$ (or any interior odd core $u_r = 3^{j_0} m$) contains a $3$-adic factor $3^{j_0}$, advancing $n = T_K$ steps with ending rung $k = s_K$ shifts the exponents along the exact diagonal $(j_0, k) \longrightarrow (j_0 + n, k + n)$:
+$$\boxed{N_K = 2^{n + k} u_K = 3^{j_0 + n} m + A_{0, K}, \qquad \left\lfloor \frac{N_K}{3^{j_0 + n}} \right\rfloor = m, \qquad N_K \bmod 3^{j_0 + n} = A_{0, K}.}$$
+Moreover, $N_K$ exhibits an **exact $j_0$-trit Dead Zone (`00...0` in Base 3)** in $[3^n, 3^{j_0+n})$ and complete **Base-3 digit-sum invariance in $j_0$**:
+$$\boxed{\left\lfloor \frac{N_K}{3^n} \right\rfloor \bmod 3^{j_0} = 0, \qquad \left\lfloor \frac{N_K \bmod 3^{j_0 + n}}{3^n} \right\rfloor = 0, \qquad s_3\big(2^{n+k} u_K\big) = s_3(m) + s_3(A_{0, K})!}$$
+
+### 14.4 Theorem SB.60 (`grand_jk_diagonal_and_three_heavy_regime_60_synthesis`)
+Unifies the two-window Cauchy tail-freeze (`SB.57`), the $j \ge k$ excess-exponent explosion and halving-debt barrier (`SB.58`), and the $3^{j_0}$ diagonal dead-zone invariance law (`SB.59`), completing all **60 `sorry`-free, warning-free theorems (`SB.1–SB.60`)**.
+
+---
+
+## 15. Verification Instructions
 
 To verify the cordoned-off Lean 4 proofs without modifying the root 226-file build:
 
@@ -528,4 +564,5 @@ python semigroup_breakout\loop1_beukers_pade_and_hankel.py
 python semigroup_breakout\loop2_pade_lll_and_divergence.py
 python semigroup_breakout\loop3_archimedean_ceiling_and_small_u.py
 python semigroup_breakout\loop4_flp_sparsity_and_repulsion.py
+python semigroup_breakout\sandbox_wave8_jk_diagonal_asymptotics.py
 ```

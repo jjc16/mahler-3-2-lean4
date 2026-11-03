@@ -207,4 +207,12 @@ Across any \texttt{ValidBlockChain b\_0 s u (K + 4)} with $\forall k < K + 4,\, 
 \end{enumerate}
 \end{theorem}
 
+\begin{theorem}[The $(j+n, k+n)$ Diagonal Limit \& The $j \ge k$ / $j \gg k$ Regime (Theorems SB.57--SB.60), \texttt{two\_window\_jk\_diagonal\_cauchy\_tail\_freeze\_and\_quotient\_invariance}, \texttt{j\_ge\_k\_excess\_explosion\_binary\_swelling\_and\_halving\_debt\_law}, \texttt{three\_adic\_seed\_diagonal\_shift\_and\_dead\_zone\_invariance\_law}, \texttt{grand\_jk\_diagonal\_and\_three\_heavy\_regime\_60\_synthesis}]
+\begin{enumerate}
+  \item \textbf{Two-Window Cauchy Tail-Freeze \& Quotient Invariance (SB.57):} Across consecutive windows of $M_1$ blocks ($n_1$ steps, ending rung $k_1$) and $M_2$ blocks ($n_2$ steps, ending rung $k_2$) starting from $j = s_r$, $2^{n_1+n_2+k_2} u_{r+1+M_1+M_2} = 3^{n_2}(2^{n_1+k_1} u_{r+1+M_1}) + 2^{n_1} A^{(2)} = 3^{j+n_1+n_2} u_r + R_{12}$ with $5(R_{12} - 3^{n_2} R_1) + 4 \cdot 2^{n_1+n_2} \le 4 \cdot 2^{n_1} \cdot 3^{n_2}$ and $\lfloor 2^{n_1+n_2+k_2} u_{r+1+M_1+M_2} / 3^{j+n_1+n_2} \rfloor = u_r = \lfloor 2^{n_1+k_1} u_{r+1+M_1} / 3^{j+n_1} \rfloor$.
+  \item \textbf{$j \ge k$ Excess-Exponent Explosion \& Halving-Debt Crisis (SB.58):} Whenever $j = s_r \ge k = s_{r+1} \ge 2$ with $\Delta = j - k$, $2^k u_{r+1} = 3^\Delta \cdot 3^k u_r + 1$, $4 u_{r+1} \ge 9 \cdot 3^\Delta u_r + 1$, $u_{r+1} > 2 \cdot 3^\Delta u_r$, $s_2(u_{r+1}) + k = s_2(3^j u_r) + 1$, and across the next step $k' = s_{r+2}$, $2^{k+k'} u_{r+2} = 3^{j+k} u_r + 3^k + 2^k$, so $u_{r+2} \le u_r \implies 2^{k+k'} > 3^{j+k} \wedge 2^{k'} > 3^j$.
+  \item \textbf{$3^{j_0}$ Diagonal Shift \& $j_0$-Trit Dead-Zone Law (SB.59):} Whenever $P_0 = 3^{j_0} m$ (or $u_r = 3^{j_0} m$), $N_K = 2^{n+k} u_K = 3^{j_0+n} m + A_{0,K}$ satisfies $\lfloor N_K / 3^{j_0+n} \rfloor = m$, $(N_K / 3^n) \bmod 3^{j_0} = 0$, $((N_K \bmod 3^{j_0+n}) / 3^n) = 0$, and $s_3(2^{n+k} u_K) = s_3(m) + s_3(A_{0,K})$.
+\end{enumerate}
+\end{theorem}
+
 \end{document}
