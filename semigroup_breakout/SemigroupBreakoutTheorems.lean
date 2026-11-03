@@ -5890,6 +5890,249 @@ theorem grand_global_dominance_and_product_formula_76_synthesis :
     have h69 := adjacent_odd_core_coprimality_and_universal_non_equality hchain hs_r
     exact ⟨h69.1, h69.2.2.2⟩
 
+/-! ## 77. Theorem SB.77: Greedy 2-Adic Base-$(2/3)$ Kempner Step & Prefix Law -/
+
+/-- **Greedy 2-Adic Base-$(2/3)$ Kempner Step & Prefix Law
+(`greedy_two_adic_base_two_thirds_kempner_step_and_prefix_law`, Theorem SB.77)**:
+Suppose `ValidBlockChain b_0 s u (K + 1)` holds with `∀ k < K, 2 ≤ s k`.
+Setting `P k = oddReturnP (orbit b_0 (blockSteps s k))`, `T k = blockSteps s k`,
+and `A k = renewalNumerator s k`:
+1. **Greedy 2-Adic Base-$(2/3)$ Prefix Valuation Law (`∀ r ≤ K`)**:
+   At every horizon `r ≤ K`, the cleared partial sum of $P_0 + \sum_{k=1}^r (2/3)^{T_k}$
+   has exact 2-adic valuation `T (r + 1)` and odd core `u r`:
+   - `3 ^ (T r) * P 0 + A r = 2 ^ (T (r + 1)) * u r`,
+   - `(3 ^ (T r) * P 0 + A r) % 2 ^ (T (r + 1)) = 0`, and
+   - `(3 ^ (T r) * P 0 + A r) % 2 ^ (T (r + 1) + 1) = 2 ^ (T (r + 1))`!
+2. **Greedy Single-Digit Base-$(2/3)$ Remainder Update (`∀ r < K`)**:
+   Adding the $(r+1)$-th base-$(2/3)$ digit $2^{T_{r+1}}$ updates the cleared partial sum via:
+   - `3 ^ (s r) * (3 ^ (T r) * P 0 + A r) + 2 ^ (T (r + 1)) = 3 ^ (T (r + 1)) * P 0 + A (r + 1)`, and
+   - `2 ^ (T (r + 1)) * (3 ^ (s r) * u r + 1) = 2 ^ (T (r + 2)) * u (r + 1)`! -/
+theorem greedy_two_adic_base_two_thirds_kempner_step_and_prefix_law
+    {b_0 K : ℕ} {s u : ℕ → ℕ}
+    (hchain : ValidBlockChain b_0 s u (K + 1))
+    (hs2 : ∀ k < K, 2 ≤ s k) :
+    let P := fun k => oddReturnP (orbit b_0 (blockSteps s k))
+    let T := fun k => blockSteps s k
+    let A := fun k => renewalNumerator s k
+    (∀ r ≤ K,
+      3 ^ (T r) * P 0 + A r = 2 ^ (T (r + 1)) * u r ∧
+        (3 ^ (T r) * P 0 + A r) % 2 ^ (T (r + 1)) = 0 ∧
+        (3 ^ (T r) * P 0 + A r) % 2 ^ (T (r + 1) + 1) = 2 ^ (T (r + 1))) ∧
+      (∀ r < K,
+        3 ^ (s r) * (3 ^ (T r) * P 0 + A r) + 2 ^ (T (r + 1)) =
+            3 ^ (T (r + 1)) * P 0 + A (r + 1) ∧
+          2 ^ (T (r + 1)) * (3 ^ (s r) * u r + 1) = 2 ^ (T (r + 2)) * u (r + 1)) := by
+  intro P T A
+  have hprefix :
+      ∀ r ≤ K,
+        3 ^ (T r) * P 0 + A r = 2 ^ (T (r + 1)) * u r ∧
+          (3 ^ (T r) * P 0 + A r) % 2 ^ (T (r + 1)) = 0 ∧
+          (3 ^ (T r) * P 0 + A r) % 2 ^ (T (r + 1) + 1) = 2 ^ (T (r + 1)) := by
+    intro r hr
+    have hch_r : ValidBlockChain b_0 s u (r + 1) := fun k hk => hchain k (by omega)
+    have hs2_r : ∀ k < r, 2 ≤ s k := fun k hk => hs2 k (by omega)
+    have h28 := bridge_a_dual_universe_series_lowest_terms_and_uniqueness hch_r hs2_r
+    dsimp only at h28
+    have hid_r : 3 ^ (T r) * P 0 + A r = 2 ^ (T (r + 1)) * u r := h28.1.symm
+    have hmod0 : (3 ^ (T r) * P 0 + A r) % 2 ^ (T (r + 1)) = 0 := by
+      rw [hid_r]
+      exact Nat.mul_mod_right (2 ^ (T (r + 1))) (u r)
+    have hmod1 : (3 ^ (T r) * P 0 + A r) % 2 ^ (T (r + 1) + 1) = 2 ^ (T (r + 1)) :=
+      h28.2.2.2.2.2.1
+    exact ⟨hid_r, hmod0, hmod1⟩
+  refine ⟨hprefix, ?_⟩
+  intro r hr
+  have hstep_A :
+      3 ^ (s r) * (3 ^ (T r) * P 0 + A r) + 2 ^ (T (r + 1)) =
+        3 ^ (T (r + 1)) * P 0 + A (r + 1) := by
+    change 3 ^ (s r) * (3 ^ (T r) * P 0 + A r) + 2 ^ (T r + s r) =
+      3 ^ (T r + s r) * P 0 + (3 ^ (s r) * A r + 2 ^ (T r + s r))
+    rw [Nat.pow_add 3 (T r) (s r)]
+    ring
+  have hch_step : ValidBlockChain b_0 s u (r + 2) := fun k hk => hchain k (by omega)
+  have h19 : 2 ^ (s (r + 1)) * u (r + 1) = 3 ^ (s r) * u r + 1 :=
+    (one_step_backward_quotient_recovery_and_mod_three_pow_one hch_step).1
+  have hstep_u :
+      2 ^ (T (r + 1)) * (3 ^ (s r) * u r + 1) = 2 ^ (T (r + 2)) * u (r + 1) := by
+    calc
+      2 ^ (T (r + 1)) * (3 ^ (s r) * u r + 1)
+          = 2 ^ (T (r + 1)) * (2 ^ (s (r + 1)) * u (r + 1)) := by rw [← h19]
+      _ = 2 ^ (T (r + 2)) * u (r + 1) := by
+            change 2 ^ (T (r + 1)) * (2 ^ (s (r + 1)) * u (r + 1)) =
+              2 ^ (T (r + 1) + s (r + 1)) * u (r + 1)
+            rw [Nat.pow_add 2 (T (r + 1)) (s (r + 1))]
+            ring
+  exact ⟨hstep_A, hstep_u⟩
+
+/-! ## 78. Theorem SB.78: Two-Horizon Kempner Tail Exact 2-Adic Valuation & $1/5$ Reduced Ceiling -/
+
+/-- **Two-Horizon Kempner Tail Exact 2-Adic Valuation & $1/5$ Reduced Ceiling
+(`two_horizon_kempner_tail_exact_valuation_and_one_fifth_bound`, Theorem SB.78)**:
+Suppose `ValidBlockChain b_0 s u (r + 1 + M + 1)` holds with `2 ≤ s r` and
+`∀ k < M, 2 ≤ s (r + 1 + k)`.
+Setting `K_1 = r`, `K_2 = r + 1 + M`, `T_1 = blockSteps s K_1`, `T_1next = T_1 + s r`,
+`T_2 = blockSteps s K_2`, `s' t = s (r + 1 + t)`, `d = blockSteps s' M`,
+`S_2 = T_2 + s K_2`, and `R_tail = 3 ^ d + renewalNumerator s' M`:
+1. **Exact Two-Horizon Kempner Tail Decomposition**:
+   `2 ^ S_2 * u K_2 = 3 ^ (s r + d) * (2 ^ T_1next * u K_1) + 2 ^ T_1next * R_tail`,
+2. **Exact 2-Adic Valuation $T_{K_1+1}$ & Odd Core of the Kempner Tail**:
+   `R_tail % 2 = 1`,
+   `2 ^ S_2 * u K_2 - 3 ^ (s r + d) * (2 ^ T_1next * u K_1) = 2 ^ T_1next * R_tail`, and
+   `(2 ^ S_2 * u K_2 - 3 ^ (s r + d) * (2 ^ T_1next * u K_1)) % 2 ^ (T_1next + 1) = 2 ^ T_1next`, and
+3. **The Unconditional $1/5$ Reduced Ceiling on `R_tail`**:
+   `5 * R_tail + 4 * 2 ^ d ≤ 3 ^ (s r + d)` and `5 * R_tail < 3 ^ (s r + d)`! -/
+theorem two_horizon_kempner_tail_exact_valuation_and_one_fifth_bound
+    {b_0 r M : ℕ} {s u : ℕ → ℕ}
+    (hchain : ValidBlockChain b_0 s u (r + 1 + M + 1))
+    (hs_r : 2 ≤ s r)
+    (hs_tail : ∀ k < M, 2 ≤ s (r + 1 + k)) :
+    let K_1 := r
+    let K_2 := r + 1 + M
+    let T_1 := blockSteps s K_1
+    let T_1next := T_1 + s r
+    let T_2 := blockSteps s K_2
+    let s' := fun t => s (r + 1 + t)
+    let d := blockSteps s' M
+    let S_2 := T_2 + s K_2
+    let R_tail := 3 ^ d + renewalNumerator s' M
+    2 ^ S_2 * u K_2 = 3 ^ (s r + d) * (2 ^ T_1next * u K_1) + 2 ^ T_1next * R_tail ∧
+      (R_tail % 2 = 1 ∧
+        2 ^ S_2 * u K_2 - 3 ^ (s r + d) * (2 ^ T_1next * u K_1) = 2 ^ T_1next * R_tail ∧
+        (2 ^ S_2 * u K_2 - 3 ^ (s r + d) * (2 ^ T_1next * u K_1)) % 2 ^ (T_1next + 1) =
+          2 ^ T_1next) ∧
+      (5 * R_tail + 4 * 2 ^ d ≤ 3 ^ (s r + d) ∧ 5 * R_tail < 3 ^ (s r + d)) := by
+  intro K_1 K_2 T_1 T_1next T_2 s' d S_2 R_tail
+  have h71 := end_of_block_three_pow_upgraded_baker_pinch_and_s_r_free_return_bound hchain hs_tail
+  have h25 := unconditional_all_k_step_odd_leftover_recovery_and_nine_fifths_bound hchain hs_tail
+  have hid_base : 2 ^ (d + s K_2) * u K_2 = 3 ^ (s r + d) * u K_1 + R_tail := h71.1.1
+  have hR_odd : R_tail % 2 = 1 := h71.1.2.1
+  have hT2_eq : T_2 = T_1next + d := by
+    have hsh := blockSteps_add_shift s (r + 1) M
+    have hb1 : blockSteps s (r + 1) = T_1next := rfl
+    rw [hb1] at hsh
+    exact hsh
+  have hS2_eq : T_1next + (d + s K_2) = S_2 := by
+    change T_1next + (d + s K_2) = T_2 + s K_2
+    omega
+  have hscaled :
+      2 ^ S_2 * u K_2 = 3 ^ (s r + d) * (2 ^ T_1next * u K_1) + 2 ^ T_1next * R_tail := by
+    have hm := congrArg (fun x => 2 ^ T_1next * x) hid_base
+    dsimp only at hm
+    have hpL : 2 ^ T_1next * (2 ^ (d + s K_2) * u K_2) = 2 ^ S_2 * u K_2 := by
+      rw [← Nat.mul_assoc, ← Nat.pow_add 2 T_1next (d + s K_2), hS2_eq]
+    have hpR : 2 ^ T_1next * (3 ^ (s r + d) * u K_1 + R_tail) =
+        3 ^ (s r + d) * (2 ^ T_1next * u K_1) + 2 ^ T_1next * R_tail := by ring
+    rw [hpL, hpR] at hm
+    exact hm
+  have hdiff :
+      2 ^ S_2 * u K_2 - 3 ^ (s r + d) * (2 ^ T_1next * u K_1) = 2 ^ T_1next * R_tail := by
+    rw [hscaled, Nat.add_sub_cancel_left]
+  have hmod_val :
+      (2 ^ S_2 * u K_2 - 3 ^ (s r + d) * (2 ^ T_1next * u K_1)) % 2 ^ (T_1next + 1) =
+        2 ^ T_1next := by
+    rw [hdiff]
+    obtain ⟨m, hm⟩ : ∃ m : ℕ, R_tail = 2 * m + 1 := ⟨R_tail / 2, by omega⟩
+    have hexp : 2 ^ T_1next * R_tail = 2 ^ (T_1next + 1) * m + 2 ^ T_1next := by
+      rw [hm, Nat.pow_succ]
+      ring
+    have hlt_pow : 2 ^ T_1next < 2 ^ (T_1next + 1) := by
+      rw [Nat.pow_succ]
+      have hp : 1 ≤ 2 ^ T_1next := Nat.one_le_pow _ 2 (by decide)
+      omega
+    rw [hexp, Nat.mul_add_mod, Nat.mod_eq_of_lt hlt_pow]
+  have h95 : 5 * R_tail + 4 * 2 ^ d ≤ 9 * 3 ^ d := h25.1
+  have h9_le : 9 ≤ 3 ^ (s r) := by
+    have h32 : 3 ^ 2 ≤ 3 ^ (s r) := Nat.pow_le_pow_right (by decide) hs_r
+    omega
+  have h15_le : 5 * R_tail + 4 * 2 ^ d ≤ 3 ^ (s r + d) := by
+    have hm : 9 * 3 ^ d ≤ 3 ^ (s r) * 3 ^ d := Nat.mul_le_mul_right (3 ^ d) h9_le
+    have hp3 : 3 ^ (s r) * 3 ^ d = 3 ^ (s r + d) := (Nat.pow_add 3 (s r) d).symm
+    omega
+  have h2d_pos : 1 ≤ 2 ^ d := Nat.one_le_pow _ 2 (by decide)
+  have h15_lt : 5 * R_tail < 3 ^ (s r + d) := by omega
+  exact ⟨hscaled, ⟨hR_odd, hdiff, hmod_val⟩, ⟨h15_le, h15_lt⟩⟩
+
+/-! ## 79. Theorem SB.79: Kempner 2-Adic Rational-Target Obstruction & Irrationality Bridge -/
+
+/-- **Kempner 2-Adic Rational-Target Obstruction & Irrationality Bridge
+(`kempner_rational_target_obstruction_and_automaton_irrationality_bridge`, Theorem SB.79)**:
+Suppose `ValidBlockChain b_0 s u (K + 1)` holds with `∀ k < K, 2 ≤ s k`.
+Setting `P_0 = oddReturnP (orbit b_0 (blockSteps s 0))`, `T_K = blockSteps s K`,
+`S_K = T_K + s K`, and `A_K = renewalNumerator s K`:
+1. **Simultaneous $\mathbb{R} \times \mathbb{Q}_2$ Kempner Partial-Sum Lock**:
+   `3 ^ T_K * P_0 + A_K = 2 ^ S_K * u K`,
+   `Nat.Coprime (2 ^ S_K * u K) (3 ^ T_K)`,
+   `(2 ^ S_K * u K) / 3 ^ T_K = P_0`,
+   `(2 ^ S_K * u K) % 3 ^ T_K = A_K`, and
+   `(3 ^ T_K * P_0 + A_K) % 2 ^ (S_K + 1) = 2 ^ S_K`, and
+2. **2-Adic Non-Integrality / Irrationality Contradiction Bridge**:
+   For any candidate integer `M_0 : ℕ`, if `(3 ^ T_K * M_0 + A_K) % 2 ^ S_K ≠ 0`,
+   then `P_0 ≠ M_0`! -/
+theorem kempner_rational_target_obstruction_and_automaton_irrationality_bridge
+    {b_0 K : ℕ} {s u : ℕ → ℕ}
+    (hchain : ValidBlockChain b_0 s u (K + 1))
+    (hs2 : ∀ k < K, 2 ≤ s k) :
+    let P_0 := oddReturnP (orbit b_0 (blockSteps s 0))
+    let T_K := blockSteps s K
+    let S_K := T_K + s K
+    let A_K := renewalNumerator s K
+    (3 ^ T_K * P_0 + A_K = 2 ^ S_K * u K ∧
+      Nat.Coprime (2 ^ S_K * u K) (3 ^ T_K) ∧
+      (2 ^ S_K * u K) / 3 ^ T_K = P_0 ∧
+      (2 ^ S_K * u K) % 3 ^ T_K = A_K ∧
+      (3 ^ T_K * P_0 + A_K) % 2 ^ (S_K + 1) = 2 ^ S_K) ∧
+      (∀ M_0 : ℕ, (3 ^ T_K * M_0 + A_K) % 2 ^ S_K ≠ 0 → P_0 ≠ M_0) := by
+  intro P_0 T_K S_K A_K
+  have h28 := bridge_a_dual_universe_series_lowest_terms_and_uniqueness hchain hs2
+  dsimp only at h28
+  refine ⟨⟨h28.1.symm, h28.2.2.1, h28.2.2.2.1, h28.2.2.2.2.1, h28.2.2.2.2.2.1⟩, ?_⟩
+  intro M_0 hne heq
+  apply hne
+  rw [← heq, h28.1.symm]
+  exact Nat.mul_mod_right (2 ^ S_K) (u K)
+
+/-! ## 80. Theorem SB.80: Grand 80-Theorem Synthesis of the Kempner 2-Adic Base-$(2/3)$ Tower -/
+
+/-- **Grand 80-Theorem Synthesis of the Kempner 2-Adic Base-$(2/3)$ Tower
+(`grand_kempner_two_adic_expansion_80_synthesis`, Theorem SB.80)**:
+Unifies the greedy 2-adic base-$(2/3)$ Kempner expansion law (`SB.77`),
+the two-horizon Kempner tail exact valuation and $1/5$ bound (`SB.78`),
+and the 2-adic rational-target obstruction bridge (`SB.79`) with the
+76-theorem global dominance and product-formula synthesis (`SB.76`). -/
+theorem grand_kempner_two_adic_expansion_80_synthesis :
+    (∀ {b_0 K : ℕ} {s u : ℕ → ℕ},
+      ValidBlockChain b_0 s u (K + 1) →
+      (∀ k < K, 2 ≤ s k) →
+      let P_0 := oddReturnP (orbit b_0 (blockSteps s 0))
+      ∀ r ≤ K,
+        (3 ^ (blockSteps s r) * P_0 + renewalNumerator s r) %
+            2 ^ (blockSteps s (r + 1) + 1) =
+          2 ^ (blockSteps s (r + 1))) ∧
+    (∀ {b_0 r M : ℕ} {s u : ℕ → ℕ},
+      ValidBlockChain b_0 s u (r + 1 + M + 1) →
+      2 ≤ s r →
+      (∀ k < M, 2 ≤ s (r + 1 + k)) →
+      let s' := fun t => s (r + 1 + t)
+      let d := blockSteps s' M
+      let R_tail := 3 ^ d + renewalNumerator s' M
+      R_tail % 2 = 1 ∧ 5 * R_tail + 4 * 2 ^ d ≤ 3 ^ (s r + d)) ∧
+    (∀ {b_0 K : ℕ} {s u : ℕ → ℕ},
+      ValidBlockChain b_0 s u (K + 1) →
+      (∀ k < K, 2 ≤ s k) →
+      let P_0 := oddReturnP (orbit b_0 (blockSteps s 0))
+      let T_K := blockSteps s K
+      let S_K := T_K + s K
+      let A_K := renewalNumerator s K
+      ∀ M_0 : ℕ, (3 ^ T_K * M_0 + A_K) % 2 ^ S_K ≠ 0 → P_0 ≠ M_0) := by
+  refine ⟨?_, ?_, ?_⟩
+  · intro b_0 K s u hchain hs2 P_0 r hr
+    exact ((greedy_two_adic_base_two_thirds_kempner_step_and_prefix_law hchain hs2).1 r hr).2.2
+  · intro b_0 r M s u hchain hs_r hs_tail
+    have h78 := two_horizon_kempner_tail_exact_valuation_and_one_fifth_bound hchain hs_r hs_tail
+    exact ⟨h78.2.1.1, h78.2.2.1⟩
+  · intro b_0 K s u hchain hs2
+    exact (kempner_rational_target_obstruction_and_automaton_irrationality_bridge hchain hs2).2
+
 
 #check @archimedean_rung_ceiling_and_stepSum_bound
 #check @unit_quotient_even_rung_instant_death_and_odd_rung_mod64_identity
@@ -5967,6 +6210,10 @@ theorem grand_global_dominance_and_product_formula_76_synthesis :
 #check @global_multiplicative_to_additive_product_formula_bridge
 #check @two_window_ridout_subspace_tail_cancellation_bridge
 #check @grand_global_dominance_and_product_formula_76_synthesis
+#check @greedy_two_adic_base_two_thirds_kempner_step_and_prefix_law
+#check @two_horizon_kempner_tail_exact_valuation_and_one_fifth_bound
+#check @kempner_rational_target_obstruction_and_automaton_irrationality_bridge
+#check @grand_kempner_two_adic_expansion_80_synthesis
 
 #print axioms archimedean_rung_ceiling_and_stepSum_bound
 #print axioms unit_quotient_even_rung_instant_death_and_odd_rung_mod64_identity

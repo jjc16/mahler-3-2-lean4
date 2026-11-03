@@ -682,7 +682,35 @@ Unifies `SB.73–SB.75` with Wave 11 (`SB.69–SB.72`), completing all **76 `sor
 
 ---
 
-## 19. Verification Instructions
+## 19. Greedy 2-Adic Base-$(2/3)$ Kempner Expansion, Two-Horizon Kempner Tail Valuation, & The Rational-Target Obstruction Bridge (Theorems `SB.77–SB.80`)
+
+In Sections 77–80 of [`SemigroupBreakoutTheorems.lean`](./SemigroupBreakoutTheorems.lean) (verified computationally across 10,032 configurations in [`sandbox_wave13_kempner_two_adic_expansion.py`](./sandbox_wave13_kempner_two_adic_expansion.py)), we formalized the exact equivalence between the Mahler block recurrence and the greedy 2-adic base-$(2/3)$ Kempner expansion of $-P_0$:
+
+### 19.1 Theorem SB.77 (`greedy_two_adic_base_two_thirds_kempner_step_and_prefix_law`)
+Because $|2/3|_\infty = 2/3 < 1$ and $|2/3|_2 = 1/2 < 1$, the Kempner series $\sum_{r=1}^\infty (2/3)^{T_r}$ converges simultaneously in $\mathbb{R}$ and in $\mathbb{Q}_2$. Across any `ValidBlockChain b_0 s u (K + 1)` with $s_k \ge 2$:
+1. **Greedy 2-Adic Base-$(2/3)$ Prefix Valuation Law (`∀ r ≤ K`):**
+   $$\boxed{3^{T_r} P_0 + A_{0,r} = 2^{T_{r+1}} u_r, \qquad \big(3^{T_r} P_0 + A_{0,r}\big) \bmod 2^{T_{r+1}} = 0, \qquad \big(3^{T_r} P_0 + A_{0,r}\big) \bmod 2^{T_{r+1}+1} = 2^{T_{r+1}}!}$$
+2. **Greedy Single-Digit Base-$(2/3)$ Remainder Update (`∀ r < K`):**
+   Adding the $(r+1)$-th base-$(2/3)$ digit $2^{T_{r+1}}$ updates the cleared partial sum via:
+   $$\boxed{3^{s_r}\big(3^{T_r} P_0 + A_{0,r}\big) + 2^{T_{r+1}} = 3^{T_{r+1}} P_0 + A_{0,r+1} = 2^{T_{r+1}}\big(3^{s_r} u_r + 1\big) = 2^{T_{r+2}} u_{r+1}.}$$
+
+### 19.2 Theorem SB.78 (`two_horizon_kempner_tail_exact_valuation_and_one_fifth_bound`)
+Between any two horizons $K_1 = r$ and $K_2 = r + 1 + M$ ($s_r \ge 2$, $s_{r+1+k} \ge 2$, $T_{1,\text{next}} = T_r + s_r$, $d = \sum_{k=0}^{M-1} s_{r+1+k}$, $R_{\text{tail}} = 3^d + \text{renewalNumerator}(s', M)$):
+1. **Exact Two-Horizon Kempner Tail Decomposition:**
+   $$\boxed{2^{T_{K_2} + s_{K_2}} u_{K_2} - 3^{s_r + d}\big(2^{T_{1,\text{next}}} u_{K_1}\big) = 2^{T_{1,\text{next}}} \cdot R_{\text{tail}} \qquad\text{with}\qquad R_{\text{tail}} \bmod 2 = 1,}$$
+   so the cleared Kempner tail between $K_1$ and $K_2$ has **exact 2-adic valuation $T_{K_1+1}$**!
+2. **The $1/5$ Reduced Ceiling on the Kempner Tail Core:**
+   $$\boxed{5 R_{\text{tail}} + 4 \cdot 2^d \le 3^{s_r + d} \qquad\text{and}\qquad 5 R_{\text{tail}} < 3^{s_r + d}!}$$
+
+### 19.3 Theorem SB.79 (`kempner_rational_target_obstruction_and_automaton_irrationality_bridge`)
+Packages the simultaneous $\mathbb{R} \times \mathbb{Q}_2$ Kempner partial-sum lock with the 2-adic non-integrality exclusion law: for any candidate integer $M_0 \in \mathbb{N}$, if a 2-adic Mahler/Kempner transcendence or irrationality certificate establishes $(3^{T_K} M_0 + A_{0,K}) \bmod 2^{T_K + s_K} \ne 0$, then $P_0 \ne M_0$.
+
+### 19.4 Theorem SB.80 (`grand_kempner_two_adic_expansion_80_synthesis`)
+Unifies `SB.77–SB.79` with Wave 12 (`SB.73–SB.76`), completing all **80 `sorry`-free, warning-free theorems (`SB.1–SB.80`)**.
+
+---
+
+## 20. Verification Instructions
 
 To verify the cordoned-off Lean 4 proofs without modifying the root 226-file build:
 
@@ -703,4 +731,5 @@ python semigroup_breakout\sandbox_wave9_seed_finiteness_and_extrema.py
 python semigroup_breakout\sandbox_wave10_lte2_baker_and_finiteness.py
 python semigroup_breakout\sandbox_wave11_upgraded_baker_and_return_extinction.py
 python semigroup_breakout\sandbox_wave12_global_dominance_and_product_formula.py
+python semigroup_breakout\sandbox_wave13_kempner_two_adic_expansion.py
 ```
