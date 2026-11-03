@@ -215,4 +215,12 @@ Across any \texttt{ValidBlockChain b\_0 s u (K + 4)} with $\forall k < K + 4,\, 
 \end{enumerate}
 \end{theorem}
 
+\begin{theorem}[Seed Finiteness, Extrema Seesaw, \& The Trough-Rebound Trap (Theorems SB.61--SB.64), \texttt{local\_descent\_rung\_jump\_and\_multi\_step\_descent\_explosion}, \texttt{trough\_rebound\_compound\_interest\_and\_local\_minimum\_trap}, \texttt{finite\_seed\_global\_peak\_trough\_seesaw\_and\_return\_barrier}, \texttt{grand\_seed\_finiteness\_and\_extrema\_64\_synthesis}]
+\begin{enumerate}
+  \item \textbf{Local Descent Rung Jump \& Staircase Explosion (SB.61):} Whenever $u_{r+1} \le u_r$, we have $3^{s_r} < 2^{s_{r+1}}$ ($s_r \ge 2 \implies s_{r+1} \ge 4$, $s_r \ge 4 \implies s_{r+1} \ge 7$, $s_r \ge 7 \implies s_{r+1} \ge 12$), and across any $3$-step non-increasing run $u_{r+3} \le u_{r+2} \le u_{r+1} \le u_r$ with $s_r \ge 2$, $4 \le s_{r+1} \wedge 7 \le s_{r+2} \wedge 12 \le s_{r+3}$.
+  \item \textbf{Trough-Rebound Compound-Interest Trap (SB.62):} Whenever $2 \le s_r$ and $u_{r+1} \le u_r$, $4 \le s_{r+1}$, $81 u_{r+1} + 1 \le 2^{s_{r+2}} u_{r+2}$, and $81(3^{s_r} u_r + 1) + 16 \le 16 \cdot 2^{s_{r+2}} u_{r+2}$; if also $2 \le s_{r+2} \le s_{r+1}$, then $9 \cdot 3^{s_{r+1}-s_{r+2}} u_{r+1} + 1 \le 4 u_{r+2}$.
+  \item \textbf{Finite-Seed Global Peak--Trough Seesaw \& Post-Horizon Uniqueness (SB.63):} Across $K \ge 1$ blocks with $\forall k < K,\, 2 \le s_k$, $3^{T_K} \cdot 2^{s_0} u_0 < 2^{T_K + s_K} u_K$ and $5 \cdot 2^{T_K + s_K} u_K + 4 \cdot 2^{T_K} \le 3^{T_K}(5 \cdot 2^{s_0} u_0 + 4)$; consequently $u_K \le u_0 \implies 3^{T_K} \cdot 2^{s_0} < 2^{T_K + s_K}$ and $s_K \le s_0 \implies 3^{T_K} u_0 < 2^{T_K} u_K$.
+\end{enumerate}
+\end{theorem}
+
 \end{document}

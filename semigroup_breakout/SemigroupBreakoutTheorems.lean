@@ -4327,6 +4327,335 @@ theorem grand_jk_diagonal_and_three_heavy_regime_60_synthesis :
     have h59 := three_adic_seed_diagonal_shift_and_dead_zone_invariance_law.1 hchain hs2 hP0
     exact ⟨h59.2.1, h59.2.2.2.1, h59.2.2.2.2.2⟩
 
+/-! ## 61. Theorem SB.61: Local Descent Rung Jump & Multi-Step Descent Staircase Explosion -/
+
+/-- Helper: whenever `3 ^ a < 2 ^ b`, lower bounds on `a` force exponential jumps in `b`
+(`2 ≤ a → 4 ≤ b`, `4 ≤ a → 7 ≤ b`, `7 ≤ a → 12 ≤ b`). -/
+theorem two_pow_exp_jump_of_three_pow_lt {a b : ℕ} (hlt : 3 ^ a < 2 ^ b) :
+    (2 ≤ a → 4 ≤ b) ∧ (4 ≤ a → 7 ≤ b) ∧ (7 ≤ a → 12 ≤ b) := by
+  refine ⟨?_, ?_, ?_⟩
+  · intro ha
+    have h3 : 3 ^ 2 ≤ 3 ^ a := Nat.pow_le_pow_right (by decide) ha
+    by_contra hnb
+    have hb_le : b ≤ 3 := by omega
+    have h2 : 2 ^ b ≤ 2 ^ 3 := Nat.pow_le_pow_right (by decide) hb_le
+    omega
+  · intro ha
+    have h3 : 3 ^ 4 ≤ 3 ^ a := Nat.pow_le_pow_right (by decide) ha
+    by_contra hnb
+    have hb_le : b ≤ 6 := by omega
+    have h2 : 2 ^ b ≤ 2 ^ 6 := Nat.pow_le_pow_right (by decide) hb_le
+    omega
+  · intro ha
+    have h3 : 3 ^ 7 ≤ 3 ^ a := Nat.pow_le_pow_right (by decide) ha
+    by_contra hnb
+    have hb_le : b ≤ 11 := by omega
+    have h2 : 2 ^ b ≤ 2 ^ 11 := Nat.pow_le_pow_right (by decide) hb_le
+    omega
+
+/-- **Local Descent Rung Jump & Multi-Step Descent Staircase Explosion
+(`local_descent_rung_jump_and_multi_step_descent_explosion`, Theorem SB.61)**:
+1. **Single-Step Descent Law**:
+   In any `ValidBlockChain b_0 s u (r + 2)`, if the odd core does not increase
+   (`u (r + 1) ≤ u r`), then `3 ^ (s r) < 2 ^ (s (r + 1))`, forcing:
+   `2 ≤ s r → 4 ≤ s (r + 1)`, `4 ≤ s r → 7 ≤ s (r + 1)`, and `7 ≤ s r → 12 ≤ s (r + 1)`.
+2. **Multi-Step Non-Increasing Run Law**:
+   In any `ValidBlockChain b_0 s u (r + m + 1)`, if `∀ k < m, u (r + k + 1) ≤ u (r + k)`,
+   then `∀ k < m, 3 ^ (s (r + k)) < 2 ^ (s (r + k + 1))`.
+3. **Three-Step Descent Staircase Explosion (`2 → 4 → 7 → 12`)**:
+   In any `ValidBlockChain b_0 s u (r + 4)` with `2 ≤ s r` and
+   `u (r + 1) ≤ u r`, `u (r + 2) ≤ u (r + 1)`, `u (r + 3) ≤ u (r + 2)`,
+   the rung heights must satisfy `4 ≤ s (r + 1) ∧ 7 ≤ s (r + 2) ∧ 12 ≤ s (r + 3)`! -/
+theorem local_descent_rung_jump_and_multi_step_descent_explosion :
+    (∀ {b_0 r : ℕ} {s u : ℕ → ℕ},
+      ValidBlockChain b_0 s u (r + 2) →
+      u (r + 1) ≤ u r →
+      3 ^ (s r) < 2 ^ (s (r + 1)) ∧
+        (2 ≤ s r → 4 ≤ s (r + 1)) ∧
+        (4 ≤ s r → 7 ≤ s (r + 1)) ∧
+        (7 ≤ s r → 12 ≤ s (r + 1))) ∧
+    (∀ {b_0 r m : ℕ} {s u : ℕ → ℕ},
+      ValidBlockChain b_0 s u (r + m + 1) →
+      (∀ k < m, u (r + k + 1) ≤ u (r + k)) →
+      ∀ k < m, 3 ^ (s (r + k)) < 2 ^ (s (r + k + 1))) ∧
+    (∀ {b_0 r : ℕ} {s u : ℕ → ℕ},
+      ValidBlockChain b_0 s u (r + 4) →
+      2 ≤ s r →
+      u (r + 1) ≤ u r →
+      u (r + 2) ≤ u (r + 1) →
+      u (r + 3) ≤ u (r + 2) →
+      4 ≤ s (r + 1) ∧ 7 ≤ s (r + 2) ∧ 12 ≤ s (r + 3)) := by
+  have hstep :
+      ∀ {b_0 r : ℕ} {s u : ℕ → ℕ},
+        ValidBlockChain b_0 s u (r + 2) →
+        u (r + 1) ≤ u r →
+        3 ^ (s r) < 2 ^ (s (r + 1)) ∧
+          (2 ≤ s r → 4 ≤ s (r + 1)) ∧
+          (4 ≤ s r → 7 ≤ s (r + 1)) ∧
+          (7 ≤ s r → 12 ≤ s (r + 1)) := by
+    intro b_0 r s u hchain hle
+    have h19 : 2 ^ (s (r + 1)) * u (r + 1) = 3 ^ (s r) * u r + 1 :=
+      (one_step_backward_quotient_recovery_and_mod_three_pow_one hchain).1
+    have hmul : 2 ^ (s (r + 1)) * u (r + 1) ≤ 2 ^ (s (r + 1)) * u r :=
+      Nat.mul_le_mul_left (2 ^ (s (r + 1))) hle
+    have hlt_prod : 3 ^ (s r) * u r < 2 ^ (s (r + 1)) * u r := by omega
+    have hlt_pow : 3 ^ (s r) < 2 ^ (s (r + 1)) :=
+      Nat.lt_of_mul_lt_mul_right hlt_prod
+    have hjumps := two_pow_exp_jump_of_three_pow_lt hlt_pow
+    exact ⟨hlt_pow, hjumps.1, hjumps.2.1, hjumps.2.2⟩
+  refine ⟨hstep, ?_, ?_⟩
+  · intro b_0 r m s u hchain hdesc k hk
+    have hch_k : ValidBlockChain b_0 s u (r + k + 2) :=
+      fun t ht => hchain t (by omega)
+    exact (hstep hch_k (hdesc k hk)).1
+  · intro b_0 r s u hchain hsr hu1 hu2 hu3
+    have hch1 : ValidBlockChain b_0 s u (r + 2) := fun t ht => hchain t (by omega)
+    have hch2 : ValidBlockChain b_0 s u (r + 1 + 2) := fun t ht => hchain t (by omega)
+    have hch3 : ValidBlockChain b_0 s u (r + 2 + 2) := fun t ht => hchain t (by omega)
+    have hs1 : 4 ≤ s (r + 1) := (hstep hch1 hu1).2.1 hsr
+    have hs2 : 7 ≤ s (r + 2) := (hstep hch2 hu2).2.2.1 hs1
+    have hs3 : 12 ≤ s (r + 3) := (hstep hch3 hu3).2.2.2 hs2
+    exact ⟨hs1, hs2, hs3⟩
+
+/-! ## 62. Theorem SB.62: Trough-Rebound Compound-Interest Identity & Local Minimum Trap -/
+
+/-- **Trough-Rebound Compound-Interest Identity & Local Minimum Trap
+(`trough_rebound_compound_interest_and_local_minimum_trap`, Theorem SB.62)**:
+Suppose `ValidBlockChain b_0 s u (r + 3)` holds.
+1. **Exact Trough-Rebound Compound-Interest Identity**:
+   `2 ^ (s (r + 1) + s (r + 2)) * u (r + 2) = 3 ^ (s r + s (r + 1)) * u r + 3 ^ (s (r + 1)) + 2 ^ (s (r + 1))`,
+2. **Entering a Trough ($u_{r+1} \le u_r$) Charges $\ge (81/16)$ Compound Interest**:
+   Whenever `2 ≤ s r` and `u (r + 1) ≤ u r`:
+   - `4 ≤ s (r + 1)`,
+   - `81 * u (r + 1) + 1 ≤ 2 ^ (s (r + 2)) * u (r + 2)`, and
+   - `81 * (3 ^ (s r) * u r + 1) + 16 ≤ 16 * 2 ^ (s (r + 2)) * u (r + 2)`, and
+3. **Exiting at a Local Rung Peak ($2 \le s_{r+2} \le s_{r+1}$)**:
+   Whenever `2 ≤ s (r + 2)` and `s (r + 2) ≤ s (r + 1)`,
+   `9 * 3 ^ (s (r + 1) - s (r + 2)) * u (r + 1) + 1 ≤ 4 * u (r + 2)`! -/
+theorem trough_rebound_compound_interest_and_local_minimum_trap
+    {b_0 r : ℕ} {s u : ℕ → ℕ}
+    (hchain : ValidBlockChain b_0 s u (r + 3)) :
+    2 ^ (s (r + 1) + s (r + 2)) * u (r + 2) =
+        3 ^ (s r + s (r + 1)) * u r + 3 ^ (s (r + 1)) + 2 ^ (s (r + 1)) ∧
+      (2 ≤ s r → u (r + 1) ≤ u r →
+        4 ≤ s (r + 1) ∧
+          81 * u (r + 1) + 1 ≤ 2 ^ (s (r + 2)) * u (r + 2) ∧
+          81 * (3 ^ (s r) * u r + 1) + 16 ≤ 16 * 2 ^ (s (r + 2)) * u (r + 2)) ∧
+      (2 ≤ s (r + 2) → s (r + 2) ≤ s (r + 1) →
+        9 * 3 ^ (s (r + 1) - s (r + 2)) * u (r + 1) + 1 ≤ 4 * u (r + 2)) := by
+  have hch1 : ValidBlockChain b_0 s u (r + 2) := fun t ht => hchain t (by omega)
+  have hstep1 : 2 ^ (s (r + 1)) * u (r + 1) = 3 ^ (s r) * u r + 1 :=
+    (one_step_backward_quotient_recovery_and_mod_three_pow_one hch1).1
+  have hstep2 : 2 ^ (s (r + 2)) * u (r + 2) = 3 ^ (s (r + 1)) * u (r + 1) + 1 :=
+    (one_step_backward_quotient_recovery_and_mod_three_pow_one hchain).1
+  have hid :
+      2 ^ (s (r + 1) + s (r + 2)) * u (r + 2) =
+        3 ^ (s r + s (r + 1)) * u r + 3 ^ (s (r + 1)) + 2 ^ (s (r + 1)) := by
+    calc
+      2 ^ (s (r + 1) + s (r + 2)) * u (r + 2)
+          = 2 ^ (s (r + 1)) * (2 ^ (s (r + 2)) * u (r + 2)) := by
+            rw [Nat.pow_add 2 (s (r + 1)) (s (r + 2))]
+            ring
+      _ = 2 ^ (s (r + 1)) * (3 ^ (s (r + 1)) * u (r + 1) + 1) := by rw [hstep2]
+      _ = 3 ^ (s (r + 1)) * (2 ^ (s (r + 1)) * u (r + 1)) + 2 ^ (s (r + 1)) := by ring
+      _ = 3 ^ (s (r + 1)) * (3 ^ (s r) * u r + 1) + 2 ^ (s (r + 1)) := by rw [hstep1]
+      _ = 3 ^ (s r + s (r + 1)) * u r + 3 ^ (s (r + 1)) + 2 ^ (s (r + 1)) := by
+            rw [Nat.pow_add 3 (s r) (s (r + 1))]
+            ring
+  refine ⟨hid, ?_, ?_⟩
+  · intro hsr hu1
+    have hs1 : 4 ≤ s (r + 1) :=
+      (local_descent_rung_jump_and_multi_step_descent_explosion.1 hch1 hu1).2.1 hsr
+    have h81_pow : 81 ≤ 3 ^ (s (r + 1)) := by
+      have h34 : 3 ^ 4 ≤ 3 ^ (s (r + 1)) := Nat.pow_le_pow_right (by decide) hs1
+      omega
+    have h81_u : 81 * u (r + 1) + 1 ≤ 2 ^ (s (r + 2)) * u (r + 2) := by
+      have hm : 81 * u (r + 1) ≤ 3 ^ (s (r + 1)) * u (r + 1) :=
+        Nat.mul_le_mul_right (u (r + 1)) h81_pow
+      omega
+    obtain ⟨m, hm⟩ : ∃ m : ℕ, s (r + 1) = m + 4 := ⟨s (r + 1) - 4, by omega⟩
+    have h2m_pos : 0 < 2 ^ m := Nat.pow_pos (by decide)
+    have hle_m : 2 ^ m ≤ 3 ^ m := Nat.pow_le_pow_left (by decide) m
+    have hcompound :
+        81 * (3 ^ (s r) * u r + 1) + 16 ≤ 16 * 2 ^ (s (r + 2)) * u (r + 2) := by
+      have hmul_m : 2 ^ m * (81 * (3 ^ (s r) * u r + 1)) ≤
+          3 ^ m * (81 * (3 ^ (s r) * u r + 1)) :=
+        Nat.mul_le_mul_right (81 * (3 ^ (s r) * u r + 1)) hle_m
+      have hstep_m :
+          2 ^ m * (16 * 2 ^ (s (r + 2)) * u (r + 2)) =
+            3 ^ m * (81 * (3 ^ (s r) * u r + 1)) + 2 ^ m * 16 := by
+        calc
+          2 ^ m * (16 * 2 ^ (s (r + 2)) * u (r + 2))
+              = 2 ^ (s (r + 1)) * (2 ^ (s (r + 2)) * u (r + 2)) := by
+                rw [hm, Nat.pow_add 2 m 4]
+                ring
+          _ = 2 ^ (s (r + 1)) * (3 ^ (s (r + 1)) * u (r + 1) + 1) := by rw [hstep2]
+          _ = 3 ^ (s (r + 1)) * (2 ^ (s (r + 1)) * u (r + 1)) + 2 ^ (s (r + 1)) := by ring
+          _ = 3 ^ (s (r + 1)) * (3 ^ (s r) * u r + 1) + 2 ^ (s (r + 1)) := by rw [hstep1]
+          _ = 3 ^ m * (81 * (3 ^ (s r) * u r + 1)) + 2 ^ m * 16 := by
+                rw [hm, Nat.pow_add 3 m 4, Nat.pow_add 2 m 4]
+                ring
+      have hle_prod :
+          2 ^ m * (81 * (3 ^ (s r) * u r + 1) + 16) ≤
+            2 ^ m * (16 * 2 ^ (s (r + 2)) * u (r + 2)) := by
+        have hdist :
+            2 ^ m * (81 * (3 ^ (s r) * u r + 1) + 16) =
+              2 ^ m * (81 * (3 ^ (s r) * u r + 1)) + 2 ^ m * 16 := by ring
+        omega
+      exact Nat.le_of_mul_le_mul_left hle_prod h2m_pos
+    exact ⟨hs1, h81_u, hcompound⟩
+  · intro hs2_ge hle_s
+    set j := s (r + 1)
+    set k := s (r + 2)
+    set Δ := j - k
+    have hj_eq : j = Δ + k := by omega
+    have hdecomp : 2 ^ k * u (r + 2) = 3 ^ Δ * 3 ^ k * u (r + 1) + 1 := by
+      change 2 ^ (s (r + 2)) * u (r + 2) =
+        3 ^ (s (r + 1) - s (r + 2)) * 3 ^ (s (r + 2)) * u (r + 1) + 1
+      rw [hstep2, ← Nat.pow_add 3 (s (r + 1) - s (r + 2)) (s (r + 2)), ← hj_eq]
+    obtain ⟨m, hm⟩ : ∃ m : ℕ, k = m + 2 := ⟨k - 2, by omega⟩
+    have hle_m : 2 ^ m ≤ 3 ^ m := Nat.pow_le_pow_left (by decide) m
+    have hmul_le : 2 ^ m * (9 * 3 ^ Δ * u (r + 1)) ≤ 3 ^ m * (9 * 3 ^ Δ * u (r + 1)) :=
+      Nat.mul_le_mul_right (9 * 3 ^ Δ * u (r + 1)) hle_m
+    have hpow2 : 2 ^ k * u (r + 2) = 2 ^ m * (4 * u (r + 2)) := by
+      rw [hm, Nat.pow_add 2 m 2]
+      ring
+    have hpow3 : 3 ^ Δ * 3 ^ k * u (r + 1) = 3 ^ m * (9 * 3 ^ Δ * u (r + 1)) := by
+      rw [hm, Nat.pow_add 3 m 2]
+      ring
+    have hlt_m : 2 ^ m * (9 * 3 ^ Δ * u (r + 1)) < 2 ^ m * (4 * u (r + 2)) := by omega
+    exact Nat.lt_of_mul_lt_mul_left hlt_m
+
+/-! ## 63. Theorem SB.63: Finite-Seed Global Peak–Trough Seesaw & Post-Horizon Exhaustion Law -/
+
+/-- **Finite-Seed Global Peak–Trough Seesaw & Post-Horizon Exhaustion Law
+(`finite_seed_global_peak_trough_seesaw_and_return_barrier`, Theorem SB.63)**:
+Suppose `ValidBlockChain b_0 s u (K + 1)` holds with `∀ k < K, 2 ≤ s k` and `1 ≤ K`.
+Setting `P k = oddReturnP (orbit b_0 (blockSteps s k))`, `T_K = blockSteps s K`, and
+`A_K = renewalNumerator s K`:
+1. **Strict Global Seesaw Sandwich on $2^{s_K} \cdot u_K$**:
+   `3 ^ T_K * 2 ^ (s 0) * u 0 < 2 ^ (T_K + s K) * u K` and
+   `5 * (2 ^ (T_K + s K) * u K) + 4 * 2 ^ T_K ≤ 3 ^ T_K * (5 * 2 ^ (s 0) * u 0 + 4)`,
+2. **Global Return-to-Baseline Rung Spike (`u K ≤ u 0`)**:
+   Whenever the odd core returns to or dips below its initial value (`u K ≤ u 0`),
+   the single rung `s K` must absorb the entire $(3/2)^{T_K}$ growth of the orbit:
+   `3 ^ T_K * 2 ^ (s 0) < 2 ^ (T_K + s K)`,
+3. **Bounded-Rung Odd-Core Exponential Divergence (`s K ≤ s 0`)**:
+   Whenever the rung height does not exceed the initial rung (`s K ≤ s 0`),
+   the odd core must strictly exceed the $(3/2)^{T_K}$ exponential floor:
+   `3 ^ T_K * u 0 < 2 ^ T_K * u K`, and
+4. **Post-Bit-Horizon Seed Exhaustion & Uniqueness (`P 0 < 2 ^ (T_K + s K)`)**:
+   `(2 ^ (T_K + s K) * u K) / 3 ^ T_K = P 0`,
+   `base3DigitSum (2 ^ (T_K + s K) * u K) = base3DigitSum (P 0) + base3DigitSum A_K`, and
+   if `P 0 < 2 ^ (T_K + s K)`, then for any `P_0' < 2 ^ (T_K + s K)` satisfying
+   `(3 ^ T_K * P_0' + A_K) % 2 ^ (T_K + s K) = 0`, we have `P_0' = P 0`! -/
+theorem finite_seed_global_peak_trough_seesaw_and_return_barrier
+    {b_0 K : ℕ} {s u : ℕ → ℕ}
+    (hchain : ValidBlockChain b_0 s u (K + 1))
+    (hs2 : ∀ k < K, 2 ≤ s k)
+    (hK : 1 ≤ K) :
+    let P := fun k => oddReturnP (orbit b_0 (blockSteps s k))
+    let T_K := blockSteps s K
+    let A_K := renewalNumerator s K
+    (3 ^ T_K * 2 ^ (s 0) * u 0 < 2 ^ (T_K + s K) * u K ∧
+      5 * (2 ^ (T_K + s K) * u K) + 4 * 2 ^ T_K ≤ 3 ^ T_K * (5 * 2 ^ (s 0) * u 0 + 4)) ∧
+      (u K ≤ u 0 → 3 ^ T_K * 2 ^ (s 0) < 2 ^ (T_K + s K)) ∧
+      (s K ≤ s 0 → 3 ^ T_K * u 0 < 2 ^ T_K * u K) ∧
+      ((2 ^ (T_K + s K) * u K) / 3 ^ T_K = P 0 ∧
+        base3DigitSum (2 ^ (T_K + s K) * u K) = base3DigitSum (P 0) + base3DigitSum A_K ∧
+        (P 0 < 2 ^ (T_K + s K) →
+          ∀ P_0' < 2 ^ (T_K + s K),
+            (3 ^ T_K * P_0' + A_K) % 2 ^ (T_K + s K) = 0 →
+            P_0' = P 0)) := by
+  intro P T_K A_K
+  have h28 := bridge_a_dual_universe_series_lowest_terms_and_uniqueness hchain hs2
+  have h32 := (bridge_c_multi_step_dual_base2_base3_zero_carry_split hchain hs2).1
+  dsimp only at h28 h32
+  have hid : 2 ^ (T_K + s K) * u K = 3 ^ T_K * P 0 + A_K := h28.1
+  have hP0 : P 0 = 2 ^ (s 0) * u 0 := (hchain 0 (by omega)).2.2
+  have hinv : 5 * A_K + 4 * 2 ^ T_K ≤ 4 * 3 ^ T_K :=
+    five_mul_renewalNumerator_add_four_mul_two_pow_le s K hs2
+  have hA_pos : 1 ≤ A_K := by
+    obtain ⟨m, hm⟩ : ∃ m : ℕ, K = m + 1 := ⟨K - 1, by omega⟩
+    have hpow_pos : 1 ≤ 2 ^ (blockSteps s m + s m) := Nat.one_le_pow _ 2 (by decide)
+    have hA_eq : A_K = 3 ^ (s m) * renewalNumerator s m + 2 ^ (blockSteps s m + s m) := by
+      change renewalNumerator s K =
+        3 ^ (s m) * renewalNumerator s m + 2 ^ (blockSteps s m + s m)
+      rw [hm]
+      rfl
+    omega
+  have hlow : 3 ^ T_K * 2 ^ (s 0) * u 0 < 2 ^ (T_K + s K) * u K := by
+    have hmul_P0 : 3 ^ T_K * P 0 = 3 ^ T_K * 2 ^ (s 0) * u 0 := by
+      rw [hP0]
+      ring
+    omega
+  have hhigh :
+      5 * (2 ^ (T_K + s K) * u K) + 4 * 2 ^ T_K ≤ 3 ^ T_K * (5 * 2 ^ (s 0) * u 0 + 4) := by
+    have hexp :
+        5 * (2 ^ (T_K + s K) * u K) = 3 ^ T_K * (5 * 2 ^ (s 0) * u 0) + 5 * A_K := by
+      rw [hid, hP0]
+      ring
+    have hrhs :
+        3 ^ T_K * (5 * 2 ^ (s 0) * u 0 + 4) =
+          3 ^ T_K * (5 * 2 ^ (s 0) * u 0) + 4 * 3 ^ T_K := by ring
+    omega
+  refine ⟨⟨hlow, hhigh⟩, ?_, ?_, ?_⟩
+  · intro hu_le
+    have hmul_le : 2 ^ (T_K + s K) * u K ≤ 2 ^ (T_K + s K) * u 0 :=
+      Nat.mul_le_mul_left (2 ^ (T_K + s K)) hu_le
+    have hlt_prod : (3 ^ T_K * 2 ^ (s 0)) * u 0 < 2 ^ (T_K + s K) * u 0 := by omega
+    exact Nat.lt_of_mul_lt_mul_right hlt_prod
+  · intro hs_le
+    have h2_le : 2 ^ (s K) ≤ 2 ^ (s 0) := Nat.pow_le_pow_right (by decide) hs_le
+    have hmul_s : 2 ^ (s K) * (3 ^ T_K * u 0) ≤ 2 ^ (s 0) * (3 ^ T_K * u 0) :=
+      Nat.mul_le_mul_right (3 ^ T_K * u 0) h2_le
+    have hlhs_eq : 2 ^ (s 0) * (3 ^ T_K * u 0) = 3 ^ T_K * 2 ^ (s 0) * u 0 := by ring
+    have hrhs_eq : 2 ^ (T_K + s K) * u K = 2 ^ (s K) * (2 ^ T_K * u K) := by
+      rw [Nat.pow_add 2 T_K (s K)]
+      ring
+    have hlt_s : 2 ^ (s K) * (3 ^ T_K * u 0) < 2 ^ (s K) * (2 ^ T_K * u K) := by omega
+    exact Nat.lt_of_mul_lt_mul_left hlt_s
+  · refine ⟨h28.2.2.2.1, ?_, h28.2.2.2.2.2.2⟩
+    have hs := h32.2.2.2
+    rw [h32.1] at hs
+    exact hs
+
+/-! ## 64. Theorem SB.64: Grand 64-Theorem Synthesis of Seed Finiteness & Orbit Extrema -/
+
+/-- **Grand 64-Theorem Synthesis of Seed Finiteness & Orbit Extrema
+(`grand_seed_finiteness_and_extrema_64_synthesis`, Theorem SB.64)**:
+Unifies the local descent & $2 \to 4 \to 7 \to 12$ staircase explosion (`SB.61`),
+the trough-rebound $(81/16)$ compound-interest trap (`SB.62`), and the finite-seed
+global peak–trough seesaw & post-horizon uniqueness (`SB.63`) with the $(j+n, k+n)$
+diagonal synthesis (`SB.60`). -/
+theorem grand_seed_finiteness_and_extrema_64_synthesis :
+    (∀ {b_0 r : ℕ} {s u : ℕ → ℕ},
+      ValidBlockChain b_0 s u (r + 4) →
+      2 ≤ s r →
+      u (r + 1) ≤ u r →
+      u (r + 2) ≤ u (r + 1) →
+      u (r + 3) ≤ u (r + 2) →
+      4 ≤ s (r + 1) ∧ 7 ≤ s (r + 2) ∧ 12 ≤ s (r + 3)) ∧
+    (∀ {b_0 r : ℕ} {s u : ℕ → ℕ},
+      ValidBlockChain b_0 s u (r + 3) →
+      2 ≤ s r →
+      u (r + 1) ≤ u r →
+      4 ≤ s (r + 1) ∧
+        81 * u (r + 1) + 1 ≤ 2 ^ (s (r + 2)) * u (r + 2) ∧
+        81 * (3 ^ (s r) * u r + 1) + 16 ≤ 16 * 2 ^ (s (r + 2)) * u (r + 2)) ∧
+    (∀ {b_0 K : ℕ} {s u : ℕ → ℕ},
+      ValidBlockChain b_0 s u (K + 1) →
+      (∀ k < K, 2 ≤ s k) →
+      1 ≤ K →
+      (u K ≤ u 0 → 3 ^ (blockSteps s K) * 2 ^ (s 0) < 2 ^ (blockSteps s K + s K)) ∧
+        (s K ≤ s 0 → 3 ^ (blockSteps s K) * u 0 < 2 ^ (blockSteps s K) * u K)) := by
+  refine ⟨local_descent_rung_jump_and_multi_step_descent_explosion.2.2, ?_, ?_⟩
+  · intro b_0 r s u hchain hsr hu1
+    exact (trough_rebound_compound_interest_and_local_minimum_trap hchain).2.1 hsr hu1
+  · intro b_0 K s u hchain hs2 hK
+    have h63 := finite_seed_global_peak_trough_seesaw_and_return_barrier hchain hs2 hK
+    exact ⟨h63.2.1, h63.2.2.1⟩
+
 
 #check @archimedean_rung_ceiling_and_stepSum_bound
 #check @unit_quotient_even_rung_instant_death_and_odd_rung_mod64_identity
@@ -4388,6 +4717,10 @@ theorem grand_jk_diagonal_and_three_heavy_regime_60_synthesis :
 #check @j_ge_k_excess_explosion_binary_swelling_and_halving_debt_law
 #check @three_adic_seed_diagonal_shift_and_dead_zone_invariance_law
 #check @grand_jk_diagonal_and_three_heavy_regime_60_synthesis
+#check @local_descent_rung_jump_and_multi_step_descent_explosion
+#check @trough_rebound_compound_interest_and_local_minimum_trap
+#check @finite_seed_global_peak_trough_seesaw_and_return_barrier
+#check @grand_seed_finiteness_and_extrema_64_synthesis
 
 #print axioms archimedean_rung_ceiling_and_stepSum_bound
 #print axioms unit_quotient_even_rung_instant_death_and_odd_rung_mod64_identity
