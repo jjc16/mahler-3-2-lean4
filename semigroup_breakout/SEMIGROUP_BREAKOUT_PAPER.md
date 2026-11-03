@@ -655,7 +655,34 @@ For any $K = M + 1 \ge 1$ blocks with $s_k \ge 2$, setting $d_0 = T_K - s_0$, $S
 
 ---
 
-## 18. Verification Instructions
+## 18. Cubic/Quintic Odd-Core Subordinacy, Global Multiplicative-to-Additive Product Formula, & The Ridout Cancellation Bridge (Theorems `SB.73–SB.76`)
+
+In Sections 73–76 of [`SemigroupBreakoutTheorems.lean`](./SemigroupBreakoutTheorems.lean) (verified computationally across 10,151 configurations in [`sandbox_wave12_global_dominance_and_product_formula.py`](./sandbox_wave12_global_dominance_and_product_formula.py)), we formalized the global polynomial subordinacy of $u_K$ to $2^{T_K}$, the exact telescoped product formula across all $K$ blocks, and the two-window Ridout/Subspace cancellation bridge:
+
+### 18.1 Theorem SB.73 (`cubic_and_quintic_odd_core_subordinacy_to_two_pow`)
+Across $K = M + 1 \ge 1$ blocks with $s_k \ge 2$ ($S_0 = T_K - s_0 + s_K$):
+1. **Linear $1/5$ Envelope:** $5 \cdot 2^{S_0} u_K < 3^{T_K}(5 u_0 + 1)$.
+2. **Cubic $(3, 5)$ Global Dominance Law ($3^3 = 27 < 32 = 2^5 \implies u_K^3 \ll (2^{T_K})^2$):**
+   $$\boxed{\big(5 \cdot 2^{S_0} u_K\big)^3 < 2^{5 T_K}(5 u_0 + 1)^3 \qquad\text{and}\qquad 125 \cdot 2^{3 s_K} u_K^3 < 2^{2 T_K + 3 s_0}(5 u_0 + 1)^3!}$$
+3. **Quintic $(5, 8)$ Global Dominance Law ($3^5 = 243 < 256 = 2^8 \implies u_K^5 \ll (2^{T_K})^3$):**
+   $$\boxed{\big(5 \cdot 2^{S_0} u_K\big)^5 < 2^{8 T_K}(5 u_0 + 1)^5 \qquad\text{and}\qquad 3125 \cdot 2^{5 s_K} u_K^5 < 2^{3 T_K + 5 s_0}(5 u_0 + 1)^5!}$$
+Consequently, even in the fastest possible drifting regime, the odd core $u_K$ accounts for $< 36.91\%$ of the logarithmic height of $N_K$, while the pure prime power $2^{S_0}$ accounts for $> 63.09\%$.
+
+### 18.2 Theorem SB.74 (`global_multiplicative_to_additive_product_formula_bridge`)
+Defining `oddCoreProd u K` $= \prod_{r=0}^{K-1} u_r$ and `stepNumProd s u K` $= \prod_{r=0}^{K-1} (3^{s_r} u_r + 1)$:
+$$\boxed{2^{T_K + s_K} u_K \prod_{r=0}^{K-1} u_r = \big(3^{T_K} P_0 + A_{0,K}\big) \prod_{r=0}^{K-1} u_r = P_0 \prod_{r=0}^{K-1} \big(3^{s_r} u_r + 1\big), \qquad\text{so}\qquad P_0 \;\Big|\; \left(A_{0,K} \prod_{r=0}^{K-1} u_r\right)!}$$
+
+### 18.3 Theorem SB.75 (`two_window_ridout_subspace_tail_cancellation_bridge`)
+Across window $[r, r+M]$ of step sum $n_2 = T_{r+M} - T_r$ with $s_K = s_{r+M}$, the scaled tail $\Delta = 2^{T_r + n_2 + s_K} u_{r+M} - 3^{n_2}(2^{T_r + s_r} u_r) = 2^{T_r} A_{r,M}$ satisfies:
+$$\boxed{5 \Delta + 4 \cdot 2^{T_r + n_2} \le 4 \cdot 2^{T_r} \cdot 3^{n_2} \qquad\text{and}\qquad 5 \Delta < 4 \cdot 2^{T_r} \cdot 3^{n_2}.}$$
+Whenever a Ridout/Subspace lower bound $C_1 \cdot 2^{T_r + s_r} \cdot 3^{n_2} \le C_2 \cdot 3^E \cdot \Delta$ holds ($C_2 \ge 1$), **both $2^{T_r}$ and $3^{n_2}$ cancel completely**, forcing $5 C_1 \cdot 2^{s_r} < 4 C_2 \cdot 3^E$.
+
+### 18.4 Theorem SB.76 (`grand_global_dominance_and_product_formula_76_synthesis`)
+Unifies `SB.73–SB.75` with Wave 11 (`SB.69–SB.72`), completing all **76 `sorry`-free, warning-free theorems (`SB.1–SB.76`)**.
+
+---
+
+## 19. Verification Instructions
 
 To verify the cordoned-off Lean 4 proofs without modifying the root 226-file build:
 
@@ -675,4 +702,5 @@ python semigroup_breakout\sandbox_wave8_jk_diagonal_asymptotics.py
 python semigroup_breakout\sandbox_wave9_seed_finiteness_and_extrema.py
 python semigroup_breakout\sandbox_wave10_lte2_baker_and_finiteness.py
 python semigroup_breakout\sandbox_wave11_upgraded_baker_and_return_extinction.py
+python semigroup_breakout\sandbox_wave12_global_dominance_and_product_formula.py
 ```

@@ -5506,6 +5506,390 @@ theorem exact_two_adic_renewal_valuation_and_one_fifth_reduced_ceiling
     h25.2.2.2.2.2
   exact ⟨⟨hA_factor, hR0_odd⟩, hid_red, ⟨h15_le, h15_lt⟩, ⟨hdiv, hmod, hs3⟩⟩
 
+/-! ## 73. Theorem SB.73: Cubic $(3, 5)$ & Quintic $(5, 8)$ Odd-Core Subordinacy to $2^{T_K}$ -/
+
+/-- Helper: `3 ^ (3 * t) ≤ 2 ^ (5 * t)` (`27 ^ t ≤ 32 ^ t`) and
+`3 ^ (5 * t) ≤ 2 ^ (8 * t)` (`243 ^ t ≤ 256 ^ t`) for all `t : ℕ`. -/
+theorem three_pow_cubic_and_quintic_le_two_pow (t : ℕ) :
+    3 ^ (3 * t) ≤ 2 ^ (5 * t) ∧ 3 ^ (5 * t) ≤ 2 ^ (8 * t) := by
+  have h35 : 3 ^ (3 * t) = 27 ^ t := by rw [Nat.pow_mul 3 3 t]
+  have h25 : 2 ^ (5 * t) = 32 ^ t := by rw [Nat.pow_mul 2 5 t]
+  have h38 : 3 ^ (5 * t) = 243 ^ t := by rw [Nat.pow_mul 3 5 t]
+  have h28 : 2 ^ (8 * t) = 256 ^ t := by rw [Nat.pow_mul 2 8 t]
+  rw [h35, h25, h38, h28]
+  exact ⟨Nat.pow_le_pow_left (by decide) t, Nat.pow_le_pow_left (by decide) t⟩
+
+/-- **Cubic $(3, 5)$ & Quintic $(5, 8)$ Odd-Core Subordinacy to $2^{T_K}$
+(`cubic_and_quintic_odd_core_subordinacy_to_two_pow`, Theorem SB.73)**:
+Suppose `ValidBlockChain b_0 s u (0 + 1 + M + 1)` holds with `2 ≤ s 0` and
+`∀ k < M, 2 ≤ s (0 + 1 + k)`. Setting `K = 0 + 1 + M`, `T_K = blockSteps s K`,
+`s' t = s (0 + 1 + t)`, `d_0 = blockSteps s' M`, and `S_0 = d_0 + s K`:
+1. **Exact Linear $1/5$ Envelope**:
+   `5 * (2 ^ S_0 * u K) < 3 ^ T_K * (5 * u 0 + 1)`,
+2. **Cubic $(3, 5)$ Global Dominance Law ($u_K^3 \ll (2^{T_K})^2$)**:
+   `(5 * (2 ^ S_0 * u K)) ^ 3 < 2 ^ (5 * T_K) * (5 * u 0 + 1) ^ 3` and
+   `125 * 2 ^ (3 * s K) * (u K) ^ 3 < 2 ^ (2 * T_K + 3 * s 0) * (5 * u 0 + 1) ^ 3`, and
+3. **Quintic $(5, 8)$ Global Dominance Law ($u_K^5 \ll (2^{T_K})^3$)**:
+   `(5 * (2 ^ S_0 * u K)) ^ 5 < 2 ^ (8 * T_K) * (5 * u 0 + 1) ^ 5` and
+   `3125 * 2 ^ (5 * s K) * (u K) ^ 5 < 2 ^ (3 * T_K + 5 * s 0) * (5 * u 0 + 1) ^ 5`! -/
+theorem cubic_and_quintic_odd_core_subordinacy_to_two_pow
+    {b_0 M : ℕ} {s u : ℕ → ℕ}
+    (hchain : ValidBlockChain b_0 s u (0 + 1 + M + 1))
+    (hs0 : 2 ≤ s 0)
+    (hs_tail : ∀ k < M, 2 ≤ s (0 + 1 + k)) :
+    let K := 0 + 1 + M
+    let T_K := blockSteps s K
+    let s' := fun t => s (0 + 1 + t)
+    let d_0 := blockSteps s' M
+    let S_0 := d_0 + s K
+    5 * (2 ^ S_0 * u K) < 3 ^ T_K * (5 * u 0 + 1) ∧
+      ((5 * (2 ^ S_0 * u K)) ^ 3 < 2 ^ (5 * T_K) * (5 * u 0 + 1) ^ 3 ∧
+        125 * 2 ^ (3 * s K) * (u K) ^ 3 < 2 ^ (2 * T_K + 3 * s 0) * (5 * u 0 + 1) ^ 3) ∧
+      ((5 * (2 ^ S_0 * u K)) ^ 5 < 2 ^ (8 * T_K) * (5 * u 0 + 1) ^ 5 ∧
+        3125 * 2 ^ (5 * s K) * (u K) ^ 5 < 2 ^ (3 * T_K + 5 * s 0) * (5 * u 0 + 1) ^ 5) := by
+  intro K T_K s' d_0 S_0
+  have h72 := exact_two_adic_renewal_valuation_and_one_fifth_reduced_ceiling hchain hs0 hs_tail
+  set R_0 := 3 ^ d_0 + renewalNumerator s' M
+  have hid_red : 2 ^ S_0 * u K = 3 ^ T_K * u 0 + R_0 := h72.2.1
+  have h5R_lt : 5 * R_0 < 3 ^ T_K := h72.2.2.1.2
+  have hlin : 5 * (2 ^ S_0 * u K) < 3 ^ T_K * (5 * u 0 + 1) := by
+    have hlhs : 5 * (2 ^ S_0 * u K) = 3 ^ T_K * (5 * u 0) + 5 * R_0 := by
+      rw [hid_red]
+      ring
+    have hrhs : 3 ^ T_K * (5 * u 0 + 1) = 3 ^ T_K * (5 * u 0) + 3 ^ T_K := by ring
+    omega
+  have hTK_eq : T_K = s 0 + d_0 := by
+    have hsh := blockSteps_add_shift s (0 + 1) M
+    have hb1 : blockSteps s (0 + 1) = s 0 := by simp [blockSteps]
+    rw [hb1] at hsh
+    exact hsh
+  have hexp_sum : s 0 + S_0 = T_K + s K := by omega
+  have hpow_le := three_pow_cubic_and_quintic_le_two_pow T_K
+  have hcub1 : (5 * (2 ^ S_0 * u K)) ^ 3 < 2 ^ (5 * T_K) * (5 * u 0 + 1) ^ 3 := by
+    have hlt3 : (5 * (2 ^ S_0 * u K)) ^ 3 < (3 ^ T_K * (5 * u 0 + 1)) ^ 3 :=
+      Nat.pow_lt_pow_left hlin (by decide)
+    have hrhs3 : (3 ^ T_K * (5 * u 0 + 1)) ^ 3 = 3 ^ (3 * T_K) * (5 * u 0 + 1) ^ 3 := by
+      rw [Nat.mul_pow, ← Nat.pow_mul 3 T_K 3]
+      have hc : T_K * 3 = 3 * T_K := Nat.mul_comm T_K 3
+      rw [hc]
+    have hle3 : 3 ^ (3 * T_K) * (5 * u 0 + 1) ^ 3 ≤ 2 ^ (5 * T_K) * (5 * u 0 + 1) ^ 3 :=
+      Nat.mul_le_mul_right ((5 * u 0 + 1) ^ 3) hpow_le.1
+    omega
+  have hcub2 : 125 * 2 ^ (3 * s K) * (u K) ^ 3 < 2 ^ (2 * T_K + 3 * s 0) * (5 * u 0 + 1) ^ 3 := by
+    have h2_pos : 0 < 2 ^ (3 * s 0) := Nat.pow_pos (by decide)
+    have hm := Nat.mul_lt_mul_of_pos_left hcub1 h2_pos
+    have hlhs_eq :
+        2 ^ (3 * s 0) * (5 * (2 ^ S_0 * u K)) ^ 3 =
+          2 ^ (3 * T_K) * (125 * 2 ^ (3 * s K) * (u K) ^ 3) := by
+      have hp1 : (5 * (2 ^ S_0 * u K)) ^ 3 = 125 * (2 ^ S_0) ^ 3 * (u K) ^ 3 := by ring
+      have hp2 : (2 ^ S_0) ^ 3 = 2 ^ (3 * S_0) := by
+        rw [← Nat.pow_mul 2 S_0 3]
+        have hc : S_0 * 3 = 3 * S_0 := Nat.mul_comm S_0 3
+        rw [hc]
+      have hexp3 : 3 * s 0 + 3 * S_0 = 3 * T_K + 3 * s K := by omega
+      rw [hp1, hp2]
+      calc
+        2 ^ (3 * s 0) * (125 * 2 ^ (3 * S_0) * (u K) ^ 3)
+            = 125 * (2 ^ (3 * s 0) * 2 ^ (3 * S_0)) * (u K) ^ 3 := by ring
+        _ = 125 * 2 ^ (3 * T_K + 3 * s K) * (u K) ^ 3 := by
+              rw [← Nat.pow_add 2 (3 * s 0) (3 * S_0), hexp3]
+        _ = 2 ^ (3 * T_K) * (125 * 2 ^ (3 * s K) * (u K) ^ 3) := by
+              rw [Nat.pow_add 2 (3 * T_K) (3 * s K)]
+              ring
+    have hrhs_eq :
+        2 ^ (3 * s 0) * (2 ^ (5 * T_K) * (5 * u 0 + 1) ^ 3) =
+          2 ^ (3 * T_K) * (2 ^ (2 * T_K + 3 * s 0) * (5 * u 0 + 1) ^ 3) := by
+      have hexp5 : 3 * s 0 + 5 * T_K = 3 * T_K + (2 * T_K + 3 * s 0) := by omega
+      calc
+        2 ^ (3 * s 0) * (2 ^ (5 * T_K) * (5 * u 0 + 1) ^ 3)
+            = (2 ^ (3 * s 0) * 2 ^ (5 * T_K)) * (5 * u 0 + 1) ^ 3 := by ring
+        _ = 2 ^ (3 * T_K + (2 * T_K + 3 * s 0)) * (5 * u 0 + 1) ^ 3 := by
+              rw [← Nat.pow_add 2 (3 * s 0) (5 * T_K), hexp5]
+        _ = 2 ^ (3 * T_K) * (2 ^ (2 * T_K + 3 * s 0) * (5 * u 0 + 1) ^ 3) := by
+              rw [Nat.pow_add 2 (3 * T_K) (2 * T_K + 3 * s 0)]
+              ring
+    rw [hlhs_eq, hrhs_eq] at hm
+    exact Nat.lt_of_mul_lt_mul_left hm
+  have hquin1 : (5 * (2 ^ S_0 * u K)) ^ 5 < 2 ^ (8 * T_K) * (5 * u 0 + 1) ^ 5 := by
+    have hlt5 : (5 * (2 ^ S_0 * u K)) ^ 5 < (3 ^ T_K * (5 * u 0 + 1)) ^ 5 :=
+      Nat.pow_lt_pow_left hlin (by decide)
+    have hrhs5 : (3 ^ T_K * (5 * u 0 + 1)) ^ 5 = 3 ^ (5 * T_K) * (5 * u 0 + 1) ^ 5 := by
+      rw [Nat.mul_pow, ← Nat.pow_mul 3 T_K 5]
+      have hc : T_K * 5 = 5 * T_K := Nat.mul_comm T_K 5
+      rw [hc]
+    have hle5 : 3 ^ (5 * T_K) * (5 * u 0 + 1) ^ 5 ≤ 2 ^ (8 * T_K) * (5 * u 0 + 1) ^ 5 :=
+      Nat.mul_le_mul_right ((5 * u 0 + 1) ^ 5) hpow_le.2
+    omega
+  have hquin2 : 3125 * 2 ^ (5 * s K) * (u K) ^ 5 < 2 ^ (3 * T_K + 5 * s 0) * (5 * u 0 + 1) ^ 5 := by
+    have h2_pos : 0 < 2 ^ (5 * s 0) := Nat.pow_pos (by decide)
+    have hm := Nat.mul_lt_mul_of_pos_left hquin1 h2_pos
+    have hlhs_eq :
+        2 ^ (5 * s 0) * (5 * (2 ^ S_0 * u K)) ^ 5 =
+          2 ^ (5 * T_K) * (3125 * 2 ^ (5 * s K) * (u K) ^ 5) := by
+      have hp1 : (5 * (2 ^ S_0 * u K)) ^ 5 = 3125 * (2 ^ S_0) ^ 5 * (u K) ^ 5 := by ring
+      have hp2 : (2 ^ S_0) ^ 5 = 2 ^ (5 * S_0) := by
+        rw [← Nat.pow_mul 2 S_0 5]
+        have hc : S_0 * 5 = 5 * S_0 := Nat.mul_comm S_0 5
+        rw [hc]
+      have hexp5 : 5 * s 0 + 5 * S_0 = 5 * T_K + 5 * s K := by omega
+      rw [hp1, hp2]
+      calc
+        2 ^ (5 * s 0) * (3125 * 2 ^ (5 * S_0) * (u K) ^ 5)
+            = 3125 * (2 ^ (5 * s 0) * 2 ^ (5 * S_0)) * (u K) ^ 5 := by ring
+        _ = 3125 * 2 ^ (5 * T_K + 5 * s K) * (u K) ^ 5 := by
+              rw [← Nat.pow_add 2 (5 * s 0) (5 * S_0), hexp5]
+        _ = 2 ^ (5 * T_K) * (3125 * 2 ^ (5 * s K) * (u K) ^ 5) := by
+              rw [Nat.pow_add 2 (5 * T_K) (5 * s K)]
+              ring
+    have hrhs_eq :
+        2 ^ (5 * s 0) * (2 ^ (8 * T_K) * (5 * u 0 + 1) ^ 5) =
+          2 ^ (5 * T_K) * (2 ^ (3 * T_K + 5 * s 0) * (5 * u 0 + 1) ^ 5) := by
+      have hexp8 : 5 * s 0 + 8 * T_K = 5 * T_K + (3 * T_K + 5 * s 0) := by omega
+      calc
+        2 ^ (5 * s 0) * (2 ^ (8 * T_K) * (5 * u 0 + 1) ^ 5)
+            = (2 ^ (5 * s 0) * 2 ^ (8 * T_K)) * (5 * u 0 + 1) ^ 5 := by ring
+        _ = 2 ^ (5 * T_K + (3 * T_K + 5 * s 0)) * (5 * u 0 + 1) ^ 5 := by
+              rw [← Nat.pow_add 2 (5 * s 0) (8 * T_K), hexp8]
+        _ = 2 ^ (5 * T_K) * (2 ^ (3 * T_K + 5 * s 0) * (5 * u 0 + 1) ^ 5) := by
+              rw [Nat.pow_add 2 (5 * T_K) (3 * T_K + 5 * s 0)]
+              ring
+    rw [hlhs_eq, hrhs_eq] at hm
+    exact Nat.lt_of_mul_lt_mul_left hm
+  exact ⟨hlin, ⟨hcub1, hcub2⟩, ⟨hquin1, hquin2⟩⟩
+
+/-! ## 74. Theorem SB.74: Global Multiplicative-to-Additive Product Formula Bridge -/
+
+/-- Prefix product of odd cores: $\prod_{r=0}^{k-1} u_r$. -/
+def oddCoreProd (u : ℕ → ℕ) : ℕ → ℕ
+  | 0 => 1
+  | k + 1 => oddCoreProd u k * u k
+
+/-- Prefix product of step numerators: $\prod_{r=0}^{k-1} (3^{s_r} u_r + 1)$. -/
+def stepNumProd (s u : ℕ → ℕ) : ℕ → ℕ
+  | 0 => 1
+  | k + 1 => stepNumProd s u k * (3 ^ (s k) * u k + 1)
+
+/-- Helper: exact telescoped product identity across `K` blocks. -/
+theorem global_block_product_master_identity
+    {b_0 K : ℕ} {s u : ℕ → ℕ}
+    (hchain : ValidBlockChain b_0 s u (K + 1)) :
+    2 ^ (blockSteps s (K + 1)) * oddCoreProd u (K + 1) =
+      (2 ^ (s 0) * u 0) * stepNumProd s u K := by
+  induction K with
+  | zero =>
+      simp [blockSteps, oddCoreProd, stepNumProd]
+  | succ K ih =>
+      have hch_K : ValidBlockChain b_0 s u (K + 1) := fun k hk => hchain k (by omega)
+      have ihK := ih hch_K
+      have hch_step : ValidBlockChain b_0 s u (K + 2) := fun k hk => hchain k (by omega)
+      have hstep : 2 ^ (s (K + 1)) * u (K + 1) = 3 ^ (s K) * u K + 1 :=
+        (one_step_backward_quotient_recovery_and_mod_three_pow_one hch_step).1
+      calc
+        2 ^ (blockSteps s (K + 2)) * oddCoreProd u (K + 2)
+            = (2 ^ (blockSteps s (K + 1)) * oddCoreProd u (K + 1)) *
+                (2 ^ (s (K + 1)) * u (K + 1)) := by
+              change 2 ^ (blockSteps s (K + 1) + s (K + 1)) *
+                  (oddCoreProd u (K + 1) * u (K + 1)) =
+                (2 ^ (blockSteps s (K + 1)) * oddCoreProd u (K + 1)) *
+                  (2 ^ (s (K + 1)) * u (K + 1))
+              rw [Nat.pow_add 2 (blockSteps s (K + 1)) (s (K + 1))]
+              ring
+        _ = ((2 ^ (s 0) * u 0) * stepNumProd s u K) * (3 ^ (s K) * u K + 1) := by
+              rw [ihK, hstep]
+        _ = (2 ^ (s 0) * u 0) * stepNumProd s u (K + 1) := by
+              change ((2 ^ (s 0) * u 0) * stepNumProd s u K) * (3 ^ (s K) * u K + 1) =
+                (2 ^ (s 0) * u 0) * (stepNumProd s u K * (3 ^ (s K) * u K + 1))
+              ring
+
+/-- **Global Multiplicative-to-Additive Product Formula Bridge
+(`global_multiplicative_to_additive_product_formula_bridge`, Theorem SB.74)**:
+Suppose `ValidBlockChain b_0 s u (K + 1)` holds with `∀ k < K, 2 ≤ s k`.
+Setting `P k = oddReturnP (orbit b_0 (blockSteps s k))`, `T_K = blockSteps s K`,
+`S_K = T_K + s K`, and `A_K = renewalNumerator s K`:
+1. **Telescoped Multiplicative Product Identity**:
+   `2 ^ S_K * u K * oddCoreProd u K = P 0 * stepNumProd s u K`,
+2. **Exact Additive-to-Multiplicative Bridge Identity**:
+   `(3 ^ T_K * P 0 + A_K) * oddCoreProd u K = P 0 * stepNumProd s u K`, and
+3. **Global Seed Divisibility of the Weighted Renewal Product**:
+   `P 0 ∣ (A_K * oddCoreProd u K)`! -/
+theorem global_multiplicative_to_additive_product_formula_bridge
+    {b_0 K : ℕ} {s u : ℕ → ℕ}
+    (hchain : ValidBlockChain b_0 s u (K + 1))
+    (hs2 : ∀ k < K, 2 ≤ s k) :
+    let P := fun k => oddReturnP (orbit b_0 (blockSteps s k))
+    let T_K := blockSteps s K
+    let S_K := T_K + s K
+    let A_K := renewalNumerator s K
+    2 ^ S_K * u K * oddCoreProd u K = P 0 * stepNumProd s u K ∧
+      (3 ^ T_K * P 0 + A_K) * oddCoreProd u K = P 0 * stepNumProd s u K ∧
+      P 0 ∣ (A_K * oddCoreProd u K) := by
+  intro P T_K S_K A_K
+  have hprod := global_block_product_master_identity hchain
+  have hP0 : P 0 = 2 ^ (s 0) * u 0 := (hchain 0 (by omega)).2.2
+  have h28 := bridge_a_dual_universe_series_lowest_terms_and_uniqueness hchain hs2
+  have hid : 2 ^ S_K * u K = 3 ^ T_K * P 0 + A_K := h28.1
+  have hmult : 2 ^ S_K * u K * oddCoreProd u K = P 0 * stepNumProd s u K := by
+    calc
+      2 ^ S_K * u K * oddCoreProd u K
+          = 2 ^ (blockSteps s (K + 1)) * oddCoreProd u (K + 1) := by
+            change 2 ^ (T_K + s K) * u K * oddCoreProd u K =
+              2 ^ (T_K + s K) * (oddCoreProd u K * u K)
+            ring
+      _ = (2 ^ (s 0) * u 0) * stepNumProd s u K := hprod
+      _ = P 0 * stepNumProd s u K := by rw [← hP0]
+  have hbridge : (3 ^ T_K * P 0 + A_K) * oddCoreProd u K = P 0 * stepNumProd s u K := by
+    rw [← hid]
+    exact hmult
+  have hdvd : P 0 ∣ (A_K * oddCoreProd u K) := by
+    have hexp :
+        (3 ^ T_K * P 0 + A_K) * oddCoreProd u K =
+          P 0 * (3 ^ T_K * oddCoreProd u K) + A_K * oddCoreProd u K := by ring
+    have hd1 : P 0 ∣ P 0 * (3 ^ T_K * oddCoreProd u K) :=
+      dvd_mul_right (P 0) (3 ^ T_K * oddCoreProd u K)
+    have hd2 : P 0 ∣ P 0 * stepNumProd s u K :=
+      dvd_mul_right (P 0) (stepNumProd s u K)
+    rw [← hbridge, hexp] at hd2
+    exact (Nat.dvd_add_right hd1).mp hd2
+  exact ⟨hmult, hbridge, hdvd⟩
+
+/-! ## 75. Theorem SB.75: Two-Window Ridout / Subspace Tail-Cancellation Bridge -/
+
+/-- **Two-Window Ridout / Subspace Tail-Cancellation Bridge
+(`two_window_ridout_subspace_tail_cancellation_bridge`, Theorem SB.75)**:
+Suppose `ValidBlockChain b_0 s u (r + M + 1)` holds with `∀ k < r, 2 ≤ s k`, `1 ≤ r`,
+`∀ k < M, 2 ≤ s (r + k)`, and `1 ≤ M`.
+Setting `T_r = blockSteps s r`, `s' t = s (r + t)`, `n_2 = blockSteps s' M`,
+`s_K = s (r + M)`, `A_rM = renewalNumerator s' M`, and
+`Δ = 2 ^ (T_r + n_2 + s_K) * u (r + M) - 3 ^ n_2 * (2 ^ (T_r + s r) * u r)`:
+1. **Exact Two-Window Scaled Tail Identity**:
+   `2 ^ (T_r + n_2 + s_K) * u (r + M) = 3 ^ n_2 * (2 ^ (T_r + s r) * u r) + 2 ^ T_r * A_rM` and
+   `Δ = 2 ^ T_r * A_rM`,
+2. **Unconditional $4/5$ Scaled Tail Bound**:
+   `5 * Δ + 4 * 2 ^ (T_r + n_2) ≤ 4 * 2 ^ T_r * 3 ^ n_2` and
+   `5 * Δ < 4 * 2 ^ T_r * 3 ^ n_2`, and
+3. **Exact Ridout / Subspace Cancellation of Both $2^{T_r}$ and $3^{n_2}$**:
+   Whenever a Ridout/Subspace lower bound
+   `C_1 * 2 ^ (T_r + s r) * 3 ^ n_2 ≤ C_2 * 3 ^ E * Δ` holds, canceling `2 ^ T_r * 3 ^ n_2`
+   from both sides forces `5 * C_1 * 2 ^ (s r) ≤ 4 * C_2 * 3 ^ E` (and strict `<` whenever `1 ≤ C_2`)! -/
+theorem two_window_ridout_subspace_tail_cancellation_bridge
+    {b_0 r M : ℕ} {s u : ℕ → ℕ}
+    (hchain : ValidBlockChain b_0 s u (r + M + 1))
+    (hs_past : ∀ k < r, 2 ≤ s k)
+    (hr : 1 ≤ r)
+    (hs_win : ∀ k < M, 2 ≤ s (r + k))
+    (hM : 1 ≤ M) :
+    let T_r := blockSteps s r
+    let s' := fun t => s (r + t)
+    let n_2 := blockSteps s' M
+    let s_K := s (r + M)
+    let A_rM := renewalNumerator s' M
+    let Δ := 2 ^ (T_r + n_2 + s_K) * u (r + M) - 3 ^ n_2 * (2 ^ (T_r + s r) * u r)
+    (2 ^ (T_r + n_2 + s_K) * u (r + M) =
+        3 ^ n_2 * (2 ^ (T_r + s r) * u r) + 2 ^ T_r * A_rM ∧
+      Δ = 2 ^ T_r * A_rM) ∧
+      (5 * Δ + 4 * 2 ^ (T_r + n_2) ≤ 4 * 2 ^ T_r * 3 ^ n_2 ∧
+        5 * Δ < 4 * 2 ^ T_r * 3 ^ n_2) ∧
+      (∀ C_1 C_2 E : ℕ,
+        1 ≤ C_2 →
+        C_1 * 2 ^ (T_r + s r) * 3 ^ n_2 ≤ C_2 * 3 ^ E * Δ →
+        5 * C_1 * 2 ^ (s r) < 4 * C_2 * 3 ^ E) := by
+  intro T_r s' n_2 s_K A_rM Δ
+  have h67 := (shifted_basepoint_baker_matveev_pinch_and_repeated_core_rhin_form
+    hchain hs_past hr hs_win hM).1
+  have hid_base : 2 ^ (n_2 + s_K) * u (r + M) = 3 ^ n_2 * (2 ^ (s r) * u r) + A_rM := h67.1
+  have hscaled :
+      2 ^ (T_r + n_2 + s_K) * u (r + M) =
+        3 ^ n_2 * (2 ^ (T_r + s r) * u r) + 2 ^ T_r * A_rM := by
+    have hm := congrArg (fun x => 2 ^ T_r * x) hid_base
+    dsimp only at hm
+    have hpL : 2 ^ T_r * (2 ^ (n_2 + s_K) * u (r + M)) =
+        2 ^ (T_r + n_2 + s_K) * u (r + M) := by
+      rw [Nat.add_assoc T_r n_2 s_K, Nat.pow_add 2 T_r (n_2 + s_K)]
+      ring
+    have hpR : 2 ^ T_r * (3 ^ n_2 * (2 ^ (s r) * u r) + A_rM) =
+        3 ^ n_2 * (2 ^ (T_r + s r) * u r) + 2 ^ T_r * A_rM := by
+      rw [Nat.pow_add 2 T_r (s r)]
+      ring
+    rw [hpL, hpR] at hm
+    exact hm
+  have hdelta_eq : Δ = 2 ^ T_r * A_rM := by
+    change 2 ^ (T_r + n_2 + s_K) * u (r + M) - 3 ^ n_2 * (2 ^ (T_r + s r) * u r) =
+      2 ^ T_r * A_rM
+    rw [hscaled, Nat.add_sub_cancel_left]
+  have hinv_M : 5 * A_rM + 4 * 2 ^ n_2 ≤ 4 * 3 ^ n_2 :=
+    five_mul_renewalNumerator_add_four_mul_two_pow_le s' M hs_win
+  have hbound_le : 5 * Δ + 4 * 2 ^ (T_r + n_2) ≤ 4 * 2 ^ T_r * 3 ^ n_2 := by
+    have hm := Nat.mul_le_mul_left (2 ^ T_r) hinv_M
+    have hp2 : 2 ^ (T_r + n_2) = 2 ^ T_r * 2 ^ n_2 := Nat.pow_add 2 T_r n_2
+    have hlhs : 5 * Δ + 4 * 2 ^ (T_r + n_2) = 2 ^ T_r * (5 * A_rM + 4 * 2 ^ n_2) := by
+      rw [hdelta_eq, hp2]
+      ring
+    have hrhs : 4 * 2 ^ T_r * 3 ^ n_2 = 2 ^ T_r * (4 * 3 ^ n_2) := by ring
+    rw [hlhs, hrhs]
+    exact hm
+  have h2_pos : 1 ≤ 2 ^ (T_r + n_2) := Nat.one_le_pow _ 2 (by decide)
+  have hbound_lt : 5 * Δ < 4 * 2 ^ T_r * 3 ^ n_2 := by omega
+  refine ⟨⟨hscaled, hdelta_eq⟩, ⟨hbound_le, hbound_lt⟩, ?_⟩
+  intro C_1 C_2 E hC2 hridout
+  have hm5 := Nat.mul_le_mul_left 5 hridout
+  have hC2E_pos : 0 < C_2 * 3 ^ E :=
+    Nat.mul_pos (by omega) (Nat.pow_pos (by decide))
+  have hlt_D : (C_2 * 3 ^ E) * (5 * Δ) < (C_2 * 3 ^ E) * (4 * 2 ^ T_r * 3 ^ n_2) :=
+    Nat.mul_lt_mul_of_pos_left hbound_lt hC2E_pos
+  have hlhs_f :
+      5 * (C_1 * 2 ^ (T_r + s r) * 3 ^ n_2) =
+        (2 ^ T_r * 3 ^ n_2) * (5 * C_1 * 2 ^ (s r)) := by
+    rw [Nat.pow_add 2 T_r (s r)]
+    ring
+  have hmid_f : 5 * (C_2 * 3 ^ E * Δ) = (C_2 * 3 ^ E) * (5 * Δ) := by ring
+  have hrhs_f :
+      (C_2 * 3 ^ E) * (4 * 2 ^ T_r * 3 ^ n_2) =
+        (2 ^ T_r * 3 ^ n_2) * (4 * C_2 * 3 ^ E) := by ring
+  have hlt_comb :
+      (2 ^ T_r * 3 ^ n_2) * (5 * C_1 * 2 ^ (s r)) <
+        (2 ^ T_r * 3 ^ n_2) * (4 * C_2 * 3 ^ E) := by omega
+  exact Nat.lt_of_mul_lt_mul_left hlt_comb
+
+/-! ## 76. Theorem SB.76: Grand 76-Theorem Synthesis of Global Dominance, Product Formula, & Ridout Cancellation -/
+
+/-- **Grand 76-Theorem Synthesis of Global Dominance, Product Formula, & Ridout Cancellation
+(`grand_global_dominance_and_product_formula_76_synthesis`, Theorem SB.76)**:
+Unifies the cubic $(3, 5)$ and quintic $(5, 8)$ odd-core subordinacy laws (`SB.73`),
+the global multiplicative-to-additive product formula (`SB.74`), the two-window
+Ridout/Subspace cancellation bridge (`SB.75`), and the adjacent/two-step return
+laws (`SB.69–SB.72`). -/
+theorem grand_global_dominance_and_product_formula_76_synthesis :
+    (∀ {b_0 M : ℕ} {s u : ℕ → ℕ},
+      ValidBlockChain b_0 s u (0 + 1 + M + 1) →
+      2 ≤ s 0 →
+      (∀ k < M, 2 ≤ s (0 + 1 + k)) →
+      let K := 0 + 1 + M
+      let T_K := blockSteps s K
+      125 * 2 ^ (3 * s K) * (u K) ^ 3 < 2 ^ (2 * T_K + 3 * s 0) * (5 * u 0 + 1) ^ 3 ∧
+        3125 * 2 ^ (5 * s K) * (u K) ^ 5 < 2 ^ (3 * T_K + 5 * s 0) * (5 * u 0 + 1) ^ 5) ∧
+    (∀ {b_0 K : ℕ} {s u : ℕ → ℕ},
+      ValidBlockChain b_0 s u (K + 1) →
+      (∀ k < K, 2 ≤ s k) →
+      let P := fun k => oddReturnP (orbit b_0 (blockSteps s k))
+      let T_K := blockSteps s K
+      let A_K := renewalNumerator s K
+      (3 ^ T_K * P 0 + A_K) * oddCoreProd u K = P 0 * stepNumProd s u K ∧
+        P 0 ∣ (A_K * oddCoreProd u K)) ∧
+    (∀ {b_0 r : ℕ} {s u : ℕ → ℕ},
+      ValidBlockChain b_0 s u (r + 2) →
+      2 ≤ s r →
+      Nat.Coprime (u r) (u (r + 1)) ∧ u (r + 1) ≠ u r) := by
+  refine ⟨?_, ?_, ?_⟩
+  · intro b_0 M s u hchain hs0 hs_tail
+    have h73 := cubic_and_quintic_odd_core_subordinacy_to_two_pow hchain hs0 hs_tail
+    exact ⟨h73.2.1.2, h73.2.2.2⟩
+  · intro b_0 K s u hchain hs2
+    have h74 := global_multiplicative_to_additive_product_formula_bridge hchain hs2
+    exact ⟨h74.2.1, h74.2.2⟩
+  · intro b_0 r s u hchain hs_r
+    have h69 := adjacent_odd_core_coprimality_and_universal_non_equality hchain hs_r
+    exact ⟨h69.1, h69.2.2.2⟩
+
 
 #check @archimedean_rung_ceiling_and_stepSum_bound
 #check @unit_quotient_even_rung_instant_death_and_odd_rung_mod64_identity
@@ -5579,6 +5963,10 @@ theorem exact_two_adic_renewal_valuation_and_one_fifth_reduced_ceiling
 #check @two_step_odd_core_gcd_and_return_extinction
 #check @end_of_block_three_pow_upgraded_baker_pinch_and_s_r_free_return_bound
 #check @exact_two_adic_renewal_valuation_and_one_fifth_reduced_ceiling
+#check @cubic_and_quintic_odd_core_subordinacy_to_two_pow
+#check @global_multiplicative_to_additive_product_formula_bridge
+#check @two_window_ridout_subspace_tail_cancellation_bridge
+#check @grand_global_dominance_and_product_formula_76_synthesis
 
 #print axioms archimedean_rung_ceiling_and_stepSum_bound
 #print axioms unit_quotient_even_rung_instant_death_and_odd_rung_mod64_identity
