@@ -620,7 +620,42 @@ together with the conditional Senge–Straus closure (`s_2(u_K) ≤ B_2 → s_3(
 
 ---
 
-## 17. Verification Instructions
+## 17. End-of-Block $3^{s_r}$-Upgraded Baker Pinch, Adjacent/2-Step Return Extinction, & The $1/5$ Reduced Ceiling (Theorems `SB.69–SB.72`)
+
+In Sections 69–72 of [`SemigroupBreakoutTheorems.lean`](./SemigroupBreakoutTheorems.lean) (verified computationally across 9,920 configurations in [`sandbox_wave11_upgraded_baker_and_return_extinction.py`](./sandbox_wave11_upgraded_baker_and_return_extinction.py)), we formalized the exact 2-adic factorization of the renewal sum $A_{r,M} = 2^{s_r} R$ ($R$ odd), upgraded the Baker pinch denominator from $2^{s_r} u_r$ to $3^{s_r} u_r$, proved unconditional non-equality $u_{r+1} \ne u_r$, and established the $1/5$ reduced renewal ceiling:
+
+### 17.1 Theorem SB.69 (`adjacent_odd_core_coprimality_and_universal_non_equality`)
+Across any single block transition $2^{s_{r+1}} u_{r+1} = 3^{s_r} u_r + 1$ with $s_r \ge 2$:
+$$\boxed{\gcd(u_r, u_{r+1}) = 1, \qquad \gcd\big(2^{s_{r+1}} u_{r+1},\; 3^{s_r} u_r\big) = 1, \qquad u_{r+1} \ne u_r\text{ UNCONDITIONALLY!}}$$
+*(Proof: $u_{r+1} = u_r$ and $\gcd(u_r, u_{r+1}) = 1$ force $u_r = 1$ and $2^{s_{r+1}} = 3^{s_r} + 1 \ge 10$, so $s_{r+1} \ge 4$ and $8 \mid 2^{s_{r+1}}$, contradicting $(3^{s_r} + 1) \bmod 8 \in \{2, 4\}$!)*
+
+### 17.2 Theorem SB.70 (`two_step_odd_core_gcd_and_return_extinction`)
+Across any two block transitions $r \to r+1 \to r+2$:
+$$\boxed{\gcd(u_r, u_{r+2}) \;\Big|\; \big(3^{s_{r+1}} + 2^{s_{r+1}}\big), \qquad\text{and}\qquad u_{r+2} = u_r \implies u_r \;\Big|\; \big(3^{s_{r+1}} + 2^{s_{r+1}}\big) \;\wedge\; u_r \le 3^{s_{r+1}} + 2^{s_{r+1}},}$$
+completely **independent of $s_r$**! Moreover, the unique boundary solution $(s_r, s_{r+1}, s_{r+2}, u_r, u_{r+1}) = (3, 2, 6, 1, 7)$ lands on $u_{r+2} = 1$ at even rung $s_{r+2} = 6$ and dies immediately at the next step ($(3^6 \cdot 1 + 1) \bmod 4 = 2 \implies s_{r+3} = 1$).
+
+### 17.3 Theorem SB.71 (`end_of_block_three_pow_upgraded_baker_pinch_and_s_r_free_return_bound`)
+Across $M+1$ blocks starting from $u_r$ ($d = s_{r+1} + \dots + s_{r+M}$, $S = d + s_{r+1+M}$, $T = s_r + d$, $R = 3^d + \text{renewalNumerator}(s', M)$):
+1. **Strict Oddness & GCD Divisibility of $R$:**
+   $2^S u_{r+1+M} = 3^T u_r + R$, $R \bmod 2 = 1$, and $\gcd(u_r, u_{r+1+M}) \mid R$.
+2. **The $3^{s_r}$-Upgraded Baker–Matveev Pinch:**
+   $$\boxed{5 \cdot 3^{s_r}\big(2^S u_{r+1+M} - 3^T u_r\big) + 4 \cdot 3^{s_r} \cdot 2^d \le 9 \cdot 3^T, \qquad\text{so}\qquad 0 < \frac{2^S u_{r+1+M}}{3^T u_r} - 1 < \frac{9}{5 \cdot 3^{s_r} u_r}!}$$
+3. **$s_r$-Free $M$-Step Return Bound ($u_{r+1+M} = u_r$):**
+   $$\boxed{u_{r+1+M} = u_r \implies \big(2^S - 3^T\big) u_r = R, \qquad u_r \mid R, \qquad 5 u_r + 4 \cdot 2^d \le 9 \cdot 3^d,}$$
+   bounding $u_r$ purely in terms of the intermediate step sum $d$, **completely independent of $s_r$ and $T_r$**!
+
+### 17.4 Theorem SB.72 (`exact_two_adic_renewal_valuation_and_one_fifth_reduced_ceiling`)
+For any $K = M + 1 \ge 1$ blocks with $s_k \ge 2$, setting $d_0 = T_K - s_0$, $S_0 = d_0 + s_K$, and $R_0 = 3^{d_0} + \text{renewalNumerator}(s', M)$:
+1. **Exact 2-Adic Valuation of the Renewal Sum ($v_2(A_{0,K}) = s_0$):**
+   $$\boxed{A_{0,K} = 2^{s_0} \cdot R_0 \qquad\text{with}\qquad R_0 \bmod 2 = 1!}$$
+2. **Reduced Evolution & The $1/5$ Reduced Renewal Ceiling:**
+   $$\boxed{2^{S_0} u_K = 3^{T_K} u_0 + R_0, \qquad 5 R_0 + 4 \cdot 2^{d_0} \le 3^{T_K}, \qquad 5 R_0 < 3^{T_K}\quad\big(R_0 < \tfrac{1}{5}\cdot 3^{T_K}\big)!}$$
+3. **Reduced Base-3 Recovery & Zero-Carry Split:**
+   $\lfloor 2^{S_0} u_K / 3^{T_K} \rfloor = u_0$, $(2^{S_0} u_K) \bmod 3^{T_K} = R_0$, and $s_3(2^{S_0} u_K) = s_3(u_0) + s_3(R_0)$.
+
+---
+
+## 18. Verification Instructions
 
 To verify the cordoned-off Lean 4 proofs without modifying the root 226-file build:
 
@@ -639,4 +674,5 @@ python semigroup_breakout\loop4_flp_sparsity_and_repulsion.py
 python semigroup_breakout\sandbox_wave8_jk_diagonal_asymptotics.py
 python semigroup_breakout\sandbox_wave9_seed_finiteness_and_extrema.py
 python semigroup_breakout\sandbox_wave10_lte2_baker_and_finiteness.py
+python semigroup_breakout\sandbox_wave11_upgraded_baker_and_return_extinction.py
 ```

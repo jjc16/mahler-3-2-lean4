@@ -5167,6 +5167,345 @@ theorem senge_straus_stewart_finiteness_bridge_and_grand_68_synthesis
   have hN_B3 : base3DigitSum N_K ≤ B_3 := hss hN_B2
   omega
 
+/-! ## 69. Theorem SB.69: Adjacent Odd-Core Coprimality & Universal Non-Equality ($u_{r+1} \ne u_r$) -/
+
+/-- Helper: `3 ^ n % 2 = 1` for all `n : ℕ`. -/
+theorem three_pow_mod_two_eq_one (n : ℕ) : 3 ^ n % 2 = 1 := by
+  induction n with
+  | zero => decide
+  | succ n ih =>
+      rw [Nat.pow_succ]
+      omega
+
+/-- **Adjacent Odd-Core Coprimality & Universal Non-Equality
+(`adjacent_odd_core_coprimality_and_universal_non_equality`, Theorem SB.69)**:
+Suppose `ValidBlockChain b_0 s u (r + 2)` holds with `2 ≤ s r`:
+1. **Exact Adjacent Odd-Core Coprimality**:
+   `Nat.Coprime (u r) (u (r + 1))` and
+   `Nat.Coprime (2 ^ (s (r + 1)) * u (r + 1)) (3 ^ (s r) * u r)`,
+2. **Mod-8 Obstruction on $3^{s_r} + 1$**:
+   `((3 ^ (s r) + 1) % 8 = 2 ∨ (3 ^ (s r) + 1) % 8 = 4)` and `10 ≤ 3 ^ (s r) + 1`, and
+3. **Unconditional Non-Equality of Adjacent Odd Cores**:
+   `u (r + 1) ≠ u r`! -/
+theorem adjacent_odd_core_coprimality_and_universal_non_equality
+    {b_0 r : ℕ} {s u : ℕ → ℕ}
+    (hchain : ValidBlockChain b_0 s u (r + 2))
+    (hs_r : 2 ≤ s r) :
+    Nat.Coprime (u r) (u (r + 1)) ∧
+      Nat.Coprime (2 ^ (s (r + 1)) * u (r + 1)) (3 ^ (s r) * u r) ∧
+      (((3 ^ (s r) + 1) % 8 = 2 ∨ (3 ^ (s r) + 1) % 8 = 4) ∧ 10 ≤ 3 ^ (s r) + 1) ∧
+      u (r + 1) ≠ u r := by
+  have hstep : 2 ^ (s (r + 1)) * u (r + 1) = 3 ^ (s r) * u r + 1 :=
+    (one_step_backward_quotient_recovery_and_mod_three_pow_one hchain).1
+  have hsub : 2 ^ (s (r + 1)) * u (r + 1) - 3 ^ (s r) * u r = 1 := by omega
+  have hcop_u : Nat.Coprime (u r) (u (r + 1)) := by
+    rw [Nat.Coprime]
+    apply Nat.eq_one_of_dvd_one
+    have hd1 : Nat.gcd (u r) (u (r + 1)) ∣ 3 ^ (s r) * u r :=
+      dvd_mul_of_dvd_right (Nat.gcd_dvd_left (u r) (u (r + 1))) (3 ^ (s r))
+    have hd2 : Nat.gcd (u r) (u (r + 1)) ∣ 2 ^ (s (r + 1)) * u (r + 1) :=
+      dvd_mul_of_dvd_right (Nat.gcd_dvd_right (u r) (u (r + 1))) (2 ^ (s (r + 1)))
+    have hd_sub := Nat.dvd_sub hd2 hd1
+    rw [hsub] at hd_sub
+    exact hd_sub
+  have hcop_full : Nat.Coprime (2 ^ (s (r + 1)) * u (r + 1)) (3 ^ (s r) * u r) := by
+    rw [Nat.Coprime]
+    apply Nat.eq_one_of_dvd_one
+    have hd1 := Nat.gcd_dvd_left (2 ^ (s (r + 1)) * u (r + 1)) (3 ^ (s r) * u r)
+    have hd2 := Nat.gcd_dvd_right (2 ^ (s (r + 1)) * u (r + 1)) (3 ^ (s r) * u r)
+    have hd_sub := Nat.dvd_sub hd1 hd2
+    rw [hsub] at hd_sub
+    exact hd_sub
+  have h3_8 := three_pow_mod_eight_parity (s r)
+  have hmod8 : (3 ^ (s r) + 1) % 8 = 2 ∨ (3 ^ (s r) + 1) % 8 = 4 := by omega
+  have hge10 : 10 ≤ 3 ^ (s r) + 1 := by
+    have h9 : 3 ^ 2 ≤ 3 ^ (s r) := Nat.pow_le_pow_right (by decide) hs_r
+    omega
+  have hne : u (r + 1) ≠ u r := by
+    intro heq
+    have hg1 : Nat.gcd (u r) (u r) = 1 := by
+      have hc : Nat.gcd (u r) (u (r + 1)) = 1 := hcop_u
+      rw [heq] at hc
+      exact hc
+    have hur1 : u r = 1 := by
+      rw [Nat.gcd_self] at hg1
+      exact hg1
+    have hpow_eq : 2 ^ (s (r + 1)) = 3 ^ (s r) + 1 := by
+      rw [heq, hur1, mul_one, mul_one] at hstep
+      exact hstep
+    have hs1_ge4 : 4 ≤ s (r + 1) := by
+      apply Nat.le_of_not_lt
+      intro hlt4
+      have hle3 : s (r + 1) ≤ 3 := by omega
+      have h2_le8 : 2 ^ (s (r + 1)) ≤ 2 ^ 3 := Nat.pow_le_pow_right (by decide) hle3
+      omega
+    obtain ⟨k, hk⟩ : ∃ k : ℕ, s (r + 1) = k + 4 := ⟨s (r + 1) - 4, by omega⟩
+    have hpow8 : (2 ^ (s (r + 1))) % 8 = 0 := by
+      have hp : 2 ^ (s (r + 1)) = 8 * (2 ^ (k + 1)) := by
+        rw [hk, Nat.pow_add 2 k 4, Nat.pow_succ]
+        ring
+      rw [hp]
+      omega
+    omega
+  exact ⟨hcop_u, hcop_full, ⟨hmod8, hge10⟩, hne⟩
+
+/-! ## 70. Theorem SB.70: Two-Step Odd-Core GCD, $s_r$-Free Return Bound, & Boundary Extinction -/
+
+/-- **Two-Step Odd-Core GCD, $s_r$-Free Return Bound, & Boundary Extinction
+(`two_step_odd_core_gcd_and_return_extinction`, Theorem SB.70)**:
+Suppose `ValidBlockChain b_0 s u (r + 3)` holds:
+1. **Exact Two-Step Odd-Core GCD Divisibility**:
+   `Nat.gcd (u r) (u (r + 2)) ∣ (3 ^ (s (r + 1)) + 2 ^ (s (r + 1)))`,
+2. **$s_r$-Free Two-Step Return Divisibility & Upper Bound (`u (r + 2) = u r`)**:
+   Whenever `u (r + 2) = u r`, we have:
+   - `(2 ^ (s (r + 1) + s (r + 2)) - 3 ^ (s r + s (r + 1))) * u r = 3 ^ (s (r + 1)) + 2 ^ (s (r + 1))`,
+   - `u r ∣ (3 ^ (s (r + 1)) + 2 ^ (s (r + 1)))`, and
+   - `u r ≤ 3 ^ (s (r + 1)) + 2 ^ (s (r + 1))` (**independent of `s r`!**), and
+3. **Boundary Return `(3, 2, 6, 1, 7)` Next-Step Extinction Certificate**:
+   `3 ^ 3 * 1 + 1 = 2 ^ 2 * 7 ∧ 3 ^ 2 * 7 + 1 = 2 ^ 6 * 1 ∧ (3 ^ 6 * 1 + 1) % 4 = 2`! -/
+theorem two_step_odd_core_gcd_and_return_extinction
+    {b_0 r : ℕ} {s u : ℕ → ℕ}
+    (hchain : ValidBlockChain b_0 s u (r + 3)) :
+    Nat.gcd (u r) (u (r + 2)) ∣ (3 ^ (s (r + 1)) + 2 ^ (s (r + 1))) ∧
+      (u (r + 2) = u r →
+        (2 ^ (s (r + 1) + s (r + 2)) - 3 ^ (s r + s (r + 1))) * u r =
+          3 ^ (s (r + 1)) + 2 ^ (s (r + 1)) ∧
+          u r ∣ (3 ^ (s (r + 1)) + 2 ^ (s (r + 1))) ∧
+          u r ≤ 3 ^ (s (r + 1)) + 2 ^ (s (r + 1))) ∧
+      (3 ^ 3 * 1 + 1 = 2 ^ 2 * 7 ∧
+        3 ^ 2 * 7 + 1 = 2 ^ 6 * 1 ∧
+        (3 ^ 6 * 1 + 1) % 4 = 2) := by
+  have hid :
+      2 ^ (s (r + 1) + s (r + 2)) * u (r + 2) =
+        3 ^ (s r + s (r + 1)) * u r + 3 ^ (s (r + 1)) + 2 ^ (s (r + 1)) :=
+    (trough_rebound_compound_interest_and_local_minimum_trap hchain).1
+  have hid' :
+      2 ^ (s (r + 1) + s (r + 2)) * u (r + 2) =
+        3 ^ (s r + s (r + 1)) * u r + (3 ^ (s (r + 1)) + 2 ^ (s (r + 1))) := by
+    rw [hid]
+    ring
+  have hsub :
+      2 ^ (s (r + 1) + s (r + 2)) * u (r + 2) - 3 ^ (s r + s (r + 1)) * u r =
+        3 ^ (s (r + 1)) + 2 ^ (s (r + 1)) := by
+    rw [hid', Nat.add_sub_cancel_left]
+  have hgcd : Nat.gcd (u r) (u (r + 2)) ∣ (3 ^ (s (r + 1)) + 2 ^ (s (r + 1))) := by
+    have hd1 : Nat.gcd (u r) (u (r + 2)) ∣ 3 ^ (s r + s (r + 1)) * u r :=
+      dvd_mul_of_dvd_right (Nat.gcd_dvd_left (u r) (u (r + 2))) (3 ^ (s r + s (r + 1)))
+    have hd2 : Nat.gcd (u r) (u (r + 2)) ∣ 2 ^ (s (r + 1) + s (r + 2)) * u (r + 2) :=
+      dvd_mul_of_dvd_right (Nat.gcd_dvd_right (u r) (u (r + 2))) (2 ^ (s (r + 1) + s (r + 2)))
+    rw [hid'] at hd2
+    exact (Nat.dvd_add_right hd1).mp hd2
+  refine ⟨hgcd, ?_, by decide⟩
+  intro hu_eq
+  have hdvd : u r ∣ (3 ^ (s (r + 1)) + 2 ^ (s (r + 1))) := by
+    have hg := hgcd
+    rw [hu_eq, Nat.gcd_self] at hg
+    exact hg
+  have hpos : 0 < 3 ^ (s (r + 1)) + 2 ^ (s (r + 1)) :=
+    Nat.add_pos_left (Nat.pow_pos (by decide)) (2 ^ (s (r + 1)))
+  have hle : u r ≤ 3 ^ (s (r + 1)) + 2 ^ (s (r + 1)) := Nat.le_of_dvd hpos hdvd
+  have hprod :
+      (2 ^ (s (r + 1) + s (r + 2)) - 3 ^ (s r + s (r + 1))) * u r =
+        3 ^ (s (r + 1)) + 2 ^ (s (r + 1)) := by
+    rw [Nat.sub_mul]
+    have hsub_eq := hsub
+    rw [hu_eq] at hsub_eq
+    exact hsub_eq
+  exact ⟨hprod, hdvd, hle⟩
+
+/-! ## 71. Theorem SB.71: End-of-Block $3^{s_r}$-Upgraded Baker Pinch & $s_r$-Free $M$-Step Return Bound -/
+
+/-- **End-of-Block $3^{s_r}$-Upgraded Baker Pinch & $s_r$-Free $M$-Step Return Bound
+(`end_of_block_three_pow_upgraded_baker_pinch_and_s_r_free_return_bound`, Theorem SB.71)**:
+Suppose `ValidBlockChain b_0 s u (r + 1 + M + 1)` holds with `∀ k < M, 2 ≤ s (r + 1 + k)`.
+Setting `s' t = s (r + 1 + t)`, `d = blockSteps s' M`, `S = d + s (r + 1 + M)`,
+`T = s r + d`, and `R = 3 ^ d + renewalNumerator s' M`:
+1. **Strict Oddness & Divisibility of `R`**:
+   `2 ^ S * u (r + 1 + M) = 3 ^ T * u r + R`, `R % 2 = 1`, and
+   `Nat.gcd (u r) (u (r + 1 + M)) ∣ R`,
+2. **The $3^{s_r}$-Upgraded Baker–Matveev Pinch**:
+   `5 * 3 ^ (s r) * (2 ^ S * u (r + 1 + M) - 3 ^ T * u r) + 4 * 3 ^ (s r) * 2 ^ d ≤ 9 * 3 ^ T`, and
+3. **$s_r$-Free $M$-Step Return Bound (`u (r + 1 + M) = u r`)**:
+   Whenever `u (r + 1 + M) = u r`, we have:
+   - `(2 ^ S - 3 ^ T) * u r = R`,
+   - `u r ∣ R` and `u r ≤ R`, and
+   - `5 * u r + 4 * 2 ^ d ≤ 9 * 3 ^ d` (**completely independent of `s r` and `T_r`!**)! -/
+theorem end_of_block_three_pow_upgraded_baker_pinch_and_s_r_free_return_bound
+    {b_0 r M : ℕ} {s u : ℕ → ℕ}
+    (hchain : ValidBlockChain b_0 s u (r + 1 + M + 1))
+    (hs2 : ∀ k < M, 2 ≤ s (r + 1 + k)) :
+    let s' := fun t => s (r + 1 + t)
+    let d := blockSteps s' M
+    let S := d + s (r + 1 + M)
+    let T := s r + d
+    let R := 3 ^ d + renewalNumerator s' M
+    (2 ^ S * u (r + 1 + M) = 3 ^ T * u r + R ∧
+      R % 2 = 1 ∧
+      Nat.gcd (u r) (u (r + 1 + M)) ∣ R) ∧
+      5 * 3 ^ (s r) * (2 ^ S * u (r + 1 + M) - 3 ^ T * u r) + 4 * 3 ^ (s r) * 2 ^ d ≤
+        9 * 3 ^ T ∧
+      (u (r + 1 + M) = u r →
+        (2 ^ S - 3 ^ T) * u r = R ∧
+          u r ∣ R ∧
+          u r ≤ R ∧
+          5 * u r + 4 * 2 ^ d ≤ 9 * 3 ^ d) := by
+  intro s' d S T R
+  have h25 := unconditional_all_k_step_odd_leftover_recovery_and_nine_fifths_bound hchain hs2
+  dsimp only at h25
+  have h95 : 5 * R + 4 * 2 ^ d ≤ 9 * 3 ^ d := h25.1
+  have hdiv : (2 ^ S * u (r + 1 + M)) / 3 ^ T = u r := h25.2.2.2.1
+  have hmod : (2 ^ S * u (r + 1 + M)) % 3 ^ T = R := h25.2.2.2.2.1
+  have hid : 2 ^ S * u (r + 1 + M) = 3 ^ T * u r + R := by
+    have hdm := Nat.div_add_mod (2 ^ S * u (r + 1 + M)) (3 ^ T)
+    rw [hdiv, hmod] at hdm
+    exact hdm.symm
+  have hs_end : 1 ≤ s (r + 1 + M) := (hchain (r + 1 + M) (by omega)).1
+  have hS_pos : 1 ≤ S := by omega
+  have h2S_even : (2 ^ S * u (r + 1 + M)) % 2 = 0 := by
+    obtain ⟨k, hk⟩ : ∃ k : ℕ, S = k + 1 := ⟨S - 1, by omega⟩
+    have hp : 2 ^ S * u (r + 1 + M) = 2 * (2 ^ k * u (r + 1 + M)) := by
+      rw [hk, Nat.pow_succ]
+      ring
+    rw [hp]
+    omega
+  have hur_odd : u r % 2 = 1 := (hchain r (by omega)).2.1
+  have h3T_odd : 3 ^ T % 2 = 1 := three_pow_mod_two_eq_one T
+  have hprod_odd : (3 ^ T * u r) % 2 = 1 := by
+    rw [Nat.mul_mod, h3T_odd, hur_odd]
+  have hR_odd : R % 2 = 1 := by omega
+  have hsub : 2 ^ S * u (r + 1 + M) - 3 ^ T * u r = R := by omega
+  have hgcd : Nat.gcd (u r) (u (r + 1 + M)) ∣ R := by
+    have hd1 : Nat.gcd (u r) (u (r + 1 + M)) ∣ 3 ^ T * u r :=
+      dvd_mul_of_dvd_right (Nat.gcd_dvd_left (u r) (u (r + 1 + M))) (3 ^ T)
+    have hd2 : Nat.gcd (u r) (u (r + 1 + M)) ∣ 2 ^ S * u (r + 1 + M) :=
+      dvd_mul_of_dvd_right (Nat.gcd_dvd_right (u r) (u (r + 1 + M))) (2 ^ S)
+    have hd_sub := Nat.dvd_sub hd2 hd1
+    rw [hsub] at hd_sub
+    exact hd_sub
+  have hbaker :
+      5 * 3 ^ (s r) * (2 ^ S * u (r + 1 + M) - 3 ^ T * u r) + 4 * 3 ^ (s r) * 2 ^ d ≤
+        9 * 3 ^ T := by
+    rw [hsub]
+    have hm := Nat.mul_le_mul_left (3 ^ (s r)) h95
+    have hlhs : 5 * 3 ^ (s r) * R + 4 * 3 ^ (s r) * 2 ^ d =
+        3 ^ (s r) * (5 * R + 4 * 2 ^ d) := by ring
+    have hrhs : 9 * 3 ^ T = 3 ^ (s r) * (9 * 3 ^ d) := by
+      change 9 * 3 ^ (s r + d) = 3 ^ (s r) * (9 * 3 ^ d)
+      rw [Nat.pow_add 3 (s r) d]
+      ring
+    rw [hlhs, hrhs]
+    exact hm
+  refine ⟨⟨hid, hR_odd, hgcd⟩, hbaker, ?_⟩
+  intro hu_eq
+  have hdvd : u r ∣ R := by
+    have hg := hgcd
+    rw [hu_eq, Nat.gcd_self] at hg
+    exact hg
+  have hR_pos : 0 < R := by omega
+  have hle_R : u r ≤ R := Nat.le_of_dvd hR_pos hdvd
+  have hprod : (2 ^ S - 3 ^ T) * u r = R := by
+    rw [Nat.sub_mul]
+    have hsub_eq := hsub
+    rw [hu_eq] at hsub_eq
+    exact hsub_eq
+  have hbound : 5 * u r + 4 * 2 ^ d ≤ 9 * 3 ^ d := by omega
+  exact ⟨hprod, hdvd, hle_R, hbound⟩
+
+/-! ## 72. Theorem SB.72: Exact 2-Adic Renewal Valuation ($A_{0,K} = 2^{s_0} R_0$) & The $1/5$ Reduced Ceiling -/
+
+/-- **Exact 2-Adic Renewal Valuation ($A_{0,K} = 2^{s_0} R_0$) & The $1/5$ Reduced Ceiling
+(`exact_two_adic_renewal_valuation_and_one_fifth_reduced_ceiling`, Theorem SB.72)**:
+Suppose `ValidBlockChain b_0 s u (M + 2)` holds with `2 ≤ s 0` and `∀ k < M, 2 ≤ s (1 + k)`.
+Setting `K = M + 1`, `T_K = blockSteps s K`, `s' t = s (1 + t)`, `d_0 = blockSteps s' M`,
+`S_0 = d_0 + s K`, and `R_0 = 3 ^ d_0 + renewalNumerator s' M`:
+1. **Exact 2-Adic Factorization of the Renewal Numerator**:
+   `renewalNumerator s K = 2 ^ (s 0) * R_0` and `R_0 % 2 = 1`
+   (so the 2-adic valuation of $A_{0,K}$ is **identically $s_0$ for all $K \ge 1$**!),
+2. **Reduced Odd-Seed Evolution Identity**:
+   `2 ^ S_0 * u K = 3 ^ T_K * u 0 + R_0`,
+3. **The Unconditional $1/5$ Reduced Renewal Ceiling**:
+   `5 * R_0 + 4 * 2 ^ d_0 ≤ 3 ^ T_K` and `5 * R_0 < 3 ^ T_K`, and
+4. **Reduced Base-3 Quotient, Remainder, & Zero-Carry Split**:
+   `(2 ^ S_0 * u K) / 3 ^ T_K = u 0`, `(2 ^ S_0 * u K) % 3 ^ T_K = R_0`, and
+   `base3DigitSum (2 ^ S_0 * u K) = base3DigitSum (u 0) + base3DigitSum R_0`! -/
+theorem exact_two_adic_renewal_valuation_and_one_fifth_reduced_ceiling
+    {b_0 M : ℕ} {s u : ℕ → ℕ}
+    (hchain : ValidBlockChain b_0 s u (0 + 1 + M + 1))
+    (hs0 : 2 ≤ s 0)
+    (hs_tail : ∀ k < M, 2 ≤ s (0 + 1 + k)) :
+    let K := 0 + 1 + M
+    let T_K := blockSteps s K
+    let s' := fun t => s (0 + 1 + t)
+    let d_0 := blockSteps s' M
+    let S_0 := d_0 + s K
+    let R_0 := 3 ^ d_0 + renewalNumerator s' M
+    (renewalNumerator s K = 2 ^ (s 0) * R_0 ∧ R_0 % 2 = 1) ∧
+      2 ^ S_0 * u K = 3 ^ T_K * u 0 + R_0 ∧
+      (5 * R_0 + 4 * 2 ^ d_0 ≤ 3 ^ T_K ∧ 5 * R_0 < 3 ^ T_K) ∧
+      ((2 ^ S_0 * u K) / 3 ^ T_K = u 0 ∧
+        (2 ^ S_0 * u K) % 3 ^ T_K = R_0 ∧
+        base3DigitSum (2 ^ S_0 * u K) = base3DigitSum (u 0) + base3DigitSum R_0) := by
+  intro K T_K s' d_0 S_0 R_0
+  have h71 := end_of_block_three_pow_upgraded_baker_pinch_and_s_r_free_return_bound hchain hs_tail
+  have h25 := unconditional_all_k_step_odd_leftover_recovery_and_nine_fifths_bound hchain hs_tail
+  have hTK_eq : T_K = s 0 + d_0 := by
+    have hsh := blockSteps_add_shift s (0 + 1) M
+    have hb1 : blockSteps s (0 + 1) = s 0 := by simp [blockSteps]
+    rw [hb1] at hsh
+    exact hsh
+  have hid_red : 2 ^ S_0 * u K = 3 ^ T_K * u 0 + R_0 := by
+    have h1 : 2 ^ S_0 * u K = 3 ^ (s 0 + d_0) * u 0 + R_0 := h71.1.1
+    rw [← hTK_eq] at h1
+    exact h1
+  have hR0_odd : R_0 % 2 = 1 := h71.1.2.1
+  have hs_all : ∀ k < K, 2 ≤ s k := by
+    intro k hk
+    rcases (by omega : k = 0 ∨ 1 ≤ k) with rfl | hk1
+    · exact hs0
+    · obtain ⟨j, rfl⟩ : ∃ j : ℕ, k = 0 + 1 + j := ⟨k - 1, by omega⟩
+      exact hs_tail j (by omega)
+  have h28 := bridge_a_dual_universe_series_lowest_terms_and_uniqueness
+    (K := K) (fun t ht => hchain t (by omega)) hs_all
+  have hid_full : 2 ^ (T_K + s K) * u K =
+      3 ^ T_K * oddReturnP (orbit b_0 (blockSteps s 0)) + renewalNumerator s K := h28.1
+  have hP0 : oddReturnP (orbit b_0 (blockSteps s 0)) = 2 ^ (s 0) * u 0 :=
+    (hchain 0 (by omega)).2.2
+  have hA_factor : renewalNumerator s K = 2 ^ (s 0) * R_0 := by
+    have hm := congrArg (fun x => 2 ^ (s 0) * x) hid_red
+    dsimp only at hm
+    have hpowL : 2 ^ (s 0) * (2 ^ S_0 * u K) = 2 ^ (T_K + s K) * u K := by
+      have hexp : s 0 + S_0 = T_K + s K := by omega
+      rw [← Nat.mul_assoc, ← Nat.pow_add 2 (s 0) S_0, hexp]
+    have hpowR : 2 ^ (s 0) * (3 ^ T_K * u 0 + R_0) =
+        3 ^ T_K * oddReturnP (orbit b_0 (blockSteps s 0)) + 2 ^ (s 0) * R_0 := by
+      rw [hP0]
+      ring
+    rw [hpowL, hpowR] at hm
+    omega
+  have h95 : 5 * R_0 + 4 * 2 ^ d_0 ≤ 9 * 3 ^ d_0 := h25.1
+  have h9_le_3s0 : 9 ≤ 3 ^ (s 0) := by
+    have h32 : 3 ^ 2 ≤ 3 ^ (s 0) := Nat.pow_le_pow_right (by decide) hs0
+    omega
+  have h15_le : 5 * R_0 + 4 * 2 ^ d_0 ≤ 3 ^ T_K := by
+    have hm : 9 * 3 ^ d_0 ≤ 3 ^ (s 0) * 3 ^ d_0 :=
+      Nat.mul_le_mul_right (3 ^ d_0) h9_le_3s0
+    have hpow3 : 3 ^ (s 0) * 3 ^ d_0 = 3 ^ T_K := by
+      rw [← Nat.pow_add 3 (s 0) d_0, ← hTK_eq]
+    omega
+  have h2d_pos : 1 ≤ 2 ^ d_0 := Nat.one_le_pow _ 2 (by decide)
+  have h15_lt : 5 * R_0 < 3 ^ T_K := by omega
+  have hdiv : (2 ^ S_0 * u K) / 3 ^ T_K = u 0 := by
+    have hd : (2 ^ S_0 * u K) / 3 ^ (s 0 + d_0) = u 0 := h25.2.2.2.1
+    rw [← hTK_eq] at hd
+    exact hd
+  have hmod : (2 ^ S_0 * u K) % 3 ^ T_K = R_0 := by
+    have hm : (2 ^ S_0 * u K) % 3 ^ (s 0 + d_0) = R_0 := h25.2.2.2.2.1
+    rw [← hTK_eq] at hm
+    exact hm
+  have hs3 : base3DigitSum (2 ^ S_0 * u K) = base3DigitSum (u 0) + base3DigitSum R_0 :=
+    h25.2.2.2.2.2
+  exact ⟨⟨hA_factor, hR0_odd⟩, hid_red, ⟨h15_le, h15_lt⟩, ⟨hdiv, hmod, hs3⟩⟩
+
 
 #check @archimedean_rung_ceiling_and_stepSum_bound
 #check @unit_quotient_even_rung_instant_death_and_odd_rung_mod64_identity
@@ -5236,6 +5575,10 @@ theorem senge_straus_stewart_finiteness_bridge_and_grand_68_synthesis
 #check @post_horizon_binary_zero_bit_desert_and_dual_radix_lock
 #check @shifted_basepoint_baker_matveev_pinch_and_repeated_core_rhin_form
 #check @senge_straus_stewart_finiteness_bridge_and_grand_68_synthesis
+#check @adjacent_odd_core_coprimality_and_universal_non_equality
+#check @two_step_odd_core_gcd_and_return_extinction
+#check @end_of_block_three_pow_upgraded_baker_pinch_and_s_r_free_return_bound
+#check @exact_two_adic_renewal_valuation_and_one_fifth_reduced_ceiling
 
 #print axioms archimedean_rung_ceiling_and_stepSum_bound
 #print axioms unit_quotient_even_rung_instant_death_and_odd_rung_mod64_identity
