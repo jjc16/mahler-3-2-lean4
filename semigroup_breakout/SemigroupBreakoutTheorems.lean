@@ -4656,6 +4656,517 @@ theorem grand_seed_finiteness_and_extrema_64_synthesis :
     have h63 := finite_seed_global_peak_trough_seesaw_and_return_barrier hchain hs2 hK
     exact ⟨h63.2.1, h63.2.2.1⟩
 
+/-! ## 65. Theorem SB.65: $\text{LTE}_2$ Ultrametric Flush Pinning & Descent-Flush Prohibition -/
+
+/-- Helper: `3 ^ n % 16` cycles through `{1, 3, 9, 11}` according to `n % 4 ∈ {0, 1, 2, 3}`. -/
+theorem three_pow_mod_sixteen_quad (n : ℕ) :
+    (n % 4 = 0 → 3 ^ n % 16 = 1) ∧
+    (n % 4 = 1 → 3 ^ n % 16 = 3) ∧
+    (n % 4 = 2 → 3 ^ n % 16 = 9) ∧
+    (n % 4 = 3 → 3 ^ n % 16 = 11) := by
+  induction n with
+  | zero => decide
+  | succ n ih =>
+      have hpow : 3 ^ (n + 1) = 3 * 3 ^ n := by
+        rw [Nat.pow_succ]
+        ring
+      rw [hpow]
+      omega
+
+/-- **$\text{LTE}_2$ Ultrametric Flush Pinning & Descent-Flush Prohibition
+(`lte2_ultrametric_flush_pinning_and_descent_prohibition`, Theorem SB.65)**:
+Suppose `ValidBlockChain b_0 s u (r + 2)` holds with `2 ≤ s r` and `2 ≤ s (r + 1)`.
+By the 2-adic ultrametric valuation law on
+`3 ^ (s r) * u r + 1 = (3 ^ (s r) - 1) * u r + (u r + 1)` (even `s r`) and
+`3 * (3 ^ (s r - 1) - 1) * u r + (3 * u r + 1)` (odd `s r`):
+1. **Even Rung $s_r \equiv 2 \pmod 4$ ($v_2(3^{s_r} - 1) = 3$)**:
+   - `(u r % 8 = 3 ↔ s (r + 1) = 2)`,
+   - `(u r % 16 = 15 ↔ s (r + 1) = 3)`, and whenever `u r % 16 = 15`, `u r < u (r + 1)`
+     (high divisibility $16 \mid u_r + 1$ **forbids** a descent flush!),
+   - `(u r % 16 = 7 ↔ 4 ≤ s (r + 1))`, and `u (r + 1) ≤ u r → u r % 16 = 7`!
+2. **Even Rung $s_r \equiv 0 \pmod 4$ ($v_2(3^{s_r} - 1) \ge 4$)**:
+   - `(u r % 8 = 3 ↔ s (r + 1) = 2)`,
+   - `(u r % 16 = 7 ↔ s (r + 1) = 3)`, and whenever `u r % 16 = 7`, `u r < u (r + 1)`,
+   - `(u r % 16 = 15 ↔ 4 ≤ s (r + 1))`, and `u (r + 1) ≤ u r → u r % 16 = 15`!
+3. **Odd Rung $s_r \equiv 3 \pmod 4$ ($v_2(3^{s_r - 1} - 1) = 3$)**:
+   - `(u r % 8 = 1 ↔ s (r + 1) = 2)`,
+   - `(u r % 16 = 5 ↔ s (r + 1) = 3)`, and whenever `u r % 16 = 5`, `u r < u (r + 1)`
+     (high divisibility $16 \mid 3 u_r + 1$ **forbids** a descent flush!),
+   - `(u r % 16 = 13 ↔ 4 ≤ s (r + 1))`, and `u (r + 1) ≤ u r → u r % 16 = 13`!
+4. **Odd Rung $s_r \equiv 1 \pmod 4$ ($v_2(3^{s_r - 1} - 1) \ge 4$)**:
+   - `(u r % 8 = 1 ↔ s (r + 1) = 2)`,
+   - `(u r % 16 = 13 ↔ s (r + 1) = 3)`, and whenever `u r % 16 = 13`, `u r < u (r + 1)`,
+   - `(u r % 16 = 5 ↔ 4 ≤ s (r + 1))`, and `u (r + 1) ≤ u r → u r % 16 = 5`! -/
+theorem lte2_ultrametric_flush_pinning_and_descent_prohibition
+    {b_0 r : ℕ} {s u : ℕ → ℕ}
+    (hchain : ValidBlockChain b_0 s u (r + 2))
+    (hs_r : 2 ≤ s r)
+    (hs_r1 : 2 ≤ s (r + 1)) :
+    (s r % 4 = 2 →
+      (u r % 8 = 3 ↔ s (r + 1) = 2) ∧
+        (u r % 16 = 15 ↔ s (r + 1) = 3) ∧
+        (u r % 16 = 15 → u r < u (r + 1)) ∧
+        (u r % 16 = 7 ↔ 4 ≤ s (r + 1)) ∧
+        (u (r + 1) ≤ u r → u r % 16 = 7)) ∧
+    (s r % 4 = 0 →
+      (u r % 8 = 3 ↔ s (r + 1) = 2) ∧
+        (u r % 16 = 7 ↔ s (r + 1) = 3) ∧
+        (u r % 16 = 7 → u r < u (r + 1)) ∧
+        (u r % 16 = 15 ↔ 4 ≤ s (r + 1)) ∧
+        (u (r + 1) ≤ u r → u r % 16 = 15)) ∧
+    (s r % 4 = 3 →
+      (u r % 8 = 1 ↔ s (r + 1) = 2) ∧
+        (u r % 16 = 5 ↔ s (r + 1) = 3) ∧
+        (u r % 16 = 5 → u r < u (r + 1)) ∧
+        (u r % 16 = 13 ↔ 4 ≤ s (r + 1)) ∧
+        (u (r + 1) ≤ u r → u r % 16 = 13)) ∧
+    (s r % 4 = 1 →
+      (u r % 8 = 1 ↔ s (r + 1) = 2) ∧
+        (u r % 16 = 13 ↔ s (r + 1) = 3) ∧
+        (u r % 16 = 13 → u r < u (r + 1)) ∧
+        (u r % 16 = 5 ↔ 4 ≤ s (r + 1)) ∧
+        (u (r + 1) ≤ u r → u r % 16 = 5)) := by
+  have h42 := universal_mod8_and_mod24_next_rung_dichotomy hchain hs_r1
+  have h16_lock := (universal_mod4_quotient_rung_parity_lock_and_mersenne_trap hchain hs_r1).1
+  have h61 := local_descent_rung_jump_and_multi_step_descent_explosion.1 hchain
+  have hstep := (one_step_backward_quotient_recovery_and_mod_three_pow_one hchain).1
+  have hu1_odd : u (r + 1) % 2 = 1 := (hchain (r + 1) (by omega)).2.1
+  have h3_16 := three_pow_mod_sixteen_quad (s r)
+  have hmul16 :
+      ((3 ^ (s r) % 16) * (u r % 16) + 1) % 16 = (2 ^ (s (r + 1)) * u (r + 1)) % 16 := by
+    have h1 : (3 ^ (s r) % 16) * (u r % 16) % 16 = (3 ^ (s r) * u r) % 16 :=
+      (Nat.mul_mod _ _ 16).symm
+    have h2 : (3 ^ (s r) * u r + 1) % 16 = (2 ^ (s (r + 1)) * u (r + 1)) % 16 := by rw [hstep]
+    omega
+  have hrung16 :
+      (s (r + 1) = 2 →
+        (2 ^ (s (r + 1)) * u (r + 1)) % 16 = 4 ∨ (2 ^ (s (r + 1)) * u (r + 1)) % 16 = 12) ∧
+      (s (r + 1) = 3 → (2 ^ (s (r + 1)) * u (r + 1)) % 16 = 8) ∧
+      (4 ≤ s (r + 1) → (2 ^ (s (r + 1)) * u (r + 1)) % 16 = 0) := by
+    refine ⟨?_, ?_, ?_⟩
+    · intro hs2_eq
+      rw [hs2_eq]
+      omega
+    · intro hs3_eq
+      rw [hs3_eq]
+      omega
+    · intro hs4_ge
+      obtain ⟨k, hk⟩ : ∃ k : ℕ, s (r + 1) = k + 4 := ⟨s (r + 1) - 4, by omega⟩
+      have hpow : 2 ^ (s (r + 1)) * u (r + 1) = 16 * (2 ^ k * u (r + 1)) := by
+        rw [hk, Nat.pow_add 2 k 4]
+        ring
+      rw [hpow]
+      omega
+  refine ⟨?_, ?_, ?_, ?_⟩
+  · intro hsr4
+    have heven : s r % 2 = 0 := by omega
+    have hu_mod4 : u r % 4 = 3 := h16_lock.1.mp heven
+    have h3_val : 3 ^ (s r) % 16 = 9 := h3_16.2.2.1 hsr4
+    have hmul16' := hmul16
+    rw [h3_val] at hmul16'
+    have hiff2 : u r % 8 = 3 ↔ s (r + 1) = 2 := (h42.1 heven).1
+    have hiff3 : u r % 16 = 15 ↔ s (r + 1) = 3 := by
+      constructor
+      · intro hu15
+        by_contra hne3
+        rcases (by omega : s (r + 1) = 2 ∨ 4 ≤ s (r + 1)) with h2 | h4
+        · have hm := hrung16.1 h2; omega
+        · have hm := hrung16.2.2 h4; omega
+      · intro hs3
+        have hm := hrung16.2.1 hs3; omega
+    have hiff4 : u r % 16 = 7 ↔ 4 ≤ s (r + 1) := by
+      constructor
+      · intro hu7
+        by_contra hlt4
+        rcases (by omega : s (r + 1) = 2 ∨ s (r + 1) = 3) with h2 | h3
+        · have hm := hrung16.1 h2; omega
+        · have hm := hrung16.2.1 h3; omega
+      · intro hs4
+        have hm := hrung16.2.2 hs4; omega
+    have hasc : u r % 16 = 15 → u r < u (r + 1) := by
+      intro hu15
+      have hs3 : s (r + 1) = 3 := hiff3.mp hu15
+      by_contra hle
+      have h4 : 4 ≤ s (r + 1) := (h61 (by omega)).2.1 hs_r
+      omega
+    have hdesc : u (r + 1) ≤ u r → u r % 16 = 7 := by
+      intro hle
+      exact hiff4.mpr ((h61 hle).2.1 hs_r)
+    exact ⟨hiff2, hiff3, hasc, hiff4, hdesc⟩
+  · intro hsr4
+    have heven : s r % 2 = 0 := by omega
+    have hu_mod4 : u r % 4 = 3 := h16_lock.1.mp heven
+    have h3_val : 3 ^ (s r) % 16 = 1 := h3_16.1 hsr4
+    have hmul16' := hmul16
+    rw [h3_val] at hmul16'
+    have hiff2 : u r % 8 = 3 ↔ s (r + 1) = 2 := (h42.1 heven).1
+    have hiff3 : u r % 16 = 7 ↔ s (r + 1) = 3 := by
+      constructor
+      · intro hu7
+        by_contra hne3
+        rcases (by omega : s (r + 1) = 2 ∨ 4 ≤ s (r + 1)) with h2 | h4
+        · have hm := hrung16.1 h2; omega
+        · have hm := hrung16.2.2 h4; omega
+      · intro hs3
+        have hm := hrung16.2.1 hs3; omega
+    have hiff4 : u r % 16 = 15 ↔ 4 ≤ s (r + 1) := by
+      constructor
+      · intro hu15
+        by_contra hlt4
+        rcases (by omega : s (r + 1) = 2 ∨ s (r + 1) = 3) with h2 | h3
+        · have hm := hrung16.1 h2; omega
+        · have hm := hrung16.2.1 h3; omega
+      · intro hs4
+        have hm := hrung16.2.2 hs4; omega
+    have hasc : u r % 16 = 7 → u r < u (r + 1) := by
+      intro hu7
+      have hs3 : s (r + 1) = 3 := hiff3.mp hu7
+      by_contra hle
+      have h4 : 4 ≤ s (r + 1) := (h61 (by omega)).2.1 hs_r
+      omega
+    have hdesc : u (r + 1) ≤ u r → u r % 16 = 15 := by
+      intro hle
+      exact hiff4.mpr ((h61 hle).2.1 hs_r)
+    exact ⟨hiff2, hiff3, hasc, hiff4, hdesc⟩
+  · intro hsr4
+    have hodd : s r % 2 = 1 := by omega
+    have hu_mod4 : u r % 4 = 1 := h16_lock.2.mp hodd
+    have h3_val : 3 ^ (s r) % 16 = 11 := h3_16.2.2.2 hsr4
+    have hmul16' := hmul16
+    rw [h3_val] at hmul16'
+    have hiff2 : u r % 8 = 1 ↔ s (r + 1) = 2 := (h42.2 hodd).1
+    have hiff3 : u r % 16 = 5 ↔ s (r + 1) = 3 := by
+      constructor
+      · intro hu5
+        by_contra hne3
+        rcases (by omega : s (r + 1) = 2 ∨ 4 ≤ s (r + 1)) with h2 | h4
+        · have hm := hrung16.1 h2; omega
+        · have hm := hrung16.2.2 h4; omega
+      · intro hs3
+        have hm := hrung16.2.1 hs3; omega
+    have hiff4 : u r % 16 = 13 ↔ 4 ≤ s (r + 1) := by
+      constructor
+      · intro hu13
+        by_contra hlt4
+        rcases (by omega : s (r + 1) = 2 ∨ s (r + 1) = 3) with h2 | h3
+        · have hm := hrung16.1 h2; omega
+        · have hm := hrung16.2.1 h3; omega
+      · intro hs4
+        have hm := hrung16.2.2 hs4; omega
+    have hasc : u r % 16 = 5 → u r < u (r + 1) := by
+      intro hu5
+      have hs3 : s (r + 1) = 3 := hiff3.mp hu5
+      by_contra hle
+      have h4 : 4 ≤ s (r + 1) := (h61 (by omega)).2.1 hs_r
+      omega
+    have hdesc : u (r + 1) ≤ u r → u r % 16 = 13 := by
+      intro hle
+      exact hiff4.mpr ((h61 hle).2.1 hs_r)
+    exact ⟨hiff2, hiff3, hasc, hiff4, hdesc⟩
+  · intro hsr4
+    have hodd : s r % 2 = 1 := by omega
+    have hu_mod4 : u r % 4 = 1 := h16_lock.2.mp hodd
+    have h3_val : 3 ^ (s r) % 16 = 3 := h3_16.2.1 hsr4
+    have hmul16' := hmul16
+    rw [h3_val] at hmul16'
+    have hiff2 : u r % 8 = 1 ↔ s (r + 1) = 2 := (h42.2 hodd).1
+    have hiff3 : u r % 16 = 13 ↔ s (r + 1) = 3 := by
+      constructor
+      · intro hu13
+        by_contra hne3
+        rcases (by omega : s (r + 1) = 2 ∨ 4 ≤ s (r + 1)) with h2 | h4
+        · have hm := hrung16.1 h2; omega
+        · have hm := hrung16.2.2 h4; omega
+      · intro hs3
+        have hm := hrung16.2.1 hs3; omega
+    have hiff4 : u r % 16 = 5 ↔ 4 ≤ s (r + 1) := by
+      constructor
+      · intro hu5
+        by_contra hlt4
+        rcases (by omega : s (r + 1) = 2 ∨ s (r + 1) = 3) with h2 | h3
+        · have hm := hrung16.1 h2; omega
+        · have hm := hrung16.2.1 h3; omega
+      · intro hs4
+        have hm := hrung16.2.2 hs4; omega
+    have hasc : u r % 16 = 13 → u r < u (r + 1) := by
+      intro hu13
+      have hs3 : s (r + 1) = 3 := hiff3.mp hu13
+      by_contra hle
+      have h4 : 4 ≤ s (r + 1) := (h61 (by omega)).2.1 hs_r
+      omega
+    have hdesc : u (r + 1) ≤ u r → u r % 16 = 5 := by
+      intro hle
+      exact hiff4.mpr ((h61 hle).2.1 hs_r)
+    exact ⟨hiff2, hiff3, hasc, hiff4, hdesc⟩
+
+/-! ## 66. Theorem SB.66: Post-Horizon Binary Zero-Bit Desert & Dual-Radix Lock -/
+
+/-- **Post-Horizon Binary Zero-Bit Desert & Dual-Radix Lock
+(`post_horizon_binary_zero_bit_desert_and_dual_radix_lock`, Theorem SB.66)**:
+Suppose `ValidBlockChain b_0 s u (K + 1)` holds with `∀ k < K, 2 ≤ s k`.
+Let `P k = oddReturnP (orbit b_0 (blockSteps s k))`, `T_K = blockSteps s K`,
+`S_K = T_K + s K`, `A_K = renewalNumerator s K`, and `N_K = 2 ^ S_K * u K`.
+Whenever the seed $P_0$ has finite bit-length $B_0$ (`P 0 < 2 ^ B_0`) and the orbit
+has passed the bit-horizon (`B_0 ≤ S_K`):
+1. **Binary Zero-Bit Desert of $P_0$ in $[B_0, S_K]$**:
+   `P 0 / 2 ^ B_0 = 0`, `P 0 % 2 ^ B_0 = P 0`, `P 0 % 2 ^ S_K = P 0`, and
+   `∀ B, B_0 ≤ B → (P 0 % 2 ^ S_K) / 2 ^ B = 0`,
+2. **Base-2 Trailing-Zero & Binary Weight Lock on $N_K$**:
+   `N_K = 3 ^ T_K * P 0 + A_K`, `N_K % 2 ^ S_K = 0`, `N_K / 2 ^ S_K = u K`, and
+   `base2DigitSum N_K = base2DigitSum (u K)`, and
+3. **Simultaneous Base-3 Zero-Carry Lock on $N_K$**:
+   `N_K / 3 ^ T_K = P 0`, `N_K % 3 ^ T_K = A_K`, and
+   `base3DigitSum N_K = base3DigitSum (P 0) + base3DigitSum A_K`! -/
+theorem post_horizon_binary_zero_bit_desert_and_dual_radix_lock
+    {b_0 K B_0 : ℕ} {s u : ℕ → ℕ}
+    (hchain : ValidBlockChain b_0 s u (K + 1))
+    (hs2 : ∀ k < K, 2 ≤ s k)
+    (hP0_bits : oddReturnP (orbit b_0 (blockSteps s 0)) < 2 ^ B_0)
+    (hhor : B_0 ≤ blockSteps s K + s K) :
+    let P := fun k => oddReturnP (orbit b_0 (blockSteps s k))
+    let T_K := blockSteps s K
+    let S_K := T_K + s K
+    let A_K := renewalNumerator s K
+    let N_K := 2 ^ S_K * u K
+    (P 0 / 2 ^ B_0 = 0 ∧
+      P 0 % 2 ^ B_0 = P 0 ∧
+      P 0 % 2 ^ S_K = P 0 ∧
+      (∀ B, B_0 ≤ B → (P 0 % 2 ^ S_K) / 2 ^ B = 0)) ∧
+      (N_K = 3 ^ T_K * P 0 + A_K ∧
+        N_K % 2 ^ S_K = 0 ∧
+        N_K / 2 ^ S_K = u K ∧
+        base2DigitSum N_K = base2DigitSum (u K)) ∧
+      (N_K / 3 ^ T_K = P 0 ∧
+        N_K % 3 ^ T_K = A_K ∧
+        base3DigitSum N_K = base3DigitSum (P 0) + base3DigitSum A_K) := by
+  intro P T_K S_K A_K N_K
+  have h28 := bridge_a_dual_universe_series_lowest_terms_and_uniqueness hchain hs2
+  have h32 := (bridge_c_multi_step_dual_base2_base3_zero_carry_split hchain hs2).1
+  dsimp only at h28 h32
+  have hP0_lt_SK : P 0 < 2 ^ S_K :=
+    lt_of_lt_of_le hP0_bits (Nat.pow_le_pow_right (by decide) hhor)
+  have hdiv_B0 : P 0 / 2 ^ B_0 = 0 := Nat.div_eq_of_lt hP0_bits
+  have hmod_B0 : P 0 % 2 ^ B_0 = P 0 := Nat.mod_eq_of_lt hP0_bits
+  have hmod_SK : P 0 % 2 ^ S_K = P 0 := Nat.mod_eq_of_lt hP0_lt_SK
+  have hdesert : ∀ B, B_0 ≤ B → (P 0 % 2 ^ S_K) / 2 ^ B = 0 := by
+    intro B hB
+    rw [hmod_SK]
+    exact Nat.div_eq_of_lt (lt_of_lt_of_le hP0_bits (Nat.pow_le_pow_right (by decide) hB))
+  have h2_pos : 0 < 2 ^ S_K := Nat.pow_pos (by decide)
+  have hNK_mod2 : N_K % 2 ^ S_K = 0 := Nat.mul_mod_right (2 ^ S_K) (u K)
+  have hNK_div2 : N_K / 2 ^ S_K = u K := Nat.mul_div_right (u K) h2_pos
+  have hNK_b2 : base2DigitSum N_K = base2DigitSum (u K) :=
+    base2DigitSum_two_pow_mul S_K (u K)
+  have hs3 : base3DigitSum N_K = base3DigitSum (P 0) + base3DigitSum A_K := by
+    have hs := h32.2.2.2
+    rw [h32.1] at hs
+    exact hs
+  exact ⟨⟨hdiv_B0, hmod_B0, hmod_SK, hdesert⟩,
+    ⟨h28.1, hNK_mod2, hNK_div2, hNK_b2⟩,
+    ⟨h28.2.2.2.1, h28.2.2.2.2.1, hs3⟩⟩
+
+/-! ## 67. Theorem SB.67: Shifted-Basepoint Baker–Matveev Pinch & Repeated-Odd-Core Rhin Reduction -/
+
+/-- **Shifted-Basepoint Baker–Matveev Pinch & Repeated-Odd-Core Rhin Reduction
+(`shifted_basepoint_baker_matveev_pinch_and_repeated_core_rhin_form`, Theorem SB.67)**:
+Suppose `ValidBlockChain b_0 s u (r + M + 1)` holds with `∀ k < r, 2 ≤ s k`, `1 ≤ r`,
+`∀ k < M, 2 ≤ s (r + k)`, and `1 ≤ M`.
+Setting `T_r = blockSteps s r`, `s' t = s (r + t)`, `n_2 = blockSteps s' M`,
+`s_K = s (r + M)`, and `A_rM = renewalNumerator s' M`:
+1. **Exact Shifted-Basepoint Linear Form & $3^{n_2}$-Canceled Baker Pinch**:
+   - `2 ^ (n_2 + s_K) * u (r + M) = 3 ^ n_2 * (2 ^ (s r) * u r) + A_rM`,
+   - `3 ^ n_2 * (2 ^ (s r) * u r) < 2 ^ (n_2 + s_K) * u (r + M)`,
+   - `5 * (2 ^ (n_2 + s_K) * u (r + M) - 3 ^ n_2 * (2 ^ (s r) * u r)) + 4 * 2 ^ n_2 ≤ 4 * 3 ^ n_2`, and
+   - `3 ^ T_r * 2 ^ (s 0) * u 0 < 2 ^ T_r * (2 ^ (s r) * u r)`,
+2. **Repeated-Odd-Core ($u_{r+M} = u_r$) Pure 2-Logarithm Rhin Reduction**:
+   Whenever the odd core repeats (`u (r + M) = u r`), the entire state `2 ^ (s r) * u r`
+   factors out and divides `A_rM`, leaving the pure 2-logarithm difference `2 ^ (n_2 + s_K - s r) - 3 ^ n_2`:
+   - `s r < s_K` and `3 ^ n_2 < 2 ^ (n_2 + s_K - s r)`,
+   - `(2 ^ (s r) * u r) * (2 ^ (n_2 + s_K - s r) - 3 ^ n_2) = A_rM` and `(2 ^ (s r) * u r) ∣ A_rM`,
+   - `5 * ((2 ^ (s r) * u r) * (2 ^ (n_2 + s_K - s r) - 3 ^ n_2)) + 4 * 2 ^ n_2 ≤ 4 * 3 ^ n_2`, and
+   - **Unconditional Minimum Separation Between Repeated Odd Cores**:
+     `5 * (2 ^ (s r) * u r) + 4 * 2 ^ n_2 ≤ 4 * 3 ^ n_2` and
+     `5 * 3 ^ T_r * 2 ^ (s 0) * u 0 < 4 * 2 ^ T_r * 3 ^ n_2`! -/
+theorem shifted_basepoint_baker_matveev_pinch_and_repeated_core_rhin_form
+    {b_0 r M : ℕ} {s u : ℕ → ℕ}
+    (hchain : ValidBlockChain b_0 s u (r + M + 1))
+    (hs_past : ∀ k < r, 2 ≤ s k)
+    (hr : 1 ≤ r)
+    (hs_win : ∀ k < M, 2 ≤ s (r + k))
+    (hM : 1 ≤ M) :
+    let T_r := blockSteps s r
+    let s' := fun t => s (r + t)
+    let n_2 := blockSteps s' M
+    let s_K := s (r + M)
+    let A_rM := renewalNumerator s' M
+    (2 ^ (n_2 + s_K) * u (r + M) = 3 ^ n_2 * (2 ^ (s r) * u r) + A_rM ∧
+      3 ^ n_2 * (2 ^ (s r) * u r) < 2 ^ (n_2 + s_K) * u (r + M) ∧
+      5 * (2 ^ (n_2 + s_K) * u (r + M) - 3 ^ n_2 * (2 ^ (s r) * u r)) + 4 * 2 ^ n_2 ≤
+        4 * 3 ^ n_2 ∧
+      3 ^ T_r * 2 ^ (s 0) * u 0 < 2 ^ T_r * (2 ^ (s r) * u r)) ∧
+      (u (r + M) = u r →
+        s r < s_K ∧
+          3 ^ n_2 < 2 ^ (n_2 + s_K - s r) ∧
+          (2 ^ (s r) * u r) * (2 ^ (n_2 + s_K - s r) - 3 ^ n_2) = A_rM ∧
+          (2 ^ (s r) * u r) ∣ A_rM ∧
+          5 * ((2 ^ (s r) * u r) * (2 ^ (n_2 + s_K - s r) - 3 ^ n_2)) + 4 * 2 ^ n_2 ≤
+            4 * 3 ^ n_2 ∧
+          5 * (2 ^ (s r) * u r) + 4 * 2 ^ n_2 ≤ 4 * 3 ^ n_2 ∧
+          5 * 3 ^ T_r * 2 ^ (s 0) * u 0 < 4 * 2 ^ T_r * 3 ^ n_2) := by
+  intro T_r s' n_2 s_K A_rM
+  have hid_raw : 2 ^ (n_2 + s_K) * u (r + M) = 3 ^ n_2 * 2 ^ (s r) * u r + A_rM :=
+    (late_step_cauchy_pinch_and_odd_quotient_gcd_dvd (N := r) (M := M) hchain).2.1
+  have hid : 2 ^ (n_2 + s_K) * u (r + M) = 3 ^ n_2 * (2 ^ (s r) * u r) + A_rM := by
+    rw [hid_raw]
+    ring
+  have hinv_M : 5 * A_rM + 4 * 2 ^ n_2 ≤ 4 * 3 ^ n_2 :=
+    five_mul_renewalNumerator_add_four_mul_two_pow_le s' M hs_win
+  have hA_pos : 1 ≤ A_rM := by
+    obtain ⟨m, hm⟩ : ∃ m : ℕ, M = m + 1 := ⟨M - 1, by omega⟩
+    have hpow_pos : 1 ≤ 2 ^ (blockSteps s' m + s' m) := Nat.one_le_pow _ 2 (by decide)
+    have hA_eq : A_rM = 3 ^ (s' m) * renewalNumerator s' m + 2 ^ (blockSteps s' m + s' m) := by
+      change renewalNumerator s' M =
+        3 ^ (s' m) * renewalNumerator s' m + 2 ^ (blockSteps s' m + s' m)
+      rw [hm]
+      rfl
+    omega
+  have hlt_main : 3 ^ n_2 * (2 ^ (s r) * u r) < 2 ^ (n_2 + s_K) * u (r + M) := by omega
+  have hdiff_eq : 2 ^ (n_2 + s_K) * u (r + M) - 3 ^ n_2 * (2 ^ (s r) * u r) = A_rM := by omega
+  have hpinch :
+      5 * (2 ^ (n_2 + s_K) * u (r + M) - 3 ^ n_2 * (2 ^ (s r) * u r)) + 4 * 2 ^ n_2 ≤
+        4 * 3 ^ n_2 := by
+    rw [hdiff_eq]
+    exact hinv_M
+  have hch_r : ValidBlockChain b_0 s u (r + 1) := fun k hk => hchain k (by omega)
+  have hlow_r : 3 ^ T_r * 2 ^ (s 0) * u 0 < 2 ^ T_r * (2 ^ (s r) * u r) := by
+    have h1 : 3 ^ T_r * 2 ^ (s 0) * u 0 < 2 ^ (T_r + s r) * u r :=
+      (finite_seed_global_peak_trough_seesaw_and_return_barrier hch_r hs_past hr).1.1
+    rw [Nat.pow_add 2 T_r (s r)] at h1
+    have h2 : 2 ^ T_r * 2 ^ (s r) * u r = 2 ^ T_r * (2 ^ (s r) * u r) := by ring
+    omega
+  refine ⟨⟨hid, hlt_main, hpinch, hlow_r⟩, ?_⟩
+  intro hu_eq
+  have hid_eq := hid
+  rw [hu_eq] at hid_eq
+  have hur_odd : u r % 2 = 1 := (hchain r (by omega)).2.1
+  have hur_pos : 1 ≤ u r := by omega
+  have hlt_u : (3 ^ n_2 * 2 ^ (s r)) * u r < 2 ^ (n_2 + s_K) * u r := by
+    have hassoc : (3 ^ n_2 * 2 ^ (s r)) * u r = 3 ^ n_2 * (2 ^ (s r) * u r) := by ring
+    omega
+  have hlt_pow : 3 ^ n_2 * 2 ^ (s r) < 2 ^ (n_2 + s_K) :=
+    Nat.lt_of_mul_lt_mul_right hlt_u
+  have h2_n2_le_3 : 2 ^ n_2 ≤ 3 ^ n_2 := Nat.pow_le_pow_left (by decide) n_2
+  have hsr_lt_sK : s r < s_K := by
+    apply Nat.lt_of_not_le
+    intro hs_le
+    have hn_le : n_2 + s_K ≤ n_2 + s r := Nat.add_le_add_left hs_le n_2
+    have h2_le : 2 ^ (n_2 + s_K) ≤ 2 ^ (n_2 + s r) :=
+      Nat.pow_le_pow_right (by decide) hn_le
+    have h2_split : 2 ^ (n_2 + s r) = 2 ^ n_2 * 2 ^ (s r) := Nat.pow_add 2 n_2 (s r)
+    have hmul_le : 2 ^ n_2 * 2 ^ (s r) ≤ 3 ^ n_2 * 2 ^ (s r) :=
+      Nat.mul_le_mul_right (2 ^ (s r)) h2_n2_le_3
+    omega
+  have hexp_split : n_2 + s_K = s r + (n_2 + s_K - s r) := by
+    have hle : s r ≤ n_2 + s_K :=
+      Nat.le_trans (Nat.le_of_lt hsr_lt_sK) (Nat.le_add_left s_K n_2)
+    exact (Nat.add_sub_of_le hle).symm
+  have hpow_split : 2 ^ (n_2 + s_K) = 2 ^ (s r) * 2 ^ (n_2 + s_K - s r) := by
+    rw [← Nat.pow_add 2 (s r) (n_2 + s_K - s r), ← hexp_split]
+  have h3_lt_2 : 3 ^ n_2 < 2 ^ (n_2 + s_K - s r) := by
+    have hlt_s : 2 ^ (s r) * 3 ^ n_2 < 2 ^ (s r) * 2 ^ (n_2 + s_K - s r) := by
+      have hcomm : 2 ^ (s r) * 3 ^ n_2 = 3 ^ n_2 * 2 ^ (s r) := by ring
+      omega
+    exact Nat.lt_of_mul_lt_mul_left hlt_s
+  have hrhin_id : (2 ^ (s r) * u r) * (2 ^ (n_2 + s_K - s r) - 3 ^ n_2) = A_rM := by
+    rw [Nat.mul_sub_left_distrib]
+    have h1 : (2 ^ (s r) * u r) * 2 ^ (n_2 + s_K - s r) = 2 ^ (n_2 + s_K) * u r := by
+      rw [hpow_split]
+      ring
+    have h2 : (2 ^ (s r) * u r) * 3 ^ n_2 = 3 ^ n_2 * (2 ^ (s r) * u r) := by ring
+    omega
+  have hdvd : (2 ^ (s r) * u r) ∣ A_rM := ⟨2 ^ (n_2 + s_K - s r) - 3 ^ n_2, hrhin_id.symm⟩
+  have hrhin_pinch :
+      5 * ((2 ^ (s r) * u r) * (2 ^ (n_2 + s_K - s r) - 3 ^ n_2)) + 4 * 2 ^ n_2 ≤
+        4 * 3 ^ n_2 := by
+    rw [hrhin_id]
+    exact hinv_M
+  have hdiff_pos : 1 ≤ 2 ^ (n_2 + s_K - s r) - 3 ^ n_2 := by omega
+  have hle_A : 2 ^ (s r) * u r ≤ A_rM := by
+    rw [← hrhin_id]
+    exact Nat.le_mul_of_pos_right (2 ^ (s r) * u r) hdiff_pos
+  have hmin_sep1 : 5 * (2 ^ (s r) * u r) + 4 * 2 ^ n_2 ≤ 4 * 3 ^ n_2 := by omega
+  have h2n2_pos : 1 ≤ 2 ^ n_2 := Nat.one_le_pow _ 2 (by decide)
+  have h5_Pr_lt : 5 * (2 ^ (s r) * u r) < 4 * 3 ^ n_2 := by omega
+  have hmin_sep2 : 5 * 3 ^ T_r * 2 ^ (s 0) * u 0 < 4 * 2 ^ T_r * 3 ^ n_2 := by
+    have hm1 := Nat.mul_lt_mul_of_pos_left hlow_r (by decide : 0 < 5)
+    have hm2 : 2 ^ T_r * (5 * (2 ^ (s r) * u r)) < 2 ^ T_r * (4 * 3 ^ n_2) :=
+      Nat.mul_lt_mul_of_pos_left h5_Pr_lt (Nat.pow_pos (by decide))
+    have heq1 : 5 * (3 ^ T_r * 2 ^ (s 0) * u 0) = 5 * 3 ^ T_r * 2 ^ (s 0) * u 0 := by ring
+    have heq2 : 5 * (2 ^ T_r * (2 ^ (s r) * u r)) = 2 ^ T_r * (5 * (2 ^ (s r) * u r)) := by ring
+    have heq3 : 2 ^ T_r * (4 * 3 ^ n_2) = 4 * 2 ^ T_r * 3 ^ n_2 := by ring
+    omega
+  exact ⟨hsr_lt_sK, h3_lt_2, hrhin_id, hdvd, hrhin_pinch, hmin_sep1, hmin_sep2⟩
+
+/-! ## 68. Theorem SB.68: Senge–Straus / Stewart Simultaneous $(s_2, s_3)$ Finiteness Bridge & Grand 68-Theorem Synthesis -/
+
+/-- **Senge–Straus / Stewart Simultaneous $(s_2, s_3)$ Finiteness Bridge & Grand 68-Theorem Synthesis
+(`senge_straus_stewart_finiteness_bridge_and_grand_68_synthesis`, Theorem SB.68)**:
+Across any `ValidBlockChain b_0 s u (K + 1)` with `∀ k < K, 2 ≤ s k`, setting
+`P k = oddReturnP (orbit b_0 (blockSteps s k))`, `T_K = blockSteps s K`,
+`S_K = T_K + s K`, `A_K = renewalNumerator s K`, and `N_K = 2 ^ S_K * u K`:
+1. **Exact Dual-Radix $(s_2, s_3)$ & Kummer Factorial Bridge on $N_K$**:
+   - `base2DigitSum N_K = base2DigitSum (u K)` (the binary digit sum of $N_K$ is controlled
+     purely by the odd core $u_K$!),
+   - `base2DigitSum (N_K - 1) + 1 = S_K + base2DigitSum (u K)`,
+   - `base3DigitSum N_K = base3DigitSum (P 0) + base3DigitSum A_K`, and
+   - `base3DigitSum N_K + 2 * (legendreFactVal3 N_K - 2 ^ S_K * legendreFactVal3 (u K)) = 2 ^ S_K * base3DigitSum (u K)`,
+2. **Conditional Senge–Straus / Stewart Finiteness Bound**:
+   Whenever $u_K$ lands in a binary-weight trough (`base2DigitSum (u K) ≤ B_2`) and an effective
+   Senge–Straus bound `base2DigitSum N_K ≤ B_2 → base3DigitSum N_K ≤ B_3` holds on $N_K$,
+   the cumulative renewal Base-3 digit sum is strictly trapped by
+   `base3DigitSum A_K + base3DigitSum (P 0) ≤ B_3`, and
+3. **Grand Synthesis of Wave 10 (`SB.65–SB.67`)**! -/
+theorem senge_straus_stewart_finiteness_bridge_and_grand_68_synthesis
+    {b_0 K : ℕ} {s u : ℕ → ℕ}
+    (hchain : ValidBlockChain b_0 s u (K + 1))
+    (hs2 : ∀ k < K, 2 ≤ s k) :
+    let P := fun k => oddReturnP (orbit b_0 (blockSteps s k))
+    let T_K := blockSteps s K
+    let S_K := T_K + s K
+    let A_K := renewalNumerator s K
+    let N_K := 2 ^ S_K * u K
+    (base2DigitSum N_K = base2DigitSum (u K) ∧
+      base2DigitSum (N_K - 1) + 1 = S_K + base2DigitSum (u K) ∧
+      base3DigitSum N_K = base3DigitSum (P 0) + base3DigitSum A_K ∧
+      base3DigitSum N_K +
+          2 * (legendreFactVal3 N_K - 2 ^ S_K * legendreFactVal3 (u K)) =
+        2 ^ S_K * base3DigitSum (u K)) ∧
+      (∀ B_2 B_3 : ℕ,
+        base2DigitSum (u K) ≤ B_2 →
+        (base2DigitSum N_K ≤ B_2 → base3DigitSum N_K ≤ B_3) →
+        base3DigitSum (P 0) + base3DigitSum A_K ≤ B_3) := by
+  intro P T_K S_K A_K N_K
+  have h32 := bridge_c_multi_step_dual_base2_base3_zero_carry_split hchain hs2
+  dsimp only at h32
+  have hb2 : base2DigitSum N_K = base2DigitSum (u K) :=
+    base2DigitSum_two_pow_mul S_K (u K)
+  have hb2_sub : base2DigitSum (N_K - 1) + 1 = S_K + base2DigitSum (u K) := by
+    have h := h32.2.2.2.2
+    rw [h32.1.1] at h
+    exact h
+  have hb3 : base3DigitSum N_K = base3DigitSum (P 0) + base3DigitSum A_K := by
+    have h := h32.1.2.2.2
+    rw [h32.1.1] at h
+    exact h
+  have h37 := (kummer_base3_two_pow_mul_carry_identity_and_bound S_K (u K)).2.2
+  refine ⟨⟨hb2, hb2_sub, hb3, h37⟩, ?_⟩
+  intro B_2 B_3 hu_B2 hss
+  have hN_B2 : base2DigitSum N_K ≤ B_2 := by
+    rw [hb2]
+    exact hu_B2
+  have hN_B3 : base3DigitSum N_K ≤ B_3 := hss hN_B2
+  omega
+
 
 #check @archimedean_rung_ceiling_and_stepSum_bound
 #check @unit_quotient_even_rung_instant_death_and_odd_rung_mod64_identity
@@ -4721,6 +5232,10 @@ theorem grand_seed_finiteness_and_extrema_64_synthesis :
 #check @trough_rebound_compound_interest_and_local_minimum_trap
 #check @finite_seed_global_peak_trough_seesaw_and_return_barrier
 #check @grand_seed_finiteness_and_extrema_64_synthesis
+#check @lte2_ultrametric_flush_pinning_and_descent_prohibition
+#check @post_horizon_binary_zero_bit_desert_and_dual_radix_lock
+#check @shifted_basepoint_baker_matveev_pinch_and_repeated_core_rhin_form
+#check @senge_straus_stewart_finiteness_bridge_and_grand_68_synthesis
 
 #print axioms archimedean_rung_ceiling_and_stepSum_bound
 #print axioms unit_quotient_even_rung_instant_death_and_odd_rung_mod64_identity

@@ -580,7 +580,47 @@ Unifies the local descent staircase explosion (`SB.61`), the trough-rebound $(81
 
 ---
 
-## 16. Verification Instructions
+## 16. $\text{LTE}_2$ Ultrametric Flush Pinning, Shifted-Basepoint Baker–Matveev Pinch, & The Senge–Straus Finiteness Bridge (Theorems `SB.65–SB.68`)
+
+In Sections 65–68 of [`SemigroupBreakoutTheorems.lean`](./SemigroupBreakoutTheorems.lean) (verified computationally across 6,040 configurations in [`sandbox_wave10_lte2_baker_and_finiteness.py`](./sandbox_wave10_lte2_baker_and_finiteness.py)), we formalized the exact 2-adic ultrametric flush-pinning table and bridged the multi-block identities directly to Baker's linear forms in logarithms and Senge–Straus / Stewart simultaneous $(s_2, s_3)$ finiteness:
+
+### 16.1 Theorem SB.65 (`lte2_ultrametric_flush_pinning_and_descent_prohibition`)
+By the 2-adic ultrametric valuation law on $3^{s_r} u_r + 1 = (3^{s_r} - 1) u_r + (u_r + 1)$ (even $s_r$) and $3(3^{s_r-1} - 1) u_r + (3 u_r + 1)$ (odd $s_r$), across all four residue classes of $s_r \bmod 4 \in \{0, 1, 2, 3\}$ ($s_r, s_{r+1} \ge 2$):
+
+| $s_r \bmod 4$ | $s_{r+1} = 2$ iff | $s_{r+1} = 3$ (strict ascent $u_r < u_{r+1}$) iff | Descent-capable flush $4 \le s_{r+1}$ iff |
+|---|---|---|---|
+| $2$ | $u_r \equiv 3 \pmod 8$ | $u_r \equiv 15 \pmod{16}$ | $u_r \equiv 7 \pmod{16}$ |
+| $0$ | $u_r \equiv 3 \pmod 8$ | $u_r \equiv 7 \pmod{16}$ | $u_r \equiv 15 \pmod{16}$ |
+| $3$ | $u_r \equiv 1 \pmod 8$ | $u_r \equiv 5 \pmod{16}$ | $u_r \equiv 13 \pmod{16}$ |
+| $1$ | $u_r \equiv 1 \pmod 8$ | $u_r \equiv 13 \pmod{16}$ | $u_r \equiv 5 \pmod{16}$ |
+
+In particular, when $s_r \equiv 2 \pmod 4$, having $16 \mid (u_r + 1)$ ($u_r \equiv 15 \pmod{16}$) **pins $s_{r+1} = 3$ and strictly forbids any descent flush $u_{r+1} \le u_r$**!
+
+### 16.2 Theorem SB.66 (`post_horizon_binary_zero_bit_desert_and_dual_radix_lock`)
+Whenever the finite seed satisfies $P_0 < 2^{B_0}$ and $B_0 \le S_K = T_K + s_K$:
+1. **Binary Zero-Bit Desert of $P_0$ in $[B_0, S_K]$:**
+   $\lfloor P_0 / 2^{B_0} \rfloor = 0$, $P_0 \bmod 2^{S_K} = P_0$, and for every $B \ge B_0$, $\lfloor (P_0 \bmod 2^{S_K}) / 2^B \rfloor = 0$.
+2. **Simultaneous Base-2 and Base-3 Lock on $N_K = 2^{S_K} u_K = 3^{T_K} P_0 + A_{0,K}$:**
+   $N_K \bmod 2^{S_K} = 0$, $\lfloor N_K / 2^{S_K} \rfloor = u_K$, $s_2(N_K) = s_2(u_K)$, $\lfloor N_K / 3^{T_K} \rfloor = P_0$, $N_K \bmod 3^{T_K} = A_{0,K}$, and $s_3(N_K) = s_3(P_0) + s_3(A_{0,K})$.
+
+### 16.3 Theorem SB.67 (`shifted_basepoint_baker_matveev_pinch_and_repeated_core_rhin_form`)
+Why does naive Baker fail at step $0$? Because in $2^{T_K+s_K} u_K - 3^{T_K} P_0 = A_{0,K} \sim \frac{4}{5} 3^{T_K}$, dividing by $3^{T_K} P_0$ leaves $\frac{4}{5 P_0} = O(1)$, which does not decay with time.
+By **shifting the basepoint from step $0$ to block $r \ge 1$** and advancing $M \ge 1$ blocks ($n_2 = T_{r+M} - T_r$ steps, $s_K = s_{r+M}$):
+1. **Shifted-Basepoint $3^{n_2}$-Canceled Baker–Matveev Pinch:**
+   $$\boxed{0 < 2^{n_2 + s_K} u_{r+M} - 3^{n_2}\big(2^{s_r} u_r\big) = A_{r,M} \le \frac{4}{5}\big(3^{n_2} - 2^{n_2}\big), \qquad 3^{T_r} \cdot 2^{s_0} u_0 < 2^{T_r}\big(2^{s_r} u_r\big).}$$
+   Here the $3^{n_2}$ factor **cancels completely** when dividing by the main term $3^{n_2}(2^{s_r} u_r)$, leaving a relative linear form bounded by $\frac{4}{5 \cdot 2^{s_r} u_r} < \frac{4}{5 P_0}\left(\frac{2}{3}\right)^{T_r}$ that decays exponentially in $T_r$!
+2. **Repeated-Odd-Core ($u_{r+M} = u_r$) Pure 2-Logarithm Rhin Reduction:**
+   Whenever the odd core repeats at two blocks ($u_{r+M} = u_r$), the entire return integer $P_r = 2^{s_r} u_r$ factors out and **divides $A_{r,M}$**, leaving the pure 2-logarithm Rhin difference $2^{n_2 + s_K - s_r} - 3^{n_2}$:
+   $$\boxed{\big(2^{s_r} u_r\big)\big(2^{n_2 + s_K - s_r} - 3^{n_2}\big) = A_{r,M}, \qquad 5\big(2^{s_r} u_r\big) + 4 \cdot 2^{n_2} \le 4 \cdot 3^{n_2}, \qquad 5 \cdot 3^{T_r} \cdot 2^{s_0} u_0 < 4 \cdot 2^{T_r} \cdot 3^{n_2}!}$$
+
+### 16.4 Theorem SB.68 (`senge_straus_stewart_finiteness_bridge_and_grand_68_synthesis`)
+Packages the exact Senge–Straus / Stewart simultaneous $(s_2, s_3)$ finiteness bridge on $N_K = 2^{S_K} u_K = 3^{T_K} P_0 + A_{0,K}$:
+$$\boxed{s_2(N_K) = s_2(u_K), \qquad s_3(N_K) = s_3(P_0) + s_3(A_{0,K}), \qquad s_3(N_K) + 2\big(v_3(N_K!) - 2^{S_K} v_3(u_K!)\big) = 2^{S_K} s_3(u_K),}$$
+together with the conditional Senge–Straus closure (`s_2(u_K) ≤ B_2 → s_3(P_0) + s_3(A_{0,K}) ≤ B_3`), completing all **68 `sorry`-free, warning-free theorems (`SB.1–SB.68`)**.
+
+---
+
+## 17. Verification Instructions
 
 To verify the cordoned-off Lean 4 proofs without modifying the root 226-file build:
 
@@ -598,4 +638,5 @@ python semigroup_breakout\loop3_archimedean_ceiling_and_small_u.py
 python semigroup_breakout\loop4_flp_sparsity_and_repulsion.py
 python semigroup_breakout\sandbox_wave8_jk_diagonal_asymptotics.py
 python semigroup_breakout\sandbox_wave9_seed_finiteness_and_extrema.py
+python semigroup_breakout\sandbox_wave10_lte2_baker_and_finiteness.py
 ```
