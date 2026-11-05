@@ -6646,6 +6646,496 @@ theorem dual_wall_monotone_squeeze_and_grand_84_synthesis
     hchain hs_r hs_win hs_end hM1 hE_pos
   exact ⟨h83.2.1.2, h83.2.2⟩
 
+/-! ## 85. Theorem SB.85: Odd-Valuation Death Trap ($W_{r+1} \bmod 4 \ne 2$) & $s = 2$ Run Evolution -/
+
+/-- Helper: across a run of $m$ blocks with $s' k = 2$, `blockSteps s' m = 2 * m` and
+`gaugeDeficit s' m = 0`. -/
+theorem blockSteps_and_gaugeDeficit_of_all_two
+    (s' : ℕ → ℕ) (m : ℕ) (hs2 : ∀ k < m, s' k = 2) :
+    blockSteps s' m = 2 * m ∧ gaugeDeficit s' m = 0 := by
+  induction m with
+  | zero =>
+      simp [blockSteps, gaugeDeficit]
+  | succ m ih =>
+      have ihm := ih (fun k hk => hs2 k (by omega))
+      have hsm : s' m = 2 := hs2 m (by omega)
+      refine ⟨?_, ?_⟩
+      · change blockSteps s' m + s' m = 2 * (m + 1)
+        rw [ihm.1, hsm]
+        ring
+      · change 3 ^ (s' m) * gaugeDeficit s' m +
+            2 ^ (blockSteps s' m) * (3 ^ (s' m - 2) - 2 ^ (s' m - 2)) = 0
+        rw [ihm.2, hsm]
+        simp
+
+/-- **Odd-Valuation Death Trap ($W_{r+1} \bmod 4 \ne 2$) & $s = 2$ Run Evolution
+(`gauge_odd_valuation_trap_and_mod_four_survival_lock`, Theorem SB.85)**:
+1. **Single-Step Mod-4 Survival Lock**:
+   Suppose `ValidBlockChain b_0 s u (r + 3)` holds with `2 ≤ s r`, `2 ≤ s (r + 1)`,
+   and `2 ≤ s (r + 2)`. Setting `P k = oddReturnP (orbit b_0 (blockSteps s k))`
+   and `W_1 = (5 * P (r + 1) + 4) / 36`:
+   - `W_1 % 4 ≠ 2` (delayed-action death trap: $v_2(W_1) = 1$ is impossible!),
+   - `(W_1 % 2 = 0 ↔ W_1 % 4 = 0)`, and
+   - `(s (r + 1) = 2 ↔ W_1 % 4 = 0)`!
+2. **Multi-Step $s = 2$ Run Evolution & Odd-Valuation Extinction**:
+   Suppose `ValidBlockChain b_0 s u (r + 1 + m + 2)` holds with `2 ≤ s r`,
+   `∀ k < m, s (r + 1 + k) = 2`, `2 ≤ s (r + 1 + m)`, and `2 ≤ s (r + 1 + m + 1)`.
+   Setting `W k = (5 * P k + 4) / 36`:
+   - `4 ^ m * W (r + 1 + m) = 9 ^ m * W (r + 1)`, and
+   - for every `V : ℕ` with `V % 2 = 1`, `W (r + 1) ≠ 2 * 4 ^ m * V`
+     (so $v_2(W_{r+1})$ can never equal $2m + 1$)! -/
+theorem gauge_odd_valuation_trap_and_mod_four_survival_lock :
+    (∀ {b_0 r : ℕ} {s u : ℕ → ℕ},
+      ValidBlockChain b_0 s u (r + 3) →
+      2 ≤ s r →
+      2 ≤ s (r + 1) →
+      2 ≤ s (r + 2) →
+      let P := fun k => oddReturnP (orbit b_0 (blockSteps s k))
+      let W_1 := (5 * P (r + 1) + 4) / 36
+      W_1 % 4 ≠ 2 ∧
+        (W_1 % 2 = 0 ↔ W_1 % 4 = 0) ∧
+        (s (r + 1) = 2 ↔ W_1 % 4 = 0)) ∧
+    (∀ {b_0 r m : ℕ} {s u : ℕ → ℕ},
+      ValidBlockChain b_0 s u (r + 1 + m + 2) →
+      2 ≤ s r →
+      (∀ k < m, s (r + 1 + k) = 2) →
+      2 ≤ s (r + 1 + m) →
+      2 ≤ s (r + 1 + m + 1) →
+      let P := fun k => oddReturnP (orbit b_0 (blockSteps s k))
+      let W := fun k => (5 * P k + 4) / 36
+      4 ^ m * W (r + 1 + m) = 9 ^ m * W (r + 1) ∧
+        (∀ V : ℕ, V % 2 = 1 → W (r + 1) ≠ 2 * 4 ^ m * V)) := by
+  have hpart1 :
+      ∀ {b_0 r : ℕ} {s u : ℕ → ℕ},
+        ValidBlockChain b_0 s u (r + 3) →
+        2 ≤ s r →
+        2 ≤ s (r + 1) →
+        2 ≤ s (r + 2) →
+        let P := fun k => oddReturnP (orbit b_0 (blockSteps s k))
+        let W_1 := (5 * P (r + 1) + 4) / 36
+        W_1 % 4 ≠ 2 ∧
+          (W_1 % 2 = 0 ↔ W_1 % 4 = 0) ∧
+          (s (r + 1) = 2 ↔ W_1 % 4 = 0) := by
+    intro b_0 r s u hchain hs_r hs_r1 hs_r2 P W_1
+    have h81 := ceiling_dual_gauge_transform_and_rung_two_parity_detector
+      hchain hs_r hs_r1 hs_r2
+    have hpar : W_1 % 2 = 0 ↔ s (r + 1) = 2 := h81.2.1.1
+    have hs2_step : s (r + 1) = 2 → 4 * ((5 * P (r + 2) + 4) / 36) = 9 * W_1 := h81.2.2.2
+    have hne2 : W_1 % 4 ≠ 2 := by
+      intro hmod2
+      have heven : W_1 % 2 = 0 := by omega
+      have hs2_eq : s (r + 1) = 2 := hpar.mp heven
+      have h49 := hs2_step hs2_eq
+      omega
+    have hev_iff : W_1 % 2 = 0 ↔ W_1 % 4 = 0 := by omega
+    have hs2_iff : s (r + 1) = 2 ↔ W_1 % 4 = 0 := hpar.symm.trans hev_iff
+    exact ⟨hne2, hev_iff, hs2_iff⟩
+  refine ⟨hpart1, ?_⟩
+  intro b_0 r m s u hchain hs_r hs_run hs_m hs_m1 P W
+  have hch_m : ValidBlockChain b_0 s u (r + 1 + m + 1) :=
+    fun k hk => hchain k (by omega)
+  have hs_win : ∀ k < m, 2 ≤ s (r + 1 + k) := by
+    intro k hk
+    have h2 := hs_run k hk
+    omega
+  have h82 := multi_block_gauge_deficit_master_identity_and_one_ninth_bound
+    hch_m hs_r hs_win hs_m
+  have hbg := blockSteps_and_gaugeDeficit_of_all_two (fun t => s (r + 1 + t)) m hs_run
+  have hW_raw :
+      2 ^ (blockSteps (fun t => s (r + 1 + t)) m) * W (r + 1 + m) +
+        gaugeDeficit (fun t => s (r + 1 + t)) m =
+        3 ^ (blockSteps (fun t => s (r + 1 + t)) m) * W (r + 1) := h82.2.1.1
+  rw [hbg.1, hbg.2, add_zero] at hW_raw
+  have hp4 : 2 ^ (2 * m) = 4 ^ m := by rw [Nat.pow_mul 2 2 m]
+  have hp9 : 3 ^ (2 * m) = 9 ^ m := by rw [Nat.pow_mul 3 2 m]
+  rw [hp4, hp9] at hW_raw
+  refine ⟨hW_raw, ?_⟩
+  intro V hV_odd hW_eq
+  have hmul_eq : 4 ^ m * W (r + 1 + m) = 4 ^ m * (2 * 9 ^ m * V) := by
+    calc
+      4 ^ m * W (r + 1 + m) = 9 ^ m * W (r + 1) := hW_raw
+      _ = 9 ^ m * (2 * 4 ^ m * V) := by rw [hW_eq]
+      _ = 4 ^ m * (2 * 9 ^ m * V) := by ring
+  have h4m_pos : 0 < 4 ^ m := Nat.pow_pos (by decide)
+  have hWm_eq : W (r + 1 + m) = 2 * 9 ^ m * V :=
+    Nat.eq_of_mul_eq_mul_left h4m_pos hmul_eq
+  have h9_mod8 : 9 ^ m % 8 = 1 := nine_pow_mod_eight_eq_one m
+  have h9_mod4 : 9 ^ m % 4 = 1 := by omega
+  have h9V_odd : (9 ^ m * V) % 2 = 1 := by
+    have h9_odd : 9 ^ m % 2 = 1 := by omega
+    rw [Nat.mul_mod, h9_odd, hV_odd]
+  have hWm_mod4 : W (r + 1 + m) % 4 = 2 := by
+    have hassoc : W (r + 1 + m) = 2 * (9 ^ m * V) := by
+      rw [hWm_eq]
+      ring
+    omega
+  have hch_end : ValidBlockChain b_0 s u ((r + m) + 3) :=
+    fun k hk => hchain k (by omega)
+  have hs_rm : 2 ≤ s (r + m) := by
+    rcases (by omega : m = 0 ∨ 1 ≤ m) with rfl | hm1
+    · simpa using hs_r
+    · have hk : m - 1 < m := by omega
+      have h := hs_run (m - 1) hk
+      have heq : r + 1 + (m - 1) = r + m := by omega
+      rw [heq] at h
+      omega
+  have hs_rm1 : 2 ≤ s (r + m + 1) := by
+    have heq : r + m + 1 = r + 1 + m := by omega
+    rw [heq]
+    exact hs_m
+  have hs_rm2 : 2 ≤ s (r + m + 2) := by
+    have heq : r + m + 2 = r + 1 + m + 1 := by omega
+    rw [heq]
+    exact hs_m1
+  have hnot2 : W (r + m + 1) % 4 ≠ 2 :=
+    (hpart1 hch_end hs_rm hs_rm1 hs_rm2).1
+  have hidx : r + m + 1 = r + 1 + m := by omega
+  rw [hidx] at hnot2
+  exact hnot2 hWm_mod4
+
+/-! ## 86. Theorem SB.86: Mod-8 Odd-Gauge Future-Rung Predictor, $V \bmod 8 \ne 7$ Extinction, & Super-Block Jump -/
+
+/-- **Mod-8 Odd-Gauge Future-Rung Predictor, $V \bmod 8 \ne 7$ Extinction, & Super-Block Jump
+(`mod_eight_odd_gauge_future_rung_predictor_and_seven_extinction`, Theorem SB.86)**:
+Suppose `ValidBlockChain b_0 s u (r + 1 + m + 2)` holds with `2 ≤ s r`,
+`∀ k < m, s (r + 1 + k) = 2`, `3 ≤ s (r + 1 + m)`, and `2 ≤ s (r + 1 + m + 1)`.
+Setting `P k = oddReturnP (orbit b_0 (blockSteps s k))`, `W k = (5 * P k + 4) / 36`,
+`s_star = s (r + 1 + m)`, and assuming `W (r + 1) = 4 ^ m * V`:
+1. **Exact Super-Block Arrival & Mod-8 Invariance**:
+   `W (r + 1 + m) = 9 ^ m * V`, `V % 2 = 1`, and `W (r + 1 + m) % 8 = V % 8`,
+2. **Delayed-Action Death Trap #2 (`V % 8 ≠ 7`)**:
+   `V % 8 ≠ 7`!
+3. **Exact Future-Rung Predictor $m$ Blocks in Advance**:
+   `(V % 8 = 3 ↔ s_star = 3)`, `(V % 8 = 5 ↔ s_star = 4)`, and `(V % 8 = 1 ↔ 5 ≤ s_star)`, and
+4. **Super-Block Transition to the Next Gauge State**:
+   `2 ^ s_star * W (r + 1 + m + 1) + (3 ^ (s_star - 2) - 2 ^ (s_star - 2)) = 3 ^ (2 * m + s_star) * V`! -/
+theorem mod_eight_odd_gauge_future_rung_predictor_and_seven_extinction
+    {b_0 r m V : ℕ} {s u : ℕ → ℕ}
+    (hchain : ValidBlockChain b_0 s u (r + 1 + m + 2))
+    (hs_r : 2 ≤ s r)
+    (hs_run : ∀ k < m, s (r + 1 + k) = 2)
+    (hs_star : 3 ≤ s (r + 1 + m))
+    (hs_next : 2 ≤ s (r + 1 + m + 1))
+    (hW_init : (5 * oddReturnP (orbit b_0 (blockSteps s (r + 1))) + 4) / 36 = 4 ^ m * V) :
+    let P := fun k => oddReturnP (orbit b_0 (blockSteps s k))
+    let W := fun k => (5 * P k + 4) / 36
+    let s_star := s (r + 1 + m)
+    (W (r + 1 + m) = 9 ^ m * V ∧
+      V % 2 = 1 ∧
+      W (r + 1 + m) % 8 = V % 8) ∧
+      V % 8 ≠ 7 ∧
+      ((V % 8 = 3 ↔ s_star = 3) ∧
+        (V % 8 = 5 ↔ s_star = 4) ∧
+        (V % 8 = 1 ↔ 5 ≤ s_star)) ∧
+      2 ^ s_star * W (r + 1 + m + 1) + (3 ^ (s_star - 2) - 2 ^ (s_star - 2)) =
+        3 ^ (2 * m + s_star) * V := by
+  intro P W s_star
+  have hs_m2 : 2 ≤ s_star := by omega
+  have hW_init' : W (r + 1) = 4 ^ m * V := hW_init
+  have h85 := (gauge_odd_valuation_trap_and_mod_four_survival_lock.2
+    hchain hs_r hs_run hs_m2 hs_next).1
+  change 4 ^ m * W (r + 1 + m) = 9 ^ m * W (r + 1) at h85
+  have hmul_eq : 4 ^ m * W (r + 1 + m) = 4 ^ m * (9 ^ m * V) := by
+    calc
+      4 ^ m * W (r + 1 + m) = 9 ^ m * W (r + 1) := h85
+      _ = 9 ^ m * (4 ^ m * V) := by rw [hW_init']
+      _ = 4 ^ m * (9 ^ m * V) := by ring
+  have h4m_pos : 0 < 4 ^ m := Nat.pow_pos (by decide)
+  have hWm_eq : W (r + 1 + m) = 9 ^ m * V :=
+    Nat.eq_of_mul_eq_mul_left h4m_pos hmul_eq
+  have hch_end : ValidBlockChain b_0 s u ((r + m) + 3) :=
+    fun k hk => hchain k (by omega)
+  have hs_rm : 2 ≤ s (r + m) := by
+    rcases (by omega : m = 0 ∨ 1 ≤ m) with rfl | hm1
+    · simpa using hs_r
+    · have hk : m - 1 < m := by omega
+      have h := hs_run (m - 1) hk
+      have heq : r + 1 + (m - 1) = r + m := by omega
+      rw [heq] at h
+      omega
+  have hs_rm1 : 2 ≤ s (r + m + 1) := by
+    have heq : r + m + 1 = r + 1 + m := by omega
+    rw [heq]
+    exact hs_m2
+  have hs_rm2 : 2 ≤ s (r + m + 2) := by
+    have heq : r + m + 2 = r + 1 + m + 1 := by omega
+    rw [heq]
+    exact hs_next
+  have hidx1 : r + m + 1 = r + 1 + m := by omega
+  have hidx2 : r + m + 2 = r + 1 + m + 1 := by omega
+  have h9Wm : 9 * W (r + 1 + m) = 5 * 2 ^ (s_star - 2) * u (r + 1 + m) + 1 := by
+    have h := (ceiling_dual_gauge_transform_and_rung_two_parity_detector
+      hch_end hs_rm hs_rm1 hs_rm2).1.2.2.2.2
+    change 9 * W (r + m + 1) = 5 * 2 ^ (s (r + m + 1) - 2) * u (r + m + 1) + 1 at h
+    rw [hidx1] at h
+    exact h
+  have hstep_end :
+      2 ^ s_star * W (r + 1 + m + 1) + (3 ^ (s_star - 2) - 2 ^ (s_star - 2)) =
+        3 ^ s_star * W (r + 1 + m) := by
+    have h := (ceiling_dual_gauge_transform_and_rung_two_parity_detector
+      hch_end hs_rm hs_rm1 hs_rm2).2.2.1
+    change 2 ^ (s (r + m + 1)) * W (r + m + 2) +
+        (3 ^ (s (r + m + 1) - 2) - 2 ^ (s (r + m + 1) - 2)) =
+      3 ^ (s (r + m + 1)) * W (r + m + 1) at h
+    rw [hidx1, hidx2] at h
+    exact h
+  have h9_mod8 : 9 ^ m % 8 = 1 := nine_pow_mod_eight_eq_one m
+  have hWm_mod8 : W (r + 1 + m) % 8 = V % 8 := by
+    rw [hWm_eq, Nat.mul_mod, h9_mod8, one_mul, Nat.mod_mod]
+  have hu_odd : u (r + 1 + m) % 2 = 1 := (hchain (r + 1 + m) (by omega)).2.1
+  have hch_next2 : ValidBlockChain b_0 s u ((r + 1 + m) + 2) :=
+    fun k hk => hchain k (by omega)
+  have h16_end := (universal_mod4_quotient_rung_parity_lock_and_mersenne_trap hch_next2 hs_next).1
+  have h9Wm_mod8 : (9 * W (r + 1 + m)) % 8 = V % 8 := by
+    have h9_split : 9 * W (r + 1 + m) = W (r + 1 + m) + 8 * W (r + 1 + m) := by ring
+    rw [h9_split, Nat.add_mul_mod_self_left, hWm_mod8]
+  have hs3_imp : s_star = 3 → V % 8 = 3 := by
+    intro hs3
+    have hu_mod4 : u (r + 1 + m) % 4 = 1 := h16_end.2.mp (by omega)
+    have hsub : s_star - 2 = 1 := by omega
+    have h9 : 9 * W (r + 1 + m) = 10 * u (r + 1 + m) + 1 := by
+      rw [h9Wm, hsub]
+      ring
+    have hm8 := h9Wm_mod8
+    rw [h9] at hm8
+    omega
+  have hs4_imp : s_star = 4 → V % 8 = 5 := by
+    intro hs4
+    have hsub : s_star - 2 = 2 := by omega
+    have h9 : 9 * W (r + 1 + m) = 20 * u (r + 1 + m) + 1 := by
+      rw [h9Wm, hsub]
+      ring
+    have hm8 := h9Wm_mod8
+    rw [h9] at hm8
+    omega
+  have hs5_imp : 5 ≤ s_star → V % 8 = 1 := by
+    intro hs5
+    obtain ⟨k, hk⟩ : ∃ k : ℕ, s_star - 2 = k + 3 := ⟨s_star - 5, by omega⟩
+    have h9 : 9 * W (r + 1 + m) = 8 * (5 * 2 ^ k * u (r + 1 + m)) + 1 := by
+      rw [h9Wm, hk, Nat.pow_add 2 k 3]
+      ring
+    have hm8 := h9Wm_mod8
+    rw [h9] at hm8
+    omega
+  have hcases : s_star = 3 ∨ s_star = 4 ∨ 5 ≤ s_star := by omega
+  have hV_odd : V % 2 = 1 := by
+    rcases hcases with h3 | h4 | h5
+    · have hv := hs3_imp h3; omega
+    · have hv := hs4_imp h4; omega
+    · have hv := hs5_imp h5; omega
+  have hV_ne7 : V % 8 ≠ 7 := by
+    rcases hcases with h3 | h4 | h5
+    · have hv := hs3_imp h3; omega
+    · have hv := hs4_imp h4; omega
+    · have hv := hs5_imp h5; omega
+  have hiff3 : V % 8 = 3 ↔ s_star = 3 := by
+    constructor
+    · intro hv3
+      rcases hcases with h3 | h4 | h5
+      · exact h3
+      · have hv := hs4_imp h4; omega
+      · have hv := hs5_imp h5; omega
+    · exact hs3_imp
+  have hiff4 : V % 8 = 5 ↔ s_star = 4 := by
+    constructor
+    · intro hv5
+      rcases hcases with h3 | h4 | h5
+      · have hv := hs3_imp h3; omega
+      · exact h4
+      · have hv := hs5_imp h5; omega
+    · exact hs4_imp
+  have hiff5 : V % 8 = 1 ↔ 5 ≤ s_star := by
+    constructor
+    · intro hv1
+      rcases hcases with h3 | h4 | h5
+      · have hv := hs3_imp h3; omega
+      · have hv := hs4_imp h4; omega
+      · exact h5
+    · exact hs5_imp
+  have hjump :
+      2 ^ s_star * W (r + 1 + m + 1) + (3 ^ (s_star - 2) - 2 ^ (s_star - 2)) =
+        3 ^ (2 * m + s_star) * V := by
+    have hp9 : 9 ^ m = 3 ^ (2 * m) := by rw [Nat.pow_mul 3 2 m]
+    calc
+      2 ^ s_star * W (r + 1 + m + 1) + (3 ^ (s_star - 2) - 2 ^ (s_star - 2))
+          = 3 ^ s_star * W (r + 1 + m) := hstep_end
+      _ = 3 ^ s_star * (3 ^ (2 * m) * V) := by rw [hWm_eq, hp9]
+      _ = (3 ^ (2 * m) * 3 ^ s_star) * V := by ring
+      _ = 3 ^ (2 * m + s_star) * V := by rw [← Nat.pow_add 3 (2 * m) s_star]
+  exact ⟨⟨hWm_eq, hV_odd, hWm_mod8⟩, hV_ne7, ⟨hiff3, hiff4, hiff5⟩, hjump⟩
+
+/-! ## 87. Theorem SB.87: Universal Cyclotomic Gauge Spectrum $\mathcal{G}_r^{(m)}$ & The $(m=2, m=3)$ Eliminator -/
+
+/-- The $m$-th Cyclotomic Gauge coordinate $\mathcal{G}^{(m)}(P) := (3^m - 2^m) P + 2^m$. -/
+def cyclotomicGauge (m P : ℕ) : ℕ :=
+  (3 ^ m - 2 ^ m) * P + 2 ^ m
+
+/-- **Universal Cyclotomic Gauge Spectrum $\mathcal{G}_r^{(m)}$ & The $(m=2, m=3)$ Eliminator
+(`universal_cyclotomic_gauge_spectrum_and_two_three_eliminator`, Theorem SB.87)**:
+Suppose `ValidBlockChain b_0 s u (r + 2)` holds with `P k = oddReturnP (orbit b_0 (blockSteps s k))`:
+1. **Exact Annihilation at $s_r = m$ (`∀ m`)**:
+   `s r = m → 2 ^ m * cyclotomicGauge m (P (r + 1)) = 3 ^ m * cyclotomicGauge m (P r)`,
+2. **Universal Sub-Multiplicative ($m \le s_r$) & Super-Multiplicative ($s_r \le m$) Laws**:
+   - `m ≤ s r → 2 ^ (s r) * cyclotomicGauge m (P (r + 1)) + 2 ^ m * 3 ^ m * (3 ^ (s r - m) - 2 ^ (s r - m)) = 3 ^ (s r) * cyclotomicGauge m (P r)`,
+   - `s r ≤ m → 2 ^ (s r) * cyclotomicGauge m (P (r + 1)) = 3 ^ (s r) * cyclotomicGauge m (P r) + 2 ^ (s r) * 3 ^ (s r) * (3 ^ (m - s r) - 2 ^ (m - s r))`, and
+3. **The $m = 2$ ($5 P + 4$) vs. $m = 3$ ($19 P + 8$) Dual-Gauge Eliminator**:
+   `cyclotomicGauge 2 (P r) = 5 * P r + 4`,
+   `cyclotomicGauge 3 (P r) = 19 * P r + 8`, and
+   `19 * cyclotomicGauge 2 (P r) = 5 * cyclotomicGauge 3 (P r) + 36`! -/
+theorem universal_cyclotomic_gauge_spectrum_and_two_three_eliminator
+    {b_0 r : ℕ} {s u : ℕ → ℕ}
+    (hchain : ValidBlockChain b_0 s u (r + 2)) :
+    let P := fun k => oddReturnP (orbit b_0 (blockSteps s k))
+    (∀ m : ℕ,
+      (s r = m → 2 ^ m * cyclotomicGauge m (P (r + 1)) = 3 ^ m * cyclotomicGauge m (P r)) ∧
+      (m ≤ s r →
+        2 ^ (s r) * cyclotomicGauge m (P (r + 1)) +
+            2 ^ m * 3 ^ m * (3 ^ (s r - m) - 2 ^ (s r - m)) =
+          3 ^ (s r) * cyclotomicGauge m (P r)) ∧
+      (s r ≤ m →
+        2 ^ (s r) * cyclotomicGauge m (P (r + 1)) =
+          3 ^ (s r) * cyclotomicGauge m (P r) +
+            2 ^ (s r) * 3 ^ (s r) * (3 ^ (m - s r) - 2 ^ (m - s r)))) ∧
+      (cyclotomicGauge 2 (P r) = 5 * P r + 4 ∧
+        cyclotomicGauge 3 (P r) = 19 * P r + 8 ∧
+        19 * cyclotomicGauge 2 (P r) = 5 * cyclotomicGauge 3 (P r) + 36) := by
+  intro P
+  have hstep1 : 2 ^ (s (r + 1)) * u (r + 1) = 3 ^ (s r) * u r + 1 :=
+    (one_step_backward_quotient_recovery_and_mod_three_pow_one hchain).1
+  have hPr : P r = 2 ^ (s r) * u r := (hchain r (by omega)).2.2
+  have hPr1 : P (r + 1) = 2 ^ (s (r + 1)) * u (r + 1) := (hchain (r + 1) (by omega)).2.2
+  have hP_step : 2 ^ (s r) * P (r + 1) = 3 ^ (s r) * P r + 2 ^ (s r) := by
+    rw [hPr1, hstep1, hPr]
+    ring
+  have hbase_G :
+      ∀ m : ℕ,
+        2 ^ (s r) * cyclotomicGauge m (P (r + 1)) =
+          3 ^ (s r) * (3 ^ m - 2 ^ m) * P r + 3 ^ m * 2 ^ (s r) := by
+    intro m
+    have hle_m : 2 ^ m ≤ 3 ^ m := Nat.pow_le_pow_left (by decide) m
+    calc
+      2 ^ (s r) * cyclotomicGauge m (P (r + 1))
+          = (3 ^ m - 2 ^ m) * (2 ^ (s r) * P (r + 1)) + 2 ^ m * 2 ^ (s r) := by
+            change 2 ^ (s r) * ((3 ^ m - 2 ^ m) * P (r + 1) + 2 ^ m) =
+              (3 ^ m - 2 ^ m) * (2 ^ (s r) * P (r + 1)) + 2 ^ m * 2 ^ (s r)
+            ring
+      _ = (3 ^ m - 2 ^ m) * (3 ^ (s r) * P r + 2 ^ (s r)) + 2 ^ m * 2 ^ (s r) := by
+            rw [hP_step]
+      _ = 3 ^ (s r) * (3 ^ m - 2 ^ m) * P r +
+            ((3 ^ m - 2 ^ m) + 2 ^ m) * 2 ^ (s r) := by ring
+      _ = 3 ^ (s r) * (3 ^ m - 2 ^ m) * P r + 3 ^ m * 2 ^ (s r) := by
+            rw [Nat.sub_add_cancel hle_m]
+  have hrhs_G :
+      ∀ m : ℕ,
+        3 ^ (s r) * cyclotomicGauge m (P r) =
+          3 ^ (s r) * (3 ^ m - 2 ^ m) * P r + 2 ^ m * 3 ^ (s r) := by
+    intro m
+    change 3 ^ (s r) * ((3 ^ m - 2 ^ m) * P r + 2 ^ m) =
+      3 ^ (s r) * (3 ^ m - 2 ^ m) * P r + 2 ^ m * 3 ^ (s r)
+    ring
+  refine ⟨?_, ?_⟩
+  · intro m
+    refine ⟨?_, ?_, ?_⟩
+    · intro hsr_eq
+      have h1 := hbase_G m
+      have h2 := hrhs_G m
+      rw [hsr_eq] at h1 h2
+      rw [h1, h2]
+      ring
+    · intro hm_le
+      obtain ⟨k, hk⟩ : ∃ k : ℕ, s r = m + k := ⟨s r - m, by omega⟩
+      have hsub : s r - m = k := by omega
+      have hle_k : 2 ^ k ≤ 3 ^ k := Nat.pow_le_pow_left (by decide) k
+      have hdiff_pow :
+          3 ^ m * 2 ^ (s r) + 2 ^ m * 3 ^ m * (3 ^ (s r - m) - 2 ^ (s r - m)) =
+            2 ^ m * 3 ^ (s r) := by
+        rw [hsub, hk, Nat.pow_add 2 m k, Nat.pow_add 3 m k]
+        calc
+          3 ^ m * (2 ^ m * 2 ^ k) + 2 ^ m * 3 ^ m * (3 ^ k - 2 ^ k)
+              = 2 ^ m * 3 ^ m * ((3 ^ k - 2 ^ k) + 2 ^ k) := by ring
+          _ = 2 ^ m * 3 ^ m * 3 ^ k := by rw [Nat.sub_add_cancel hle_k]
+          _ = 2 ^ m * (3 ^ m * 3 ^ k) := by ring
+      rw [hbase_G m, hrhs_G m]
+      calc
+        (3 ^ (s r) * (3 ^ m - 2 ^ m) * P r + 3 ^ m * 2 ^ (s r)) +
+            2 ^ m * 3 ^ m * (3 ^ (s r - m) - 2 ^ (s r - m))
+            = 3 ^ (s r) * (3 ^ m - 2 ^ m) * P r +
+                (3 ^ m * 2 ^ (s r) + 2 ^ m * 3 ^ m * (3 ^ (s r - m) - 2 ^ (s r - m))) := by ring
+        _ = 3 ^ (s r) * (3 ^ m - 2 ^ m) * P r + 2 ^ m * 3 ^ (s r) := by rw [hdiff_pow]
+    · intro hsr_le
+      obtain ⟨k, hk⟩ : ∃ k : ℕ, m = s r + k := ⟨m - s r, by omega⟩
+      have hsub : m - s r = k := by omega
+      have hle_k : 2 ^ k ≤ 3 ^ k := Nat.pow_le_pow_left (by decide) k
+      have hdiff_pow :
+          2 ^ m * 3 ^ (s r) + 2 ^ (s r) * 3 ^ (s r) * (3 ^ (m - s r) - 2 ^ (m - s r)) =
+            3 ^ m * 2 ^ (s r) := by
+        rw [hsub, hk, Nat.pow_add 2 (s r) k, Nat.pow_add 3 (s r) k]
+        calc
+          (2 ^ (s r) * 2 ^ k) * 3 ^ (s r) + 2 ^ (s r) * 3 ^ (s r) * (3 ^ k - 2 ^ k)
+              = 2 ^ (s r) * 3 ^ (s r) * ((3 ^ k - 2 ^ k) + 2 ^ k) := by ring
+          _ = 2 ^ (s r) * 3 ^ (s r) * 3 ^ k := by rw [Nat.sub_add_cancel hle_k]
+          _ = (3 ^ (s r) * 3 ^ k) * 2 ^ (s r) := by ring
+      rw [hbase_G m, hrhs_G m]
+      calc
+        3 ^ (s r) * (3 ^ m - 2 ^ m) * P r + 3 ^ m * 2 ^ (s r)
+            = 3 ^ (s r) * (3 ^ m - 2 ^ m) * P r +
+                (2 ^ m * 3 ^ (s r) +
+                  2 ^ (s r) * 3 ^ (s r) * (3 ^ (m - s r) - 2 ^ (m - s r))) := by
+              rw [hdiff_pow]
+        _ = (3 ^ (s r) * (3 ^ m - 2 ^ m) * P r + 2 ^ m * 3 ^ (s r)) +
+              2 ^ (s r) * 3 ^ (s r) * (3 ^ (m - s r) - 2 ^ (m - s r)) := by ring
+  · have hg2 : cyclotomicGauge 2 (P r) = 5 * P r + 4 := rfl
+    have hg3 : cyclotomicGauge 3 (P r) = 19 * P r + 8 := rfl
+    refine ⟨hg2, hg3, ?_⟩
+    rw [hg2, hg3]
+    ring
+
+/-! ## 88. Theorem SB.88: Grand 88-Theorem Synthesis of Super-Block Renormalization & Multi-Gauge Spectrum -/
+
+/-- **Grand 88-Theorem Synthesis of Super-Block Renormalization & Multi-Gauge Spectrum
+(`grand_superblock_and_multigauge_88_synthesis`, Theorem SB.88)**:
+Unifies the odd-valuation death trap $W_{r+1} \bmod 4 \ne 2$ and $s = 2$ run evolution (`SB.85`),
+the Mod-8 future-rung predictor and $V \bmod 8 \ne 7$ extinction (`SB.86`), and the
+universal cyclotomic gauge spectrum $\mathcal{G}_r^{(m)}$ (`SB.87`) with Wave 14 (`SB.81–SB.84`). -/
+theorem grand_superblock_and_multigauge_88_synthesis :
+    (∀ {b_0 r : ℕ} {s u : ℕ → ℕ},
+      ValidBlockChain b_0 s u (r + 3) →
+      2 ≤ s r →
+      2 ≤ s (r + 1) →
+      2 ≤ s (r + 2) →
+      let P := fun k => oddReturnP (orbit b_0 (blockSteps s k))
+      let W_1 := (5 * P (r + 1) + 4) / 36
+      W_1 % 4 ≠ 2 ∧ (s (r + 1) = 2 ↔ W_1 % 4 = 0)) ∧
+    (∀ {b_0 r m V : ℕ} {s u : ℕ → ℕ},
+      ValidBlockChain b_0 s u (r + 1 + m + 2) →
+      2 ≤ s r →
+      (∀ k < m, s (r + 1 + k) = 2) →
+      3 ≤ s (r + 1 + m) →
+      2 ≤ s (r + 1 + m + 1) →
+      (5 * oddReturnP (orbit b_0 (blockSteps s (r + 1))) + 4) / 36 = 4 ^ m * V →
+      let s_star := s (r + 1 + m)
+      V % 8 ≠ 7 ∧
+        (V % 8 = 3 ↔ s_star = 3) ∧
+        (V % 8 = 5 ↔ s_star = 4) ∧
+        (V % 8 = 1 ↔ 5 ≤ s_star)) ∧
+    (∀ {b_0 r : ℕ} {s u : ℕ → ℕ},
+      ValidBlockChain b_0 s u (r + 2) →
+      let P := fun k => oddReturnP (orbit b_0 (blockSteps s k))
+      (∀ m : ℕ, s r = m →
+        2 ^ m * cyclotomicGauge m (P (r + 1)) = 3 ^ m * cyclotomicGauge m (P r)) ∧
+      19 * cyclotomicGauge 2 (P r) = 5 * cyclotomicGauge 3 (P r) + 36) := by
+  refine ⟨?_, ?_, ?_⟩
+  · intro b_0 r s u hchain hs_r hs_r1 hs_r2
+    have h85 := gauge_odd_valuation_trap_and_mod_four_survival_lock.1 hchain hs_r hs_r1 hs_r2
+    exact ⟨h85.1, h85.2.2⟩
+  · intro b_0 r m V s u hchain hs_r hs_run hs_star hs_next hW_init
+    have h86 := mod_eight_odd_gauge_future_rung_predictor_and_seven_extinction
+      hchain hs_r hs_run hs_star hs_next hW_init
+    exact ⟨h86.2.1, h86.2.2.1⟩
+  · intro b_0 r s u hchain
+    have h87 := universal_cyclotomic_gauge_spectrum_and_two_three_eliminator hchain
+    exact ⟨fun m hsr => (h87.1 m).1 hsr, h87.2.2.2⟩
+
 
 #check @archimedean_rung_ceiling_and_stepSum_bound
 #check @unit_quotient_even_rung_instant_death_and_odd_rung_mod64_identity
@@ -6731,6 +7221,10 @@ theorem dual_wall_monotone_squeeze_and_grand_84_synthesis
 #check @multi_block_gauge_deficit_master_identity_and_one_ninth_bound
 #check @gauge_complement_base3_conservation_and_top_22_trit_lock
 #check @dual_wall_monotone_squeeze_and_grand_84_synthesis
+#check @gauge_odd_valuation_trap_and_mod_four_survival_lock
+#check @mod_eight_odd_gauge_future_rung_predictor_and_seven_extinction
+#check @universal_cyclotomic_gauge_spectrum_and_two_three_eliminator
+#check @grand_superblock_and_multigauge_88_synthesis
 
 #print axioms archimedean_rung_ceiling_and_stepSum_bound
 #print axioms unit_quotient_even_rung_instant_death_and_odd_rung_mod64_identity

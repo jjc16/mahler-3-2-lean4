@@ -740,7 +740,41 @@ Traps every interior window $[r+1, r+1+M]$ simultaneously between the **strictly
 
 ---
 
-## 21. Verification Instructions
+## 21. Second-Order Super-Block Renormalization, Mod-8 Future-Rung Predictor, & The Cyclotomic Gauge Spectrum (Theorems `SB.85–SB.88`)
+
+In Sections 85–88 of [`SemigroupBreakoutTheorems.lean`](./SemigroupBreakoutTheorems.lean) (verified computationally across 7,772 configurations in [`sandbox_wave15_superblock_and_multigauge.py`](./sandbox_wave15_superblock_and_multigauge.py)), we formalized the second-order "Super-Block" renormalization $W_{r+1} = 4^m V$ that collapses entire runs of $s = 2$ blocks into a single macro-step, predicts the first non-2 rung $m$ blocks in advance, and embeds $W_r$ into the infinite Cyclotomic Gauge Spectrum $\mathcal{G}_r^{(m)} := (3^m - 2^m) P_r + 2^m$:
+
+### 21.1 Theorem SB.85 (`gauge_odd_valuation_trap_and_mod_four_survival_lock`)
+1. **Delayed-Action Death Trap #1 ($W_{r+1} \bmod 4 \ne 2$):**
+   In any surviving chain with $s_r, s_{r+1}, s_{r+2} \ge 2$:
+   $$\boxed{W_{r+1} \bmod 4 \ne 2, \qquad \big(W_{r+1} \bmod 2 = 0 \iff W_{r+1} \bmod 4 = 0\big), \qquad \big(s_{r+1} = 2 \iff W_{r+1} \bmod 4 = 0\big)!}$$
+2. **Multi-Step $s = 2$ Run Evolution & Odd-Valuation Extinction:**
+   Across any run of $m$ consecutive $s = 2$ blocks ($s_{r+1+k} = 2$ for $k < m$), $4^m W_{r+1+m} = 9^m W_{r+1}$, and for every odd $V$, **$W_{r+1} \ne 2 \cdot 4^m \cdot V$** ($v_2(W_{r+1})$ can never be odd!).
+
+### 21.2 Theorem SB.86 (`mod_eight_odd_gauge_future_rung_predictor_and_seven_extinction`)
+Suppose $W_{r+1} = 4^m \cdot V$ executes $m$ consecutive steps of $s = 2$ followed by the first non-2 rung $s^* = s_{r+1+m} \ge 3$ (with $s_{r+1+m+1} \ge 2$):
+1. **Exact Super-Block Arrival & Mod-8 Invariance:**
+   $$\boxed{W_{r+1+m} = 9^m \cdot V, \qquad V \bmod 2 = 1, \qquad W_{r+1+m} \bmod 8 = V \bmod 8!}$$
+2. **Delayed-Action Death Trap #2 ($V \bmod 8 \ne 7$) & Future-Rung Predictor $m$ Blocks in Advance:**
+   $$\boxed{V \bmod 8 \ne 7, \qquad V \bmod 8 = 3 \iff s^* = 3, \qquad V \bmod 8 = 5 \iff s^* = 4, \qquad V \bmod 8 = 1 \iff s^* \ge 5!}$$
+3. **Exact Super-Block Jump to the Next Gauge State:**
+   $$\boxed{2^{s^*} W_{r+1+m+1} + \big(3^{s^* - 2} - 2^{s^* - 2}\big) = 3^{2m + s^*} \cdot V!}$$
+
+### 21.3 Theorem SB.87 (`universal_cyclotomic_gauge_spectrum_and_two_three_eliminator`)
+For every integer $m \ge 1$, the $m$-th Cyclotomic Gauge $\mathcal{G}_r^{(m)} := (3^m - 2^m) P_r + 2^m$ satisfies:
+$$\boxed{\begin{aligned}
+s_r = m &\implies 2^m \mathcal{G}_{r+1}^{(m)} = 3^m \mathcal{G}_r^{(m)} \quad\text{(exact annihilation at } s_r = m\text{)}, \\
+m \le s_r &\implies 2^{s_r} \mathcal{G}_{r+1}^{(m)} + 2^m 3^m\big(3^{s_r-m} - 2^{s_r-m}\big) = 3^{s_r} \mathcal{G}_r^{(m)}, \\
+s_r \le m &\implies 2^{s_r} \mathcal{G}_{r+1}^{(m)} = 3^{s_r} \mathcal{G}_r^{(m)} + 2^{s_r} 3^{s_r}\big(3^{m-s_r} - 2^{m-s_r}\big),
+\end{aligned}}$$
+and the $m = 2$ ($5 P_r + 4$) and $m = 3$ ($19 P_r + 8$) gauges satisfy the exact linear eliminator $19 \mathcal{G}_r^{(2)} = 5 \mathcal{G}_r^{(3)} + 36$.
+
+### 21.4 Theorem SB.88 (`grand_superblock_and_multigauge_88_synthesis`)
+Unifies `SB.85–SB.87` with Wave 14 (`SB.81–SB.84`), completing all **88 `sorry`-free, warning-free theorems (`SB.1–SB.88`)**.
+
+---
+
+## 22. Verification Instructions
 
 To verify the cordoned-off Lean 4 proofs without modifying the root 226-file build:
 
@@ -763,4 +797,5 @@ python semigroup_breakout\sandbox_wave11_upgraded_baker_and_return_extinction.py
 python semigroup_breakout\sandbox_wave12_global_dominance_and_product_formula.py
 python semigroup_breakout\sandbox_wave13_kempner_two_adic_expansion.py
 python semigroup_breakout\sandbox_wave14_ceiling_dual_gauge_tower.py
+python semigroup_breakout\sandbox_wave15_superblock_and_multigauge.py
 ```
