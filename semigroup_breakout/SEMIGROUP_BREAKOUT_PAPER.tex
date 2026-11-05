@@ -257,4 +257,12 @@ Across any \texttt{ValidBlockChain b\_0 s u (K + 4)} with $\forall k < K + 4,\, 
 \end{enumerate}
 \end{theorem}
 
+\begin{theorem}[The $(5 P + 4)/36$ Ceiling-Dual Gauge Transformation \& Dual-Wall Monotone Squeeze (Theorems SB.81--SB.84), \texttt{ceiling\_dual\_gauge\_transform\_and\_rung\_two\_parity\_detector}, \texttt{multi\_block\_gauge\_deficit\_master\_identity\_and\_one\_ninth\_bound}, \texttt{gauge\_complement\_base3\_conservation\_and\_top\_22\_trit\_lock}, \texttt{dual\_wall\_monotone\_squeeze\_and\_grand\_84\_synthesis}]
+\begin{enumerate}
+  \item \textbf{Ceiling-Dual Gauge \& Rung-2 Parity Detector (SB.81):} For every interior block $r + 1$ ($s_r, s_{r+1}, s_{r+2} \ge 2$), $P_{r+1} \bmod 36 = 28$, $36 W_{r+1} = 5 P_{r+1} + 4$, $(W_{r+1} \bmod 2 = 0 \leftrightarrow s_{r+1} = 2)$, $(W_{r+1} \bmod 2 = 1 \leftrightarrow 3 \le s_{r+1})$, and $2^{s_{r+1}} W_{r+2} + (3^{s_{r+1}-2} - 2^{s_{r+1}-2}) = 3^{s_{r+1}} W_{r+1}$ (so $s_{r+1} = 2 \implies 4 W_{r+2} = 9 W_{r+1}$).
+  \item \textbf{Multi-Block Gauge Deficit \& $1/9$ Bound (SB.82):} Across $M \ge 1$ blocks of step sum $d$, $5 A_M + 4 \cdot 2^d + 36 E_M = 4 \cdot 3^d$, $2^d W_{r+1+M} + E_M = 3^d W_{r+1}$, $9 E_M + 2^d \le 3^d$, and $E_M < 3^{d-2}$.
+  \item \textbf{Gauge-Complement Base-3 Conservation \& `22`-Trit Lock (SB.83--SB.84):} Whenever $1 \le E_M$, $\lfloor 2^d W_{r+1+M} / 3^d \rfloor = W_{r+1} - 1$, $(2^d W_{r+1+M}) \bmod 3^d = 3^d - E_M$, $\lfloor ((2^d W_{r+1+M}) \bmod 3^d) / 3^{d-2} \rfloor = 8$, and $s_3(2^d W_{r+1+M}) + s_3(E_M - 1) = s_3(W_{r+1} - 1) + 2 d$.
+\end{enumerate}
+\end{theorem}
+
 \end{document}

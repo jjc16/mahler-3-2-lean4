@@ -6133,6 +6133,519 @@ theorem grand_kempner_two_adic_expansion_80_synthesis :
   · intro b_0 K s u hchain hs2
     exact (kempner_rational_target_obstruction_and_automaton_irrationality_bridge hchain hs2).2
 
+/-! ## 81. Theorem SB.81: The $(5 P + 4)/36$ Ceiling-Dual Gauge Transform & Rung-2 Parity Detector -/
+
+/-- Recursive definition of the normalized ceiling-dual gauge deficit $E_{0,r}$ satisfying
+$5 A_{0,r} + 4 \cdot 2^{T_r} + 36 E_{0,r} = 4 \cdot 3^{T_r}$. -/
+def gaugeDeficit (s : ℕ → ℕ) : ℕ → ℕ
+  | 0 => 0
+  | r + 1 =>
+      3 ^ (s r) * gaugeDeficit s r +
+        2 ^ (blockSteps s r) * (3 ^ (s r - 2) - 2 ^ (s r - 2))
+
+/-- Exact additive conservation law linking `renewalNumerator` and `gaugeDeficit`:
+`5 * renewalNumerator s r + 4 * 2 ^ (blockSteps s r) + 36 * gaugeDeficit s r = 4 * 3 ^ (blockSteps s r)`. -/
+theorem five_mul_renewalNumerator_add_thirty_six_mul_gaugeDeficit_eq
+    (s : ℕ → ℕ) (r : ℕ) (hs2 : ∀ k < r, 2 ≤ s k) :
+    5 * renewalNumerator s r + 4 * 2 ^ (blockSteps s r) + 36 * gaugeDeficit s r =
+      4 * 3 ^ (blockSteps s r) := by
+  induction r with
+  | zero =>
+      simp [renewalNumerator, blockSteps, gaugeDeficit]
+  | succ r ih =>
+      have ihr := ih (fun k hk => hs2 k (by omega))
+      have hsr : 2 ≤ s r := hs2 r (by omega)
+      obtain ⟨m, hm⟩ : ∃ m : ℕ, s r = m + 2 := ⟨s r - 2, by omega⟩
+      have hle_m : 2 ^ m ≤ 3 ^ m := Nat.pow_le_pow_left (by decide) m
+      set T := blockSteps s r
+      set A := renewalNumerator s r
+      set E := gaugeDeficit s r
+      have hsub_m : s r - 2 = m := by omega
+      have hpow3 : 3 ^ (s r) = 9 * 3 ^ m := by
+        rw [hm, Nat.pow_add 3 m 2]
+        ring
+      have hpow2 : 2 ^ (s r) = 4 * 2 ^ m := by
+        rw [hm, Nat.pow_add 2 m 2]
+        ring
+      have hstep_A : renewalNumerator s (r + 1) = 3 ^ (s r) * A + 2 ^ (T + s r) := rfl
+      have hstep_T : blockSteps s (r + 1) = T + s r := rfl
+      have hstep_E :
+          gaugeDeficit s (r + 1) =
+            3 ^ (s r) * E + 2 ^ T * (3 ^ m - 2 ^ m) := by
+        change 3 ^ (s r) * E + 2 ^ T * (3 ^ (s r - 2) - 2 ^ (s r - 2)) =
+          3 ^ (s r) * E + 2 ^ T * (3 ^ m - 2 ^ m)
+        rw [hsub_m]
+      have hmul_ih := congrArg (fun x => 3 ^ (s r) * x) ihr
+      dsimp only at hmul_ih
+      have hrhs_eq : 3 ^ (s r) * (4 * 3 ^ T) = 4 * 3 ^ (blockSteps s (r + 1)) := by
+        rw [hstep_T, Nat.pow_add 3 T (s r)]
+        ring
+      have hlhs_ih :
+          3 ^ (s r) * (5 * A + 4 * 2 ^ T + 36 * E) =
+            5 * (3 ^ (s r) * A) + 36 * 3 ^ m * 2 ^ T + 36 * (3 ^ (s r) * E) := by
+        rw [hpow3]
+        ring
+      have hsplit_m :
+          36 * (2 ^ T * (3 ^ m - 2 ^ m)) + 36 * 2 ^ m * 2 ^ T = 36 * 3 ^ m * 2 ^ T := by
+        calc
+          36 * (2 ^ T * (3 ^ m - 2 ^ m)) + 36 * 2 ^ m * 2 ^ T
+              = 36 * 2 ^ T * ((3 ^ m - 2 ^ m) + 2 ^ m) := by ring
+          _ = 36 * 2 ^ T * 3 ^ m := by rw [Nat.sub_add_cancel hle_m]
+          _ = 36 * 3 ^ m * 2 ^ T := by ring
+      have h2_T_sr : 2 ^ (T + s r) = 4 * 2 ^ m * 2 ^ T := by
+        rw [Nat.pow_add 2 T (s r), hpow2]
+        ring
+      rw [hstep_A, hstep_T, hstep_E, h2_T_sr]
+      have hdist :
+          5 * (3 ^ (s r) * A + 4 * 2 ^ m * 2 ^ T) + 4 * (4 * 2 ^ m * 2 ^ T) +
+              36 * (3 ^ (s r) * E + 2 ^ T * (3 ^ m - 2 ^ m)) =
+            5 * (3 ^ (s r) * A) + (36 * (2 ^ T * (3 ^ m - 2 ^ m)) + 36 * 2 ^ m * 2 ^ T) +
+              36 * (3 ^ (s r) * E) := by ring
+      rw [hdist, hsplit_m, ← hlhs_ih, hmul_ih, hrhs_eq]
+      rfl
+
+/-- **The $(5 P + 4)/36$ Ceiling-Dual Gauge Transform & Rung-2 Parity Detector
+(`ceiling_dual_gauge_transform_and_rung_two_parity_detector`, Theorem SB.81)**:
+Suppose `ValidBlockChain b_0 s u (r + 3)` holds with `2 ≤ s r`, `2 ≤ s (r + 1)`, and `2 ≤ s (r + 2)`.
+Let `P k = oddReturnP (orbit b_0 (blockSteps s k))`, `W_1 = (5 * P (r + 1) + 4) / 36`,
+and `W_2 = (5 * P (r + 2) + 4) / 36`:
+1. **Exact Mod-36 Lock & Integrality of $W_{r+1}$ and $W_{r+2}$**:
+   `P (r + 1) % 36 = 28`, `(5 * P (r + 1) + 4) % 36 = 0`,
+   `36 * W_1 = 5 * P (r + 1) + 4`, `36 * W_2 = 5 * P (r + 2) + 4`, and
+   `9 * W_1 = 5 * 2 ^ (s (r + 1) - 2) * u (r + 1) + 1`,
+2. **Exact Rung-2 Parity Detector on $W_{r+1}$**:
+   `(W_1 % 2 = 0 ↔ s (r + 1) = 2)` and `(W_1 % 2 = 1 ↔ 3 ≤ s (r + 1))`, and
+3. **One-Step Sub-Multiplicative Gauge Evolution & Pure $(9/4)$ Step at $s_{r+1} = 2$**:
+   `2 ^ (s (r + 1)) * W_2 + (3 ^ (s (r + 1) - 2) - 2 ^ (s (r + 1) - 2)) = 3 ^ (s (r + 1)) * W_1`
+   and `(s (r + 1) = 2 → 4 * W_2 = 9 * W_1)`! -/
+theorem ceiling_dual_gauge_transform_and_rung_two_parity_detector
+    {b_0 r : ℕ} {s u : ℕ → ℕ}
+    (hchain : ValidBlockChain b_0 s u (r + 3))
+    (hs_r : 2 ≤ s r)
+    (hs_r1 : 2 ≤ s (r + 1))
+    (hs_r2 : 2 ≤ s (r + 2)) :
+    let P := fun k => oddReturnP (orbit b_0 (blockSteps s k))
+    let W_1 := (5 * P (r + 1) + 4) / 36
+    let W_2 := (5 * P (r + 2) + 4) / 36
+    (P (r + 1) % 36 = 28 ∧
+      (5 * P (r + 1) + 4) % 36 = 0 ∧
+      36 * W_1 = 5 * P (r + 1) + 4 ∧
+      36 * W_2 = 5 * P (r + 2) + 4 ∧
+      9 * W_1 = 5 * 2 ^ (s (r + 1) - 2) * u (r + 1) + 1) ∧
+      ((W_1 % 2 = 0 ↔ s (r + 1) = 2) ∧ (W_1 % 2 = 1 ↔ 3 ≤ s (r + 1))) ∧
+      (2 ^ (s (r + 1)) * W_2 + (3 ^ (s (r + 1) - 2) - 2 ^ (s (r + 1) - 2)) =
+          3 ^ (s (r + 1)) * W_1 ∧
+        (s (r + 1) = 2 → 4 * W_2 = 9 * W_1)) := by
+  intro P W_1 W_2
+  have hch_r2 : ValidBlockChain b_0 s u (r + 2) := fun k hk => hchain k (by omega)
+  have hstep1 : 2 ^ (s (r + 1)) * u (r + 1) = 3 ^ (s r) * u r + 1 :=
+    (one_step_backward_quotient_recovery_and_mod_three_pow_one hch_r2).1
+  have hstep2 : 2 ^ (s (r + 2)) * u (r + 2) = 3 ^ (s (r + 1)) * u (r + 1) + 1 :=
+    (one_step_backward_quotient_recovery_and_mod_three_pow_one hchain).1
+  have hP1_def : P (r + 1) = 2 ^ (s (r + 1)) * u (r + 1) := (hchain (r + 1) (by omega)).2.2
+  have hP2_def : P (r + 2) = 2 ^ (s (r + 2)) * u (r + 2) := (hchain (r + 2) (by omega)).2.2
+  obtain ⟨m_0, hm_0⟩ : ∃ m_0 : ℕ, s r = m_0 + 2 := ⟨s r - 2, by omega⟩
+  obtain ⟨m_1, hm_1⟩ : ∃ m_1 : ℕ, s (r + 1) = m_1 + 2 := ⟨s (r + 1) - 2, by omega⟩
+  obtain ⟨m_2, hm_2⟩ : ∃ m_2 : ℕ, s (r + 2) = m_2 + 2 := ⟨s (r + 2) - 2, by omega⟩
+  have hP1_mod9 : P (r + 1) % 9 = 1 := by
+    have hp : P (r + 1) = 9 * (3 ^ m_0 * u r) + 1 := by
+      rw [hP1_def, hstep1, hm_0, Nat.pow_add 3 m_0 2]
+      ring
+    rw [hp]
+    omega
+  have hP1_mod4 : P (r + 1) % 4 = 0 := by
+    have hp : P (r + 1) = 4 * (2 ^ m_1 * u (r + 1)) := by
+      rw [hP1_def, hm_1, Nat.pow_add 2 m_1 2]
+      ring
+    rw [hp]
+    omega
+  have hP1_mod36 : P (r + 1) % 36 = 28 := by omega
+  have hW1_mod36 : (5 * P (r + 1) + 4) % 36 = 0 := by omega
+  have hW1_eq : 36 * W_1 = 5 * P (r + 1) + 4 := by
+    have hdm := Nat.div_add_mod (5 * P (r + 1) + 4) 36
+    change 36 * W_1 + (5 * P (r + 1) + 4) % 36 = 5 * P (r + 1) + 4 at hdm
+    omega
+  have hP2_mod9 : P (r + 2) % 9 = 1 := by
+    have hp : P (r + 2) = 9 * (3 ^ m_1 * u (r + 1)) + 1 := by
+      rw [hP2_def, hstep2, hm_1, Nat.pow_add 3 m_1 2]
+      ring
+    rw [hp]
+    omega
+  have hP2_mod4 : P (r + 2) % 4 = 0 := by
+    have hp : P (r + 2) = 4 * (2 ^ m_2 * u (r + 2)) := by
+      rw [hP2_def, hm_2, Nat.pow_add 2 m_2 2]
+      ring
+    rw [hp]
+    omega
+  have hW2_eq : 36 * W_2 = 5 * P (r + 2) + 4 := by
+    have hdm := Nat.div_add_mod (5 * P (r + 2) + 4) 36
+    change 36 * W_2 + (5 * P (r + 2) + 4) % 36 = 5 * P (r + 2) + 4 at hdm
+    omega
+  have hsub_m1 : s (r + 1) - 2 = m_1 := by omega
+  have h9W1 : 9 * W_1 = 5 * 2 ^ (s (r + 1) - 2) * u (r + 1) + 1 := by
+    have h4 : 4 * (9 * W_1) = 4 * (5 * 2 ^ (s (r + 1) - 2) * u (r + 1) + 1) := by
+      calc
+        4 * (9 * W_1) = 36 * W_1 := by ring
+        _ = 5 * P (r + 1) + 4 := hW1_eq
+        _ = 4 * (5 * 2 ^ (s (r + 1) - 2) * u (r + 1) + 1) := by
+              rw [hP1_def, hsub_m1, hm_1, Nat.pow_add 2 m_1 2]
+              ring
+    omega
+  have hu1_odd : u (r + 1) % 2 = 1 := (hchain (r + 1) (by omega)).2.1
+  have hparity_even : W_1 % 2 = 0 ↔ s (r + 1) = 2 := by
+    rcases (by omega : m_1 = 0 ∨ 1 ≤ m_1) with rfl | hm1_pos
+    · have hs_eq2 : s (r + 1) = 2 := by omega
+      have h9W_eq : 9 * W_1 = 5 * u (r + 1) + 1 := by
+        rw [h9W1, hsub_m1]
+        ring
+      omega
+    · obtain ⟨k, rfl⟩ : ∃ k : ℕ, m_1 = k + 1 := ⟨m_1 - 1, by omega⟩
+      have h9W_eq : 9 * W_1 = 2 * (5 * 2 ^ k * u (r + 1)) + 1 := by
+        rw [h9W1, hsub_m1, Nat.pow_succ]
+        ring
+      omega
+  have hparity_odd : W_1 % 2 = 1 ↔ 3 ≤ s (r + 1) := by omega
+  have hstep_W :
+      2 ^ (s (r + 1)) * W_2 + (3 ^ (s (r + 1) - 2) - 2 ^ (s (r + 1) - 2)) =
+        3 ^ (s (r + 1)) * W_1 := by
+    have hle_m1 : 2 ^ m_1 ≤ 3 ^ m_1 := Nat.pow_le_pow_left (by decide) m_1
+    have h36_step :
+        36 * (2 ^ (s (r + 1)) * W_2) + 36 * (3 ^ m_1 - 2 ^ m_1) =
+          36 * (3 ^ (s (r + 1)) * W_1) := by
+      have hpL : 36 * (2 ^ (s (r + 1)) * W_2) = 2 ^ (s (r + 1)) * (36 * W_2) := by ring
+      have hpR : 36 * (3 ^ (s (r + 1)) * W_1) = 3 ^ (s (r + 1)) * (36 * W_1) := by ring
+      have hP_rel : 2 ^ (s (r + 1)) * P (r + 2) =
+          3 ^ (s (r + 1)) * P (r + 1) + 2 ^ (s (r + 1)) := by
+        rw [hP2_def, hstep2, hP1_def]
+        ring
+      have h5P_rel :
+          2 ^ (s (r + 1)) * (5 * P (r + 2) + 4) =
+            5 * 3 ^ (s (r + 1)) * P (r + 1) + 9 * 2 ^ (s (r + 1)) := by
+        calc
+          2 ^ (s (r + 1)) * (5 * P (r + 2) + 4)
+              = 5 * (2 ^ (s (r + 1)) * P (r + 2)) + 4 * 2 ^ (s (r + 1)) := by ring
+          _ = 5 * (3 ^ (s (r + 1)) * P (r + 1) + 2 ^ (s (r + 1))) + 4 * 2 ^ (s (r + 1)) := by
+                rw [hP_rel]
+          _ = 5 * 3 ^ (s (r + 1)) * P (r + 1) + 9 * 2 ^ (s (r + 1)) := by ring
+      have hpow_36 :
+          36 * (3 ^ m_1 - 2 ^ m_1) + 9 * 2 ^ (s (r + 1)) = 4 * 3 ^ (s (r + 1)) := by
+        rw [hm_1, Nat.pow_add 2 m_1 2, Nat.pow_add 3 m_1 2]
+        omega
+      rw [hpL, hpR, hW2_eq, hW1_eq, h5P_rel]
+      have hexpR :
+          3 ^ (s (r + 1)) * (5 * P (r + 1) + 4) =
+            5 * 3 ^ (s (r + 1)) * P (r + 1) + 4 * 3 ^ (s (r + 1)) := by ring
+      omega
+    rw [hsub_m1]
+    omega
+  have hs2_pure : s (r + 1) = 2 → 4 * W_2 = 9 * W_1 := by
+    intro hs2_eq
+    have hst := hstep_W
+    rw [hs2_eq] at hst
+    omega
+  exact ⟨⟨hP1_mod36, hW1_mod36, hW1_eq, hW2_eq, h9W1⟩,
+    ⟨hparity_even, hparity_odd⟩,
+    ⟨hstep_W, hs2_pure⟩⟩
+
+/-! ## 82. Theorem SB.82: Multi-Block Gauge Deficit Master Identity & The $1/9$ Sub-$3^{d-2}$ Bound -/
+
+/-- **Multi-Block Gauge Deficit Master Identity & The $1/9$ Sub-$3^{d-2}$ Bound
+(`multi_block_gauge_deficit_master_identity_and_one_ninth_bound`, Theorem SB.82)**:
+Suppose `ValidBlockChain b_0 s u (r + 1 + M + 1)` holds with `2 ≤ s r`,
+`∀ k < M, 2 ≤ s (r + 1 + k)`, and `2 ≤ s (r + 1 + M)`.
+Setting `P k = oddReturnP (orbit b_0 (blockSteps s k))`,
+`W k = (5 * P k + 4) / 36`, `s' t = s (r + 1 + t)`, `d = blockSteps s' M`,
+`A_M = renewalNumerator s' M`, and `E_M = gaugeDeficit s' M`:
+1. **Exact $36$-Gauge Deficit Conservation Law**:
+   `5 * A_M + 4 * 2 ^ d + 36 * E_M = 4 * 3 ^ d`,
+2. **Exact Multi-Block Sub-Multiplicative Gauge Evolution**:
+   `2 ^ d * W (r + 1 + M) + E_M = 3 ^ d * W (r + 1)` and
+   `2 ^ d * W (r + 1 + M) ≤ 3 ^ d * W (r + 1)`, and
+3. **The Unconditional $1/9$ Sub-$3^{d-2}$ Gauge Deficit Bound**:
+   `9 * E_M + 2 ^ d ≤ 3 ^ d`, and whenever `1 ≤ M`, `E_M < 3 ^ (d - 2)` and `E_M < 3 ^ d`! -/
+theorem multi_block_gauge_deficit_master_identity_and_one_ninth_bound
+    {b_0 r M : ℕ} {s u : ℕ → ℕ}
+    (hchain : ValidBlockChain b_0 s u (r + 1 + M + 1))
+    (hs_r : 2 ≤ s r)
+    (hs_win : ∀ k < M, 2 ≤ s (r + 1 + k))
+    (hs_end : 2 ≤ s (r + 1 + M)) :
+    let P := fun k => oddReturnP (orbit b_0 (blockSteps s k))
+    let W := fun k => (5 * P k + 4) / 36
+    let s' := fun t => s (r + 1 + t)
+    let d := blockSteps s' M
+    let A_M := renewalNumerator s' M
+    let E_M := gaugeDeficit s' M
+    5 * A_M + 4 * 2 ^ d + 36 * E_M = 4 * 3 ^ d ∧
+      (2 ^ d * W (r + 1 + M) + E_M = 3 ^ d * W (r + 1) ∧
+        2 ^ d * W (r + 1 + M) ≤ 3 ^ d * W (r + 1)) ∧
+      (9 * E_M + 2 ^ d ≤ 3 ^ d ∧
+        (1 ≤ M → E_M < 3 ^ (d - 2) ∧ E_M < 3 ^ d)) := by
+  intro P W s' d A_M E_M
+  have hcons : 5 * A_M + 4 * 2 ^ d + 36 * E_M = 4 * 3 ^ d :=
+    five_mul_renewalNumerator_add_thirty_six_mul_gaugeDeficit_eq s' M hs_win
+  have h10 := (late_step_cauchy_pinch_and_odd_quotient_gcd_dvd (N := r + 1) (M := M) hchain).1
+  change 2 ^ d * P (r + 1 + M) = 3 ^ d * P (r + 1) + A_M at h10
+  have hW1_36 : 36 * W (r + 1) = 5 * P (r + 1) + 4 := by
+    have hch_r2 : ValidBlockChain b_0 s u (r + 2) := fun k hk => hchain k (by omega)
+    have hstep1 : 2 ^ (s (r + 1)) * u (r + 1) = 3 ^ (s r) * u r + 1 :=
+      (one_step_backward_quotient_recovery_and_mod_three_pow_one hch_r2).1
+    have hP1 : P (r + 1) = 2 ^ (s (r + 1)) * u (r + 1) := (hchain (r + 1) (by omega)).2.2
+    have hs_r1 : 2 ≤ s (r + 1) := by
+      rcases (by omega : M = 0 ∨ 1 ≤ M) with rfl | hM1
+      · simpa using hs_end
+      · exact hs_win 0 hM1
+    obtain ⟨m_0, hm_0⟩ : ∃ m_0 : ℕ, s r = m_0 + 2 := ⟨s r - 2, by omega⟩
+    obtain ⟨m_1, hm_1⟩ : ∃ m_1 : ℕ, s (r + 1) = m_1 + 2 := ⟨s (r + 1) - 2, by omega⟩
+    have hm9 : P (r + 1) % 9 = 1 := by
+      have hp : P (r + 1) = 9 * (3 ^ m_0 * u r) + 1 := by
+        rw [hP1, hstep1, hm_0, Nat.pow_add 3 m_0 2]
+        ring
+      rw [hp]
+      omega
+    have hm4 : P (r + 1) % 4 = 0 := by
+      have hp : P (r + 1) = 4 * (2 ^ m_1 * u (r + 1)) := by
+        rw [hP1, hm_1, Nat.pow_add 2 m_1 2]
+        ring
+      rw [hp]
+      omega
+    have hdm := Nat.div_add_mod (5 * P (r + 1) + 4) 36
+    change 36 * W (r + 1) + (5 * P (r + 1) + 4) % 36 = 5 * P (r + 1) + 4 at hdm
+    omega
+  have hWM_36 : 36 * W (r + 1 + M) = 5 * P (r + 1 + M) + 4 := by
+    have hprev_idx : ∃ q : ℕ, r + 1 + M = q + 1 ∧ 2 ≤ s q := by
+      rcases (by omega : M = 0 ∨ 1 ≤ M) with rfl | hM1
+      · exact ⟨r, by omega, hs_r⟩
+      · exact ⟨r + M, by omega, by
+          have hk : M - 1 < M := by omega
+          have h := hs_win (M - 1) hk
+          have heq : r + 1 + (M - 1) = r + M := by omega
+          rw [heq] at h
+          exact h⟩
+    rcases hprev_idx with ⟨q, hq_eq, hsq⟩
+    have hch_q : ValidBlockChain b_0 s u (q + 2) := fun k hk => hchain k (by omega)
+    have hstep_q : 2 ^ (s (q + 1)) * u (q + 1) = 3 ^ (s q) * u q + 1 :=
+      (one_step_backward_quotient_recovery_and_mod_three_pow_one hch_q).1
+    have hPM : P (q + 1) = 2 ^ (s (q + 1)) * u (q + 1) := (hchain (q + 1) (by omega)).2.2
+    have hsq1 : 2 ≤ s (q + 1) := by
+      rw [← hq_eq]
+      exact hs_end
+    obtain ⟨m_0, hm_0⟩ : ∃ m_0 : ℕ, s q = m_0 + 2 := ⟨s q - 2, by omega⟩
+    obtain ⟨m_1, hm_1⟩ : ∃ m_1 : ℕ, s (q + 1) = m_1 + 2 := ⟨s (q + 1) - 2, by omega⟩
+    have hm9 : P (q + 1) % 9 = 1 := by
+      have hp : P (q + 1) = 9 * (3 ^ m_0 * u q) + 1 := by
+        rw [hPM, hstep_q, hm_0, Nat.pow_add 3 m_0 2]
+        ring
+      rw [hp]
+      omega
+    have hm4 : P (q + 1) % 4 = 0 := by
+      have hp : P (q + 1) = 4 * (2 ^ m_1 * u (q + 1)) := by
+        rw [hPM, hm_1, Nat.pow_add 2 m_1 2]
+        ring
+      rw [hp]
+      omega
+    rw [← hq_eq] at hm9 hm4
+    have hdm := Nat.div_add_mod (5 * P (r + 1 + M) + 4) 36
+    change 36 * W (r + 1 + M) + (5 * P (r + 1 + M) + 4) % 36 = 5 * P (r + 1 + M) + 4 at hdm
+    omega
+  have hW_id : 2 ^ d * W (r + 1 + M) + E_M = 3 ^ d * W (r + 1) := by
+    have h36 :
+        36 * (2 ^ d * W (r + 1 + M) + E_M) = 36 * (3 ^ d * W (r + 1)) := by
+      have hlhs : 36 * (2 ^ d * W (r + 1 + M) + E_M) =
+          2 ^ d * (36 * W (r + 1 + M)) + 36 * E_M := by ring
+      have hrhs : 36 * (3 ^ d * W (r + 1)) = 3 ^ d * (36 * W (r + 1)) := by ring
+      rw [hlhs, hrhs, hWM_36, hW1_36]
+      have h5P :
+          2 ^ d * (5 * P (r + 1 + M) + 4) =
+            5 * 3 ^ d * P (r + 1) + 5 * A_M + 4 * 2 ^ d := by
+        calc
+          2 ^ d * (5 * P (r + 1 + M) + 4)
+              = 5 * (2 ^ d * P (r + 1 + M)) + 4 * 2 ^ d := by ring
+          _ = 5 * (3 ^ d * P (r + 1) + A_M) + 4 * 2 ^ d := by rw [h10]
+          _ = 5 * 3 ^ d * P (r + 1) + 5 * A_M + 4 * 2 ^ d := by ring
+      have h3P :
+          3 ^ d * (5 * P (r + 1) + 4) =
+            5 * 3 ^ d * P (r + 1) + 4 * 3 ^ d := by ring
+      rw [h5P, h3P]
+      omega
+    omega
+  have hW_le : 2 ^ d * W (r + 1 + M) ≤ 3 ^ d * W (r + 1) := by omega
+  have h19 : 9 * E_M + 2 ^ d ≤ 3 ^ d := by omega
+  refine ⟨hcons, ⟨hW_id, hW_le⟩, ⟨h19, ?_⟩⟩
+  intro hM1
+  have hs0_win : 2 ≤ s' 0 := hs_win 0 hM1
+  have hd_ge2 : 2 ≤ d := by
+    obtain ⟨k, hk⟩ : ∃ k : ℕ, M = k + 1 := ⟨M - 1, by omega⟩
+    have hsh := blockSteps_add_shift s' 1 k
+    have hb1 : blockSteps s' 1 = s' 0 := by simp [blockSteps]
+    have h1k : 1 + k = M := by omega
+    rw [hb1, h1k] at hsh
+    omega
+  have h2d_pos : 1 ≤ 2 ^ d := Nat.one_le_pow _ 2 (by decide)
+  have hpow_d2 : 3 ^ d = 9 * 3 ^ (d - 2) := by
+    obtain ⟨m, hm⟩ : ∃ m : ℕ, d = m + 2 := ⟨d - 2, by omega⟩
+    have hsub : d - 2 = m := by omega
+    rw [hsub, hm, Nat.pow_add 3 m 2]
+    ring
+  have hlt_d2 : E_M < 3 ^ (d - 2) := by omega
+  have hlt_d : E_M < 3 ^ d := by omega
+  exact ⟨hlt_d2, hlt_d⟩
+
+/-! ## 83. Theorem SB.83: Gauge-Complement Base-3 Conservation Law & Top `22`-Trit Lock -/
+
+/-- **Gauge-Complement Base-3 Conservation Law & Top `22`-Trit Lock
+(`gauge_complement_base3_conservation_and_top_22_trit_lock`, Theorem SB.83)**:
+Suppose `ValidBlockChain b_0 s u (r + 1 + M + 1)` holds with `2 ≤ s r`,
+`∀ k < M, 2 ≤ s (r + 1 + k)`, `2 ≤ s (r + 1 + M)`, `1 ≤ M`, and `1 ≤ gaugeDeficit (fun t => s (r + 1 + t)) M`.
+Setting `P k = oddReturnP (orbit b_0 (blockSteps s k))`,
+`W k = (5 * P k + 4) / 36`, `s' t = s (r + 1 + t)`, `d = blockSteps s' M`,
+and `E_M = gaugeDeficit s' M`:
+1. **Exact Base-3 Quotient & Complement Remainder of $2^d W_{r+1+M}$**:
+   `1 ≤ W (r + 1)`,
+   `2 ^ d * W (r + 1 + M) = 3 ^ d * (W (r + 1) - 1) + (3 ^ d - E_M)`,
+   `(2 ^ d * W (r + 1 + M)) / 3 ^ d = W (r + 1) - 1`, and
+   `(2 ^ d * W (r + 1 + M)) % 3 ^ d = 3 ^ d - E_M`,
+2. **Top Two Trits Locked to `22` in Base 3 (`8 = 2 * 3 + 2`)**:
+   `8 * 3 ^ (d - 2) < 3 ^ d - E_M` and
+   `((2 ^ d * W (r + 1 + M)) % 3 ^ d) / 3 ^ (d - 2) = 8`, and
+3. **Exact Gauge-Complement Base-3 Conservation Law**:
+   `base3DigitSum (2 ^ d * W (r + 1 + M)) + base3DigitSum (E_M - 1) = base3DigitSum (W (r + 1) - 1) + 2 * d`! -/
+theorem gauge_complement_base3_conservation_and_top_22_trit_lock
+    {b_0 r M : ℕ} {s u : ℕ → ℕ}
+    (hchain : ValidBlockChain b_0 s u (r + 1 + M + 1))
+    (hs_r : 2 ≤ s r)
+    (hs_win : ∀ k < M, 2 ≤ s (r + 1 + k))
+    (hs_end : 2 ≤ s (r + 1 + M))
+    (hM1 : 1 ≤ M)
+    (hE_pos : 1 ≤ gaugeDeficit (fun t => s (r + 1 + t)) M) :
+    let P := fun k => oddReturnP (orbit b_0 (blockSteps s k))
+    let W := fun k => (5 * P k + 4) / 36
+    let s' := fun t => s (r + 1 + t)
+    let d := blockSteps s' M
+    let E_M := gaugeDeficit s' M
+    (1 ≤ W (r + 1) ∧
+      2 ^ d * W (r + 1 + M) = 3 ^ d * (W (r + 1) - 1) + (3 ^ d - E_M) ∧
+      (2 ^ d * W (r + 1 + M)) / 3 ^ d = W (r + 1) - 1 ∧
+      (2 ^ d * W (r + 1 + M)) % 3 ^ d = 3 ^ d - E_M) ∧
+      (8 * 3 ^ (d - 2) < 3 ^ d - E_M ∧
+        ((2 ^ d * W (r + 1 + M)) % 3 ^ d) / 3 ^ (d - 2) = 8) ∧
+      base3DigitSum (2 ^ d * W (r + 1 + M)) + base3DigitSum (E_M - 1) =
+        base3DigitSum (W (r + 1) - 1) + 2 * d := by
+  intro P W s' d E_M
+  have h82 := multi_block_gauge_deficit_master_identity_and_one_ninth_bound
+    hchain hs_r hs_win hs_end
+  have hW_id : 2 ^ d * W (r + 1 + M) + E_M = 3 ^ d * W (r + 1) := h82.2.1.1
+  have hE_lt_d2 : E_M < 3 ^ (d - 2) := (h82.2.2.2 hM1).1
+  have hE_lt_d : E_M < 3 ^ d := (h82.2.2.2 hM1).2
+  have hEM_pos : 1 ≤ E_M := hE_pos
+  have hW1_pos : 1 ≤ W (r + 1) := by
+    apply Nat.pos_of_ne_zero
+    intro hW0
+    rw [hW0, mul_zero] at hW_id
+    omega
+  have hdecomp :
+      2 ^ d * W (r + 1 + M) = 3 ^ d * (W (r + 1) - 1) + (3 ^ d - E_M) := by
+    obtain ⟨k, hk⟩ : ∃ k : ℕ, W (r + 1) = k + 1 := ⟨W (r + 1) - 1, by omega⟩
+    have hsub_W : W (r + 1) - 1 = k := by omega
+    have hmul : 3 ^ d * W (r + 1) = 3 ^ d * (W (r + 1) - 1) + 3 ^ d := by
+      rw [hsub_W, hk]
+      ring
+    omega
+  have hrem_lt : 3 ^ d - E_M < 3 ^ d := by omega
+  have h3d_pos : 0 < 3 ^ d := by omega
+  have hdiv : (2 ^ d * W (r + 1 + M)) / 3 ^ d = W (r + 1) - 1 := by
+    rw [hdecomp, Nat.mul_add_div h3d_pos, Nat.div_eq_of_lt hrem_lt, add_zero]
+  have hmod : (2 ^ d * W (r + 1 + M)) % 3 ^ d = 3 ^ d - E_M := by
+    rw [hdecomp, Nat.mul_add_mod, Nat.mod_eq_of_lt hrem_lt]
+  have hd_ge2 : 2 ≤ d := by
+    have hs0_win : 2 ≤ s' 0 := hs_win 0 hM1
+    obtain ⟨k, hk⟩ : ∃ k : ℕ, M = k + 1 := ⟨M - 1, by omega⟩
+    have hsh := blockSteps_add_shift s' 1 k
+    have hb1 : blockSteps s' 1 = s' 0 := by simp [blockSteps]
+    have h1k : 1 + k = M := by omega
+    rw [hb1, h1k] at hsh
+    omega
+  have hpow_d2 : 3 ^ d = 9 * 3 ^ (d - 2) := by
+    obtain ⟨m, hm⟩ : ∃ m : ℕ, d = m + 2 := ⟨d - 2, by omega⟩
+    have hsub : d - 2 = m := by omega
+    rw [hsub, hm, Nat.pow_add 3 m 2]
+    ring
+  have h8_lt : 8 * 3 ^ (d - 2) < 3 ^ d - E_M := by omega
+  have htop22 : ((2 ^ d * W (r + 1 + M)) % 3 ^ d) / 3 ^ (d - 2) = 8 := by
+    rw [hmod]
+    have hsplit8 :
+        3 ^ d - E_M = 3 ^ (d - 2) * 8 + (3 ^ (d - 2) - E_M) := by omega
+    have hrem_d2 : 3 ^ (d - 2) - E_M < 3 ^ (d - 2) := by omega
+    have hpos_d2 : 0 < 3 ^ (d - 2) := by omega
+    rw [hsplit8, Nat.mul_add_div hpos_d2, Nat.div_eq_of_lt hrem_d2, add_zero]
+  have hs3_split :
+      base3DigitSum (2 ^ d * W (r + 1 + M)) =
+        base3DigitSum (W (r + 1) - 1) + base3DigitSum (3 ^ d - E_M) := by
+    rw [hdecomp, base3DigitSum_three_pow_mul_add d (W (r + 1) - 1) hrem_lt]
+  have hcomp_eq : 3 ^ d - E_M = 3 ^ d - 1 - (E_M - 1) := by omega
+  have hEM1_lt : E_M - 1 < 3 ^ d := by omega
+  have h50 := (mahler_antihydra_base3_complement_digitsum_law d).1 (E_M - 1) hEM1_lt
+  rw [← hcomp_eq] at h50
+  have hs3_cons :
+      base3DigitSum (2 ^ d * W (r + 1 + M)) + base3DigitSum (E_M - 1) =
+        base3DigitSum (W (r + 1) - 1) + 2 * d := by omega
+  exact ⟨⟨hW1_pos, hdecomp, hdiv, hmod⟩, ⟨h8_lt, htop22⟩, hs3_cons⟩
+
+/-! ## 84. Theorem SB.84: Dual-Wall Monotone Squeeze & Grand 84-Theorem Synthesis -/
+
+/-- **Dual-Wall Monotone Squeeze & Grand 84-Theorem Synthesis
+(`dual_wall_monotone_squeeze_and_grand_84_synthesis`, Theorem SB.84)**:
+Simultaneously traps every interior window $[r+1, r+1+M]$ between:
+- the **strictly super-multiplicative Lower-Wall sequence** $P_k = 2^{s_k} u_k$
+  ($3^d P_{r+1} < 2^d P_{r+1+M}$), and
+- the **sub-multiplicative Upper-Wall Ceiling-Dual Gauge sequence** $W_k = (5 P_k + 4)/36$
+  ($2^d W_{r+1+M} \le 3^d W_{r+1}$),
+coupled by the topological gauge invariant $36 W_k = 5 P_k + 4$ and the Base-3
+complement conservation law (`SB.81–SB.83`). -/
+theorem dual_wall_monotone_squeeze_and_grand_84_synthesis
+    {b_0 r M : ℕ} {s u : ℕ → ℕ}
+    (hchain : ValidBlockChain b_0 s u (r + 1 + M + 1))
+    (hs_r : 2 ≤ s r)
+    (hs_win : ∀ k < M, 2 ≤ s (r + 1 + k))
+    (hs_end : 2 ≤ s (r + 1 + M))
+    (hM1 : 1 ≤ M) :
+    let P := fun k => oddReturnP (orbit b_0 (blockSteps s k))
+    let W := fun k => (5 * P k + 4) / 36
+    let s' := fun t => s (r + 1 + t)
+    let d := blockSteps s' M
+    let A_M := renewalNumerator s' M
+    let E_M := gaugeDeficit s' M
+    (2 ^ d * P (r + 1 + M) = 3 ^ d * P (r + 1) + A_M ∧
+      3 ^ d * P (r + 1) < 2 ^ d * P (r + 1 + M)) ∧
+      (2 ^ d * W (r + 1 + M) + E_M = 3 ^ d * W (r + 1) ∧
+        2 ^ d * W (r + 1 + M) ≤ 3 ^ d * W (r + 1) ∧
+        9 * E_M + 2 ^ d ≤ 3 ^ d ∧
+        E_M < 3 ^ (d - 2)) ∧
+      (1 ≤ E_M →
+        ((2 ^ d * W (r + 1 + M)) % 3 ^ d) / 3 ^ (d - 2) = 8 ∧
+          base3DigitSum (2 ^ d * W (r + 1 + M)) + base3DigitSum (E_M - 1) =
+            base3DigitSum (W (r + 1) - 1) + 2 * d) := by
+  intro P W s' d A_M E_M
+  have h10 := (late_step_cauchy_pinch_and_odd_quotient_gcd_dvd (N := r + 1) (M := M) hchain).1
+  change 2 ^ d * P (r + 1 + M) = 3 ^ d * P (r + 1) + A_M at h10
+  have hA_pos : 1 ≤ A_M := by
+    obtain ⟨m, hm⟩ : ∃ m : ℕ, M = m + 1 := ⟨M - 1, by omega⟩
+    have hpow_pos : 1 ≤ 2 ^ (blockSteps s' m + s' m) := Nat.one_le_pow _ 2 (by decide)
+    have hA_eq : A_M = 3 ^ (s' m) * renewalNumerator s' m + 2 ^ (blockSteps s' m + s' m) := by
+      change renewalNumerator s' M =
+        3 ^ (s' m) * renewalNumerator s' m + 2 ^ (blockSteps s' m + s' m)
+      rw [hm]
+      rfl
+    omega
+  have hP_lt : 3 ^ d * P (r + 1) < 2 ^ d * P (r + 1 + M) := by omega
+  have h82 := multi_block_gauge_deficit_master_identity_and_one_ninth_bound
+    hchain hs_r hs_win hs_end
+  refine ⟨⟨h10, hP_lt⟩,
+    ⟨h82.2.1.1, h82.2.1.2, h82.2.2.1, (h82.2.2.2 hM1).1⟩, ?_⟩
+  intro hE_pos
+  have h83 := gauge_complement_base3_conservation_and_top_22_trit_lock
+    hchain hs_r hs_win hs_end hM1 hE_pos
+  exact ⟨h83.2.1.2, h83.2.2⟩
+
 
 #check @archimedean_rung_ceiling_and_stepSum_bound
 #check @unit_quotient_even_rung_instant_death_and_odd_rung_mod64_identity
@@ -6214,6 +6727,10 @@ theorem grand_kempner_two_adic_expansion_80_synthesis :
 #check @two_horizon_kempner_tail_exact_valuation_and_one_fifth_bound
 #check @kempner_rational_target_obstruction_and_automaton_irrationality_bridge
 #check @grand_kempner_two_adic_expansion_80_synthesis
+#check @ceiling_dual_gauge_transform_and_rung_two_parity_detector
+#check @multi_block_gauge_deficit_master_identity_and_one_ninth_bound
+#check @gauge_complement_base3_conservation_and_top_22_trit_lock
+#check @dual_wall_monotone_squeeze_and_grand_84_synthesis
 
 #print axioms archimedean_rung_ceiling_and_stepSum_bound
 #print axioms unit_quotient_even_rung_instant_death_and_odd_rung_mod64_identity

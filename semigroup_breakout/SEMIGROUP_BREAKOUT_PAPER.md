@@ -710,7 +710,37 @@ Unifies `SB.77–SB.79` with Wave 12 (`SB.73–SB.76`), completing all **80 `sor
 
 ---
 
-## 20. Verification Instructions
+## 20. The $(5 P + 4)/36$ Ceiling-Dual Gauge Transformation & Dual-Wall Monotone Squeeze (Theorems `SB.81–SB.84`)
+
+In Sections 81–84 of [`SemigroupBreakoutTheorems.lean`](./SemigroupBreakoutTheorems.lean) (verified computationally across 1,129 configurations in [`sandbox_wave14_ceiling_dual_gauge_tower.py`](./sandbox_wave14_ceiling_dual_gauge_tower.py)), we introduced a new coordinate system outside the standard bottom-up renewal semigroup—the **Ceiling-Dual Gauge** $W_r := \frac{5 P_r + 4}{36}$, which measures distance **down** from the $4/5$ renewal ceiling rather than **up** from $0$:
+
+### 20.1 Theorem SB.81 (`ceiling_dual_gauge_transform_and_rung_two_parity_detector`)
+For every interior block $r + 1 \ge 1$ with $s_r, s_{r+1}, s_{r+2} \ge 2$, the return integer $P_{r+1} = 2^{s_{r+1}} u_{r+1} = 3^{s_r} u_r + 1$ satisfies $P_{r+1} \equiv 28 \pmod{36}$, so $36 \mid (5 P_{r+1} + 4)$ and $W_{r+1} = (5 P_{r+1} + 4)/36 \in \mathbb{N}$ is an exact positive integer satisfying:
+1. **Rung-2 Parity Detector:**
+   $$\boxed{9 W_{r+1} = 5 \cdot 2^{s_{r+1} - 2} u_{r+1} + 1, \qquad W_{r+1} \bmod 2 = 0 \iff s_{r+1} = 2, \qquad W_{r+1} \bmod 2 = 1 \iff s_{r+1} \ge 3!}$$
+2. **One-Step Sub-Multiplicative Gauge Law & Pure $(9/4)$ Step at $s_{r+1} = 2$:**
+   $$\boxed{2^{s_{r+1}} W_{r+2} + \big(3^{s_{r+1} - 2} - 2^{s_{r+1} - 2}\big) = 3^{s_{r+1}} W_{r+1}, \qquad\text{and}\qquad s_{r+1} = 2 \implies 4 W_{r+2} = 9 W_{r+1}!}$$
+   Every $s = 2$ step has **zero additive error** in the $W$-gauge and consumes exactly $2$ powers of $2$ from $v_2(W)$, so $v_2(W_{r+1})$ is the exact countdown clock for consecutive $s = 2$ steps!
+
+### 20.2 Theorem SB.82 (`multi_block_gauge_deficit_master_identity_and_one_ninth_bound`)
+Across any $M \ge 1$ blocks starting from $r + 1$ ($d = \sum_{k=0}^{M-1} s_{r+1+k}$), defining `gaugeDeficit s' M` ($E_M$) recursively:
+$$\boxed{5 A_M + 4 \cdot 2^d + 36 E_M = 4 \cdot 3^d, \qquad 2^d W_{r+1+M} + E_M = 3^d W_{r+1}, \qquad 9 E_M + 2^d \le 3^d \quad\big(E_M < 3^{d-2}\big)!}$$
+
+### 20.3 Theorem SB.83 (`gauge_complement_base3_conservation_and_top_22_trit_lock`)
+Whenever $E_M \ge 1$ (at least one block in the window has $s_{r+1+k} \ge 3$):
+1. **Exact Base-3 Quotient & Complement Remainder:**
+   $$\left\lfloor \frac{2^d W_{r+1+M}}{3^d} \right\rfloor = W_{r+1} - 1 \qquad\text{and}\qquad \big(2^d W_{r+1+M}\big) \bmod 3^d = 3^d - E_M.$$
+2. **Top Two Trits Locked to `22` in Base 3 (`8 = 2*3 + 2`):**
+   $$\boxed{8 \cdot 3^{d-2} < 3^d - E_M < 3^d \qquad\text{and}\qquad \left\lfloor \frac{(2^d W_{r+1+M}) \bmod 3^d}{3^{d-2}} \right\rfloor = 8!}$$
+3. **Exact Gauge-Complement Base-3 Conservation Law:**
+   $$\boxed{s_3\big(2^d W_{r+1+M}\big) + s_3(E_M - 1) = s_3(W_{r+1} - 1) + 2 d!}$$
+
+### 20.4 Theorem SB.84 (`dual_wall_monotone_squeeze_and_grand_84_synthesis`)
+Traps every interior window $[r+1, r+1+M]$ simultaneously between the **strictly super-multiplicative Lower-Wall sequence** $P_k$ ($3^d P_{r+1} < 2^d P_{r+1+M}$) and the **sub-multiplicative Upper-Wall Ceiling-Dual Gauge sequence** $W_k$ ($2^d W_{r+1+M} \le 3^d W_{r+1}$) coupled by $36 W_k = 5 P_k + 4$, completing all **84 `sorry`-free, warning-free theorems (`SB.1–SB.84`)**.
+
+---
+
+## 21. Verification Instructions
 
 To verify the cordoned-off Lean 4 proofs without modifying the root 226-file build:
 
@@ -732,4 +762,5 @@ python semigroup_breakout\sandbox_wave10_lte2_baker_and_finiteness.py
 python semigroup_breakout\sandbox_wave11_upgraded_baker_and_return_extinction.py
 python semigroup_breakout\sandbox_wave12_global_dominance_and_product_formula.py
 python semigroup_breakout\sandbox_wave13_kempner_two_adic_expansion.py
+python semigroup_breakout\sandbox_wave14_ceiling_dual_gauge_tower.py
 ```
