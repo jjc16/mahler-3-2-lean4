@@ -774,7 +774,43 @@ Unifies `SB.85–SB.87` with Wave 14 (`SB.81–SB.84`), completing all **88 `sor
 
 ---
 
-## 22. Verification Instructions
+## 22. Adaptive Cyclotomic Velocity Calculus, Shrinking Canyon Tube, & Master Conditional Closure (Theorems `SB.89–SB.92`)
+
+In Sections 89–92 of [`SemigroupBreakoutTheorems.lean`](./SemigroupBreakoutTheorems.lean) (verified computationally across 6,546 configurations in [`sandbox_wave16_velocity_calculus_and_master_closure.py`](./sandbox_wave16_velocity_calculus_and_master_closure.py)), we formalized the **Adaptive Cyclotomic Velocity Calculus** ($K_r := P_{r+1} - P_r = (3^{s_r} - 2^{s_r}) u_r + 1$), the **Exponentially Shrinking Nested Canyon Tube**, and the **Master Conditional Completeness Closure**:
+
+### 22.1 Theorem SB.89 (`adaptive_cyclotomic_velocity_factorization_and_eliminator`)
+Defining the Orbit Velocity $K_r := (3^{s_r} - 2^{s_r}) u_r + 1$:
+1. **Exact First-Difference Velocity Identity:**
+   $$P_r + K_r = P_{r+1}, \qquad P_r < P_{r+1}, \qquad P_{r+1} - P_r = K_r.$$
+2. **Adaptive Cyclotomic Gauge Factorization Through $K_r$ ($m = s_r$):**
+   $$\boxed{\mathcal{G}^{(s_r)}(P_r) = 2^{s_r} \cdot K_r \qquad\text{and}\qquad \mathcal{G}^{(s_r)}(P_{r+1}) = 3^{s_r} \cdot K_r!}$$
+3. **Equal-Rung Velocity Countdown Law:**
+   Whenever $s_{r+1} = s_r$, $2^{s_r} K_{r+1} = 3^{s_r} K_r$.
+
+### 22.2 Theorem SB.90 (`velocity_two_adic_valuation_lock_and_telescoped_odd_core_sum`)
+1. **Exact 2-Adic Valuation Lock at Every Rung Change ($s_{r+1} \ne s_r$):**
+   $$\boxed{\begin{aligned}
+   s_r < s_{r+1} &\implies K_r = 2^{s_r}\big(2^{s_{r+1}-s_r} u_{r+1} - u_r\big) \;\wedge\; K_r \bmod 2^{s_r+1} = 2^{s_r} \quad\big(v_2(K_r) = s_r\big), \\
+   s_{r+1} < s_r &\implies K_r = 2^{s_{r+1}}\big(u_{r+1} - 2^{s_r-s_{r+1}} u_r\big) \;\wedge\; K_r \bmod 2^{s_{r+1}+1} = 2^{s_{r+1}} \quad\big(v_2(K_r) = s_{r+1}\big)!
+   \end{aligned}}$$
+2. **Telescoped Velocity Sum Across $K$ Blocks:**
+   $$P_K = P_0 + \sum_{r=0}^{K-1} K_r \qquad\text{and}\qquad 2^{s_K} u_K = 2^{s_0} u_0 + \sum_{r=0}^{K-1} \Big(\big(3^{s_r} - 2^{s_r}\big) u_r + 1\Big).$$
+
+### 22.3 Theorem SB.91 (`nested_canyon_interval_tube_and_exponential_width_contraction`)
+Setting $L_{\text{num}}(k) := 5 \cdot 2^{T_k} P_k$ and $U_{\text{num}}(k) := 2^{T_k}(5 P_k + 4)$ across any window $[r, r+M]$ of step sum $d$ ($M \ge 1$, $s_{r+k} \ge 2$):
+$$\boxed{\begin{aligned}
+U_{\text{num}}(k) - L_{\text{num}}(k) &= 4 \cdot 2^{T_k} \quad\Big(\text{canyon width } U_k - L_k = 4 \cdot (2/3)^{T_k}\Big), \\
+3^d L_{\text{num}}(r) + 5 \cdot 2^{T_r} A_M &= L_{\text{num}}(r+M), \\
+U_{\text{num}}(r+M) + 36 \cdot 2^{T_r} E_M &= 3^d U_{\text{num}}(r), \\
+3^d L_{\text{num}}(r) < L_{\text{num}}(r+M) &< U_{\text{num}}(r+M) \le 3^d U_{\text{num}}(r)!
+\end{aligned}}$$
+
+### 22.4 Theorem SB.92 (`master_conditional_canyon_closure_and_92_theorem_synthesis`)
+Formalizes the exact conditional closure bridges for **Path A / Path C** (Carry-Mixing / Kempner Non-Alignment Obstruction: $(\forall P_0 < 2^{B_0},\, \forall u_K \text{ odd},\, 3^{T_K} P_0 + A_{0,K} \ne 2^{T_K+s_K} u_K) \implies \neg \text{ValidBlockChain } b_0\ s\ u\ (K+1)$) and **Path B** (Multi-Step Product-Formula Obstruction: $\neg(P_0 \mid A_{0,K} \prod_{r=0}^{K-1} u_r) \implies \neg \text{ValidBlockChain } b_0\ s\ u\ (K+1)$), completing all **92 `sorry`-free, warning-free theorems (`SB.1–SB.92`)**.
+
+---
+
+## 23. Verification Instructions
 
 To verify the cordoned-off Lean 4 proofs without modifying the root 226-file build:
 
@@ -798,4 +834,5 @@ python semigroup_breakout\sandbox_wave12_global_dominance_and_product_formula.py
 python semigroup_breakout\sandbox_wave13_kempner_two_adic_expansion.py
 python semigroup_breakout\sandbox_wave14_ceiling_dual_gauge_tower.py
 python semigroup_breakout\sandbox_wave15_superblock_and_multigauge.py
+python semigroup_breakout\sandbox_wave16_velocity_calculus_and_master_closure.py
 ```

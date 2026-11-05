@@ -7136,6 +7136,409 @@ theorem grand_superblock_and_multigauge_88_synthesis :
     have h87 := universal_cyclotomic_gauge_spectrum_and_two_three_eliminator hchain
     exact ⟨fun m hsr => (h87.1 m).1 hsr, h87.2.2.2⟩
 
+/-! ## 89. Theorem SB.89: Adaptive Cyclotomic Velocity Factorization & Consecutive-Block Eliminator -/
+
+/-- The Orbit Velocity at block $k$: $K_k := (3^{s_k} - 2^{s_k}) u_k + 1 = P_{k+1} - P_k$. -/
+def orbitVelocity (s u : ℕ → ℕ) (k : ℕ) : ℕ :=
+  (3 ^ (s k) - 2 ^ (s k)) * u k + 1
+
+/-- **Adaptive Cyclotomic Velocity Factorization & Consecutive-Block Eliminator
+(`adaptive_cyclotomic_velocity_factorization_and_eliminator`, Theorem SB.89)**:
+Suppose `ValidBlockChain b_0 s u (r + 3)` holds with `P k = oddReturnP (orbit b_0 (blockSteps s k))`:
+1. **Exact First-Difference Velocity Identity**:
+   `P r + orbitVelocity s u r = P (r + 1)`, `P r < P (r + 1)`, and
+   `P (r + 1) - P r = orbitVelocity s u r`,
+2. **Adaptive Cyclotomic Gauge Factorization Through $K_r$ (`m = s r`)**:
+   `cyclotomicGauge (s r) (P r) = 2 ^ (s r) * orbitVelocity s u r`,
+   `cyclotomicGauge (s r) (P (r + 1)) = 3 ^ (s r) * orbitVelocity s u r`, and
+   `cyclotomicGauge (s (r + 1)) (P (r + 1)) = 2 ^ (s (r + 1)) * orbitVelocity s u (r + 1)`, and
+3. **Equal-Rung Velocity Countdown Law (`s (r + 1) = s r`)**:
+   Whenever `s (r + 1) = s r`,
+   `2 ^ (s r) * orbitVelocity s u (r + 1) = 3 ^ (s r) * orbitVelocity s u r`! -/
+theorem adaptive_cyclotomic_velocity_factorization_and_eliminator
+    {b_0 r : ℕ} {s u : ℕ → ℕ}
+    (hchain : ValidBlockChain b_0 s u (r + 3)) :
+    let P := fun k => oddReturnP (orbit b_0 (blockSteps s k))
+    (P r + orbitVelocity s u r = P (r + 1) ∧
+      P r < P (r + 1) ∧
+      P (r + 1) - P r = orbitVelocity s u r) ∧
+      (cyclotomicGauge (s r) (P r) = 2 ^ (s r) * orbitVelocity s u r ∧
+        cyclotomicGauge (s r) (P (r + 1)) = 3 ^ (s r) * orbitVelocity s u r ∧
+        cyclotomicGauge (s (r + 1)) (P (r + 1)) =
+          2 ^ (s (r + 1)) * orbitVelocity s u (r + 1)) ∧
+      (s (r + 1) = s r →
+        2 ^ (s r) * orbitVelocity s u (r + 1) = 3 ^ (s r) * orbitVelocity s u r) := by
+  intro P
+  have hch_r2 : ValidBlockChain b_0 s u (r + 2) := fun k hk => hchain k (by omega)
+  have hstep1 : 2 ^ (s (r + 1)) * u (r + 1) = 3 ^ (s r) * u r + 1 :=
+    (one_step_backward_quotient_recovery_and_mod_three_pow_one hch_r2).1
+  have hPr : P r = 2 ^ (s r) * u r := (hchain r (by omega)).2.2
+  have hPr1 : P (r + 1) = 2 ^ (s (r + 1)) * u (r + 1) := (hchain (r + 1) (by omega)).2.2
+  have hle_pow : 2 ^ (s r) ≤ 3 ^ (s r) := Nat.pow_le_pow_left (by decide) (s r)
+  have hP_add : P r + orbitVelocity s u r = P (r + 1) := by
+    change P r + ((3 ^ (s r) - 2 ^ (s r)) * u r + 1) = P (r + 1)
+    rw [hPr, hPr1, hstep1]
+    calc
+      2 ^ (s r) * u r + ((3 ^ (s r) - 2 ^ (s r)) * u r + 1)
+          = ((3 ^ (s r) - 2 ^ (s r)) + 2 ^ (s r)) * u r + 1 := by ring
+      _ = 3 ^ (s r) * u r + 1 := by rw [Nat.sub_add_cancel hle_pow]
+  have hK_pos : 1 ≤ orbitVelocity s u r := by
+    unfold orbitVelocity
+    omega
+  have hP_lt : P r < P (r + 1) := by omega
+  have hP_sub : P (r + 1) - P r = orbitVelocity s u r := by
+    rw [← hP_add, Nat.add_sub_cancel_left]
+  have hG_r : cyclotomicGauge (s r) (P r) = 2 ^ (s r) * orbitVelocity s u r := by
+    change (3 ^ (s r) - 2 ^ (s r)) * P r + 2 ^ (s r) =
+      2 ^ (s r) * ((3 ^ (s r) - 2 ^ (s r)) * u r + 1)
+    rw [hPr]
+    ring
+  have hG_r1_next :
+      cyclotomicGauge (s (r + 1)) (P (r + 1)) =
+        2 ^ (s (r + 1)) * orbitVelocity s u (r + 1) := by
+    change (3 ^ (s (r + 1)) - 2 ^ (s (r + 1))) * P (r + 1) + 2 ^ (s (r + 1)) =
+      2 ^ (s (r + 1)) * ((3 ^ (s (r + 1)) - 2 ^ (s (r + 1))) * u (r + 1) + 1)
+    rw [hPr1]
+    ring
+  have h87_eq := ((universal_cyclotomic_gauge_spectrum_and_two_three_eliminator hch_r2).1 (s r)).1 rfl
+  change 2 ^ (s r) * cyclotomicGauge (s r) (P (r + 1)) =
+    3 ^ (s r) * cyclotomicGauge (s r) (P r) at h87_eq
+  have hG_r1 : cyclotomicGauge (s r) (P (r + 1)) = 3 ^ (s r) * orbitVelocity s u r := by
+    have hmul :
+        2 ^ (s r) * cyclotomicGauge (s r) (P (r + 1)) =
+          2 ^ (s r) * (3 ^ (s r) * orbitVelocity s u r) := by
+      calc
+        2 ^ (s r) * cyclotomicGauge (s r) (P (r + 1))
+            = 3 ^ (s r) * cyclotomicGauge (s r) (P r) := h87_eq
+        _ = 3 ^ (s r) * (2 ^ (s r) * orbitVelocity s u r) := by rw [hG_r]
+        _ = 2 ^ (s r) * (3 ^ (s r) * orbitVelocity s u r) := by ring
+    exact Nat.eq_of_mul_eq_mul_left (Nat.pow_pos (by decide)) hmul
+  have heq_rung :
+      s (r + 1) = s r →
+        2 ^ (s r) * orbitVelocity s u (r + 1) = 3 ^ (s r) * orbitVelocity s u r := by
+    intro hsr_eq
+    have hg := hG_r1_next
+    rw [hsr_eq, hG_r1] at hg
+    exact hg.symm
+  exact ⟨⟨hP_add, hP_lt, hP_sub⟩, ⟨hG_r, hG_r1, hG_r1_next⟩, heq_rung⟩
+
+/-! ## 90. Theorem SB.90: Velocity 2-Adic Valuation Lock $v_2(K_r) = \min(s_r, s_{r+1})$ & Telescoped Sum -/
+
+/-- Prefix sum of Orbit Velocities: $\sum_{k=0}^{K-1} K_k$. -/
+def velocitySum (s u : ℕ → ℕ) : ℕ → ℕ
+  | 0 => 0
+  | k + 1 => velocitySum s u k + orbitVelocity s u k
+
+/-- **Velocity 2-Adic Valuation Lock $v_2(K_r) = \min(s_r, s_{r+1})$ & Telescoped Sum
+(`velocity_two_adic_valuation_lock_and_telescoped_odd_core_sum`, Theorem SB.90)**:
+1. **Exact 2-Adic Valuation Lock at Every Rung Change ($s_{r+1} \ne s_r$)**:
+   Suppose `ValidBlockChain b_0 s u (r + 2)` holds:
+   - Whenever `s r < s (r + 1)`,
+     `orbitVelocity s u r = 2 ^ (s r) * (2 ^ (s (r + 1) - s r) * u (r + 1) - u r)`,
+     `(2 ^ (s (r + 1) - s r) * u (r + 1) - u r) % 2 = 1`, and
+     `orbitVelocity s u r % 2 ^ (s r + 1) = 2 ^ (s r)` (exact valuation $v_2(K_r) = s_r$!),
+   - Whenever `s (r + 1) < s r`,
+     `orbitVelocity s u r = 2 ^ (s (r + 1)) * (u (r + 1) - 2 ^ (s r - s (r + 1)) * u r)`,
+     `(u (r + 1) - 2 ^ (s r - s (r + 1)) * u r) % 2 = 1`, and
+     `orbitVelocity s u r % 2 ^ (s (r + 1) + 1) = 2 ^ (s (r + 1))` (exact valuation $v_2(K_r) = s_{r+1}$!).
+2. **Telescoped Velocity Conservation Across $K$ Blocks**:
+   For any `ValidBlockChain b_0 s u (K + 1)` with `P k = oddReturnP (orbit b_0 (blockSteps s k))`,
+   `P K = P 0 + velocitySum s u K` and `2 ^ (s K) * u K = 2 ^ (s 0) * u 0 + velocitySum s u K`! -/
+theorem velocity_two_adic_valuation_lock_and_telescoped_odd_core_sum :
+    (∀ {b_0 r : ℕ} {s u : ℕ → ℕ},
+      ValidBlockChain b_0 s u (r + 2) →
+      (s r < s (r + 1) →
+        orbitVelocity s u r =
+            2 ^ (s r) * (2 ^ (s (r + 1) - s r) * u (r + 1) - u r) ∧
+          (2 ^ (s (r + 1) - s r) * u (r + 1) - u r) % 2 = 1 ∧
+          orbitVelocity s u r % 2 ^ (s r + 1) = 2 ^ (s r)) ∧
+      (s (r + 1) < s r →
+        orbitVelocity s u r =
+            2 ^ (s (r + 1)) * (u (r + 1) - 2 ^ (s r - s (r + 1)) * u r) ∧
+          (u (r + 1) - 2 ^ (s r - s (r + 1)) * u r) % 2 = 1 ∧
+          orbitVelocity s u r % 2 ^ (s (r + 1) + 1) = 2 ^ (s (r + 1)))) ∧
+    (∀ {b_0 K : ℕ} {s u : ℕ → ℕ},
+      ValidBlockChain b_0 s u (K + 1) →
+      let P := fun k => oddReturnP (orbit b_0 (blockSteps s k))
+      P K = P 0 + velocitySum s u K ∧
+        2 ^ (s K) * u K = 2 ^ (s 0) * u 0 + velocitySum s u K) := by
+  have hstep_add :
+      ∀ {b_0 r : ℕ} {s u : ℕ → ℕ},
+        ValidBlockChain b_0 s u (r + 2) →
+        2 ^ (s r) * u r + orbitVelocity s u r = 2 ^ (s (r + 1)) * u (r + 1) := by
+    intro b_0 r s u hchain
+    have hstep1 : 2 ^ (s (r + 1)) * u (r + 1) = 3 ^ (s r) * u r + 1 :=
+      (one_step_backward_quotient_recovery_and_mod_three_pow_one hchain).1
+    have hle_pow : 2 ^ (s r) ≤ 3 ^ (s r) := Nat.pow_le_pow_left (by decide) (s r)
+    change 2 ^ (s r) * u r + ((3 ^ (s r) - 2 ^ (s r)) * u r + 1) =
+      2 ^ (s (r + 1)) * u (r + 1)
+    rw [hstep1]
+    calc
+      2 ^ (s r) * u r + ((3 ^ (s r) - 2 ^ (s r)) * u r + 1)
+          = ((3 ^ (s r) - 2 ^ (s r)) + 2 ^ (s r)) * u r + 1 := by ring
+      _ = 3 ^ (s r) * u r + 1 := by rw [Nat.sub_add_cancel hle_pow]
+  refine ⟨?_, ?_⟩
+  · intro b_0 r s u hchain
+    have hadd := hstep_add hchain
+    have hur_odd : u r % 2 = 1 := (hchain r (by omega)).2.1
+    have hu1_odd : u (r + 1) % 2 = 1 := (hchain (r + 1) (by omega)).2.1
+    refine ⟨?_, ?_⟩
+    · intro hlt
+      obtain ⟨k, hk⟩ : ∃ k : ℕ, s (r + 1) = s r + (k + 1) := ⟨s (r + 1) - s r - 1, by omega⟩
+      have hsub : s (r + 1) - s r = k + 1 := by omega
+      have hpow : 2 ^ (s (r + 1)) * u (r + 1) = 2 ^ (s r) * (2 ^ (k + 1) * u (r + 1)) := by
+        rw [hk, Nat.pow_add 2 (s r) (k + 1)]
+        ring
+      have hK_pos : 1 ≤ orbitVelocity s u r := by unfold orbitVelocity; omega
+      have hlt_prod : 2 ^ (s r) * u r < 2 ^ (s r) * (2 ^ (k + 1) * u (r + 1)) := by omega
+      have hlt_u : u r < 2 ^ (k + 1) * u (r + 1) := Nat.lt_of_mul_lt_mul_left hlt_prod
+      have hfac :
+          orbitVelocity s u r = 2 ^ (s r) * (2 ^ (s (r + 1) - s r) * u (r + 1) - u r) := by
+        rw [hsub]
+        have hdist :
+            2 ^ (s r) * u r + 2 ^ (s r) * (2 ^ (k + 1) * u (r + 1) - u r) =
+              2 ^ (s r) * (2 ^ (k + 1) * u (r + 1)) := by
+          calc
+            2 ^ (s r) * u r + 2 ^ (s r) * (2 ^ (k + 1) * u (r + 1) - u r)
+                = 2 ^ (s r) * ((2 ^ (k + 1) * u (r + 1) - u r) + u r) := by ring
+            _ = 2 ^ (s r) * (2 ^ (k + 1) * u (r + 1)) := by
+                  rw [Nat.sub_add_cancel (Nat.le_of_lt hlt_u)]
+        omega
+      have hodd_q : (2 ^ (s (r + 1) - s r) * u (r + 1) - u r) % 2 = 1 := by
+        rw [hsub]
+        have hev : 2 ^ (k + 1) * u (r + 1) = 2 * (2 ^ k * u (r + 1)) := by
+          rw [Nat.pow_succ]
+          ring
+        rw [hev]
+        omega
+      have hmod_val : orbitVelocity s u r % 2 ^ (s r + 1) = 2 ^ (s r) := by
+        set Q := 2 ^ (s (r + 1) - s r) * u (r + 1) - u r
+        obtain ⟨m, hm⟩ : ∃ m : ℕ, Q = 2 * m + 1 := ⟨Q / 2, by omega⟩
+        have hexp : orbitVelocity s u r = 2 ^ (s r + 1) * m + 2 ^ (s r) := by
+          rw [hfac, hm, Nat.pow_succ]
+          ring
+        have hlt_pow : 2 ^ (s r) < 2 ^ (s r + 1) := by
+          rw [Nat.pow_succ]
+          have hp : 1 ≤ 2 ^ (s r) := Nat.one_le_pow _ 2 (by decide)
+          omega
+        rw [hexp, Nat.mul_add_mod, Nat.mod_eq_of_lt hlt_pow]
+      exact ⟨hfac, hodd_q, hmod_val⟩
+    · intro hlt
+      obtain ⟨k, hk⟩ : ∃ k : ℕ, s r = s (r + 1) + (k + 1) := ⟨s r - s (r + 1) - 1, by omega⟩
+      have hsub : s r - s (r + 1) = k + 1 := by omega
+      have hpow : 2 ^ (s r) * u r = 2 ^ (s (r + 1)) * (2 ^ (k + 1) * u r) := by
+        rw [hk, Nat.pow_add 2 (s (r + 1)) (k + 1)]
+        ring
+      have hK_pos : 1 ≤ orbitVelocity s u r := by unfold orbitVelocity; omega
+      have hlt_prod : 2 ^ (s (r + 1)) * (2 ^ (k + 1) * u r) < 2 ^ (s (r + 1)) * u (r + 1) := by
+        omega
+      have hlt_u : 2 ^ (k + 1) * u r < u (r + 1) := Nat.lt_of_mul_lt_mul_left hlt_prod
+      have hfac :
+          orbitVelocity s u r = 2 ^ (s (r + 1)) * (u (r + 1) - 2 ^ (s r - s (r + 1)) * u r) := by
+        rw [hsub]
+        have hdist :
+            2 ^ (s (r + 1)) * (2 ^ (k + 1) * u r) +
+                2 ^ (s (r + 1)) * (u (r + 1) - 2 ^ (k + 1) * u r) =
+              2 ^ (s (r + 1)) * u (r + 1) := by
+          calc
+            2 ^ (s (r + 1)) * (2 ^ (k + 1) * u r) +
+                2 ^ (s (r + 1)) * (u (r + 1) - 2 ^ (k + 1) * u r)
+                = 2 ^ (s (r + 1)) * ((u (r + 1) - 2 ^ (k + 1) * u r) + 2 ^ (k + 1) * u r) := by
+                  ring
+            _ = 2 ^ (s (r + 1)) * u (r + 1) := by
+                  rw [Nat.sub_add_cancel (Nat.le_of_lt hlt_u)]
+        omega
+      have hodd_q : (u (r + 1) - 2 ^ (s r - s (r + 1)) * u r) % 2 = 1 := by
+        rw [hsub]
+        have hev : 2 ^ (k + 1) * u r = 2 * (2 ^ k * u r) := by
+          rw [Nat.pow_succ]
+          ring
+        rw [hev]
+        omega
+      have hmod_val : orbitVelocity s u r % 2 ^ (s (r + 1) + 1) = 2 ^ (s (r + 1)) := by
+        set Q := u (r + 1) - 2 ^ (s r - s (r + 1)) * u r
+        obtain ⟨m, hm⟩ : ∃ m : ℕ, Q = 2 * m + 1 := ⟨Q / 2, by omega⟩
+        have hexp : orbitVelocity s u r = 2 ^ (s (r + 1) + 1) * m + 2 ^ (s (r + 1)) := by
+          rw [hfac, hm, Nat.pow_succ]
+          ring
+        have hlt_pow : 2 ^ (s (r + 1)) < 2 ^ (s (r + 1) + 1) := by
+          rw [Nat.pow_succ]
+          have hp : 1 ≤ 2 ^ (s (r + 1)) := Nat.one_le_pow _ 2 (by decide)
+          omega
+        rw [hexp, Nat.mul_add_mod, Nat.mod_eq_of_lt hlt_pow]
+      exact ⟨hfac, hodd_q, hmod_val⟩
+  · intro b_0 K s u hchain P
+    have htel : P K = P 0 + velocitySum s u K := by
+      induction K with
+      | zero =>
+          simp [velocitySum]
+      | succ K ih =>
+          have hch_K : ValidBlockChain b_0 s u (K + 1) := fun k hk => hchain k (by omega)
+          have ihK := ih hch_K
+          have hch_step : ValidBlockChain b_0 s u (K + 2) := fun k hk => hchain k (by omega)
+          have hPK : P K = 2 ^ (s K) * u K := (hchain K (by omega)).2.2
+          have hPK1 : P (K + 1) = 2 ^ (s (K + 1)) * u (K + 1) := (hchain (K + 1) (by omega)).2.2
+          have hadd := hstep_add hch_step
+          rw [← hPK, ← hPK1] at hadd
+          change P (K + 1) = P 0 + (velocitySum s u K + orbitVelocity s u K)
+          omega
+    have hP0 : P 0 = 2 ^ (s 0) * u 0 := (hchain 0 (by omega)).2.2
+    have hPK : P K = 2 ^ (s K) * u K := (hchain K (by omega)).2.2
+    refine ⟨htel, ?_⟩
+    rw [← hP0, ← hPK]
+    exact htel
+
+/-! ## 91. Theorem SB.91: Nested Canyon Interval Tube & Exponential Width Contraction -/
+
+/-- **Nested Canyon Interval Tube & Exponential Width Contraction
+(`nested_canyon_interval_tube_and_exponential_width_contraction`, Theorem SB.91)**:
+Suppose `ValidBlockChain b_0 s u (r + M + 1)` holds with `∀ k < M, 2 ≤ s (r + k)` and `1 ≤ M`.
+Setting `P k = oddReturnP (orbit b_0 (blockSteps s k))`, `T k = blockSteps s k`,
+`s' t = s (r + t)`, `d = blockSteps s' M`, `A_M = renewalNumerator s' M`,
+`E_M = gaugeDeficit s' M`, `L_num k = 5 * 2 ^ (T k) * P k`, and
+`U_num k = 2 ^ (T k) * (5 * P k + 4)`:
+1. **Exact Canyon Width Formula (`∀ k`)**:
+   `U_num k - L_num k = 4 * 2 ^ (T k)` (so divided by $3^{T_k}$, the canyon width is
+   **identically $4 \cdot (2/3)^{T_k}$**!),
+2. **Strict Lower-Wall Ascent**:
+   `3 ^ d * L_num r + 5 * 2 ^ (T r) * A_M = L_num (r + M)` and
+   `3 ^ d * L_num r < L_num (r + M)`,
+3. **Monotone Upper-Wall Descent**:
+   `U_num (r + M) + 36 * 2 ^ (T r) * E_M = 3 ^ d * U_num r` and
+   `U_num (r + M) ≤ 3 ^ d * U_num r`, and
+4. **Nested Canyon Interval Enclosure (`[L_{r+M}, U_{r+M}] ⊂ [3^d L_r, 3^d U_r]`)**:
+   `3 ^ d * L_num r < L_num (r + M) ∧ L_num (r + M) < U_num (r + M) ∧ U_num (r + M) ≤ 3 ^ d * U_num r`! -/
+theorem nested_canyon_interval_tube_and_exponential_width_contraction
+    {b_0 r M : ℕ} {s u : ℕ → ℕ}
+    (hchain : ValidBlockChain b_0 s u (r + M + 1))
+    (hs_win : ∀ k < M, 2 ≤ s (r + k))
+    (hM1 : 1 ≤ M) :
+    let P := fun k => oddReturnP (orbit b_0 (blockSteps s k))
+    let T := fun k => blockSteps s k
+    let s' := fun t => s (r + t)
+    let d := blockSteps s' M
+    let A_M := renewalNumerator s' M
+    let E_M := gaugeDeficit s' M
+    let L_num := fun k => 5 * 2 ^ (T k) * P k
+    let U_num := fun k => 2 ^ (T k) * (5 * P k + 4)
+    (∀ k, U_num k - L_num k = 4 * 2 ^ (T k)) ∧
+      (3 ^ d * L_num r + 5 * 2 ^ (T r) * A_M = L_num (r + M) ∧
+        3 ^ d * L_num r < L_num (r + M)) ∧
+      (U_num (r + M) + 36 * 2 ^ (T r) * E_M = 3 ^ d * U_num r ∧
+        U_num (r + M) ≤ 3 ^ d * U_num r) ∧
+      (3 ^ d * L_num r < L_num (r + M) ∧
+        L_num (r + M) < U_num (r + M) ∧
+        U_num (r + M) ≤ 3 ^ d * U_num r) := by
+  intro P T s' d A_M E_M L_num U_num
+  have hwidth : ∀ k, U_num k - L_num k = 4 * 2 ^ (T k) := by
+    intro k
+    have hexp : U_num k = L_num k + 4 * 2 ^ (T k) := by
+      change 2 ^ (T k) * (5 * P k + 4) = 5 * 2 ^ (T k) * P k + 4 * 2 ^ (T k)
+      ring
+    rw [hexp, Nat.add_sub_cancel_left]
+  have h10 := (late_step_cauchy_pinch_and_odd_quotient_gcd_dvd (N := r) (M := M) hchain).1
+  change 2 ^ d * P (r + M) = 3 ^ d * P r + A_M at h10
+  have hT_add : T (r + M) = T r + d := blockSteps_add_shift s r M
+  have hL_eq : 3 ^ d * L_num r + 5 * 2 ^ (T r) * A_M = L_num (r + M) := by
+    change 3 ^ d * (5 * 2 ^ (T r) * P r) + 5 * 2 ^ (T r) * A_M =
+      5 * 2 ^ (T (r + M)) * P (r + M)
+    rw [hT_add, Nat.pow_add 2 (T r) d]
+    calc
+      3 ^ d * (5 * 2 ^ (T r) * P r) + 5 * 2 ^ (T r) * A_M
+          = 5 * 2 ^ (T r) * (3 ^ d * P r + A_M) := by ring
+      _ = 5 * 2 ^ (T r) * (2 ^ d * P (r + M)) := by rw [← h10]
+      _ = 5 * (2 ^ (T r) * 2 ^ d) * P (r + M) := by ring
+  have hA_pos : 1 ≤ A_M := by
+    obtain ⟨m, hm⟩ : ∃ m : ℕ, M = m + 1 := ⟨M - 1, by omega⟩
+    have hpow_pos : 1 ≤ 2 ^ (blockSteps s' m + s' m) := Nat.one_le_pow _ 2 (by decide)
+    have hA_eq : A_M = 3 ^ (s' m) * renewalNumerator s' m + 2 ^ (blockSteps s' m + s' m) := by
+      change renewalNumerator s' M =
+        3 ^ (s' m) * renewalNumerator s' m + 2 ^ (blockSteps s' m + s' m)
+      rw [hm]
+      rfl
+    omega
+  have h5A_pos : 0 < 5 * 2 ^ (T r) * A_M :=
+    Nat.mul_pos (Nat.mul_pos (by decide) (Nat.pow_pos (by decide))) hA_pos
+  have hL_lt : 3 ^ d * L_num r < L_num (r + M) := by
+    rw [← hL_eq]
+    exact Nat.lt_add_of_pos_right h5A_pos
+  have hcons : 5 * A_M + 4 * 2 ^ d + 36 * E_M = 4 * 3 ^ d :=
+    five_mul_renewalNumerator_add_thirty_six_mul_gaugeDeficit_eq s' M hs_win
+  have hU_eq : U_num (r + M) + 36 * 2 ^ (T r) * E_M = 3 ^ d * U_num r := by
+    change 2 ^ (T (r + M)) * (5 * P (r + M) + 4) + 36 * 2 ^ (T r) * E_M =
+      3 ^ d * (2 ^ (T r) * (5 * P r + 4))
+    rw [hT_add, Nat.pow_add 2 (T r) d]
+    calc
+      (2 ^ (T r) * 2 ^ d) * (5 * P (r + M) + 4) + 36 * 2 ^ (T r) * E_M
+          = 2 ^ (T r) * (5 * (2 ^ d * P (r + M)) + 4 * 2 ^ d + 36 * E_M) := by ring
+      _ = 2 ^ (T r) * (5 * (3 ^ d * P r + A_M) + 4 * 2 ^ d + 36 * E_M) := by rw [h10]
+      _ = 2 ^ (T r) * (5 * 3 ^ d * P r + (5 * A_M + 4 * 2 ^ d + 36 * E_M)) := by ring
+      _ = 2 ^ (T r) * (5 * 3 ^ d * P r + 4 * 3 ^ d) := by rw [hcons]
+      _ = 3 ^ d * (2 ^ (T r) * (5 * P r + 4)) := by ring
+  have hU_le : U_num (r + M) ≤ 3 ^ d * U_num r := by omega
+  have hLU_lt : L_num (r + M) < U_num (r + M) := by
+    have hexp : U_num (r + M) = L_num (r + M) + 4 * 2 ^ (T (r + M)) := by
+      change 2 ^ (T (r + M)) * (5 * P (r + M) + 4) =
+        5 * 2 ^ (T (r + M)) * P (r + M) + 4 * 2 ^ (T (r + M))
+      ring
+    have hp : 1 ≤ 2 ^ (T (r + M)) := Nat.one_le_pow _ 2 (by decide)
+    omega
+  exact ⟨hwidth, ⟨hL_eq, hL_lt⟩, ⟨hU_eq, hU_le⟩, ⟨hL_lt, hLU_lt, hU_le⟩⟩
+
+/-! ## 92. Theorem SB.92: Master Conditional Canyon Closure & Grand 92-Theorem Synthesis -/
+
+/-- **Master Conditional Canyon Closure & Grand 92-Theorem Synthesis
+(`master_conditional_canyon_closure_and_92_theorem_synthesis`, Theorem SB.92)**:
+Unifies the three global completion paths with the Adaptive Cyclotomic Velocity
+Calculus (`SB.89–SB.91`):
+1. **Path A / Path C Closure (Carry-Mixing / Kempner Sparsity Obstruction)**:
+   If at horizon $K$ (`∀ k < K, 2 ≤ s k`), no integer `P_0 < 2 ^ B_0` and odd `u_K`
+   satisfy `3 ^ (blockSteps s K) * P_0 + renewalNumerator s K = 2 ^ (blockSteps s K + s K) * u_K`,
+   then **no seed `b_0` with `oddReturnP b_0 < 2 ^ B_0` can sustain `ValidBlockChain b_0 s u (K + 1)`**!
+2. **Path B Closure (Multi-Step Product-Formula Obstruction)**:
+   If at horizon $K$ (`∀ k < K, 2 ≤ s k`), `¬ (oddReturnP b_0 ∣ renewalNumerator s K * oddCoreProd u K)`,
+   then **`¬ ValidBlockChain b_0 s u (K + 1)`**!
+3. **Grand Synthesis of Wave 16 (`SB.89–SB.91`)**! -/
+theorem master_conditional_canyon_closure_and_92_theorem_synthesis :
+    (∀ {b_0 K B_0 : ℕ} {s u : ℕ → ℕ},
+      (∀ k < K, 2 ≤ s k) →
+      oddReturnP (orbit b_0 (blockSteps s 0)) < 2 ^ B_0 →
+      (∀ P_0 < 2 ^ B_0, ∀ u_K : ℕ, u_K % 2 = 1 →
+        3 ^ (blockSteps s K) * P_0 + renewalNumerator s K ≠
+          2 ^ (blockSteps s K + s K) * u_K) →
+      ¬ ValidBlockChain b_0 s u (K + 1)) ∧
+    (∀ {b_0 K : ℕ} {s u : ℕ → ℕ},
+      (∀ k < K, 2 ≤ s k) →
+      ¬ (oddReturnP (orbit b_0 (blockSteps s 0)) ∣
+          renewalNumerator s K * oddCoreProd u K) →
+      ¬ ValidBlockChain b_0 s u (K + 1)) ∧
+    (∀ {b_0 r M : ℕ} {s u : ℕ → ℕ},
+      ValidBlockChain b_0 s u (r + M + 1) →
+      (∀ k < M, 2 ≤ s (r + k)) →
+      1 ≤ M →
+      let P := fun k => oddReturnP (orbit b_0 (blockSteps s k))
+      let T := fun k => blockSteps s k
+      let s' := fun t => s (r + t)
+      let d := blockSteps s' M
+      let L_num := fun k => 5 * 2 ^ (T k) * P k
+      let U_num := fun k => 2 ^ (T k) * (5 * P k + 4)
+      P (r + M) = P 0 + velocitySum s u (r + M) ∧
+        3 ^ d * L_num r < L_num (r + M) ∧
+        L_num (r + M) < U_num (r + M) ∧
+        U_num (r + M) ≤ 3 ^ d * U_num r) := by
+  refine ⟨?_, ?_, ?_⟩
+  · intro b_0 K B_0 s u hs2 hP0_bits hno_align hchain
+    have h28 := bridge_a_dual_universe_series_lowest_terms_and_uniqueness hchain hs2
+    have huK_odd : u K % 2 = 1 := (hchain K (by omega)).2.1
+    exact hno_align (oddReturnP (orbit b_0 (blockSteps s 0))) hP0_bits (u K) huK_odd h28.1.symm
+  · intro b_0 K s u hs2 hnot_dvd hchain
+    have h74 := global_multiplicative_to_additive_product_formula_bridge hchain hs2
+    exact hnot_dvd h74.2.2
+  · intro b_0 r M s u hchain hs_win hM1 P T s' d L_num U_num
+    have h90 := (velocity_two_adic_valuation_lock_and_telescoped_odd_core_sum.2 hchain).1
+    have h91 := (nested_canyon_interval_tube_and_exponential_width_contraction hchain hs_win hM1).2.2.2
+    exact ⟨h90, h91⟩
+
 
 #check @archimedean_rung_ceiling_and_stepSum_bound
 #check @unit_quotient_even_rung_instant_death_and_odd_rung_mod64_identity
@@ -7225,6 +7628,10 @@ theorem grand_superblock_and_multigauge_88_synthesis :
 #check @mod_eight_odd_gauge_future_rung_predictor_and_seven_extinction
 #check @universal_cyclotomic_gauge_spectrum_and_two_three_eliminator
 #check @grand_superblock_and_multigauge_88_synthesis
+#check @adaptive_cyclotomic_velocity_factorization_and_eliminator
+#check @velocity_two_adic_valuation_lock_and_telescoped_odd_core_sum
+#check @nested_canyon_interval_tube_and_exponential_width_contraction
+#check @master_conditional_canyon_closure_and_92_theorem_synthesis
 
 #print axioms archimedean_rung_ceiling_and_stepSum_bound
 #print axioms unit_quotient_even_rung_instant_death_and_odd_rung_mod64_identity
