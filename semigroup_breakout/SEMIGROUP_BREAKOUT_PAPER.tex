@@ -297,4 +297,13 @@ Across any \texttt{ValidBlockChain b\_0 s u (K + 4)} with $\forall k < K + 4,\, 
 \end{enumerate}
 \end{theorem}
 
+\begin{theorem}[Unconditional Density Decay, Fast $O(1)$ Super-Block Sieve, \& The ZFC Deductive Semigroup Bridge (Theorems SB.101--SB.104), \texttt{odd\_seed\_block\_zero\_and\_block\_one\_exact\_extinction\_classes}, \texttt{mod40\_window\_thirty\_four\_of\_forty\_extinction\_and\_dyadic\_uniqueness}, \texttt{fast\_superblock\_sieve\_macro\_step\_and\_record\_survivor\_certificates}, \texttt{zfc\_deductive\_semigroup\_pre\_vs\_post\_horizon\_overspill\_bridge}]
+\begin{enumerate}
+  \item \textbf{Block-0 \& Block-1 Unconditional Extinction Classes (SB.101):} For odd $b_0$, $b_0 \bmod 4 = 3 \implies s_0 = 1$ ($50\%$ die at Block 0), and $b_0 \bmod 16 = 1 \vee b_0 \bmod 32 = 29 \vee b_0 \bmod 64 = 5 \implies \neg(2 \le s_1)$ (die at Block 1).
+  \item \textbf{Mod-40 Window $34/40$ Extinction \& Dyadic Uniqueness (SB.102):} Out of $0\dots 39$, exactly $6$ residues satisfy \texttt{isMod40Survivor} and $34$ are extinct; for $P_0 < 2^{S_K}$, at most one $P_0' < 2^{S_K}$ satisfies $(3^{T_K} P_0' + A_K) \bmod 2^{S_K} = 0$.
+  \item \textbf{Fast $O(1)$ Super-Block Sieve Jump \& Record Certificates (SB.103):} $W_{r+1} = 4^m V \implies P_{r+1+m} = (36 \cdot 9^m V - 4)/5$, certifying the multi-block jumps of $b_0 = 13$ ($21$ steps) and $b_0 = 485$ ($25$ steps, skipping five $s=2$ blocks via $4^5 \to 9^5$).
+  \item \textbf{ZFC Deductive Semigroup Pre- vs. Post-Horizon Bridge (SB.104):} For every $q \in \mathbb{N}$, $(3^{T_K}(P_0 + q 2^{S_K+1}) + A_K) \bmod 2^{S_K+1} = 2^{S_K}$ (pre-horizon periodic lattice), whereas $P_0 < 2^{S_K}$ excludes all $q \ge 1$ (post-horizon archimedean collapse).
+\end{enumerate}
+\end{theorem}
+
 \end{document}

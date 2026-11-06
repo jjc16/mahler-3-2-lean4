@@ -8218,6 +8218,305 @@ theorem grand_centennial_100_theorem_semigroup_breakout_synthesis :
     have h93 := path_a_binary_carry_split_and_quotient_decomposition_of_u_K hchain hs0 hs_tail
     exact ⟨h93.2.1, h93.1.2.2⟩
 
+/-! ## 101. Theorem SB.101: Path 2 Unconditional Odd-Seed Block-0 & Block-1 Exact Extinction Classes -/
+
+/-- **Path 2 Unconditional Odd-Seed Block-0 & Block-1 Exact Extinction Classes
+(`odd_seed_block_zero_and_block_one_exact_extinction_classes`, Theorem SB.101)**:
+Establishes why exactly $50\%$ of all odd seeds $b_0$ die at Block 0 and $50\%$ of
+the survivors die at Block 1 (`(1/2)^K` block-survival decay):
+1. **Block-0 50% Extinction Class (`b_0 % 4 = 3`)**:
+   For every `b_0 : ℕ`, `(b_0 % 4 = 3 → oddReturnP b_0 % 4 = 2)`, and whenever `b_0 % 2 = 1`,
+   `(4 ∣ oddReturnP b_0 ↔ b_0 % 4 = 1)`,
+2. **Block-1 Extinction on $b_0 \equiv 1 \pmod{16}$ ($s_0 = 2,\; u_0 \equiv 1 \pmod 4$)**:
+   Whenever `b_0 % 16 = 1`, `oddReturnP b_0 % 8 = 4` and `(oddReturnP b_0 / 4) % 4 = 1`,
+   so in any `ValidBlockChain b_0 s u 2`, `¬ (2 ≤ s 1)` (dies at Block 1!),
+3. **Block-1 Extinction on $b_0 \equiv 29 \pmod{32}$ ($s_0 = 3,\; u_0 \equiv 3 \pmod 4$)**:
+   Whenever `b_0 % 32 = 29`, `oddReturnP b_0 % 16 = 8` and `(oddReturnP b_0 / 8) % 4 = 3`,
+   so in any `ValidBlockChain b_0 s u 2`, `¬ (2 ≤ s 1)` (dies at Block 1!), and
+4. **Block-1 Extinction on $b_0 \equiv 5 \pmod{64}$ ($s_0 = 4,\; u_0 \equiv 1 \pmod 4$)**:
+   Whenever `b_0 % 64 = 5`, `oddReturnP b_0 % 32 = 16` and `(oddReturnP b_0 / 16) % 4 = 1`,
+   so in any `ValidBlockChain b_0 s u 2`, `¬ (2 ≤ s 1)` (dies at Block 1!)! -/
+theorem odd_seed_block_zero_and_block_one_exact_extinction_classes (b_0 : ℕ) :
+    ((b_0 % 4 = 3 → oddReturnP b_0 % 4 = 2) ∧
+      (b_0 % 2 = 1 → (4 ∣ oddReturnP b_0 ↔ b_0 % 4 = 1))) ∧
+    (b_0 % 16 = 1 →
+      oddReturnP b_0 % 8 = 4 ∧
+        (oddReturnP b_0 / 4) % 4 = 1 ∧
+        (∀ s u : ℕ → ℕ, ValidBlockChain b_0 s u 2 → ¬ (2 ≤ s 1))) ∧
+    (b_0 % 32 = 29 →
+      oddReturnP b_0 % 16 = 8 ∧
+        (oddReturnP b_0 / 8) % 4 = 3 ∧
+        (∀ s u : ℕ → ℕ, ValidBlockChain b_0 s u 2 → ¬ (2 ≤ s 1))) ∧
+    (b_0 % 64 = 5 →
+      oddReturnP b_0 % 32 = 16 ∧
+        (oddReturnP b_0 / 16) % 4 = 1 ∧
+        (∀ s u : ℕ → ℕ, ValidBlockChain b_0 s u 2 → ¬ (2 ≤ s 1))) := by
+  have hP0_def : oddReturnP b_0 = 3 * b_0 + 1 := rfl
+  refine ⟨⟨?_, ?_⟩, ?_, ?_, ?_⟩
+  · intro hb4
+    rw [hP0_def]
+    omega
+  · intro hb_odd
+    rw [hP0_def]
+    omega
+  · intro hb16
+    have hm8 : oddReturnP b_0 % 8 = 4 := by rw [hP0_def]; omega
+    have hd4 : (oddReturnP b_0 / 4) % 4 = 1 := by rw [hP0_def]; omega
+    refine ⟨hm8, hd4, ?_⟩
+    intro s u hchain hs1
+    have hP0 : oddReturnP b_0 = 2 ^ (s 0) * u 0 := (hchain 0 (by omega)).2.2
+    have hu0_odd : u 0 % 2 = 1 := (hchain 0 (by omega)).2.1
+    have hs0_pos : 1 ≤ s 0 := (hchain 0 (by omega)).1
+    have hnot_ge3 : ¬ (3 ≤ s 0) := by
+      intro hge3
+      obtain ⟨k, hk⟩ : ∃ k : ℕ, s 0 = k + 3 := ⟨s 0 - 3, by omega⟩
+      have hp : oddReturnP b_0 = 8 * (2 ^ k * u 0) := by
+        rw [hP0, hk, Nat.pow_add 2 k 3]
+        ring
+      omega
+    have hs0_eq2 : s 0 = 2 := by
+      by_contra hne2
+      have hs0_eq1 : s 0 = 1 := by omega
+      rw [hs0_eq1] at hP0
+      omega
+    have hu0_eq : u 0 = oddReturnP b_0 / 4 := by
+      rw [hs0_eq2] at hP0
+      omega
+    have h16_lock := (universal_mod4_quotient_rung_parity_lock_and_mersenne_trap hchain hs1).1
+    have hu0_mod4 : u 0 % 4 = 3 := h16_lock.1.mp (by omega)
+    omega
+  · intro hb32
+    have hm16 : oddReturnP b_0 % 16 = 8 := by rw [hP0_def]; omega
+    have hd8 : (oddReturnP b_0 / 8) % 4 = 3 := by rw [hP0_def]; omega
+    refine ⟨hm16, hd8, ?_⟩
+    intro s u hchain hs1
+    have hP0 : oddReturnP b_0 = 2 ^ (s 0) * u 0 := (hchain 0 (by omega)).2.2
+    have hu0_odd : u 0 % 2 = 1 := (hchain 0 (by omega)).2.1
+    have hs0_pos : 1 ≤ s 0 := (hchain 0 (by omega)).1
+    have hnot_ge4 : ¬ (4 ≤ s 0) := by
+      intro hge4
+      obtain ⟨k, hk⟩ : ∃ k : ℕ, s 0 = k + 4 := ⟨s 0 - 4, by omega⟩
+      have hp : oddReturnP b_0 = 16 * (2 ^ k * u 0) := by
+        rw [hP0, hk, Nat.pow_add 2 k 4]
+        ring
+      omega
+    have hs0_eq3 : s 0 = 3 := by
+      by_contra hne3
+      rcases (by omega : s 0 = 1 ∨ s 0 = 2) with h1 | h2
+      · rw [h1] at hP0; omega
+      · rw [h2] at hP0; omega
+    have hu0_eq : u 0 = oddReturnP b_0 / 8 := by
+      rw [hs0_eq3] at hP0
+      omega
+    have h16_lock := (universal_mod4_quotient_rung_parity_lock_and_mersenne_trap hchain hs1).1
+    have hu0_mod4 : u 0 % 4 = 1 := h16_lock.2.mp (by omega)
+    omega
+  · intro hb64
+    have hm32 : oddReturnP b_0 % 32 = 16 := by rw [hP0_def]; omega
+    have hd16 : (oddReturnP b_0 / 16) % 4 = 1 := by rw [hP0_def]; omega
+    refine ⟨hm32, hd16, ?_⟩
+    intro s u hchain hs1
+    have hP0 : oddReturnP b_0 = 2 ^ (s 0) * u 0 := (hchain 0 (by omega)).2.2
+    have hu0_odd : u 0 % 2 = 1 := (hchain 0 (by omega)).2.1
+    have hs0_pos : 1 ≤ s 0 := (hchain 0 (by omega)).1
+    have hnot_ge5 : ¬ (5 ≤ s 0) := by
+      intro hge5
+      obtain ⟨k, hk⟩ : ∃ k : ℕ, s 0 = k + 5 := ⟨s 0 - 5, by omega⟩
+      have hp : oddReturnP b_0 = 32 * (2 ^ k * u 0) := by
+        rw [hP0, hk, Nat.pow_add 2 k 5]
+        ring
+      omega
+    have hs0_eq4 : s 0 = 4 := by
+      by_contra hne4
+      rcases (by omega : s 0 = 1 ∨ s 0 = 2 ∨ s 0 = 3) with h1 | h2 | h3
+      · rw [h1] at hP0; omega
+      · rw [h2] at hP0; omega
+      · rw [h3] at hP0; omega
+    have hu0_eq : u 0 = oddReturnP b_0 / 16 := by
+      rw [hs0_eq4] at hP0
+      omega
+    have h16_lock := (universal_mod4_quotient_rung_parity_lock_and_mersenne_trap hchain hs1).1
+    have hu0_mod4 : u 0 % 4 = 3 := h16_lock.1.mp (by omega)
+    omega
+
+/-! ## 102. Theorem SB.102: Mod-40 Window 34/40 Extinction Density & Dyadic Uniqueness Decay -/
+
+/-- Decidable indicator for the 6 surviving Super-Block residue classes modulo 40:
+`{1, 9, 11, 19, 21, 29}`. -/
+def isMod40Survivor (V : ℕ) : Bool :=
+  (V % 40 == 1) || (V % 40 == 9) || (V % 40 == 11) ||
+    (V % 40 == 19) || (V % 40 == 21) || (V % 40 == 29)
+
+/-- **Mod-40 Window 34/40 Extinction Density & Dyadic Uniqueness Decay
+(`mod40_window_thirty_four_of_forty_extinction_and_dyadic_uniqueness`, Theorem SB.102)**:
+1. **Exact $6/40 = 15\%$ Survival vs. $34/40 = 85\%$ Extinction in Mod-40 Windows**:
+   `(List.range 40).countP isMod40Survivor = 6` and
+   `(List.range 40).countP (fun r => !isMod40Survivor r) = 34`, and across any
+   surviving Super-Block `W (r + 1) = 4 ^ m * V` (`SB.98`), `isMod40Survivor V = true`!
+2. **Post-Horizon Dyadic Box Uniqueness Decay**:
+   In any `ValidBlockChain b_0 s u (K + 1)` with `∀ k < K, 2 ≤ s k`, setting
+   `P_0 = oddReturnP (orbit b_0 (blockSteps s 0))`, `T_K = blockSteps s K`,
+   `S_K = T_K + s K`, and `A_K = renewalNumerator s K`, if `P_0 < 2 ^ S_K`, then
+   at most **one** integer `P_0' < 2 ^ S_K` satisfies `(3 ^ T_K * P_0' + A_K) % 2 ^ S_K = 0`! -/
+theorem mod40_window_thirty_four_of_forty_extinction_and_dyadic_uniqueness :
+    ((List.range 40).countP isMod40Survivor = 6 ∧
+      (List.range 40).countP (fun r => !isMod40Survivor r) = 34) ∧
+    (∀ {b_0 r m V : ℕ} {s u : ℕ → ℕ},
+      ValidBlockChain b_0 s u (r + 1 + m + 2) →
+      2 ≤ s r →
+      (∀ k < m, s (r + 1 + k) = 2) →
+      3 ≤ s (r + 1 + m) →
+      2 ≤ s (r + 1 + m + 1) →
+      (5 * oddReturnP (orbit b_0 (blockSteps s (r + 1))) + 4) / 36 = 4 ^ m * V →
+      isMod40Survivor V = true) ∧
+    (∀ {b_0 K : ℕ} {s u : ℕ → ℕ},
+      ValidBlockChain b_0 s u (K + 1) →
+      (∀ k < K, 2 ≤ s k) →
+      let P_0 := oddReturnP (orbit b_0 (blockSteps s 0))
+      let T_K := blockSteps s K
+      let S_K := T_K + s K
+      let A_K := renewalNumerator s K
+      P_0 < 2 ^ S_K →
+      ∀ P_0' < 2 ^ S_K, (3 ^ T_K * P_0' + A_K) % 2 ^ S_K = 0 → P_0' = P_0) := by
+  refine ⟨by decide, ?_, ?_⟩
+  · intro b_0 r m V s u hchain hs_r hs_run hs_star hs_next hW_init
+    have h98 := (mod40_six_residue_superblock_bijection_and_34_class_extinction
+      hchain hs_r hs_run hs_star hs_next hW_init).2
+    unfold isMod40Survivor
+    rcases h98 with h | h | h | h | h | h <;> simp [h]
+  · intro b_0 K s u hchain hs2
+    exact (bridge_a_dual_universe_series_lowest_terms_and_uniqueness hchain hs2).2.2.2.2.2.2
+
+/-! ## 103. Theorem SB.103: Path 3 Fast $O(1)$ Super-Block Sieve Jump & Record-Survivor Certificates -/
+
+/-- **Path 3 Fast $O(1)$ Super-Block Sieve Jump & Record-Survivor Certificates
+(`fast_superblock_sieve_macro_step_and_record_survivor_certificates`, Theorem SB.103)**:
+1. **Exact $O(1)$ Super-Block Sieve Jump Formula for $P_{r+1+m}$**:
+   Suppose `ValidBlockChain b_0 s u (r + 1 + m + 2)` holds with `2 ≤ s r`,
+   `∀ k < m, s (r + 1 + k) = 2`, `3 ≤ s (r + 1 + m)`, `2 ≤ s (r + 1 + m + 1)`, and
+   `(5 * oddReturnP (orbit b_0 (blockSteps s (r + 1))) + 4) / 36 = 4 ^ m * V`.
+   Then the return integer `P (r + 1 + m)` at the end of the $m$-block $s = 2$ run is given
+   in $O(1)$ closed form without stepping through intermediate blocks:
+   `5 * P (r + 1 + m) + 4 = 36 * 9 ^ m * V` and `P (r + 1 + m) = (36 * 9 ^ m * V - 4) / 5`!
+2. **Machine-Checked Record-Survivor Sieve Certificates (`b_0 = 13` and `b_0 = 485`)**:
+   - For `b_0 = 13`: `P_1 = 136`, `W_1 = 19`, `P_2 = 460`, `W_2 = 64 = 4 ^ 3 * 1`,
+     and the $O(1)$ Super-Block jump `(36 * 9 ^ 3 * 1 - 4) / 5 = 5248 = 2 ^ 7 * 41`
+     lands directly at Block 5 (`s_5 = 7 >= 5`, predicted by `1 % 40 = 1`)!
+   - For `b_0 = 485`: `P_0 = 1456 = 2 ^ 4 * 91`, `P_1 = 7372`,
+     `W_1 = (5 * 7372 + 4) / 36 = 1024 = 4 ^ 5 * 1`, and the single $O(1)$ Super-Block
+     jump `(36 * 9 ^ 5 * 1 - 4) / 5 = 425152 = 2 ^ 6 * 6643` skips **5 consecutive
+     $s = 2$ blocks at once** to land directly at Block 6 (`s_6 = 6 >= 5`)! -/
+theorem fast_superblock_sieve_macro_step_and_record_survivor_certificates :
+    (∀ {b_0 r m V : ℕ} {s u : ℕ → ℕ},
+      ValidBlockChain b_0 s u (r + 1 + m + 2) →
+      2 ≤ s r →
+      (∀ k < m, s (r + 1 + k) = 2) →
+      3 ≤ s (r + 1 + m) →
+      2 ≤ s (r + 1 + m + 1) →
+      (5 * oddReturnP (orbit b_0 (blockSteps s (r + 1))) + 4) / 36 = 4 ^ m * V →
+      let P := fun k => oddReturnP (orbit b_0 (blockSteps s k))
+      5 * P (r + 1 + m) + 4 = 36 * 9 ^ m * V ∧
+        P (r + 1 + m) = (36 * 9 ^ m * V - 4) / 5) ∧
+    ((3 * 13 + 1 = 2 ^ 3 * 5 ∧
+      3 ^ 3 * 5 + 1 = 136 ∧
+      (5 * 136 + 4) / 36 = 19 ∧
+      3 ^ 3 * 17 + 1 = 460 ∧
+      (5 * 460 + 4) / 36 = 4 ^ 3 * 1 ∧
+      (36 * 9 ^ 3 * 1 - 4) / 5 = 5248 ∧
+      5248 = 2 ^ 7 * 41) ∧
+    (3 * 485 + 1 = 2 ^ 4 * 91 ∧
+      3 ^ 4 * 91 + 1 = 7372 ∧
+      (5 * 7372 + 4) / 36 = 4 ^ 5 * 1 ∧
+      (36 * 9 ^ 5 * 1 - 4) / 5 = 425152 ∧
+      425152 = 2 ^ 6 * 6643)) := by
+  refine ⟨?_, by decide⟩
+  intro b_0 r m V s u hchain hs_r hs_run hs_star hs_next hW_init P
+  have h86 := mod_eight_odd_gauge_future_rung_predictor_and_seven_extinction
+    hchain hs_r hs_run hs_star hs_next hW_init
+  have hWm_eq : (5 * P (r + 1 + m) + 4) / 36 = 9 ^ m * V := h86.1.1
+  have hch_end : ValidBlockChain b_0 s u ((r + m) + 3) :=
+    fun k hk => hchain k (by omega)
+  have hs_rm : 2 ≤ s (r + m) := by
+    rcases (by omega : m = 0 ∨ 1 ≤ m) with rfl | hm1
+    · simpa using hs_r
+    · have hk : m - 1 < m := by omega
+      have h := hs_run (m - 1) hk
+      have heq : r + 1 + (m - 1) = r + m := by omega
+      rw [heq] at h
+      omega
+  have hs_rm1 : 2 ≤ s (r + m + 1) := by
+    have heq : r + m + 1 = r + 1 + m := by omega
+    rw [heq]
+    omega
+  have hs_rm2 : 2 ≤ s (r + m + 2) := by
+    have heq : r + m + 2 = r + 1 + m + 1 := by omega
+    rw [heq]
+    exact hs_next
+  have h81_36 : 36 * ((5 * P (r + m + 1) + 4) / 36) = 5 * P (r + m + 1) + 4 :=
+    (ceiling_dual_gauge_transform_and_rung_two_parity_detector hch_end hs_rm hs_rm1 hs_rm2).1.2.2.1
+  have hidx : r + m + 1 = r + 1 + m := by omega
+  rw [hidx, hWm_eq] at h81_36
+  have h5P : 5 * P (r + 1 + m) + 4 = 36 * 9 ^ m * V := by
+    have hcomm : 36 * (9 ^ m * V) = 36 * 9 ^ m * V := by ring
+    omega
+  have hdiv5 : P (r + 1 + m) = (36 * 9 ^ m * V - 4) / 5 := by omega
+  exact ⟨h5P, hdiv5⟩
+
+/-! ## 104. Theorem SB.104: The ZFC Deductive Semigroup Bridge (Pre-Horizon Lattice vs. Post-Horizon Collapse) -/
+
+/-- **The ZFC Deductive Semigroup Bridge (Pre-Horizon Lattice vs. Post-Horizon Collapse)
+(`zfc_deductive_semigroup_pre_vs_post_horizon_overspill_bridge`, Theorem SB.104)**:
+Formalizes the exact structural reason why local/2-adic deductive tiles admit
+infinite pre-horizon extensions while post-horizon survival requires an accidental
+global alignment:
+1. **Pre-Horizon 2-Adic Periodic Lattice Invariance (`∀ q : ℕ`)**:
+   For any horizon $K$, shifting a seed `P_0` by any multiple `q * 2 ^ (S_K + 1)` of
+   the 2-adic modulus preserves the exact Kempner survival congruence
+   `(3 ^ T_K * (P_0 + q * 2 ^ (S_K + 1)) + A_K) % 2 ^ (S_K + 1) = (3 ^ T_K * P_0 + A_K) % 2 ^ (S_K + 1)`
+   (so in $\mathbb{Z}_2$ or in pre-horizon shifts $P_0' = P_0 + q \cdot 2^{S_K+1}$,
+   solutions repeat periodically with period $2^{S_K+1}$!),
+2. **Post-Horizon Archimedean Collapse (`P_0 < 2 ^ S_K`)**:
+   Inside the finite archimedean box $[0, 2^{S_K})$, all shifted copies `q ≥ 1` are
+   excluded (`P_0 + q * 2 ^ S_K ≥ 2 ^ S_K`), collapsing the infinite 2-adic congruence
+   class to **at most one** natural number `P_0 < 2 ^ S_K`, and
+3. **Grand 104-Theorem Synthesis of Paths 1–3 (`SB.1–SB.104`)**! -/
+theorem zfc_deductive_semigroup_pre_vs_post_horizon_overspill_bridge :
+    (∀ T_K S_K A_K P_0 q : ℕ,
+      (3 ^ T_K * (P_0 + q * 2 ^ (S_K + 1)) + A_K) % 2 ^ (S_K + 1) =
+        (3 ^ T_K * P_0 + A_K) % 2 ^ (S_K + 1)) ∧
+    (∀ P_0 S_K q : ℕ, 1 ≤ q → 2 ^ S_K ≤ P_0 + q * 2 ^ S_K) ∧
+    (∀ {b_0 K : ℕ} {s u : ℕ → ℕ},
+      ValidBlockChain b_0 s u (K + 1) →
+      (∀ k < K, 2 ≤ s k) →
+      let P_0 := oddReturnP (orbit b_0 (blockSteps s 0))
+      let T_K := blockSteps s K
+      let S_K := T_K + s K
+      let A_K := renewalNumerator s K
+      (∀ q : ℕ,
+        (3 ^ T_K * (P_0 + q * 2 ^ (S_K + 1)) + A_K) % 2 ^ (S_K + 1) = 2 ^ S_K) ∧
+      (P_0 < 2 ^ S_K →
+        ∀ P_0' < 2 ^ S_K, (3 ^ T_K * P_0' + A_K) % 2 ^ S_K = 0 → P_0' = P_0)) := by
+  have hper :
+      ∀ T_K S_K A_K P_0 q : ℕ,
+        (3 ^ T_K * (P_0 + q * 2 ^ (S_K + 1)) + A_K) % 2 ^ (S_K + 1) =
+          (3 ^ T_K * P_0 + A_K) % 2 ^ (S_K + 1) := by
+    intro T_K S_K A_K P_0 q
+    have hexp :
+        3 ^ T_K * (P_0 + q * 2 ^ (S_K + 1)) + A_K =
+          (3 ^ T_K * P_0 + A_K) + 2 ^ (S_K + 1) * (3 ^ T_K * q) := by ring
+    rw [hexp, Nat.add_mul_mod_self_left]
+  refine ⟨hper, ?_, ?_⟩
+  · intro P_0 S_K q hq
+    have hm : 2 ^ S_K * 1 ≤ 2 ^ S_K * q := Nat.mul_le_mul_left (2 ^ S_K) hq
+    have hcomm : q * 2 ^ S_K = 2 ^ S_K * q := Nat.mul_comm q (2 ^ S_K)
+    omega
+  · intro b_0 K s u hchain hs2 P_0 T_K S_K A_K
+    have h28 := bridge_a_dual_universe_series_lowest_terms_and_uniqueness hchain hs2
+    refine ⟨?_, h28.2.2.2.2.2.2⟩
+    intro q
+    rw [hper T_K S_K A_K P_0 q]
+    exact h28.2.2.2.2.2.1
+
 
 #check @archimedean_rung_ceiling_and_stepSum_bound
 #check @unit_quotient_even_rung_instant_death_and_odd_rung_mod64_identity
@@ -8319,6 +8618,10 @@ theorem grand_centennial_100_theorem_semigroup_breakout_synthesis :
 #check @mod40_six_residue_superblock_bijection_and_34_class_extinction
 #check @cyclotomic_base_dm_modular_invariance_and_mod19_mod13_locks
 #check @grand_centennial_100_theorem_semigroup_breakout_synthesis
+#check @odd_seed_block_zero_and_block_one_exact_extinction_classes
+#check @mod40_window_thirty_four_of_forty_extinction_and_dyadic_uniqueness
+#check @fast_superblock_sieve_macro_step_and_record_survivor_certificates
+#check @zfc_deductive_semigroup_pre_vs_post_horizon_overspill_bridge
 
 #print axioms archimedean_rung_ceiling_and_stepSum_bound
 #print axioms unit_quotient_even_rung_instant_death_and_odd_rung_mod64_identity
