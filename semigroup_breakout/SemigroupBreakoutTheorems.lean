@@ -7539,6 +7539,352 @@ theorem master_conditional_canyon_closure_and_92_theorem_synthesis :
     have h91 := (nested_canyon_interval_tube_and_exponential_width_contraction hchain hs_win hM1).2.2.2
     exact ⟨h90, h91⟩
 
+/-! ## 93. Theorem SB.93: Path A Binary Carry-Split & Quotient Decomposition of $u_K$ -/
+
+/-- **Path A Binary Carry-Split & Quotient Decomposition of $u_K$
+(`path_a_binary_carry_split_and_quotient_decomposition_of_u_K`, Theorem SB.93)**:
+Suppose `ValidBlockChain b_0 s u (0 + 1 + M + 1)` holds with `2 ≤ s 0` and
+`∀ k < M, 2 ≤ s (0 + 1 + k)`. Setting `K = 0 + 1 + M`, `T_K = blockSteps s K`,
+`s' t = s (0 + 1 + t)`, `d_0 = blockSteps s' M`, `S_0 = d_0 + s K`, and
+`R_0 = 3 ^ d_0 + renewalNumerator s' M`:
+1. **Exact $2^{S_0}$ Low-Bit 2's-Complement Cancellation**:
+   `1 ≤ (3 ^ T_K * u 0) % 2 ^ S_0`, `1 ≤ R_0 % 2 ^ S_0`, and
+   `(3 ^ T_K * u 0) % 2 ^ S_0 + R_0 % 2 ^ S_0 = 2 ^ S_0`,
+2. **Exact Binary Quotient Decomposition of the Odd Core $u_K$**:
+   `u K = (3 ^ T_K * u 0) / 2 ^ S_0 + R_0 / 2 ^ S_0 + 1`, and
+3. **Exact Carry-Mixing Binary Weight Conservation Law**:
+   `base2DigitSum ((3 ^ T_K * u 0) % 2 ^ S_0) + base2DigitSum (R_0 % 2 ^ S_0) = S_0 + 1`! -/
+theorem path_a_binary_carry_split_and_quotient_decomposition_of_u_K
+    {b_0 M : ℕ} {s u : ℕ → ℕ}
+    (hchain : ValidBlockChain b_0 s u (0 + 1 + M + 1))
+    (hs0 : 2 ≤ s 0)
+    (hs_tail : ∀ k < M, 2 ≤ s (0 + 1 + k)) :
+    let K := 0 + 1 + M
+    let T_K := blockSteps s K
+    let s' := fun t => s (0 + 1 + t)
+    let d_0 := blockSteps s' M
+    let S_0 := d_0 + s K
+    let R_0 := 3 ^ d_0 + renewalNumerator s' M
+    (1 ≤ (3 ^ T_K * u 0) % 2 ^ S_0 ∧
+      1 ≤ R_0 % 2 ^ S_0 ∧
+      (3 ^ T_K * u 0) % 2 ^ S_0 + R_0 % 2 ^ S_0 = 2 ^ S_0) ∧
+      u K = (3 ^ T_K * u 0) / 2 ^ S_0 + R_0 / 2 ^ S_0 + 1 ∧
+      base2DigitSum ((3 ^ T_K * u 0) % 2 ^ S_0) + base2DigitSum (R_0 % 2 ^ S_0) = S_0 + 1 := by
+  intro K T_K s' d_0 S_0 R_0
+  have h72 := exact_two_adic_renewal_valuation_and_one_fifth_reduced_ceiling hchain hs0 hs_tail
+  have hR0_odd : R_0 % 2 = 1 := h72.1.2
+  have hid_red : 2 ^ S_0 * u K = 3 ^ T_K * u 0 + R_0 := h72.2.1
+  have hsK_pos : 1 ≤ s K := (hchain K (by omega)).1
+  have hS0_pos : 1 ≤ S_0 := by omega
+  have h2S0_pos : 0 < 2 ^ S_0 := Nat.pow_pos (by decide)
+  obtain ⟨k, hk⟩ : ∃ k : ℕ, S_0 = k + 1 := ⟨S_0 - 1, by omega⟩
+  have h2S0_even : 2 ^ S_0 = 2 * 2 ^ k := by
+    rw [hk, Nat.pow_succ]
+    ring
+  have hu0_odd : u 0 % 2 = 1 := (hchain 0 (by omega)).2.1
+  have h3T_odd : 3 ^ T_K % 2 = 1 := three_pow_mod_two_eq_one T_K
+  have hterm1_odd : (3 ^ T_K * u 0) % 2 = 1 := by
+    rw [Nat.mul_mod, h3T_odd, hu0_odd]
+  set m_1 := (3 ^ T_K * u 0) % 2 ^ S_0
+  set m_2 := R_0 % 2 ^ S_0
+  set q_1 := (3 ^ T_K * u 0) / 2 ^ S_0
+  set q_2 := R_0 / 2 ^ S_0
+  have hm1_lt : m_1 < 2 ^ S_0 := Nat.mod_lt (3 ^ T_K * u 0) h2S0_pos
+  have hm2_lt : m_2 < 2 ^ S_0 := Nat.mod_lt R_0 h2S0_pos
+  have hdm1 : 2 ^ S_0 * q_1 + m_1 = 3 ^ T_K * u 0 := Nat.div_add_mod (3 ^ T_K * u 0) (2 ^ S_0)
+  have hdm2 : 2 ^ S_0 * q_2 + m_2 = R_0 := Nat.div_add_mod R_0 (2 ^ S_0)
+  have hm1_odd : m_1 % 2 = 1 := by
+    have h1 : (2 ^ S_0 * q_1 + m_1) % 2 = 1 := by rw [hdm1, hterm1_odd]
+    have h2 : 2 ^ S_0 * q_1 = 2 * (2 ^ k * q_1) := by
+      rw [h2S0_even]
+      ring
+    rw [h2] at h1
+    omega
+  have hm2_odd : m_2 % 2 = 1 := by
+    have h1 : (2 ^ S_0 * q_2 + m_2) % 2 = 1 := by rw [hdm2, hR0_odd]
+    have h2 : 2 ^ S_0 * q_2 = 2 * (2 ^ k * q_2) := by
+      rw [h2S0_even]
+      ring
+    rw [h2] at h1
+    omega
+  have hm1_pos : 1 ≤ m_1 := by omega
+  have hm2_pos : 1 ≤ m_2 := by omega
+  have hsum_mod : (m_1 + m_2) % 2 ^ S_0 = 0 := by
+    have hmod_sum : (3 ^ T_K * u 0 + R_0) % 2 ^ S_0 = 0 := by
+      rw [← hid_red]
+      exact Nat.mul_mod_right (2 ^ S_0) (u K)
+    rw [← Nat.add_mod]
+    exact hmod_sum
+  have hsum_eq : m_1 + m_2 = 2 ^ S_0 := by
+    have hlt2 : m_1 + m_2 < 2 ^ S_0 * 2 := by omega
+    have hdm_s := Nat.div_add_mod (m_1 + m_2) (2 ^ S_0)
+    rw [hsum_mod, add_zero] at hdm_s
+    set q_s := (m_1 + m_2) / 2 ^ S_0
+    have hqs_pos : 1 ≤ q_s := by
+      apply Nat.pos_of_ne_zero
+      intro hq0
+      rw [hq0, mul_zero] at hdm_s
+      omega
+    have hqs_lt2 : q_s < 2 := by
+      apply Nat.lt_of_not_le
+      intro hge2
+      have hm_ge : 2 ^ S_0 * 2 ≤ 2 ^ S_0 * q_s := Nat.mul_le_mul_left (2 ^ S_0) hge2
+      omega
+    have hqs_eq1 : q_s = 1 := by omega
+    rw [hqs_eq1, mul_one] at hdm_s
+    exact hdm_s.symm
+  have huK_decomp : u K = q_1 + q_2 + 1 := by
+    have hmul_eq : 2 ^ S_0 * u K = 2 ^ S_0 * (q_1 + q_2 + 1) := by
+      calc
+        2 ^ S_0 * u K = 3 ^ T_K * u 0 + R_0 := hid_red
+        _ = (2 ^ S_0 * q_1 + m_1) + (2 ^ S_0 * q_2 + m_2) := by rw [← hdm1, ← hdm2]
+        _ = 2 ^ S_0 * q_1 + 2 ^ S_0 * q_2 + (m_1 + m_2) := by ring
+        _ = 2 ^ S_0 * q_1 + 2 ^ S_0 * q_2 + 2 ^ S_0 := by rw [hsum_eq]
+        _ = 2 ^ S_0 * (q_1 + q_2 + 1) := by ring
+    exact Nat.eq_of_mul_eq_mul_left h2S0_pos hmul_eq
+  have h49 := (mahler_antihydra_base2_complement_digitsum_law S_0).2 m_2 hm2_lt hm2_odd
+  have hsub_m1 : 2 ^ S_0 - m_2 = m_1 := by omega
+  rw [hsub_m1] at h49
+  exact ⟨⟨hm1_pos, hm2_pos, hsum_eq⟩, huK_decomp, h49⟩
+
+/-! ## 94. Theorem SB.94: Path A Zero-Carry Binary Block Split & Weight Excess Law -/
+
+/-- Single-bit shift law: `base2DigitSum (2 * m + r) = r + base2DigitSum m` for `r < 2`. -/
+theorem base2DigitSum_two_mul_add_bit (m : ℕ) {r : ℕ} (hr : r < 2) :
+    base2DigitSum (2 * m + r) = r + base2DigitSum m := by
+  rw [base2DigitSum_eq (2 * m + r)]
+  have hmod : (2 * m + r) % 2 = r := by omega
+  have hdiv : (2 * m + r) / 2 = m := by omega
+  rw [hmod, hdiv]
+
+/-- Zero-carry disjoint-block base-2 digit-sum additivity:
+whenever `K < 2 ^ N`, `base2DigitSum (2 ^ N * g_0 + K) = base2DigitSum g_0 + base2DigitSum K`. -/
+theorem base2DigitSum_two_pow_mul_add (N g_0 : ℕ) {K : ℕ} (hK : K < 2 ^ N) :
+    base2DigitSum (2 ^ N * g_0 + K) = base2DigitSum g_0 + base2DigitSum K := by
+  induction N generalizing K with
+  | zero =>
+      have hK0 : K = 0 := by
+        simp only [Nat.pow_zero] at hK
+        omega
+      subst hK0
+      have hz : base2DigitSum 0 = 0 := by simp [base2DigitSum]
+      simp [hz]
+  | succ N ih =>
+      have hK_div : K / 2 < 2 ^ N := by
+        rw [Nat.pow_succ] at hK
+        omega
+      have hK_mod : K % 2 < 2 := by omega
+      have hdecomp : 2 ^ (N + 1) * g_0 + K = 2 * (2 ^ N * g_0 + K / 2) + K % 2 := by
+        have h2mul : 2 ^ (N + 1) * g_0 = 2 * (2 ^ N * g_0) := by
+          rw [Nat.pow_succ]
+          ring
+        rw [h2mul]
+        omega
+      rw [hdecomp, base2DigitSum_two_mul_add_bit _ hK_mod, ih hK_div, base2DigitSum_eq K]
+      omega
+
+/-- Exact Base-2 digit-sum split at $2^N$:
+`base2DigitSum n = base2DigitSum (n / 2 ^ N) + base2DigitSum (n % 2 ^ N)`. -/
+theorem base2DigitSum_div_add_mod_two_pow (n N : ℕ) :
+    base2DigitSum n = base2DigitSum (n / 2 ^ N) + base2DigitSum (n % 2 ^ N) := by
+  have hpos : 0 < 2 ^ N := Nat.pow_pos (by decide)
+  have hlt : n % 2 ^ N < 2 ^ N := Nat.mod_lt n hpos
+  have hdm := (Nat.div_add_mod n (2 ^ N)).symm
+  conv_lhs => rw [hdm]
+  exact base2DigitSum_two_pow_mul_add N (n / 2 ^ N) hlt
+
+/-- **Path A Zero-Carry Binary Block Split & Weight Excess Law
+(`path_a_zero_carry_binary_block_split_and_weight_excess_law`, Theorem SB.94)**:
+Suppose `ValidBlockChain b_0 s u (0 + 1 + M + 1)` holds with `2 ≤ s 0` and
+`∀ k < M, 2 ≤ s (0 + 1 + k)`. Setting `K = 0 + 1 + M`, `T_K = blockSteps s K`,
+`s' t = s (0 + 1 + t)`, `d_0 = blockSteps s' M`, `S_0 = d_0 + s K`, and
+`R_0 = 3 ^ d_0 + renewalNumerator s' M`:
+1. **Zero-Carry Binary Block Splits at $2^{S_0}$**:
+   `base2DigitSum (3 ^ T_K * u 0) = base2DigitSum ((3 ^ T_K * u 0) / 2 ^ S_0) + base2DigitSum ((3 ^ T_K * u 0) % 2 ^ S_0)` and
+   `base2DigitSum R_0 = base2DigitSum (R_0 / 2 ^ S_0) + base2DigitSum (R_0 % 2 ^ S_0)`,
+2. **Exact Total Binary Weight Identity Across the $2^{S_0}$ Carry Boundary**:
+   `base2DigitSum (3 ^ T_K * u 0) + base2DigitSum R_0 = S_0 + 1 + base2DigitSum ((3 ^ T_K * u 0) / 2 ^ S_0) + base2DigitSum (R_0 / 2 ^ S_0)`, and
+3. **Unconditional Binary Weight Lower Bound & Interior Excess**:
+   `S_0 + 1 ≤ base2DigitSum (3 ^ T_K * u 0) + base2DigitSum R_0`, and whenever `2 ≤ u K`,
+   `S_0 + 2 ≤ base2DigitSum (3 ^ T_K * u 0) + base2DigitSum R_0`! -/
+theorem path_a_zero_carry_binary_block_split_and_weight_excess_law
+    {b_0 M : ℕ} {s u : ℕ → ℕ}
+    (hchain : ValidBlockChain b_0 s u (0 + 1 + M + 1))
+    (hs0 : 2 ≤ s 0)
+    (hs_tail : ∀ k < M, 2 ≤ s (0 + 1 + k)) :
+    let K := 0 + 1 + M
+    let T_K := blockSteps s K
+    let s' := fun t => s (0 + 1 + t)
+    let d_0 := blockSteps s' M
+    let S_0 := d_0 + s K
+    let R_0 := 3 ^ d_0 + renewalNumerator s' M
+    (base2DigitSum (3 ^ T_K * u 0) =
+        base2DigitSum ((3 ^ T_K * u 0) / 2 ^ S_0) +
+          base2DigitSum ((3 ^ T_K * u 0) % 2 ^ S_0) ∧
+      base2DigitSum R_0 =
+        base2DigitSum (R_0 / 2 ^ S_0) + base2DigitSum (R_0 % 2 ^ S_0)) ∧
+      base2DigitSum (3 ^ T_K * u 0) + base2DigitSum R_0 =
+        S_0 + 1 + base2DigitSum ((3 ^ T_K * u 0) / 2 ^ S_0) +
+          base2DigitSum (R_0 / 2 ^ S_0) ∧
+      (S_0 + 1 ≤ base2DigitSum (3 ^ T_K * u 0) + base2DigitSum R_0 ∧
+        (2 ≤ u K → S_0 + 2 ≤ base2DigitSum (3 ^ T_K * u 0) + base2DigitSum R_0)) := by
+  intro K T_K s' d_0 S_0 R_0
+  have h93 := path_a_binary_carry_split_and_quotient_decomposition_of_u_K hchain hs0 hs_tail
+  have hsp1 := base2DigitSum_div_add_mod_two_pow (3 ^ T_K * u 0) S_0
+  have hsp2 := base2DigitSum_div_add_mod_two_pow R_0 S_0
+  have hmod_sum :
+      base2DigitSum ((3 ^ T_K * u 0) % 2 ^ S_0) + base2DigitSum (R_0 % 2 ^ S_0) = S_0 + 1 :=
+    h93.2.2
+  have huK_q : u K = (3 ^ T_K * u 0) / 2 ^ S_0 + R_0 / 2 ^ S_0 + 1 := h93.2.1
+  have htot :
+      base2DigitSum (3 ^ T_K * u 0) + base2DigitSum R_0 =
+        S_0 + 1 + base2DigitSum ((3 ^ T_K * u 0) / 2 ^ S_0) +
+          base2DigitSum (R_0 / 2 ^ S_0) := by omega
+  have hge1 : S_0 + 1 ≤ base2DigitSum (3 ^ T_K * u 0) + base2DigitSum R_0 := by omega
+  refine ⟨⟨hsp1, hsp2⟩, htot, ⟨hge1, ?_⟩⟩
+  intro huK2
+  set q_1 := (3 ^ T_K * u 0) / 2 ^ S_0
+  set q_2 := R_0 / 2 ^ S_0
+  have hq_pos : 1 ≤ q_1 ∨ 1 ≤ q_2 := by omega
+  rcases hq_pos with hq1 | hq2
+  · have hb1 : 1 ≤ base2DigitSum q_1 := base2DigitSum_pos_of_pos hq1
+    omega
+  · have hb2 : 1 ≤ base2DigitSum q_2 := base2DigitSum_pos_of_pos hq2
+    omega
+
+/-! ## 95. Theorem SB.95: Path B Reduced Odd-Seed Product Formula & Symmetric Excess -/
+
+/-- Helper: `oddCoreProd u (0 + 1 + M) = u 0 * oddCoreProd (fun r => u (0 + 1 + r)) M`. -/
+theorem oddCoreProd_shift_one (u : ℕ → ℕ) (M : ℕ) :
+    oddCoreProd u (0 + 1 + M) = u 0 * oddCoreProd (fun r => u (0 + 1 + r)) M := by
+  induction M with
+  | zero =>
+      simp [oddCoreProd]
+  | succ M ih =>
+      change oddCoreProd u (0 + 1 + M) * u (0 + 1 + M) =
+        u 0 * (oddCoreProd (fun r => u (0 + 1 + r)) M * u (0 + 1 + M))
+      rw [ih]
+      ring
+
+/-- **Path B Reduced Odd-Seed Product Formula & Symmetric Excess
+(`path_b_reduced_odd_seed_product_formula_and_symmetric_excess`, Theorem SB.95)**:
+Suppose `ValidBlockChain b_0 s u (0 + 1 + M + 1)` holds with `2 ≤ s 0` and
+`∀ k < M, 2 ≤ s (0 + 1 + k)`. Setting `K = 0 + 1 + M`, `T_K = blockSteps s K`,
+`s' t = s (0 + 1 + t)`, `d_0 = blockSteps s' M`, `S_0 = d_0 + s K`,
+`R_0 = 3 ^ d_0 + renewalNumerator s' M`, and
+`tailOddProd = oddCoreProd (fun r => u (0 + 1 + r)) M`:
+1. **Factorization of `oddCoreProd u K`**:
+   `oddCoreProd u K = u 0 * tailOddProd`,
+2. **Exact $P_0$-Canceled Reduced Product Formula**:
+   `(3 ^ T_K * u 0 + R_0) * tailOddProd = stepNumProd s u K` and
+   `2 ^ S_0 * u K * tailOddProd = stepNumProd s u K`,
+3. **Exact Product-Excess Identity for $R_0 \cdot \prod_{r=1}^{K-1} u_r$**:
+   `3 ^ T_K * oddCoreProd u K + R_0 * tailOddProd = stepNumProd s u K` and
+   `R_0 * tailOddProd = stepNumProd s u K - 3 ^ T_K * oddCoreProd u K`, and
+4. **Reduced Seed Congruence Modulo $u_0$**:
+   `stepNumProd s u K % u 0 = (R_0 * tailOddProd) % u 0`! -/
+theorem path_b_reduced_odd_seed_product_formula_and_symmetric_excess
+    {b_0 M : ℕ} {s u : ℕ → ℕ}
+    (hchain : ValidBlockChain b_0 s u (0 + 1 + M + 1))
+    (hs0 : 2 ≤ s 0)
+    (hs_tail : ∀ k < M, 2 ≤ s (0 + 1 + k)) :
+    let K := 0 + 1 + M
+    let T_K := blockSteps s K
+    let s' := fun t => s (0 + 1 + t)
+    let d_0 := blockSteps s' M
+    let S_0 := d_0 + s K
+    let R_0 := 3 ^ d_0 + renewalNumerator s' M
+    let tailOddProd := oddCoreProd (fun r => u (0 + 1 + r)) M
+    oddCoreProd u K = u 0 * tailOddProd ∧
+      ((3 ^ T_K * u 0 + R_0) * tailOddProd = stepNumProd s u K ∧
+        2 ^ S_0 * u K * tailOddProd = stepNumProd s u K) ∧
+      (3 ^ T_K * oddCoreProd u K + R_0 * tailOddProd = stepNumProd s u K ∧
+        R_0 * tailOddProd = stepNumProd s u K - 3 ^ T_K * oddCoreProd u K) ∧
+      stepNumProd s u K % u 0 = (R_0 * tailOddProd) % u 0 := by
+  intro K T_K s' d_0 S_0 R_0 tailOddProd
+  have hfac_prod : oddCoreProd u K = u 0 * tailOddProd := oddCoreProd_shift_one u M
+  have h72 := exact_two_adic_renewal_valuation_and_one_fifth_reduced_ceiling hchain hs0 hs_tail
+  have hA_fac : renewalNumerator s K = 2 ^ (s 0) * R_0 := h72.1.1
+  have hid_red : 2 ^ S_0 * u K = 3 ^ T_K * u 0 + R_0 := h72.2.1
+  have hs_all : ∀ k < K, 2 ≤ s k := by
+    intro k hk
+    rcases (by omega : k = 0 ∨ 1 ≤ k) with rfl | hk1
+    · exact hs0
+    · obtain ⟨j, rfl⟩ : ∃ j : ℕ, k = 0 + 1 + j := ⟨k - 1, by omega⟩
+      exact hs_tail j (by omega)
+  have h74 := global_multiplicative_to_additive_product_formula_bridge hchain hs_all
+  set P_0 := oddReturnP (orbit b_0 (blockSteps s 0))
+  have hP0_eq : P_0 = 2 ^ (s 0) * u 0 := (hchain 0 (by omega)).2.2
+  have hu0_odd : u 0 % 2 = 1 := (hchain 0 (by omega)).2.1
+  have hu0_pos : 0 < u 0 := by omega
+  have hP0_pos : 0 < P_0 := by
+    rw [hP0_eq]
+    exact Nat.mul_pos (Nat.pow_pos (by decide)) hu0_pos
+  have hbridge_raw :
+      (3 ^ T_K * P_0 + renewalNumerator s K) * oddCoreProd u K =
+        P_0 * stepNumProd s u K := h74.2.1
+  have hmul_P0 :
+      P_0 * ((3 ^ T_K * u 0 + R_0) * tailOddProd) = P_0 * stepNumProd s u K := by
+    calc
+      P_0 * ((3 ^ T_K * u 0 + R_0) * tailOddProd)
+          = (3 ^ T_K * (2 ^ (s 0) * u 0) + 2 ^ (s 0) * R_0) * (u 0 * tailOddProd) := by
+            rw [hP0_eq]
+            ring
+      _ = (3 ^ T_K * P_0 + renewalNumerator s K) * oddCoreProd u K := by
+            rw [← hP0_eq, ← hA_fac, ← hfac_prod]
+      _ = P_0 * stepNumProd s u K := hbridge_raw
+  have hred1 : (3 ^ T_K * u 0 + R_0) * tailOddProd = stepNumProd s u K :=
+    Nat.eq_of_mul_eq_mul_left hP0_pos hmul_P0
+  have hred2 : 2 ^ S_0 * u K * tailOddProd = stepNumProd s u K := by
+    rw [hid_red]
+    exact hred1
+  have hexcess1 : 3 ^ T_K * oddCoreProd u K + R_0 * tailOddProd = stepNumProd s u K := by
+    calc
+      3 ^ T_K * oddCoreProd u K + R_0 * tailOddProd
+          = 3 ^ T_K * (u 0 * tailOddProd) + R_0 * tailOddProd := by rw [hfac_prod]
+      _ = (3 ^ T_K * u 0 + R_0) * tailOddProd := by ring
+      _ = stepNumProd s u K := hred1
+  have hexcess2 : R_0 * tailOddProd = stepNumProd s u K - 3 ^ T_K * oddCoreProd u K := by
+    rw [← hexcess1, Nat.add_sub_cancel_left]
+  have hmod_u0 : stepNumProd s u K % u 0 = (R_0 * tailOddProd) % u 0 := by
+    have hsplit :
+        stepNumProd s u K = R_0 * tailOddProd + u 0 * (3 ^ T_K * tailOddProd) := by
+      rw [← hexcess1, hfac_prod]
+      ring
+    rw [hsplit, Nat.add_mul_mod_self_left]
+  exact ⟨hfac_prod, ⟨hred1, hred2⟩, ⟨hexcess1, hexcess2⟩, hmod_u0⟩
+
+/-! ## 96. Theorem SB.96: Grand 96-Theorem Synthesis of Path A & Path B -/
+
+/-- **Grand 96-Theorem Synthesis of Path A & Path B
+(`grand_path_a_and_path_b_96_theorem_synthesis`, Theorem SB.96)**:
+Unifies the Path A binary carry-split, quotient decomposition of $u_K$, and binary
+weight excess law (`SB.93–SB.94`) with the Path B reduced odd-seed product formula
+and symmetric excess law (`SB.95`) and the Master Conditional Closure (`SB.92`). -/
+theorem grand_path_a_and_path_b_96_theorem_synthesis :
+    (∀ {b_0 M : ℕ} {s u : ℕ → ℕ},
+      ValidBlockChain b_0 s u (0 + 1 + M + 1) →
+      2 ≤ s 0 →
+      (∀ k < M, 2 ≤ s (0 + 1 + k)) →
+      let K := 0 + 1 + M
+      let T_K := blockSteps s K
+      let s' := fun t => s (0 + 1 + t)
+      let d_0 := blockSteps s' M
+      let S_0 := d_0 + s K
+      let R_0 := 3 ^ d_0 + renewalNumerator s' M
+      let tailOddProd := oddCoreProd (fun r => u (0 + 1 + r)) M
+      u K = (3 ^ T_K * u 0) / 2 ^ S_0 + R_0 / 2 ^ S_0 + 1 ∧
+        base2DigitSum (3 ^ T_K * u 0) + base2DigitSum R_0 =
+          S_0 + 1 + base2DigitSum ((3 ^ T_K * u 0) / 2 ^ S_0) +
+            base2DigitSum (R_0 / 2 ^ S_0) ∧
+        (3 ^ T_K * u 0 + R_0) * tailOddProd = stepNumProd s u K ∧
+        R_0 * tailOddProd = stepNumProd s u K - 3 ^ T_K * oddCoreProd u K) := by
+  intro b_0 M s u hchain hs0 hs_tail K T_K s' d_0 S_0 R_0 tailOddProd
+  have h93 := path_a_binary_carry_split_and_quotient_decomposition_of_u_K hchain hs0 hs_tail
+  have h94 := path_a_zero_carry_binary_block_split_and_weight_excess_law hchain hs0 hs_tail
+  have h95 := path_b_reduced_odd_seed_product_formula_and_symmetric_excess hchain hs0 hs_tail
+  exact ⟨h93.2.1, h94.2.1, h95.2.1.1, h95.2.2.1.2⟩
+
 
 #check @archimedean_rung_ceiling_and_stepSum_bound
 #check @unit_quotient_even_rung_instant_death_and_odd_rung_mod64_identity
@@ -7632,6 +7978,10 @@ theorem master_conditional_canyon_closure_and_92_theorem_synthesis :
 #check @velocity_two_adic_valuation_lock_and_telescoped_odd_core_sum
 #check @nested_canyon_interval_tube_and_exponential_width_contraction
 #check @master_conditional_canyon_closure_and_92_theorem_synthesis
+#check @path_a_binary_carry_split_and_quotient_decomposition_of_u_K
+#check @path_a_zero_carry_binary_block_split_and_weight_excess_law
+#check @path_b_reduced_odd_seed_product_formula_and_symmetric_excess
+#check @grand_path_a_and_path_b_96_theorem_synthesis
 
 #print axioms archimedean_rung_ceiling_and_stepSum_bound
 #print axioms unit_quotient_even_rung_instant_death_and_odd_rung_mod64_identity

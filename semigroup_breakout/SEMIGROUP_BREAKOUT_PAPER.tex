@@ -281,4 +281,12 @@ Across any \texttt{ValidBlockChain b\_0 s u (K + 4)} with $\forall k < K + 4,\, 
 \end{enumerate}
 \end{theorem}
 
+\begin{theorem}[Path A (Binary Carry-Split \& Quotient Decomposition of $u_K$) and Path B (Reduced Odd-Seed Product Formula \& Symmetric Excess) (Theorems SB.93--SB.96), \texttt{path\_a\_binary\_carry\_split\_and\_quotient\_decomposition\_of\_u\_K}, \texttt{path\_a\_zero\_carry\_binary\_block\_split\_and\_weight\_excess\_law}, \texttt{path\_b\_reduced\_odd\_seed\_product\_formula\_and\_symmetric\_excess}, \texttt{grand\_path\_a\_and\_path\_b\_96\_theorem\_synthesis}]
+\begin{enumerate}
+  \item \textbf{Path A Binary Carry-Split \& Quotient Decomposition (SB.93):} In $2^{S_0} u_K = 3^{T_K} u_0 + R_0$, $(3^{T_K} u_0) \bmod 2^{S_0} + R_0 \bmod 2^{S_0} = 2^{S_0}$, $u_K = \lfloor 3^{T_K} u_0 / 2^{S_0} \rfloor + \lfloor R_0 / 2^{S_0} \rfloor + 1$, and $s_2((3^{T_K} u_0) \bmod 2^{S_0}) + s_2(R_0 \bmod 2^{S_0}) = S_0 + 1$.
+  \item \textbf{Path A Full Binary Weight Excess Law (SB.94):} $s_2(3^{T_K} u_0) + s_2(R_0) = S_0 + 1 + s_2(\lfloor 3^{T_K} u_0 / 2^{S_0} \rfloor) + s_2(\lfloor R_0 / 2^{S_0} \rfloor)$, forcing $s_2(3^{T_K} u_0) + s_2(R_0) \ge S_0 + 2$ whenever $u_K \ge 2$.
+  \item \textbf{Path B Reduced Odd-Seed Product Formula (SB.95):} Canceling $P_0 = 2^{s_0} u_0$ yields $(3^{T_K} u_0 + R_0) \prod_{r=1}^{K-1} u_r = \prod_{r=0}^{K-1} (3^{s_r} u_r + 1)$, $R_0 \prod_{r=1}^{K-1} u_r = \prod_{r=0}^{K-1} (3^{s_r} u_r + 1) - 3^{T_K} \prod_{r=0}^{K-1} u_r$, and $\prod_{r=0}^{K-1} (3^{s_r} u_r + 1) \bmod u_0 = (R_0 \prod_{r=1}^{K-1} u_r) \bmod u_0$.
+\end{enumerate}
+\end{theorem}
+
 \end{document}

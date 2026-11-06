@@ -810,7 +810,38 @@ Formalizes the exact conditional closure bridges for **Path A / Path C** (Carry-
 
 ---
 
-## 23. Verification Instructions
+## 23. Path A (Binary Carry-Split & Quotient Decomposition of $u_K$) and Path B (Reduced Odd-Seed Product Formula & Symmetric Excess) (Theorems `SB.93–SB.96`)
+
+In Sections 93–96 of [`SemigroupBreakoutTheorems.lean`](./SemigroupBreakoutTheorems.lean) (verified computationally across 2,343 configurations in [`sandbox_wave17_path_a_and_path_b.py`](./sandbox_wave17_path_a_and_path_b.py)), we pursued both Path A and Path B to their exact structural decompositions:
+
+### 23.1 Theorem SB.93 (`path_a_binary_carry_split_and_quotient_decomposition_of_u_K`)
+In the reduced odd-seed evolution equation $2^{S_0} u_K = 3^{T_K} u_0 + R_0$ ($S_0 = T_K - s_0 + s_K$, $R_0 \bmod 2 = 1$):
+1. **Exact $2^{S_0}$ Low-Bit 2's-Complement Cancellation:**
+   $$\boxed{1 \le \big(3^{T_K} u_0\big) \bmod 2^{S_0}, \qquad 1 \le R_0 \bmod 2^{S_0}, \qquad \big(3^{T_K} u_0\big) \bmod 2^{S_0} + \big(R_0 \bmod 2^{S_0}\big) = 2^{S_0}!}$$
+2. **Exact Binary Quotient Decomposition of the Odd Core $u_K$:**
+   $$\boxed{u_K = \left\lfloor \frac{3^{T_K} u_0}{2^{S_0}} \right\rfloor + \left\lfloor \frac{R_0}{2^{S_0}} \right\rfloor + 1!}$$
+3. **Exact Carry-Mixing Binary Weight Conservation Law:**
+   $$\boxed{s_2\Big(\big(3^{T_K} u_0\big) \bmod 2^{S_0}\Big) + s_2\Big(R_0 \bmod 2^{S_0}\Big) = S_0 + 1!}$$
+
+### 23.2 Theorem SB.94 (`path_a_zero_carry_binary_block_split_and_weight_excess_law`)
+Splitting $3^{T_K} u_0$ and $R_0$ in Base 2 at bit $S_0$ yields the exact total binary weight identity across the carry boundary:
+$$\boxed{s_2\big(3^{T_K} u_0\big) + s_2(R_0) = S_0 + 1 + s_2\!\left(\left\lfloor \frac{3^{T_K} u_0}{2^{S_0}} \right\rfloor\right) + s_2\!\left(\left\lfloor \frac{R_0}{2^{S_0}} \right\rfloor\right),}$$
+forcing $s_2(3^{T_K} u_0) + s_2(R_0) \ge S_0 + 1$, and $s_2(3^{T_K} u_0) + s_2(R_0) \ge S_0 + 2$ whenever $u_K \ge 2$!
+
+### 23.3 Theorem SB.95 (`path_b_reduced_odd_seed_product_formula_and_symmetric_excess`)
+Canceling the trivial seed factor $P_0 = 2^{s_0} u_0$ from the global product formula (`SB.74`) with `tailOddProd` $= \prod_{r=1}^{K-1} u_r$:
+$$\boxed{\begin{aligned}
+\big(3^{T_K} u_0 + R_0\big) \prod_{r=1}^{K-1} u_r &= \prod_{r=0}^{K-1} \big(3^{s_r} u_r + 1\big), \\
+R_0 \prod_{r=1}^{K-1} u_r &= \prod_{r=0}^{K-1} \big(3^{s_r} u_r + 1\big) - 3^{T_K} \prod_{r=0}^{K-1} u_r, \\
+\prod_{r=0}^{K-1} \big(3^{s_r} u_r + 1\big) \bmod u_0 &= \left(R_0 \prod_{r=1}^{K-1} u_r\right) \bmod u_0!
+\end{aligned}}$$
+
+### 23.4 Theorem SB.96 (`grand_path_a_and_path_b_96_theorem_synthesis`)
+Unifies Path A (`SB.93–SB.94`) and Path B (`SB.95`) with the Master Conditional Closure (`SB.92`), completing all **96 `sorry`-free, warning-free theorems (`SB.1–SB.96`)**.
+
+---
+
+## 24. Verification Instructions
 
 To verify the cordoned-off Lean 4 proofs without modifying the root 226-file build:
 
@@ -835,4 +866,5 @@ python semigroup_breakout\sandbox_wave13_kempner_two_adic_expansion.py
 python semigroup_breakout\sandbox_wave14_ceiling_dual_gauge_tower.py
 python semigroup_breakout\sandbox_wave15_superblock_and_multigauge.py
 python semigroup_breakout\sandbox_wave16_velocity_calculus_and_master_closure.py
+python semigroup_breakout\sandbox_wave17_path_a_and_path_b.py
 ```
