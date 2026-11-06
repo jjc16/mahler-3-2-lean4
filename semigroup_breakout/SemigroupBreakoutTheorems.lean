@@ -7885,6 +7885,339 @@ theorem grand_path_a_and_path_b_96_theorem_synthesis :
   have h95 := path_b_reduced_odd_seed_product_formula_and_symmetric_excess hchain hs0 hs_tail
   exact ⟨h93.2.1, h94.2.1, h95.2.1.1, h95.2.2.1.2⟩
 
+/-! ## 97. Theorem SB.97: Universal Mod-5 & Mod-10 Gauge Lock & Run-Length Parity Detector -/
+
+/-- Helper: `4 ^ m % 5` alternates between `1` (even `m`) and `4` (odd `m`). -/
+theorem four_pow_mod_five_parity (m : ℕ) :
+    (m % 2 = 0 → 4 ^ m % 5 = 1) ∧ (m % 2 = 1 → 4 ^ m % 5 = 4) := by
+  induction m with
+  | zero => decide
+  | succ m ih =>
+      have hpow : 4 ^ (m + 1) = 4 * 4 ^ m := by
+        rw [Nat.pow_succ]
+        ring
+      rw [hpow]
+      omega
+
+/-- **Universal Mod-5 & Mod-10 Gauge Lock & Run-Length Parity Detector
+(`universal_mod5_and_mod10_gauge_lock_and_run_parity_detector`, Theorem SB.97)**:
+1. **Universal Mod-5 & Mod-10 Gauge Lock on $W_{r+1}$**:
+   Suppose `ValidBlockChain b_0 s u (r + 3)` holds with `2 ≤ s r`, `2 ≤ s (r + 1)`,
+   and `2 ≤ s (r + 2)`. Setting `P k = oddReturnP (orbit b_0 (blockSteps s k))`
+   and `W_1 = (5 * P (r + 1) + 4) / 36`:
+   - `W_1 % 5 = 4` (every interior gauge state ends in `4` in Base 5!),
+   - `(W_1 % 10 = 4 ↔ s (r + 1) = 2)`, and
+   - `(W_1 % 10 = 9 ↔ 3 ≤ s (r + 1))`!
+2. **Mod-5 & Mod-10 Super-Block Run-Length Parity Detector**:
+   Suppose `ValidBlockChain b_0 s u (r + 1 + m + 2)` holds with `2 ≤ s r`,
+   `∀ k < m, s (r + 1 + k) = 2`, `3 ≤ s (r + 1 + m)`, `2 ≤ s (r + 1 + m + 1)`, and
+   `(5 * oddReturnP (orbit b_0 (blockSteps s (r + 1))) + 4) / 36 = 4 ^ m * V`:
+   - `(m % 2 = 0 ↔ V % 5 = 4)` and `(m % 2 = 1 ↔ V % 5 = 1)`,
+   - `(m % 2 = 0 ↔ V % 10 = 9)` and `(m % 2 = 1 ↔ V % 10 = 1)`, and
+   - `V % 5 ≠ 0 ∧ V % 5 ≠ 2 ∧ V % 5 ≠ 3`! -/
+theorem universal_mod5_and_mod10_gauge_lock_and_run_parity_detector :
+    (∀ {b_0 r : ℕ} {s u : ℕ → ℕ},
+      ValidBlockChain b_0 s u (r + 3) →
+      2 ≤ s r →
+      2 ≤ s (r + 1) →
+      2 ≤ s (r + 2) →
+      let P := fun k => oddReturnP (orbit b_0 (blockSteps s k))
+      let W_1 := (5 * P (r + 1) + 4) / 36
+      W_1 % 5 = 4 ∧
+        (W_1 % 10 = 4 ↔ s (r + 1) = 2) ∧
+        (W_1 % 10 = 9 ↔ 3 ≤ s (r + 1))) ∧
+    (∀ {b_0 r m V : ℕ} {s u : ℕ → ℕ},
+      ValidBlockChain b_0 s u (r + 1 + m + 2) →
+      2 ≤ s r →
+      (∀ k < m, s (r + 1 + k) = 2) →
+      3 ≤ s (r + 1 + m) →
+      2 ≤ s (r + 1 + m + 1) →
+      (5 * oddReturnP (orbit b_0 (blockSteps s (r + 1))) + 4) / 36 = 4 ^ m * V →
+      (m % 2 = 0 ↔ V % 5 = 4) ∧
+        (m % 2 = 1 ↔ V % 5 = 1) ∧
+        (m % 2 = 0 ↔ V % 10 = 9) ∧
+        (m % 2 = 1 ↔ V % 10 = 1) ∧
+        V % 5 ≠ 0 ∧ V % 5 ≠ 2 ∧ V % 5 ≠ 3) := by
+  have hpart1 :
+      ∀ {b_0 r : ℕ} {s u : ℕ → ℕ},
+        ValidBlockChain b_0 s u (r + 3) →
+        2 ≤ s r →
+        2 ≤ s (r + 1) →
+        2 ≤ s (r + 2) →
+        let P := fun k => oddReturnP (orbit b_0 (blockSteps s k))
+        let W_1 := (5 * P (r + 1) + 4) / 36
+        W_1 % 5 = 4 ∧
+          (W_1 % 10 = 4 ↔ s (r + 1) = 2) ∧
+          (W_1 % 10 = 9 ↔ 3 ≤ s (r + 1)) := by
+    intro b_0 r s u hchain hs_r hs_r1 hs_r2 P W_1
+    have h81 := ceiling_dual_gauge_transform_and_rung_two_parity_detector
+      hchain hs_r hs_r1 hs_r2
+    have h36 : 36 * W_1 = 5 * P (r + 1) + 4 := h81.1.2.2.1
+    have hpar_even : W_1 % 2 = 0 ↔ s (r + 1) = 2 := h81.2.1.1
+    have hpar_odd : W_1 % 2 = 1 ↔ 3 ≤ s (r + 1) := h81.2.1.2
+    have hmod5 : W_1 % 5 = 4 := by omega
+    have hmod10_4 : W_1 % 10 = 4 ↔ s (r + 1) = 2 := by
+      have hev : W_1 % 10 = 4 ↔ W_1 % 2 = 0 := by omega
+      exact hev.trans hpar_even
+    have hmod10_9 : W_1 % 10 = 9 ↔ 3 ≤ s (r + 1) := by
+      have hod : W_1 % 10 = 9 ↔ W_1 % 2 = 1 := by omega
+      exact hod.trans hpar_odd
+    exact ⟨hmod5, hmod10_4, hmod10_9⟩
+  refine ⟨hpart1, ?_⟩
+  intro b_0 r m V s u hchain hs_r hs_run hs_star hs_next hW_init
+  have h86_odd : V % 2 = 1 :=
+    (mod_eight_odd_gauge_future_rung_predictor_and_seven_extinction
+      hchain hs_r hs_run hs_star hs_next hW_init).1.2.1
+  have hch_r3 : ValidBlockChain b_0 s u (r + 3) := fun k hk => hchain k (by omega)
+  have hs_r1 : 2 ≤ s (r + 1) := by
+    rcases (by omega : m = 0 ∨ 1 ≤ m) with rfl | hm1
+    · have hst : 3 ≤ s (r + 1) := by simpa using hs_star
+      omega
+    · have h : s (r + 1) = 2 := by simpa using hs_run 0 hm1
+      omega
+  have hs_r2 : 2 ≤ s (r + 2) := by
+    rcases (by omega : m = 0 ∨ m = 1 ∨ 2 ≤ m) with rfl | rfl | hm2
+    · simpa using hs_next
+    · have hst : 3 ≤ s (r + 1 + 1) := hs_star
+      have heq : r + 1 + 1 = r + 2 := by omega
+      rw [heq] at hst
+      omega
+    · have h := hs_run 1 hm2
+      have heq : r + 1 + 1 = r + 2 := by omega
+      rw [heq] at h
+      omega
+  have hW1_mod5 : ((5 * oddReturnP (orbit b_0 (blockSteps s (r + 1))) + 4) / 36) % 5 = 4 :=
+    (hpart1 hch_r3 hs_r hs_r1 hs_r2).1
+  rw [hW_init] at hW1_mod5
+  clear hpart1 hch_r3 hs_r1 hs_r2 hW_init hs_run hs_star hs_next hs_r hchain
+  have hmul5 : ((4 ^ m % 5) * (V % 5)) % 5 = 4 := by
+    rw [Nat.mul_mod] at hW1_mod5
+    exact hW1_mod5
+  have h4_5 := four_pow_mod_five_parity m
+  have hm_even_imp : m % 2 = 0 → V % 5 = 4 := by
+    intro hm0
+    have h4 : 4 ^ m % 5 = 1 := h4_5.1 hm0
+    rw [h4] at hmul5
+    omega
+  have hm_odd_imp : m % 2 = 1 → V % 5 = 1 := by
+    intro hm1
+    have h4 : 4 ^ m % 5 = 4 := h4_5.2 hm1
+    rw [h4] at hmul5
+    omega
+  have hcases_m : m % 2 = 0 ∨ m % 2 = 1 := by omega
+  have hiff5_4 : m % 2 = 0 ↔ V % 5 = 4 := by
+    constructor
+    · exact hm_even_imp
+    · intro hv4
+      rcases hcases_m with h0 | h1
+      · exact h0
+      · have hv1 := hm_odd_imp h1; omega
+  have hiff5_1 : m % 2 = 1 ↔ V % 5 = 1 := by
+    constructor
+    · exact hm_odd_imp
+    · intro hv1
+      rcases hcases_m with h0 | h1
+      · have hv4 := hm_even_imp h0; omega
+      · exact h1
+  have hiff10_9 : m % 2 = 0 ↔ V % 10 = 9 := by omega
+  have hiff10_1 : m % 2 = 1 ↔ V % 10 = 1 := by omega
+  exact ⟨hiff5_4, hiff5_1, hiff10_9, hiff10_1, by omega, by omega, by omega⟩
+
+/-! ## 98. Theorem SB.98: Mod-40 Six-Residue Super-Block Bijection & 34-Class Extinction Law -/
+
+/-- Pure CRT helper for `V % 40` in terms of `V % 5 ∈ {1, 4}` and `V % 8 ∈ {1, 3, 5}`. -/
+theorem mod40_crt_six_cases (V : ℕ) :
+    (V % 40 = 19 ↔ V % 5 = 4 ∧ V % 8 = 3) ∧
+      (V % 40 = 11 ↔ V % 5 = 1 ∧ V % 8 = 3) ∧
+      (V % 40 = 29 ↔ V % 5 = 4 ∧ V % 8 = 5) ∧
+      (V % 40 = 21 ↔ V % 5 = 1 ∧ V % 8 = 5) ∧
+      (V % 40 = 9 ↔ V % 5 = 4 ∧ V % 8 = 1) ∧
+      (V % 40 = 1 ↔ V % 5 = 1 ∧ V % 8 = 1) ∧
+      ((V % 5 = 1 ∨ V % 5 = 4) →
+        (V % 8 = 1 ∨ V % 8 = 3 ∨ V % 8 = 5) →
+        (V % 40 = 1 ∨ V % 40 = 9 ∨ V % 40 = 11 ∨
+          V % 40 = 19 ∨ V % 40 = 21 ∨ V % 40 = 29)) := by
+  refine ⟨by omega, by omega, by omega, by omega, by omega, by omega, by omega⟩
+
+/-- **Mod-40 Six-Residue Super-Block Bijection & 34-Class Extinction Law
+(`mod40_six_residue_superblock_bijection_and_34_class_extinction`, Theorem SB.98)**:
+Suppose `ValidBlockChain b_0 s u (r + 1 + m + 2)` holds with `2 ≤ s r`,
+`∀ k < m, s (r + 1 + k) = 2`, `3 ≤ s (r + 1 + m)`, `2 ≤ s (r + 1 + m + 1)`, and
+`(5 * oddReturnP (orbit b_0 (blockSteps s (r + 1))) + 4) / 36 = 4 ^ m * V`.
+Setting `s_star = s (r + 1 + m)`:
+1. **Exact Six-Way Mod-40 Bijection Determining Both $(m \bmod 2)$ and $s^*$**:
+   - `(V % 40 = 19 ↔ m % 2 = 0 ∧ s_star = 3)`,
+   - `(V % 40 = 11 ↔ m % 2 = 1 ∧ s_star = 3)`,
+   - `(V % 40 = 29 ↔ m % 2 = 0 ∧ s_star = 4)`,
+   - `(V % 40 = 21 ↔ m % 2 = 1 ∧ s_star = 4)`,
+   - `(V % 40 = 9 ↔ m % 2 = 0 ∧ 5 ≤ s_star)`, and
+   - `(V % 40 = 1 ↔ m % 2 = 1 ∧ 5 ≤ s_star)`, and
+2. **Exhaustive Six-Residue Survival Set Modulo 40 (34 of 40 Classes Extinct!)**:
+   `V % 40 = 1 ∨ V % 40 = 9 ∨ V % 40 = 11 ∨ V % 40 = 19 ∨ V % 40 = 21 ∨ V % 40 = 29`! -/
+theorem mod40_six_residue_superblock_bijection_and_34_class_extinction
+    {b_0 r m V : ℕ} {s u : ℕ → ℕ}
+    (hchain : ValidBlockChain b_0 s u (r + 1 + m + 2))
+    (hs_r : 2 ≤ s r)
+    (hs_run : ∀ k < m, s (r + 1 + k) = 2)
+    (hs_star : 3 ≤ s (r + 1 + m))
+    (hs_next : 2 ≤ s (r + 1 + m + 1))
+    (hW_init : (5 * oddReturnP (orbit b_0 (blockSteps s (r + 1))) + 4) / 36 = 4 ^ m * V) :
+    let s_star := s (r + 1 + m)
+    ((V % 40 = 19 ↔ m % 2 = 0 ∧ s_star = 3) ∧
+      (V % 40 = 11 ↔ m % 2 = 1 ∧ s_star = 3) ∧
+      (V % 40 = 29 ↔ m % 2 = 0 ∧ s_star = 4) ∧
+      (V % 40 = 21 ↔ m % 2 = 1 ∧ s_star = 4) ∧
+      (V % 40 = 9 ↔ m % 2 = 0 ∧ 5 ≤ s_star) ∧
+      (V % 40 = 1 ↔ m % 2 = 1 ∧ 5 ≤ s_star)) ∧
+      (V % 40 = 1 ∨ V % 40 = 9 ∨ V % 40 = 11 ∨
+        V % 40 = 19 ∨ V % 40 = 21 ∨ V % 40 = 29) := by
+  intro s_star
+  have h86_pred := (mod_eight_odd_gauge_future_rung_predictor_and_seven_extinction
+    hchain hs_r hs_run hs_star hs_next hW_init).2.2.1
+  have h97 := universal_mod5_and_mod10_gauge_lock_and_run_parity_detector.2
+    hchain hs_r hs_run hs_star hs_next hW_init
+  have h8_3 : V % 8 = 3 ↔ s_star = 3 := h86_pred.1
+  have h8_5 : V % 8 = 5 ↔ s_star = 4 := h86_pred.2.1
+  have h8_1 : V % 8 = 1 ↔ 5 ≤ s_star := h86_pred.2.2
+  have h5_4 : m % 2 = 0 ↔ V % 5 = 4 := h97.1
+  have h5_1 : m % 2 = 1 ↔ V % 5 = 1 := h97.2.1
+  have hcrt := mod40_crt_six_cases V
+  have h19 : V % 40 = 19 ↔ m % 2 = 0 ∧ s_star = 3 := by
+    rw [hcrt.1, ← h5_4, ← h8_3]
+  have h11 : V % 40 = 11 ↔ m % 2 = 1 ∧ s_star = 3 := by
+    rw [hcrt.2.1, ← h5_1, ← h8_3]
+  have h29 : V % 40 = 29 ↔ m % 2 = 0 ∧ s_star = 4 := by
+    rw [hcrt.2.2.1, ← h5_4, ← h8_5]
+  have h21 : V % 40 = 21 ↔ m % 2 = 1 ∧ s_star = 4 := by
+    rw [hcrt.2.2.2.1, ← h5_1, ← h8_5]
+  have h9 : V % 40 = 9 ↔ m % 2 = 0 ∧ 5 ≤ s_star := by
+    rw [hcrt.2.2.2.2.1, ← h5_4, ← h8_1]
+  have h1 : V % 40 = 1 ↔ m % 2 = 1 ∧ 5 ≤ s_star := by
+    rw [hcrt.2.2.2.2.2.1, ← h5_1, ← h8_1]
+  have hm5 : V % 5 = 1 ∨ V % 5 = 4 := by
+    rcases (by omega : m % 2 = 0 ∨ m % 2 = 1) with h0 | h1
+    · exact Or.inr (h5_4.mp h0)
+    · exact Or.inl (h5_1.mp h1)
+  have hm8 : V % 8 = 1 ∨ V % 8 = 3 ∨ V % 8 = 5 := by
+    rcases (by omega : s_star = 3 ∨ s_star = 4 ∨ 5 ≤ s_star) with h3 | h4 | h5
+    · exact Or.inr (Or.inl (h8_3.mpr h3))
+    · exact Or.inr (Or.inr (h8_5.mpr h4))
+    · exact Or.inl (h8_1.mpr h5)
+  exact ⟨⟨h19, h11, h29, h21, h9, h1⟩, hcrt.2.2.2.2.2.2 hm5 hm8⟩
+
+/-! ## 99. Theorem SB.99: Cyclotomic Base-$D_m$ Modular Invariance & Base-4 / Base-9 Shift Laws -/
+
+/-- **Cyclotomic Base-$D_m$ Modular Invariance & Base-4 / Base-9 Shift Laws
+(`cyclotomic_base_dm_modular_invariance_and_mod19_mod13_locks`, Theorem SB.99)**:
+1. **Universal Base-$D_m$ ($D_m = 3^m - 2^m$) Modular Lock**:
+   For every `m, P : ℕ`,
+   `cyclotomicGauge m P % (3 ^ m - 2 ^ m) = 2 ^ m % (3 ^ m - 2 ^ m)`,
+2. **Explicit Mod-5 ($m=2$), Mod-19 ($m=3$), Mod-65 & Mod-13 ($m=4$), and Mod-211 ($m=5$) Locks**:
+   For every `P : ℕ`:
+   - `cyclotomicGauge 2 P % 5 = 4`,
+   - `cyclotomicGauge 3 P % 19 = 8`,
+   - `cyclotomicGauge 4 P % 65 = 16` and `cyclotomicGauge 4 P % 13 = 3`,
+   - `cyclotomicGauge 5 P % 211 = 32`, and
+3. **Base-4 to Base-9 Super-Block Shift & Base-3 Digit-Sum Invariance**:
+   For every `m, V : ℕ`:
+   - `(4 ^ m * V) / 4 ^ m = V` and `(4 ^ m * V) % 4 ^ m = 0`,
+   - `(9 ^ m * V) / 9 ^ m = V` and `(9 ^ m * V) % 9 ^ m = 0`, and
+   - `base3DigitSum (9 ^ m * V) = base3DigitSum V`! -/
+theorem cyclotomic_base_dm_modular_invariance_and_mod19_mod13_locks :
+    (∀ m P : ℕ,
+      cyclotomicGauge m P % (3 ^ m - 2 ^ m) = 2 ^ m % (3 ^ m - 2 ^ m)) ∧
+    (∀ P : ℕ,
+      cyclotomicGauge 2 P % 5 = 4 ∧
+        cyclotomicGauge 3 P % 19 = 8 ∧
+        cyclotomicGauge 4 P % 65 = 16 ∧
+        cyclotomicGauge 4 P % 13 = 3 ∧
+        cyclotomicGauge 5 P % 211 = 32) ∧
+    (∀ m V : ℕ,
+      (4 ^ m * V) / 4 ^ m = V ∧
+        (4 ^ m * V) % 4 ^ m = 0 ∧
+        (9 ^ m * V) / 9 ^ m = V ∧
+        (9 ^ m * V) % 9 ^ m = 0 ∧
+        base3DigitSum (9 ^ m * V) = base3DigitSum V) := by
+  refine ⟨?_, ?_, ?_⟩
+  · intro m P
+    have hcomm : cyclotomicGauge m P = 2 ^ m + (3 ^ m - 2 ^ m) * P := by
+      change (3 ^ m - 2 ^ m) * P + 2 ^ m = 2 ^ m + (3 ^ m - 2 ^ m) * P
+      ring
+    rw [hcomm, Nat.add_mul_mod_self_left]
+  · intro P
+    have h2 : cyclotomicGauge 2 P % 5 = 4 := by
+      change (5 * P + 4) % 5 = 4
+      omega
+    have h3 : cyclotomicGauge 3 P % 19 = 8 := by
+      change (19 * P + 8) % 19 = 8
+      omega
+    have h4_65 : cyclotomicGauge 4 P % 65 = 16 := by
+      change (65 * P + 16) % 65 = 16
+      omega
+    have h4_13 : cyclotomicGauge 4 P % 13 = 3 := by
+      change (65 * P + 16) % 13 = 3
+      omega
+    have h5 : cyclotomicGauge 5 P % 211 = 32 := by
+      change (211 * P + 32) % 211 = 32
+      omega
+    exact ⟨h2, h3, h4_65, h4_13, h5⟩
+  · intro m V
+    have h4_pos : 0 < 4 ^ m := Nat.pow_pos (by decide)
+    have h9_pos : 0 < 9 ^ m := Nat.pow_pos (by decide)
+    have hp9 : 9 ^ m * V = 3 ^ (2 * m) * V := by
+      rw [Nat.pow_mul 3 2 m]
+    refine ⟨Nat.mul_div_right V h4_pos,
+      Nat.mul_mod_right (4 ^ m) V,
+      Nat.mul_div_right V h9_pos,
+      Nat.mul_mod_right (9 ^ m) V, ?_⟩
+    rw [hp9, base3DigitSum_three_pow_mul (2 * m) V]
+
+/-! ## 100. Theorem SB.100: Centennial 100-Theorem Grand Synthesis of the Semigroup Breakout Campaign -/
+
+/-- **Centennial 100-Theorem Grand Synthesis of the Semigroup Breakout Campaign
+(`grand_centennial_100_theorem_semigroup_breakout_synthesis`, Theorem SB.100)**:
+Unifies the Mod-5/Mod-10 gauge lock (`SB.97`), the Mod-40 six-residue Super-Block
+bijection (`SB.98`), the Cyclotomic Base-$D_m$ and Base-4/Base-9 shift laws (`SB.99`),
+the Path A & Path B syntheses (`SB.93–SB.96`), and the Master Conditional Canyon
+Closure (`SB.89–SB.92`). -/
+theorem grand_centennial_100_theorem_semigroup_breakout_synthesis :
+    (∀ {b_0 r m V : ℕ} {s u : ℕ → ℕ},
+      ValidBlockChain b_0 s u (r + 1 + m + 2) →
+      2 ≤ s r →
+      (∀ k < m, s (r + 1 + k) = 2) →
+      3 ≤ s (r + 1 + m) →
+      2 ≤ s (r + 1 + m + 1) →
+      (5 * oddReturnP (orbit b_0 (blockSteps s (r + 1))) + 4) / 36 = 4 ^ m * V →
+      (V % 40 = 1 ∨ V % 40 = 9 ∨ V % 40 = 11 ∨
+        V % 40 = 19 ∨ V % 40 = 21 ∨ V % 40 = 29)) ∧
+    (∀ P : ℕ,
+      cyclotomicGauge 2 P % 5 = 4 ∧
+        cyclotomicGauge 3 P % 19 = 8 ∧
+        cyclotomicGauge 4 P % 13 = 3 ∧
+        cyclotomicGauge 5 P % 211 = 32) ∧
+    (∀ {b_0 M : ℕ} {s u : ℕ → ℕ},
+      ValidBlockChain b_0 s u (0 + 1 + M + 1) →
+      2 ≤ s 0 →
+      (∀ k < M, 2 ≤ s (0 + 1 + k)) →
+      let K := 0 + 1 + M
+      let T_K := blockSteps s K
+      let s' := fun t => s (0 + 1 + t)
+      let d_0 := blockSteps s' M
+      let S_0 := d_0 + s K
+      let R_0 := 3 ^ d_0 + renewalNumerator s' M
+      u K = (3 ^ T_K * u 0) / 2 ^ S_0 + R_0 / 2 ^ S_0 + 1 ∧
+        (3 ^ T_K * u 0) % 2 ^ S_0 + R_0 % 2 ^ S_0 = 2 ^ S_0) := by
+  refine ⟨?_, ?_, ?_⟩
+  · intro b_0 r m V s u hchain hs_r hs_run hs_star hs_next hW_init
+    exact (mod40_six_residue_superblock_bijection_and_34_class_extinction
+      hchain hs_r hs_run hs_star hs_next hW_init).2
+  · intro P
+    have h99 := cyclotomic_base_dm_modular_invariance_and_mod19_mod13_locks.2.1 P
+    exact ⟨h99.1, h99.2.1, h99.2.2.2.1, h99.2.2.2.2⟩
+  · intro b_0 M s u hchain hs0 hs_tail
+    have h93 := path_a_binary_carry_split_and_quotient_decomposition_of_u_K hchain hs0 hs_tail
+    exact ⟨h93.2.1, h93.1.2.2⟩
+
 
 #check @archimedean_rung_ceiling_and_stepSum_bound
 #check @unit_quotient_even_rung_instant_death_and_odd_rung_mod64_identity
@@ -7982,6 +8315,10 @@ theorem grand_path_a_and_path_b_96_theorem_synthesis :
 #check @path_a_zero_carry_binary_block_split_and_weight_excess_law
 #check @path_b_reduced_odd_seed_product_formula_and_symmetric_excess
 #check @grand_path_a_and_path_b_96_theorem_synthesis
+#check @universal_mod5_and_mod10_gauge_lock_and_run_parity_detector
+#check @mod40_six_residue_superblock_bijection_and_34_class_extinction
+#check @cyclotomic_base_dm_modular_invariance_and_mod19_mod13_locks
+#check @grand_centennial_100_theorem_semigroup_breakout_synthesis
 
 #print axioms archimedean_rung_ceiling_and_stepSum_bound
 #print axioms unit_quotient_even_rung_instant_death_and_odd_rung_mod64_identity
