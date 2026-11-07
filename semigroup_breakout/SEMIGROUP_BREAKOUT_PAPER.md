@@ -928,11 +928,66 @@ which skips $m$ consecutive $s = 2$ blocks in a single arithmetic operation, and
 | **$415{,}789$** | **$18$** | $46$ | $[3, 2, 2, 2, 2, 2, 3, 2, 4, 3, 2, 2, 4, 2, 2, 3, 3, 3, 1]$ |
 
 ### 25.4 Theorem SB.104 (`zfc_deductive_semigroup_pre_vs_post_horizon_overspill_bridge`)
-Formalizes the exact bridge between the **pre-horizon 2-adic periodic lattice** ($\forall q \in \mathbb{N},\; P_0 + q \cdot 2^{S_K + 1}$ satisfies the exact same $K$-block survival congruence) and the **post-horizon archimedean collapse** ($P_0 < 2^{S_K}$ excludes all $q \ge 1$, leaving at most one natural number), completing all **104 `sorry`-free, warning-free theorems (`SB.1–SB.104`)**.
+Formalizes the exact bridge between the **pre-horizon 2-adic periodic lattice** ($\forall q \in \mathbb{N},\; P_0 + q \cdot 2^{S_K + 1}$ satisfies the exact same $K$-block survival congruence) and the **post-horizon archimedean collapse** ($P_0 < 2^{S_K}$ excludes all $q \ge 1$, leaving at most one natural number).
 
 ---
 
-## 26. Verification Instructions
+## 26. Wave 20 (`SB.105–SB.108`): Universal $q / 2$ Relaxation Phase Diagram, Kempner Threshold Inversion Dichotomy ($q = 3$ vs. $q \ge 5$), & The Universal $(q^2 - 4) u + 1$ Super-Block Gauge
+
+In [`sandbox_wave20_universal_q_half_relaxation_and_kempner_dichotomy.py`](./sandbox_wave20_universal_q_half_relaxation_and_kempner_dichotomy.py), we compare the generalized Mahler problem $\{x (q/2)^n\} \in [0, k)$ across all odd fractions $q / 2 \in \{3/2, 5/2, 7/2, 9/2, 11/2, 13/2, 15/2, 17/2, 19/2, 21/2\}$. This comparison separates what is **universal across every odd $q \ge 3$** from what **uniquely over-constrains $q = 3$ ($3/2$)**.
+
+### 26.1 Theorem SB.105 (`universal_q_half_zone_thresholds_and_kempner_inversion_dichotomy`)
+For any odd $q \ge 3$, the four critical relaxation thresholds for $\{x (q/2)^n\} \in [0, k)$ are:
+- $k_0(q) = \frac{1}{q}$ (Zone 0: total extinction, $0$ odd steps),
+- $k_1(q) = \frac{q + 2}{q^2}$ (Zone 1 top: $s_r = 1$ forbidden, $s_r \ge 2$ Mahler canyon),
+- $k_{\text{Kemp}}(q) = \frac{q}{q^2 - 4}$ (the all-$s_r = 2$ periodic Kempner fixed point), and
+- $k_3(q) = \frac{1}{q - 2}$ (Zone 3: $100\%$ survival, gapless coverage).
+
+We prove the **Kempner Threshold Inversion Dichotomy** via the exact polynomial identity:
+$$\boxed{(q + 2)(q^2 - 4) - q^3 = 2(q^2 - 2 q - 4) = 2\bigl((q - 4)^2 + 6(q - 4) + 4\bigr) - 8\text{ at } q=3:}$$
+1. **At $q = 3$ ($3/2$):** $(3 + 2)(3^2 - 4) = 25 < 27 = 3^3$, so $\frac{5}{9} < \frac{3}{5}$ ($k_1(3) < k_{\text{Kemp}}(3)$), and at Mahler's $k = \frac{1}{2}$, $\frac{1}{2} < \frac{3}{5}$ with Kempner Overflow Ratio $\frac{\Phi_{\max}(3)}{3(1/2) - 1} = \frac{4/5}{1/2} = \frac{8}{5} = \mathbf{1.600 > 1}$.
+2. **For every $q \ge 4$ (including every odd $q \ge 5$, i.e., $5/2, 7/2, 9/2, \dots$):**
+   $$(q + 2)(q^2 - 4) = q^3 + 2\bigl((q - 4)^2 + 6(q - 4) + 4\bigr) \ge q^3 + 8 > q^3 \implies \boxed{\frac{q}{q^2 - 4} < \frac{q + 2}{q^2}!}$$
+   Thus for every odd $q \ge 5$, the all-$s = 2$ Kempner sum fits strictly inside Zone 1 ($\Phi_{\max}(q) / (2/q) = \frac{2q}{q^2-4} < 0.48$), making **$q = 3$ the sole odd fraction where Zone 1 suffers an Archimedean Kempner overflow on top of 2-adic mortality**.
+
+| Fraction $q/2$ | Zone 0 ($k_0 = \frac{1}{q}$) | Zone 1 Top ($k_1 = \frac{q+2}{q^2}$) | Kempner Point ($k_{\text{Kemp}} = \frac{q}{q^2-4}$) | Zone 3 ($k_3 = \frac{1}{q-2}$) | Kempner Overflow Ratio $\frac{\Phi_{\max}}{\text{Budget}}$ |
+|---|---|---|---|---|---|
+| **$3/2$ ($q=3$)** | $1/3 \approx 0.3333$ | $5/9 \approx 0.5556$ | **$3/5 = 0.6000$ ($> k_1$!)** | $1.0000$ | **$1.6000$ at $k=1/2$ ($1.2000$ at $k_1$)** |
+| **$5/2$ ($q=5$)** | $1/5 = 0.2000$ | $7/25 = 0.2800$ | **$5/21 \approx 0.2381$ ($< k_1$)** | $1/3 \approx 0.3333$ | $0.4762 < 1$ |
+| **$7/2$ ($q=7$)** | $1/7 \approx 0.1429$ | $9/49 \approx 0.1837$ | **$7/45 \approx 0.1556$ ($< k_1$)** | $1/5 = 0.2000$ | $0.3111 < 1$ |
+| **$9/2$ ($q=9$)** | $1/9 \approx 0.1111$ | $11/81 \approx 0.1358$ | **$9/77 \approx 0.1169$ ($< k_1$)** | $1/7 \approx 0.1429$ | $0.2338 < 1$ |
+| **$11/2$ ($q=11$)** | $1/11 \approx 0.0909$ | $13/121 \approx 0.1074$ | **$11/117 \approx 0.0940$ ($< k_1$)** | $1/9 \approx 0.1111$ | $0.1880 < 1$ |
+
+### 26.2 Theorem SB.106 (`universal_q_half_mod4_one_step_extinction_and_four_adic_bijection`)
+Proves why **every** odd fraction $q/2$ ($q = 2m + 1$) exhibits the exact same $(1/2)^K$ Zone-1 survival decay and $1.00000$ average block lifetime across $100{,}000$ odd seeds:
+1. **Even-Power Mod-8 Lock:** $((2m+1)^{2k}) \bmod 8 = 1$ and $((2m+1)^{2k+1}) \bmod 8 = (2m+1) \bmod 8$.
+2. **Universal Mod-4 50/50 Split:** For any odd $Q = q^{s_r}$, among every consecutive pair of odd cores $\{4t+1, 4t+3\}$, **exactly one** satisfies $(Q u + 1) \bmod 4 = 0$ ($s_{r+1} \ge 2$, survives) and **exactly one** satisfies $(Q u + 1) \bmod 4 = 2$ ($s_{r+1} = 1$, dies).
+3. **Universal Mod-$2^{S_0}$ Renewal Uniqueness:** Because $\gcd((2m+1)^{T_K}, 2^{S_0}) = 1$, at most one seed $P_0 < 2^{S_0}$ can satisfy $((2m+1)^{T_K} P_0 + A_K) \bmod 2^{S_0} = 0$.
+
+| Fraction $q/2$ | $q \bmod 8$ | Survives $K=1$ | Survives $K=2$ | Survives $K=5$ | Max Blocks ($10^5$ seeds) | **Average Blocks Survived** |
+|---|---|---|---|---|---|---|
+| **$3/2$** | $3$ | $0.50000$ | $0.25000$ | $0.03132$ | $15$ | **$1.00073$** |
+| **$5/2$** | $5$ | $0.50000$ | $0.25001$ | $0.03137$ | $18$ | **$0.99981$** |
+| **$7/2$** | $7$ | $0.50000$ | $0.25001$ | $0.03128$ | $17$ | **$0.99989$** |
+| **$9/2$** | $1$ | $0.50000$ | $0.24998$ | $0.03117$ | $21$ | **$0.99968$** |
+| **$11/2$** | $3$ | $0.50000$ | $0.25001$ | $0.03143$ | $18$ | **$0.99997$** |
+| **$13/2$** | $5$ | $0.50000$ | $0.25001$ | $0.03110$ | $14$ | **$1.00014$** |
+| **$15/2$** | $7$ | $0.50000$ | $0.24999$ | $0.03138$ | $15$ | **$0.99986$** |
+
+### 26.3 Theorem SB.107 (`universal_q_half_ceiling_dual_gauge_and_superblock_law`) & Theorem SB.108 (`grand_universal_q_half_relaxation_and_mahler_uniqueness_108_synthesis`)
+Generalizes the Waves 14–15 Ceiling-Dual Gauge and Super-Block Renormalization to **every odd $q = 2k + 1 \ge 3$** via the **Universal Core Gauge** $g_q(u) := (q^2 - 4) u + 1$:
+1. **Mod-8 Multiplier Lock:** $(q^2 - 4) \bmod 8 = 5$, so $\gcd(q^2 - 4, 2) = 1$.
+2. **Exact $s = 2$ Step & Bridge Identity:** Whenever $4 u_{r+1} = q^2 u_r + 1$, $4 g_q(u_{r+1}) = q^2 g_q(u_r)$, and $(q^2 - 4)(q^2 u_m + 1) + 4 = q^2 g_q(u_m)$.
+3. **Universal Odd-Valuation Delayed-Action Death Trap ($v_2(g_q(u_0)) = 2m + 1$):** If $g_q(u_0) = 2 \cdot 4^m V$ ($V$ odd), then after $m$ steps of $s = 2$ ($g_q(u_m) = 2 q^{2m} V$), the next numerator satisfies $(q^2 u_m + 1) \bmod 4 = 2$ ($s_{r+m+1} = 1$, guaranteed extinction!).
+4. **Universal Even-Valuation Exit-Rung Predictor ($v_2(g_q(u_0)) = 2m + 2$):** If $g_q(u_0) = 4^{m+1} V$ ($V$ odd), then after $m$ steps of $s = 2$, writing $q^2 u_m + 1 = 4 Y_m$ gives $(q^2 - 4) Y_m + 1 = q^{2m+2} V$, locking the exit rung $s^*$ identically for **all odd $q \ge 3$**:
+   - $V \bmod 4 = 3 \implies (4 Y_m) \bmod 16 = 8$ ($s^* = 3$),
+   - $V \bmod 8 = 5 \implies (4 Y_m) \bmod 32 = 16$ ($s^* = 4$),
+   - $V \bmod 8 = 1 \implies (4 Y_m) \bmod 32 = 0$ ($s^* \ge 5$),
+   completing all **108 `sorry`-free, warning-free theorems (`SB.1–SB.108`)**.
+
+---
+
+## 27. Verification Instructions
 
 To verify the cordoned-off Lean 4 proofs without modifying the root 226-file build:
 
@@ -960,4 +1015,5 @@ python semigroup_breakout\sandbox_wave16_velocity_calculus_and_master_closure.py
 python semigroup_breakout\sandbox_wave17_path_a_and_path_b.py
 python semigroup_breakout\sandbox_wave18_mod40_and_multibase_tower.py
 python semigroup_breakout\sandbox_wave19_superblock_sieve_and_density.py
+python semigroup_breakout\sandbox_wave20_universal_q_half_relaxation_and_kempner_dichotomy.py
 ```

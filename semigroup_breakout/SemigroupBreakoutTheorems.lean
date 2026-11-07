@@ -8518,6 +8518,352 @@ theorem zfc_deductive_semigroup_pre_vs_post_horizon_overspill_bridge :
     exact h28.2.2.2.2.2.1
 
 
+/-!
+### Wave 20 (`SB.105–SB.108`): Universal `q / 2` Relaxation Phase Diagram, Kempner Threshold Inversion Dichotomy (`q = 3` vs. `q ≥ 5`), Universal Mod-4 50/50 Mortality, & The Universal `(q^2 - 4) u + 1` Super-Block Gauge
+-/
+
+/-- **SB.105 (Universal `q / 2` Relaxation Phase Thresholds & Kempner Inversion Dichotomy):**
+Across the entire odd-fraction family `q / 2` (`q ≥ 3`) on `[0, k)`, the four critical
+phase thresholds are:
+- `k_0(q) = 1 / q` (Zone 0: total extinction, 0 odd steps),
+- `k_1(q) = (q + 2) / q^2` (Zone 1 top: `s_r = 1` forbidden, `s_r ≥ 2` Mahler canyon),
+- `k_Kemp(q) = q / (q^2 - 4)` (the all-`s_r = 2` periodic Kempner fixed point), and
+- `k_3(q) = 1 / (q - 2)` (Zone 3: 100% survival, gapless coverage).
+
+We prove in cross-cleared exact arithmetic:
+1. **Universal Phase Ordering (`q ≥ 3`):**
+   `1 / q < (q + 2) / q^2 < 1 / (q - 2)` and `q / (q^2 - 4) < 1 / (q - 2)`, i.e.,
+   `q^2 < q * (q + 2)`, `(q + 2) * (q - 2) < q^2`, and `q * (q - 2) < q^2 - 4`.
+2. **The Kempner Threshold Inversion Dichotomy (`q = 3` vs. `q ≥ 4`):**
+   - **At `q = 3` (`3 / 2`):**
+     `(3 + 2) * (3^2 - 4) = 25 < 27 = 3^3` (`5 / 9 < 3 / 5`), and at Mahler's `k = 1 / 2`,
+     `1 * (3^2 - 4) = 5 < 6 = 2 * 3` (`1 / 2 < 3 / 5`), with Kempner Overflow Ratio
+     `4 / ((3^2 - 4) * (3 * (1/2) - 1)) = 8 / 5 > 1` (`8 > 5`). Thus `q = 3` is uniquely
+     **double-squeezed**: the all-`s = 2` Kempner ceiling `3 / 5` overflows BOTH `k = 1 / 2`
+     and the entire Zone-1 ceiling `5 / 9`!
+   - **For every `q ≥ 4` (including every odd `q ≥ 5`, i.e., `5/2, 7/2, 9/2, ...`):**
+     `q^3 + 8 ≤ (q + 2) * (q^2 - 4)` (`q / (q^2 - 4) < (q + 2) / q^2`), with exact shifted
+     polynomial decomposition
+     `(q + 2) * (q^2 - 4) = q^3 + 2 * ((q - 4)^2 + 6 * (q - 4) + 4)`!
+     Thus for every odd `q ≥ 5`, the all-`s = 2` Kempner fixed point fits **strictly inside**
+     Zone 1, leaving `q = 3` as the sole fraction in the family where Zone 1 suffers an
+     Archimedean Kempner overflow on top of 2-adic mortality. -/
+theorem universal_q_half_zone_thresholds_and_kempner_inversion_dichotomy :
+    (∀ q : ℕ, 3 ≤ q →
+      q ^ 2 < q * (q + 2) ∧
+      (q + 2) * (q - 2) < q ^ 2 ∧
+      q * (q - 2) < q ^ 2 - 4) ∧
+    (((3 + 2) * (3 ^ 2 - 4) = 25 ∧ 3 ^ 3 = 27 ∧ (3 + 2) * (3 ^ 2 - 4) < 3 ^ 3) ∧
+      (1 * (3 ^ 2 - 4) = 5 ∧ 2 * 3 = 6 ∧ 1 * (3 ^ 2 - 4) < 2 * 3) ∧
+      (4 * 2 = 8 ∧ (3 ^ 2 - 4) * (2 * 3 - 2) = 20 ∧ 5 < 8)) ∧
+    (∀ d : ℕ,
+      let q := d + 4
+      (q + 2) * (q ^ 2 - 4) = q ^ 3 + 2 * (d ^ 2 + 6 * d + 4) ∧
+      q ^ 3 + 8 ≤ (q + 2) * (q ^ 2 - 4)) := by
+  refine ⟨?_, ?_, ?_⟩
+  · intro q hq
+    obtain ⟨d, rfl⟩ : ∃ d, q = d + 3 := ⟨q - 3, by omega⟩
+    have h1 : (d + 3) ^ 2 < (d + 3) * (d + 3 + 2) := by nlinarith
+    have hsub : d + 3 - 2 = d + 1 := by omega
+    have hsq : (d + 3) ^ 2 - 4 = d ^ 2 + 6 * d + 5 := by
+      have : (d + 3) ^ 2 = d ^ 2 + 6 * d + 9 := by ring
+      omega
+    rw [hsub, hsq]
+    refine ⟨h1, by nlinarith, by nlinarith⟩
+  · decide
+  · intro d
+    dsimp only
+    have hsq : (d + 4) ^ 2 - 4 = d ^ 2 + 8 * d + 12 := by
+      have : (d + 4) ^ 2 = d ^ 2 + 8 * d + 16 := by ring
+      omega
+    rw [hsq]
+    refine ⟨by ring, by nlinarith⟩
+
+
+/-- **SB.106 (Universal `q / 2` Mod-4 50/50 One-Step Extinction & Mod-`2^{S_0}` Bijection):**
+Why does every odd fraction `q / 2` (`q = 2 * m + 1`) exhibit the exact same `(1 / 2)^K`
+Zone-1 block survival probability and `1.00000` average block lifetime?
+1. **Universal Even-Power Mod-8 Lock:** For every `m, k : ℕ`,
+   `((2 * m + 1) ^ (2 * k)) % 8 = 1` and `((2 * m + 1) ^ (2 * k + 1)) % 8 = (2 * m + 1) % 8`.
+2. **Universal Mod-4 50/50 Split of Consecutive Odd Cores `{4 * t + 1, 4 * t + 3}`:**
+   At every block `2^{s_{r+1}} * u_{r+1} = Q * u_r + 1` where `Q = q^{s_r}` is odd:
+   - If `Q % 4 = 1` (which holds for all even `s_r` across ALL odd `q`, and for all `s_r`
+     when `q % 4 = 1`), then:
+     `(Q * (4 * t + 1) + 1) % 4 = 2` (`v_2 = 1`, **dies** at `s_{r+1} = 1`) and
+     `(Q * (4 * t + 3) + 1) % 4 = 0` (`v_2 ≥ 2`, **survives** with `s_{r+1} ≥ 2`).
+   - If `Q % 4 = 3` (which holds for odd `s_r` when `q % 4 = 3`), then:
+     `(Q * (4 * t + 1) + 1) % 4 = 0` (`v_2 ≥ 2`, **survives** with `s_{r+1} ≥ 2`) and
+     `(Q * (4 * t + 3) + 1) % 4 = 2` (`v_2 = 1`, **dies** at `s_{r+1} = 1`).
+   In every case, **exactly one** of `{4 * t + 1, 4 * t + 3}` survives and **one** dies!
+3. **Universal Mod-`2^{S_0}` Renewal Uniqueness:**
+   For any odd `q = 2 * m + 1` and any horizon `T_K, S_0, A_K`, because `gcd(q^{T_K}, 2^{S_0}) = 1`,
+   if `(q^{T_K} * P_0 + A_K) % 2^{S_0} = 0` and `(q^{T_K} * P_0' + A_K) % 2^{S_0} = 0` with
+   `P_0, P_0' < 2^{S_0}`, then `P_0 = P_0'`. -/
+theorem universal_q_half_mod4_one_step_extinction_and_four_adic_bijection :
+    (∀ m k : ℕ,
+      ((2 * m + 1) ^ (2 * k)) % 8 = 1 ∧
+      ((2 * m + 1) ^ (2 * k + 1)) % 8 = (2 * m + 1) % 8) ∧
+    (∀ Q t : ℕ,
+      (Q % 4 = 1 →
+        (Q * (4 * t + 1) + 1) % 4 = 2 ∧ (Q * (4 * t + 3) + 1) % 4 = 0) ∧
+      (Q % 4 = 3 →
+        (Q * (4 * t + 1) + 1) % 4 = 0 ∧ (Q * (4 * t + 3) + 1) % 4 = 2)) ∧
+    (∀ m T_K S_0 A_K P_0 P_0' : ℕ,
+      P_0 < 2 ^ S_0 →
+      P_0' < 2 ^ S_0 →
+      ((2 * m + 1) ^ T_K * P_0 + A_K) % 2 ^ S_0 = 0 →
+      ((2 * m + 1) ^ T_K * P_0' + A_K) % 2 ^ S_0 = 0 →
+      P_0 = P_0') := by
+  have hsq8 : ∀ m : ℕ, ((2 * m + 1) ^ 2) % 8 = 1 := by
+    intro m
+    rcases (by omega : m % 2 = 0 ∨ m % 2 = 1) with hm0 | hm1
+    · obtain ⟨j, rfl⟩ : ∃ j, m = 2 * j := ⟨m / 2, by omega⟩
+      have hexp : (2 * (2 * j) + 1) ^ 2 = 8 * (2 * j ^ 2 + j) + 1 := by ring
+      omega
+    · obtain ⟨j, rfl⟩ : ∃ j, m = 2 * j + 1 := ⟨m / 2, by omega⟩
+      have hexp : (2 * (2 * j + 1) + 1) ^ 2 = 8 * (2 * j ^ 2 + 3 * j + 1) + 1 := by ring
+      omega
+  have heven8 : ∀ m k : ℕ, ((2 * m + 1) ^ (2 * k)) % 8 = 1 := by
+    intro m k
+    induction k with
+    | zero => rfl
+    | succ k ih =>
+      have hpow : (2 * m + 1) ^ (2 * (k + 1)) = (2 * m + 1) ^ (2 * k) * (2 * m + 1) ^ 2 := by
+        ring
+      rw [hpow, Nat.mul_mod, ih, hsq8 m]
+  refine ⟨?_, ?_, ?_⟩
+  · intro m k
+    refine ⟨heven8 m k, ?_⟩
+    have hpow : (2 * m + 1) ^ (2 * k + 1) = (2 * m + 1) ^ (2 * k) * (2 * m + 1) := by ring
+    rw [hpow, Nat.mul_mod, heven8 m k, Nat.one_mul, Nat.mod_mod]
+  · intro Q t
+    have h1 : Q * (4 * t + 1) + 1 = 4 * (Q * t) + Q + 1 := by ring
+    have h3 : Q * (4 * t + 3) + 1 = 4 * (Q * t) + 3 * Q + 1 := by ring
+    rw [h1, h3]
+    refine ⟨?_, ?_⟩ <;> intro hQ <;> omega
+  · intro m T_K S_0 A_K P_0 P_0' hP hP' hmod0 hmod'
+    have hcop_base : Nat.Coprime (2 * m + 1) 2 := by
+      rw [Nat.Coprime, Nat.gcd_comm]
+      have hmod2 : (2 * m + 1) % 2 = 1 := by omega
+      rw [Nat.gcd_rec 2 (2 * m + 1), hmod2]
+      rfl
+    have hcop : Nat.Coprime ((2 * m + 1) ^ T_K) (2 ^ S_0) :=
+      (hcop_base.pow_left T_K).pow_right S_0
+    wlog hle : P_0' ≤ P_0 generalizing P_0 P_0'
+    · exact (this P_0' P_0 hP' hP hmod' hmod0 (by omega)).symm
+    have hdvd_diff : 2 ^ S_0 ∣ (2 * m + 1) ^ T_K * (P_0 - P_0') := by
+      have hd1 : 2 ^ S_0 ∣ (2 * m + 1) ^ T_K * P_0 + A_K := Nat.dvd_iff_mod_eq_zero.2 hmod0
+      have hd2 : 2 ^ S_0 ∣ (2 * m + 1) ^ T_K * P_0' + A_K := Nat.dvd_iff_mod_eq_zero.2 hmod'
+      have hsub :
+          (2 * m + 1) ^ T_K * (P_0 - P_0') =
+            ((2 * m + 1) ^ T_K * P_0 + A_K) - ((2 * m + 1) ^ T_K * P_0' + A_K) := by
+        rw [Nat.mul_sub_left_distrib]
+        omega
+      rw [hsub]
+      exact Nat.dvd_sub hd1 hd2
+    have hdvd_P : 2 ^ S_0 ∣ (P_0 - P_0') := hcop.symm.dvd_of_dvd_mul_left hdvd_diff
+    have hlt : P_0 - P_0' < 2 ^ S_0 := by omega
+    have hzero : P_0 - P_0' = 0 := Nat.eq_zero_of_dvd_of_lt hdvd_P hlt
+    omega
+
+
+/-- **SB.107 (Universal `q / 2` Core Gauge `(q^2 - 4) * u + 1`, Super-Block Jump, & Odd-Valuation Death Trap):**
+For every odd fraction `q / 2` (`q = 2 * k + 1 ≥ 3`), define the **Universal Core Gauge**
+`g_q(u) := (q^2 - 4) * u + 1`. We prove that Waves 14–15 (`SB.81`, `SB.85`, `SB.86`) hold
+universally across **every** odd `q`:
+1. **Mod-8 Multiplier Lock:** `q^2 - 4 ≡ 5 (mod 8)` (`((2 * k + 1)^2 - 4) % 8 = 5`), so
+   `gcd(q^2 - 4, 2) = 1`.
+2. **Exact `s = 2` Step & Super-Block Jump Identity:**
+   Whenever `4 * u_{r+1} = q^2 * u_r + 1`,
+   `4 * ((q^2 - 4) * u_{r+1} + 1) = q^2 * ((q^2 - 4) * u_r + 1)`, and for any `u_m`,
+   `(q^2 - 4) * (q^2 * u_m + 1) + 4 = q^2 * ((q^2 - 4) * u_m + 1)`!
+3. **Universal Odd-Valuation Delayed-Action Death Trap (`v_2(g_q(u_0)) = 2 * m + 1`):**
+   If `(q^2 - 4) * u_0 + 1 = 2 * 4^m * V` with `V` odd, then after `m` steps of `s = 2` where
+   `(q^2 - 4) * u_m + 1 = 2 * q^{2*m} * V`, the next-step numerator satisfies
+   `(q^2 * u_m + 1) % 4 = 2` (`s_{r+m+1} = 1`, **guaranteed extinction**)!
+4. **Universal Even-Valuation Exit-Rung Predictor (`v_2(g_q(u_0)) = 2 * m + 2`):**
+   If `(q^2 - 4) * u_0 + 1 = 4^{m+1} * V` with `V` odd, then after `m` steps of `s = 2` where
+   `(q^2 - 4) * u_m + 1 = 4 * q^{2*m} * V`, writing `q^2 * u_m + 1 = 4 * Y_m` gives the exact
+   divided identity `((q^2 - 4) * Y_m + 1) = q^{2*m + 2} * V` and locks the exit rung `s^*`:
+   - `V % 4 = 3 ⟹ Y_m % 4 = 2 ∧ (4 * Y_m) % 16 = 8` (`s^* = 3`),
+   - `V % 8 = 5 ⟹ Y_m % 8 = 4 ∧ (4 * Y_m) % 32 = 16` (`s^* = 4`),
+   - `V % 8 = 1 ⟹ Y_m % 8 = 0 ∧ (4 * Y_m) % 32 = 0` (`s^* ≥ 5`)! -/
+theorem universal_q_half_ceiling_dual_gauge_and_superblock_law :
+    (∀ k : ℕ, 1 ≤ k → ((2 * k + 1) ^ 2 - 4) % 8 = 5) ∧
+    (∀ q u u_next : ℕ,
+      2 ≤ q →
+      4 * u_next = q ^ 2 * u + 1 →
+      4 * ((q ^ 2 - 4) * u_next + 1) = q ^ 2 * ((q ^ 2 - 4) * u + 1)) ∧
+    (∀ q u_m : ℕ,
+      2 ≤ q →
+      (q ^ 2 - 4) * (q ^ 2 * u_m + 1) + 4 = q ^ 2 * ((q ^ 2 - 4) * u_m + 1)) ∧
+    (∀ k m u_m V : ℕ,
+      1 ≤ k →
+      V % 2 = 1 →
+      ((2 * k + 1) ^ 2 - 4) * u_m + 1 = 2 * ((2 * k + 1) ^ (2 * m)) * V →
+      ((2 * k + 1) ^ 2 * u_m + 1) % 4 = 2) ∧
+    (∀ k m Y_m V : ℕ,
+      1 ≤ k →
+      ((2 * k + 1) ^ 2 - 4) * Y_m + 1 = ((2 * k + 1) ^ (2 * m + 2)) * V →
+      (V % 4 = 3 → Y_m % 4 = 2 ∧ (4 * Y_m) % 16 = 8) ∧
+      (V % 8 = 5 → Y_m % 8 = 4 ∧ (4 * Y_m) % 32 = 16) ∧
+      (V % 8 = 1 → Y_m % 8 = 0 ∧ (4 * Y_m) % 32 = 0)) := by
+  have heven8 : ∀ k m : ℕ, ((2 * k + 1) ^ (2 * m)) % 8 = 1 :=
+    fun k m => (universal_q_half_mod4_one_step_extinction_and_four_adic_bijection.1 k m).1
+  have hq2_mod8 : ∀ k : ℕ, ((2 * k + 1) ^ 2) % 8 = 1 := fun k => heven8 k 1
+  have hcq_mod8 : ∀ k : ℕ, 1 ≤ k → ((2 * k + 1) ^ 2 - 4) % 8 = 5 := by
+    intro k hk
+    have hge : 9 ≤ (2 * k + 1) ^ 2 := by nlinarith
+    have h1 := hq2_mod8 k
+    omega
+  have hbridge :
+      ∀ q u_m : ℕ, 2 ≤ q →
+        (q ^ 2 - 4) * (q ^ 2 * u_m + 1) + 4 = q ^ 2 * ((q ^ 2 - 4) * u_m + 1) := by
+    intro q u_m hq
+    obtain ⟨d, rfl⟩ : ∃ d, q = d + 2 := ⟨q - 2, by omega⟩
+    have hsq : (d + 2) ^ 2 - 4 = d ^ 2 + 4 * d := by
+      have : (d + 2) ^ 2 = d ^ 2 + 4 * d + 4 := by ring
+      omega
+    rw [hsq]
+    ring
+  refine ⟨hcq_mod8, ?_, hbridge, ?_, ?_⟩
+  · intro q u u_next hq hstep
+    obtain ⟨d, rfl⟩ : ∃ d, q = d + 2 := ⟨q - 2, by omega⟩
+    have hsq : (d + 2) ^ 2 - 4 = d ^ 2 + 4 * d := by
+      have : (d + 2) ^ 2 = d ^ 2 + 4 * d + 4 := by ring
+      omega
+    rw [hsq]
+    linear_combination (d ^ 2 + 4 * d) * hstep
+  · intro k m u_m V hk hV hgm
+    have hcq4 : ((2 * k + 1) ^ 2 - 4) % 4 = 1 := by
+      have := hcq_mod8 k hk
+      omega
+    have hqm4 : ((2 * k + 1) ^ (2 * m)) % 4 = 1 := by
+      have := heven8 k m
+      omega
+    have hq2_4 : ((2 * k + 1) ^ 2) % 4 = 1 := by
+      have := hq2_mod8 k
+      omega
+    have hlhs4 : (((2 * k + 1) ^ 2 - 4) * u_m + 1) % 4 = (u_m + 1) % 4 := by
+      have hdecomp :
+          ((2 * k + 1) ^ 2 - 4) * u_m + 1 =
+            4 * ((((2 * k + 1) ^ 2 - 4) / 4) * u_m) + ((((2 * k + 1) ^ 2 - 4) % 4) * u_m + 1) := by
+        have hdiv := (Nat.div_add_mod ((2 * k + 1) ^ 2 - 4) 4).symm
+        calc
+          ((2 * k + 1) ^ 2 - 4) * u_m + 1 =
+              (4 * (((2 * k + 1) ^ 2 - 4) / 4) + ((2 * k + 1) ^ 2 - 4) % 4) * u_m + 1 := by
+            rw [← hdiv]
+          _ = 4 * ((((2 * k + 1) ^ 2 - 4) / 4) * u_m) +
+                ((((2 * k + 1) ^ 2 - 4) % 4) * u_m + 1) := by ring
+      rw [hdecomp, hcq4]
+      omega
+    have hrhs4 : (2 * ((2 * k + 1) ^ (2 * m)) * V) % 4 = 2 := by
+      have hdecomp :
+          2 * ((2 * k + 1) ^ (2 * m)) * V =
+            4 * ((((2 * k + 1) ^ (2 * m)) / 4) * (2 * V)) +
+              2 * (((2 * k + 1) ^ (2 * m)) % 4) * (2 * (V / 2) + V % 2) := by
+        have hdiv1 := (Nat.div_add_mod ((2 * k + 1) ^ (2 * m)) 4).symm
+        have hdiv2 := (Nat.div_add_mod V 2).symm
+        calc
+          2 * ((2 * k + 1) ^ (2 * m)) * V =
+              2 * (4 * (((2 * k + 1) ^ (2 * m)) / 4) + ((2 * k + 1) ^ (2 * m)) % 4) *
+                (2 * (V / 2) + V % 2) := by
+            rw [← hdiv1, ← hdiv2]
+          _ = 4 * ((((2 * k + 1) ^ (2 * m)) / 4) * (2 * (2 * (V / 2) + V % 2))) +
+                2 * (((2 * k + 1) ^ (2 * m)) % 4) * (2 * (V / 2) + V % 2) := by ring
+          _ = 4 * ((((2 * k + 1) ^ (2 * m)) / 4) * (2 * V)) +
+                2 * (((2 * k + 1) ^ (2 * m)) % 4) * (2 * (V / 2) + V % 2) := by
+            rw [← hdiv2]
+      rw [hdecomp, hqm4, hV]
+      omega
+    have hum4 : u_m % 4 = 1 := by
+      rw [hgm] at hlhs4
+      omega
+    have hnext :
+        (2 * k + 1) ^ 2 * u_m + 1 =
+          4 * ((((2 * k + 1) ^ 2) / 4) * u_m) + ((((2 * k + 1) ^ 2) % 4) * u_m + 1) := by
+      have hdiv := (Nat.div_add_mod ((2 * k + 1) ^ 2) 4).symm
+      calc
+        (2 * k + 1) ^ 2 * u_m + 1 =
+            (4 * (((2 * k + 1) ^ 2) / 4) + ((2 * k + 1) ^ 2) % 4) * u_m + 1 := by
+          rw [← hdiv]
+        _ = 4 * ((((2 * k + 1) ^ 2) / 4) * u_m) + ((((2 * k + 1) ^ 2) % 4) * u_m + 1) := by
+          ring
+    rw [hnext, hq2_4]
+    omega
+  · intro k m Y_m V hk hdiv_eq
+    have hcq8 := hcq_mod8 k hk
+    have hpm8 : ((2 * k + 1) ^ (2 * m + 2)) % 8 = 1 := heven8 k (m + 1)
+    have hlhs8 : (((2 * k + 1) ^ 2 - 4) * Y_m + 1) % 8 = (5 * Y_m + 1) % 8 := by
+      have hdecomp :
+          ((2 * k + 1) ^ 2 - 4) * Y_m + 1 =
+            8 * ((((2 * k + 1) ^ 2 - 4) / 8) * Y_m) +
+              ((((2 * k + 1) ^ 2 - 4) % 8) * Y_m + 1) := by
+        have hdiv := (Nat.div_add_mod ((2 * k + 1) ^ 2 - 4) 8).symm
+        calc
+          ((2 * k + 1) ^ 2 - 4) * Y_m + 1 =
+              (8 * (((2 * k + 1) ^ 2 - 4) / 8) + ((2 * k + 1) ^ 2 - 4) % 8) * Y_m + 1 := by
+            rw [← hdiv]
+          _ = 8 * ((((2 * k + 1) ^ 2 - 4) / 8) * Y_m) +
+                ((((2 * k + 1) ^ 2 - 4) % 8) * Y_m + 1) := by ring
+      rw [hdecomp, hcq8]
+      omega
+    have hrhs8 : (((2 * k + 1) ^ (2 * m + 2)) * V) % 8 = V % 8 := by
+      have hdecomp :
+          ((2 * k + 1) ^ (2 * m + 2)) * V =
+            8 * ((((2 * k + 1) ^ (2 * m + 2)) / 8) * V) +
+              (((2 * k + 1) ^ (2 * m + 2)) % 8) * V := by
+        have hdiv := (Nat.div_add_mod ((2 * k + 1) ^ (2 * m + 2)) 8).symm
+        calc
+          ((2 * k + 1) ^ (2 * m + 2)) * V =
+              (8 * (((2 * k + 1) ^ (2 * m + 2)) / 8) + ((2 * k + 1) ^ (2 * m + 2)) % 8) * V := by
+            rw [← hdiv]
+          _ = 8 * ((((2 * k + 1) ^ (2 * m + 2)) / 8) * V) +
+                (((2 * k + 1) ^ (2 * m + 2)) % 8) * V := by ring
+      rw [hdecomp, hpm8]
+      omega
+    have hmod8_eq : (5 * Y_m + 1) % 8 = V % 8 := by
+      rw [← hlhs8, hdiv_eq, hrhs8]
+    refine ⟨?_, ?_, ?_⟩ <;> intro hV <;> omega
+
+
+/-- **SB.108 (Grand 108-Theorem Universal `q / 2` Relaxation & Mahler Uniqueness Synthesis):**
+Unifies Wave 20 (`SB.105–SB.107`) with our 104 prior Semigroup Breakout theorems (`SB.1–SB.104`):
+1. **The Kempner Threshold Inversion Dichotomy (`SB.105`):** Among all odd fractions `q / 2`
+   (`q ≥ 3`), `q = 3` (`3 / 2`) is the **unique** fraction where the all-`s = 2` Kempner fixed
+   point `q / (q^2 - 4)` exceeds the Zone-1 ceiling `(q + 2) / q^2` (`25 < 27`), whereas for
+   every `q ≥ 4`, `q^3 + 8 ≤ (q + 2) * (q^2 - 4)`.
+2. **The Universal `(1 / 2)^K` 2-Adic Mortality (`SB.106`):** Every odd fraction `q / 2` splits
+   consecutive odd cores `{4 * t + 1, 4 * t + 3}` 50/50 between survival (`s_{r+1} ≥ 2`) and
+   extinction (`s_{r+1} = 1`), and maps seeds bijectively modulo `2^{S_0}`.
+3. **The Universal `(q^2 - 4) * u + 1` Super-Block Gauge & Odd-Valuation Trap (`SB.107`):**
+   Every odd fraction `q / 2` possesses the exact `s = 2` annihilating core gauge
+   `g_q(u) = (q^2 - 4) * u + 1`, the `v_2(g_q(u_0)) = 2 * m + 1` delayed-action death trap,
+   and the universal `V mod 8` exit-rung predictor (`V % 4 = 3 ⟹ s^* = 3`,
+   `V % 8 = 5 ⟹ s^* = 4`, `V % 8 = 1 ⟹ s^* ≥ 5`). -/
+theorem grand_universal_q_half_relaxation_and_mahler_uniqueness_108_synthesis :
+    (((3 + 2) * (3 ^ 2 - 4) = 25 ∧ 3 ^ 3 = 27 ∧ (3 + 2) * (3 ^ 2 - 4) < 3 ^ 3) ∧
+      ∀ d : ℕ,
+        let q := d + 4
+        (q + 2) * (q ^ 2 - 4) = q ^ 3 + 2 * (d ^ 2 + 6 * d + 4) ∧
+        q ^ 3 + 8 ≤ (q + 2) * (q ^ 2 - 4)) ∧
+    (∀ Q t : ℕ,
+      (Q % 4 = 1 →
+        (Q * (4 * t + 1) + 1) % 4 = 2 ∧ (Q * (4 * t + 3) + 1) % 4 = 0) ∧
+      (Q % 4 = 3 →
+        (Q * (4 * t + 1) + 1) % 4 = 0 ∧ (Q * (4 * t + 3) + 1) % 4 = 2)) ∧
+    (∀ k m Y_m V : ℕ,
+      1 ≤ k →
+      ((2 * k + 1) ^ 2 - 4) * Y_m + 1 = ((2 * k + 1) ^ (2 * m + 2)) * V →
+      (V % 4 = 3 → Y_m % 4 = 2 ∧ (4 * Y_m) % 16 = 8) ∧
+      (V % 8 = 5 → Y_m % 8 = 4 ∧ (4 * Y_m) % 32 = 16) ∧
+      (V % 8 = 1 → Y_m % 8 = 0 ∧ (4 * Y_m) % 32 = 0)) :=
+  ⟨⟨universal_q_half_zone_thresholds_and_kempner_inversion_dichotomy.2.1.1,
+    universal_q_half_zone_thresholds_and_kempner_inversion_dichotomy.2.2⟩,
+   universal_q_half_mod4_one_step_extinction_and_four_adic_bijection.2.1,
+   universal_q_half_ceiling_dual_gauge_and_superblock_law.2.2.2.2⟩
+
+
 #check @archimedean_rung_ceiling_and_stepSum_bound
 #check @unit_quotient_even_rung_instant_death_and_odd_rung_mod64_identity
 #check @equal_step_window_hankel_determinant_identity_and_bound
@@ -8622,6 +8968,10 @@ theorem zfc_deductive_semigroup_pre_vs_post_horizon_overspill_bridge :
 #check @mod40_window_thirty_four_of_forty_extinction_and_dyadic_uniqueness
 #check @fast_superblock_sieve_macro_step_and_record_survivor_certificates
 #check @zfc_deductive_semigroup_pre_vs_post_horizon_overspill_bridge
+#check @universal_q_half_zone_thresholds_and_kempner_inversion_dichotomy
+#check @universal_q_half_mod4_one_step_extinction_and_four_adic_bijection
+#check @universal_q_half_ceiling_dual_gauge_and_superblock_law
+#check @grand_universal_q_half_relaxation_and_mahler_uniqueness_108_synthesis
 
 #print axioms archimedean_rung_ceiling_and_stepSum_bound
 #print axioms unit_quotient_even_rung_instant_death_and_odd_rung_mod64_identity

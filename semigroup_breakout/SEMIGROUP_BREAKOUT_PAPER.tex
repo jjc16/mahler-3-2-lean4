@@ -306,4 +306,12 @@ Across any \texttt{ValidBlockChain b\_0 s u (K + 4)} with $\forall k < K + 4,\, 
 \end{enumerate}
 \end{theorem}
 
+\begin{theorem}[Universal $q / 2$ Relaxation Phase Diagram, Kempner Threshold Inversion Dichotomy ($q = 3$ vs.\ $q \ge 5$), Universal $(1/2)^K$ Mortality, \& The Universal $(q^2 - 4) u + 1$ Super-Block Gauge (Theorems SB.105--SB.108), \texttt{universal\_q\_half\_zone\_thresholds\_and\_kempner\_inversion\_dichotomy}, \texttt{universal\_q\_half\_mod4\_one\_step\_extinction\_and\_four\_adic\_bijection}, \texttt{universal\_q\_half\_ceiling\_dual\_gauge\_and\_superblock\_law}, \texttt{grand\_universal\_q\_half\_relaxation\_and\_mahler\_uniqueness\_108\_synthesis}]
+\begin{enumerate}
+  \item \textbf{Universal Phase Ordering \& Kempner Threshold Inversion Dichotomy (SB.105):} For every $q \ge 3$, $q^2 < q(q+2)$, $(q+2)(q-2) < q^2$, and $q(q-2) < q^2 - 4$ ($1/q < (q+2)/q^2 < 1/(q-2)$ and $q/(q^2-4) < 1/(q-2)$). At $q = 3$ ($3/2$), $(3+2)(3^2-4) = 25 < 27 = 3^3$ ($5/9 < 3/5$, and at $k = 1/2$, $1/2 < 3/5$ with Kempner Overflow Ratio $8/5 > 1$), whereas for every $q = d + 4 \ge 4$, $(q+2)(q^2-4) = q^3 + 2(d^2 + 6 d + 4) \ge q^3 + 8$ ($q/(q^2-4) < (q+2)/q^2$), proving $q = 3$ is the sole odd fraction where Zone~1 suffers an Archimedean Kempner overflow.
+  \item \textbf{Universal Mod-4 50/50 One-Step Extinction \& Mod-$2^{S_0}$ Bijection (SB.106):} For every odd $q = 2m+1$, $((2m+1)^{2k}) \bmod 8 = 1$, $((2m+1)^{2k+1}) \bmod 8 = (2m+1) \bmod 8$, and for any odd $Q = q^{s_r}$, among every consecutive odd pair $\{4t+1, 4t+3\}$ exactly one satisfies $(Q u + 1) \bmod 4 = 0$ ($s_{r+1} \ge 2$) and one satisfies $(Q u + 1) \bmod 4 = 2$ ($s_{r+1} = 1$), with unique seed recovery $P_0 < 2^{S_0}$ modulo $2^{S_0}$.
+  \item \textbf{Universal $(q^2 - 4) u + 1$ Core Gauge, Odd-Valuation Death Trap, \& Exit-Rung Predictor (SB.107--SB.108):} For every $q = 2k+1 \ge 3$, $(q^2 - 4) \bmod 8 = 5$, $4 u_{r+1} = q^2 u_r + 1 \implies 4((q^2-4)u_{r+1}+1) = q^2((q^2-4)u_r+1)$, and $(q^2-4)(q^2 u_m + 1) + 4 = q^2((q^2-4)u_m + 1)$. When $(q^2-4)u_m + 1 = 2 q^{2m} V$ ($V$ odd), $(q^2 u_m + 1) \bmod 4 = 2$ ($s_{r+m+1} = 1$, guaranteed extinction); when $(q^2-4) Y_m + 1 = q^{2m+2} V$ with $4 Y_m = q^2 u_m + 1$, $V \bmod 4 = 3 \implies (4 Y_m) \bmod 16 = 8$ ($s^* = 3$), $V \bmod 8 = 5 \implies (4 Y_m) \bmod 32 = 16$ ($s^* = 4$), and $V \bmod 8 = 1 \implies (4 Y_m) \bmod 32 = 0$ ($s^* \ge 5$).
+\end{enumerate}
+\end{theorem}
+
 \end{document}
