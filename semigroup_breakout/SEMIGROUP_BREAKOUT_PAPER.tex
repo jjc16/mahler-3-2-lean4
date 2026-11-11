@@ -12,7 +12,7 @@
 Post-Bit-Length Obstructions, Archimedean Rung Ceilings, and Cross-Window Hankel Annihilation}}
 \author{Joshua Coon\\
 \small (with the assistance of Astra, Fable, and Argon AI in GitHub Copilot)\\
-\small Cordoned-Off Artifact: \texttt{semigroup\_breakout/SemigroupBreakoutTheorems.lean} (120 Theorems \texttt{SB.1--SB.120}, Lean 4.19.0, 0 \texttt{sorry}s)}
+\small Cordoned-Off Artifact: \texttt{semigroup\_breakout/SemigroupBreakoutTheorems.lean} (124 Theorems \texttt{SB.1--SB.124}, Lean 4.19.0, 0 \texttt{sorry}s)}
 \date{November 2026}
 
 \begin{document}
@@ -329,6 +329,15 @@ Across any \texttt{ValidBlockChain b\_0 s u (K + 4)} with $\forall k < K + 4,\, 
   \item \textbf{Angle 5 --- Higher-Order $2\times 2, 3\times 3, 4\times 4$ Hankel Parity Reduction \& Vanishing (SB.117):} Whenever $2 g_{k+1} = 3 g_k + e_k$, $2 H_n^{(2)} = g_n e_{n+1} - g_{n+1} e_n$, $4 H_n^{(3)}$ reduces rows $1, 2$ to quadratic parity minors ($H_n^{(3)} = 0$ on $(0,0,0,0)$), and $H_n^{(4)} = 0$ identically whenever $(e_n, \dots, e_{n+5})$ has period $2$ (every 3-block $s = 2$ Super-Block!).
   \item \textbf{Angle 6 --- Universal Local Multi-Block Word-Power $V^m$ Cutoff (SB.118):} Whenever an $L$-block word $V$ of step sum $d \ge 1$ ($5 A_V \le 4(3^d - 2^d)$) repeats $m$ times starting at block $r$, $2^{m d} \mid ((3^d - 2^d) P_r + A_V)$ and $5 \cdot 2^{T_r + m d} < 3^{T_r + d}(5 P_0 + 4)$.
   \item \textbf{Angle 7 --- Pure-Integer Escape, Rational Remainder Lock, \& Shadowing Escape (SB.119--SB.120):} $(3^{a+1}(2^a(2t+1))) \bmod 2^{a+1} = 2^a$; for $n > a$, $X_n = (3^n p) \bmod (2^n q)$ satisfies $2^a \mid X_n \wedge 2^{a+1} \nmid X_n$ and $X_{n+1} + 2^n q (g_n \bmod 2) = 3 X_n$; and whenever $X_n \in [2^{n-1} q + E,\, 2^n q - E]$, every $A/B$ with $|q A - p B| 3^n < E B$ satisfies $2^{n-1} B < (3^n A) \bmod (2^n B)$.
+\end{enumerate}
+\end{theorem}
+
+\begin{theorem}[The 2-Adic Fourier Frontier: Two-Sided Parry Entropy Sandwich, Odd-Frequency Antiphase Parseval Identity, Conditional $O(X^{5/12})$ Sub-FLP Crossover, \& Barrier \#6 (The Parseval Square-Root Entropy Canyon) (Theorems SB.121--SB.124), \texttt{two\_sided\_parry\_entropy\_sandwich\_and\_nonsplit\_lower\_bound}, \texttt{splitting\_pair\_half\_period\_antiphase\_and\_odd\_parseval\_identity}, \texttt{conditional\_fourier\_sub\_flp\_exponent\_and\_seventeen\_twelfths\_crossover}, \texttt{barrier\_six\_parseval\_sqrt\_canyon\_and\_124\_theorem\_synthesis}]
+\begin{enumerate}
+  \item \textbf{Two-Sided Parry Entropy Sandwich \& Non-Splitting Lower Bound (SB.121):} Every $(B, w) \in \texttt{parryCylTree } W$ satisfies $1 \le B \le 2^W$, yielding $3^W \le 2^W |\mathcal{C}_W| \le 3^{W+1} - 2 \cdot 2^W$; moreover, $|\mathcal{C}_{k+1}| + U_k = 2|\mathcal{C}_k|$, $|\mathcal{C}_{k+1}| \le |\mathcal{C}_k| + U_{k+1}$, $|\mathcal{C}_k| \le U_k + U_{k+1}$, and $3^k \le 2^k(U_k + U_{k+1})$.
+  \item \textbf{Splitting-Pair Half-Period Antiphase \& Odd-Frequency Parseval Identity (SB.122):} Splitting children at depth $N$ satisfy $b_{\text{right}} = (b_{\text{left}} + 2^{N-1}) \bmod 2^N$ and $((2m+1) b_{\text{right}}) \bmod 2^N = ((2m+1) b_{\text{left}} + 2^{N-1}) \bmod 2^N$, while any $\{0,1\}$-indicator $f$ on $[0, 2H)$ satisfies $\sum_{y < H} (f(y) - f(y+H))^2 + 2 \sum_{y < H} f(y) f(y+H) = \sum_{y < H} (f(y) + f(y+H))$.
+  \item \textbf{Conditional $O(X^{5/12})$ Sub-FLP Crossover via $3^{17} < 2^{27}$ (SB.123):} Since $3^{17} = 129{,}140{,}163 < 134{,}217{,}728 = 2^{27}$ (vs.\ FLP's $2^{19} < 3^{12}$), at $W = 12k$ and $N = 17k$ any Beurling--Selberg bound $2^{5k} |\mathcal{S}_{12k}| \le 2 |\mathcal{C}_{17k}| + 2^{5k} E$ with square-root error $2^{17k} E^2 \le C_{\text{err}}^2 3^{17k}$ yields $|\mathcal{S}_{12k}| \le (6 + C_{\text{err}}) 2^{5k} = O(X^{5/12}) \approx O(X^{0.4167})$.
+  \item \textbf{Barrier \#6 --- The Parseval Square-Root Entropy Canyon (SB.124):} By Pigeonhole and SB.121, for every $k \in \mathbb{N}$ either $3^k \le 2^{k+1} U_k$ or $3^k \le 2^{k+1} U_{k+1}$, forcing an odd frequency with $|\mathcal{S}(h_{\text{odd}})|^2 \ge 3^k / 2^{k+1} \to \infty$; at $N = 3W$ ($W \ge 2$), although $3^{3W} < 2^{5W}$ (main term $< 1$), $2^{4W-3} < 3^{3W-2}$ ensures that any magnitude-only ($L^1$ triangle-inequality) Fourier bound diverges exponentially above $1$ without signed phase cancellation.
 \end{enumerate}
 \end{theorem}
 

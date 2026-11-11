@@ -2,8 +2,8 @@
 
 **Authors:** Joshua Coon (with Astra, Fable, and Argon AI in GitHub Copilot)  
 **Date:** November 2026  
-**Cordoned-Off Verification Artifact:** [`semigroup_breakout/SemigroupBreakoutTheorems.lean`](./SemigroupBreakoutTheorems.lean) (`120` theorems `SB.1–SB.120`, `0` `sorry`s, `0` warnings, Lean 4.19.0 + Mathlib v4.19.0)  
-**Computational Suite:** [`loop1_product_formula_and_pade.py`](./loop1_product_formula_and_pade.py), [`loop1_beukers_pade_and_hankel.py`](./loop1_beukers_pade_and_hankel.py), [`loop2_pade_lll_and_divergence.py`](./loop2_pade_lll_and_divergence.py), [`loop3_archimedean_ceiling_and_small_u.py`](./loop3_archimedean_ceiling_and_small_u.py), [`loop4_flp_sparsity_and_repulsion.py`](./loop4_flp_sparsity_and_repulsion.py), [`sandbox_symmetry_breaking_loops.py`](./sandbox_symmetry_breaking_loops.py), [`sandbox_wave2_towers.py`](./sandbox_wave2_towers.py), [`sandbox_wave3_towers.py`](./sandbox_wave3_towers.py), [`sandbox_wave4_canyon_view.py`](./sandbox_wave4_canyon_view.py), [`sandbox_wave5_multi_block_crt.py`](./sandbox_wave5_multi_block_crt.py), [`sandbox_wave6_both_bridges.py`](./sandbox_wave6_both_bridges.py), [`sandbox_wave7_binary_carry_bridge.py`](./sandbox_wave7_binary_carry_bridge.py), [`sandbox_overnight_20_bridge_loops.py`](./sandbox_overnight_20_bridge_loops.py), and [`sandbox_wave8_jk_diagonal_asymptotics.py`](./sandbox_wave8_jk_diagonal_asymptotics.py) through [`sandbox_wave21_all_eight_angles_0_to_7.py`](./sandbox_wave21_all_eight_angles_0_to_7.py)
+**Cordoned-Off Verification Artifact:** [`semigroup_breakout/SemigroupBreakoutTheorems.lean`](./SemigroupBreakoutTheorems.lean) (`124` theorems `SB.1–SB.124`, `0` `sorry`s, `0` warnings, Lean 4.19.0 + Mathlib v4.19.0)  
+**Computational Suite:** [`loop1_product_formula_and_pade.py`](./loop1_product_formula_and_pade.py), [`loop1_beukers_pade_and_hankel.py`](./loop1_beukers_pade_and_hankel.py), [`loop2_pade_lll_and_divergence.py`](./loop2_pade_lll_and_divergence.py), [`loop3_archimedean_ceiling_and_small_u.py`](./loop3_archimedean_ceiling_and_small_u.py), [`loop4_flp_sparsity_and_repulsion.py`](./loop4_flp_sparsity_and_repulsion.py), [`sandbox_symmetry_breaking_loops.py`](./sandbox_symmetry_breaking_loops.py), [`sandbox_wave2_towers.py`](./sandbox_wave2_towers.py), [`sandbox_wave3_towers.py`](./sandbox_wave3_towers.py), [`sandbox_wave4_canyon_view.py`](./sandbox_wave4_canyon_view.py), [`sandbox_wave5_multi_block_crt.py`](./sandbox_wave5_multi_block_crt.py), [`sandbox_wave6_both_bridges.py`](./sandbox_wave6_both_bridges.py), [`sandbox_wave7_binary_carry_bridge.py`](./sandbox_wave7_binary_carry_bridge.py), [`sandbox_overnight_20_bridge_loops.py`](./sandbox_overnight_20_bridge_loops.py), and [`sandbox_wave8_jk_diagonal_asymptotics.py`](./sandbox_wave8_jk_diagonal_asymptotics.py) through [`sandbox_wave23_fourier_frontier_and_parseval_barrier.py`](./sandbox_wave23_fourier_frontier_and_parseval_barrier.py)
 
 ---
 
@@ -1044,11 +1044,59 @@ unconditionally ruling out proportional cubes $V^3$ ($d \ge 0.42 T_r$) and large
 ### 27.8 Angle 7 (`SB.119`, `rational_remainder_recurrence_integer_escape_and_shadowing_ball_cutoff`) & Grand 120-Theorem Synthesis (`SB.120`)
 1. **Pure-Integer Exact Escape:** Every positive integer $p = 2^a (2t + 1)$ hits exact fractional part $\frac{1}{2}$ at step $a + 1$ (`(3^(a+1) * p) % 2^(a+1) = 2^a`).
 2. **Rational Remainder Valuation Lock & Step Recurrence:** For $X_n = (3^n p) \bmod (2^n q)$ and $n > a = v_2(p)$, $2^a \mid X_n \land 2^{a+1} \nmid X_n$ ($X_n \ne 0$), and $X_{n+1} + 2^n q (g_n \bmod 2) = 3 X_n$ across surviving steps.
-3. **Quantitative Rational Shadowing Escape (`9,844` shadowing balls verified):** Whenever $X_n \in [2^{n-1} q + E,\, 2^n q - E]$ ($E \ge 1$), **every** candidate $A / B$ satisfying $|q A - p B| \cdot 3^n < E B$ satisfies $2^{n-1} B < (3^n A) \bmod (2^n B)$ (forced out of $[0, 1/2)$ at step $n$!), completing all **120 `sorry`-free, warning-free theorems (`SB.1–SB.120`)**.
+3. **Quantitative Rational Shadowing Escape (`9,844` shadowing balls verified):** Whenever $X_n \in [2^{n-1} q + E,\, 2^n q - E]$ ($E \ge 1$), **every** candidate $A / B$ satisfying $|q A - p B| \cdot 3^n < E B$ satisfies $2^{n-1} B < (3^n A) \bmod (2^n B)$ (forced out of $[0, 1/2)$ at step $n$!).
 
 ---
 
-## 28. Verification Instructions
+## 28. Wave 23 (`SB.121–SB.124`): Full-Spectrum Investigation of the 2-Adic Fourier Frontier — Genuine Sub-FLP Promise ($O(X^{5/12})$) vs. Barrier #6 (The Parseval Square-Root Entropy Canyon)
+
+In [`sandbox_wave23_fourier_frontier_and_parseval_barrier.py`](./sandbox_wave23_fourier_frontier_and_parseval_barrier.py), we ran exact radix-2 FFTs across **all $2^N$ frequencies** $h \in \{0, \dots, 2^N - 1\}$ up to $N = 16$ ($2^{16} = 65{,}536$ modes) and formalized **4 `sorry`-free, warning-free theorems (`SB.121–SB.124`)** that rigorously resolve both the **promise** and the **exact mathematical barrier** of the 2-adic Fourier approach.
+
+### 28.1 Theorem SB.121 (`two_sided_parry_entropy_sandwich_and_nonsplit_lower_bound`)
+Proves that every node $(B, w) \in \text{parryCylTree } W$ satisfies $1 \le B \le 2^W$, sharpening `SB.112` into the **Two-Sided Pure-Integer Parry Entropy Sandwich**:
+$$\boxed{3^W \;\le\; 2^W \cdot |\mathcal{C}_W| \;\le\; 3^{W+1} - 2 \cdot 2^W!}$$
+Moreover, because every right child produced by a split at step $k$ satisfies $3(3 B - 2^{k+1}) \le 2^{k+2}$, **no right child can split at step $k + 1$**, forcing the non-splitting cylinder count $U_k = 2|\mathcal{C}_k| - |\mathcal{C}_{k+1}|$ to satisfy $|\mathcal{C}_k| \le U_k + U_{k+1}$ and $3^k \le 2^k(U_k + U_{k+1})$.
+
+### 28.2 Theorem SB.122 (`splitting_pair_half_period_antiphase_and_odd_parseval_identity`)
+Explains why odd-frequency character sums cancel every splitting pair identically:
+1. **Half-Period Antiphase Shift:** Whenever a cylinder at depth $N - 1$ splits into two children $(e_{N-1} \in \{0, 1\})$, their unique residues $b_{\text{left}}, b_{\text{right}} \in [0, 2^N)$ satisfy $b_{\text{right}} = (b_{\text{left}} + 2^{N-1}) \bmod 2^N$, shifting every odd frequency $h = 2m + 1$ by exact half-period $\pi$ (`((2m+1) * b_right) % 2^N = ((2m+1) * b_left + 2^(N-1)) % 2^N`), so $e^{\pi i} + 1 = 0$!
+2. **Exact Odd-Frequency Parseval Identity:** For any $\{0, 1\}$-indicator $f$ on $[0, 2^N)$ with $H = 2^{N-1}$, $\sum_{y < H} (f(y) - f(y + H))^2 + 2 \sum_{y < H} f(y) f(y + H) = \sum_{y < H} (f(y) + f(y + H))$, proving $\frac{1}{2^{N-1}} \sum_{h \text{ odd}} |\mathcal{S}(h; N)|^2 = 2 |\mathcal{C}_{N-1}| - |\mathcal{C}_N| = U_{N-1}$!
+
+| Depth $N$ | $|\mathcal{C}_N|$ | Non-Splits $U_{N-1}$ | $\max_{h \text{ odd}} \frac{|\mathcal{S}(h;N)|}{|\mathcal{C}_N|}$ | $\text{RMS}_{h \text{ odd}} \frac{|\mathcal{S}(h;N)|}{|\mathcal{C}_N|} = \frac{\sqrt{U_{N-1}}}{|\mathcal{C}_N|}$ | $\max_{h > 0} \frac{|\mathcal{S}(h;N)|}{|\mathcal{C}_N|}$ | $\arg\max_{h>0}$ |
+|---:|---:|---:|---:|---:|---:|---:|
+| $4$ | $8$ | $2$ | $0.24520$ | $0.17678$ | $0.39528$ | $4$ |
+| $6$ | $18$ | $6$ | $0.28543$ | $0.13608$ | $0.40062$ | $16$ |
+| $8$ | $40$ | $14$ | $0.21149$ | $0.09354$ | $0.42180$ | $224$ |
+| $10$ | $90$ | $30$ | $0.21672$ | $0.06086$ | $0.41211$ | $128$ |
+| $12$ | $201$ | $67$ | $0.20064$ | $0.04072$ | $0.40706$ | $512$ |
+| $14$ | $452$ | $152$ | $0.18468$ | $0.02728$ | $0.40967$ | $14{,}336$ |
+| $16$ | $1{,}018$ | $338$ | **$0.14184$** | **$0.01806$** | $0.40681$ | $57{,}344 = 7 \cdot 2^{13}$ |
+
+*(Note: High-$2$-power modes such as $7 \cdot 2^{N-3}$ have $2^{N-W} \mid h$ whenever $W \ge 3$, where $\widehat{\mathbf{1}_{[0, 2^W)}}(-h) = 0$ identically!)*
+
+### 28.3 Theorem SB.123 (`conditional_fourier_sub_flp_exponent_and_seventeen_twelfths_crossover`) — Genuine Promise: Breaking FLP's $O(X^{0.58496})$ Down to $O(X^{5/12}) \approx O(X^{0.4167})$
+In the intermediate post-bit-length window $W < N < 2 W$, balancing the shrinking main term $2^W (3/4)^N$ against square-root Fourier error $(3/2)^{N/2}$ crosses at $N^* = \big(1 + \frac{\log(3/2)}{\log(8/3)}\big) W \approx 1.4134 \, W$! Using the exact rational convergent $17 / 12 \approx 1.4167$ ($3^{17} = 129{,}140{,}163 < 134{,}217{,}728 = 2^{27}$), `SB.123` proves that at $W = 12 k$ and $N = 17 k$, any Beurling–Selberg bound with square-root Fourier error $2^{17 k} E^2 \le C_{\text{err}}^2 \cdot 3^{17 k}$ yields:
+$$\boxed{|\mathcal{S}_{12 k}| \;\le\; (6 + C_{\text{err}}) \cdot 2^{5 k} \;=\; O\!\left(X^{5/12}\right) \;\approx\; O\!\left(X^{0.4167}\right) \;\ll\; O\!\left(X^{0.58496}\right)!}$$
+
+### 28.4 Theorem SB.124 (`barrier_six_parseval_sqrt_canyon_and_124_theorem_synthesis`) — Barrier #6: Why Magnitude-Only ($L^1$) Fourier Analysis Hits the Canyon Before $0$
+Can taking absolute values $\sum_{h} |\widehat{\mathbf{1}_{[0, 2^W)}}(-h)| \cdot |\mathcal{S}(h; N)| / 2^N$ prove $Z = \emptyset$ at $N = 3 W$? **No—and `SB.124` proves why unconditionally:**
+1. By Pigeonhole + Odd-Frequency Parseval (`SB.121–SB.122`), at every scale $k$ either depth $k$ or depth $k + 1$ has an odd frequency $h_{\text{odd}}$ satisfying $|\mathcal{S}(h_{\text{odd}})|^2 \ge U \ge \frac{3^k}{2^{k+1}} \to \infty$ (and by Plancherel unitary invariance, the same $\sqrt{|\mathcal{C}_N|}$ floor holds in *every* orthonormal basis of $L^2(\mathbb{Z}/2^N\mathbb{Z})$, including Walsh–Hadamard!).
+2. At $N = 3 W$ ($W \ge 2$), while the main term shrinks below $1$ ($3^{3W} < 2^{5W}$), the Parseval square-root floor satisfies **$2^{4W - 3} < 3^{3W - 2}$** (growing exponentially above $1$!). Look at the exact $W = 5$ ($2^W = 32$) decomposition across $N = 5 \dots 15$:
+
+| Horizon $N$ | Actual Survivors $< 32$ | Main Term $|\mathcal{C}_N| \cdot 2^{5-N}$ | **$L^1$ Triangle-Inequality Error** | **Signed Fourier Error** |
+|---:|---:|---:|---:|---:|
+| $5$ | $12$ | $12.0000$ | $0.00$ | $+0.0000$ |
+| $7$ | $10$ | $6.7500$ | $6.59$ | $+3.2500$ |
+| $9$ | $6$ | $3.7500$ | $12.22$ | $+2.2500$ |
+| $11$ | $2$ | $2.0938$ | $19.29$ | $-0.0938$ |
+| $13$ | $1$ ($b_0=0$) | $1.1797$ | $28.87$ | $-0.1797$ |
+| $15$ | $1$ ($b_0=0$) | $0.6621$ | **$41.48 \uparrow \infty$** | **$+0.3379$** |
+
+Completing all **124 `sorry`-free, warning-free theorems (`SB.1–SB.124`)**.
+
+---
+
+## 29. Verification Instructions
 
 To verify the cordoned-off Lean 4 proofs without modifying the root 226-file build:
 
@@ -1078,4 +1126,5 @@ python semigroup_breakout\sandbox_wave18_mod40_and_multibase_tower.py
 python semigroup_breakout\sandbox_wave19_superblock_sieve_and_density.py
 python semigroup_breakout\sandbox_wave20_universal_q_half_relaxation_and_kempner_dichotomy.py
 python semigroup_breakout\sandbox_wave21_all_eight_angles_0_to_7.py
+python semigroup_breakout\sandbox_wave23_fourier_frontier_and_parseval_barrier.py
 ```

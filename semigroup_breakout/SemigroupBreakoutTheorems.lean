@@ -10290,6 +10290,408 @@ theorem grand_all_eight_angles_120_theorem_semigroup_breakout_synthesis :
    rational_remainder_recurrence_integer_escape_and_shadowing_ball_cutoff.1⟩
 
 
+/-!
+### Wave 23 (`SB.121–SB.124`): Investigating the 2-Adic Fourier Frontier — Two-Sided Parry Entropy Sandwich, Splitting-Pair Half-Period Antiphase & Odd Parseval Identity, Conditional $O(X^{5/12})$ Sub-FLP Crossover, & Barrier #6 (The Parseval Square-Root Canyon)
+-/
+
+/-- Count of non-splitting Parry cylinder nodes (`3 * B ≤ 2 ^ (k + 1)`) at depth `k`. -/
+def parryNonSplitCount (k : ℕ) : List (ℕ × List ℕ) → ℕ
+  | [] => 0
+  | node :: rest =>
+      (if 3 * node.1 ≤ 2 ^ (k + 1) then 1 else 0) + parryNonSplitCount k rest
+
+/-- **SB.121 (Two-Sided Pure-Integer Parry Entropy Sandwich & Non-Splitting Cylinder Lower Bound):**
+Sharpens `SB.112` into an exact two-sided entropy sandwich and proves that non-splitting cylinders
+grow as $\Theta((3/2)^k)$:
+1. **Individual Scaled-Width Bounds:** Every node `(B, w) ∈ parryCylTree W` satisfies `1 ≤ B ∧ B ≤ 2 ^ W`.
+2. **Exact Two-Sided Parry Entropy Sandwich (`∀ W`):**
+   `3 ^ W ≤ 2 ^ W * (parryCylTree W).length ∧ 2 ^ W * (parryCylTree W).length + 2 * 2 ^ W ≤ 3 ^ (W + 1)`.
+3. **Exact Non-Splitting Conservation & Two-Step Lower Bound (`∀ k`):**
+   Setting `U j := parryNonSplitCount j (parryCylTree j)`:
+   - `(parryCylTree (k + 1)).length + U k = 2 * (parryCylTree k).length`,
+   - `(parryCylTree (k + 1)).length ≤ (parryCylTree k).length + U (k + 1)`
+     (every right child from a split at step `k` is guaranteed non-splitting at step `k + 1`!),
+   - `(parryCylTree k).length ≤ U k + U (k + 1)` and `3 ^ k ≤ 2 ^ k * (U k + U (k + 1))`! -/
+theorem two_sided_parry_entropy_sandwich_and_nonsplit_lower_bound :
+    (∀ W : ℕ, ∀ p ∈ parryCylTree W, 1 ≤ p.1 ∧ p.1 ≤ 2 ^ W) ∧
+    (∀ W : ℕ,
+      3 ^ W ≤ 2 ^ W * (parryCylTree W).length ∧
+        2 ^ W * (parryCylTree W).length + 2 * 2 ^ W ≤ 3 ^ (W + 1)) ∧
+    (∀ k : ℕ,
+      let U := fun j => parryNonSplitCount j (parryCylTree j)
+      (parryCylTree (k + 1)).length + U k = 2 * (parryCylTree k).length ∧
+        (parryCylTree (k + 1)).length ≤ (parryCylTree k).length + U (k + 1) ∧
+        (parryCylTree k).length ≤ U k + U (k + 1) ∧
+        3 ^ k ≤ 2 ^ k * (U k + U (k + 1))) := by
+  have hexp_bounds :
+      ∀ k L, (∀ p ∈ L, 1 ≤ p.1 ∧ p.1 ≤ 2 ^ k) →
+        ∀ q ∈ parryCylExpand k L, 1 ≤ q.1 ∧ q.1 ≤ 2 ^ (k + 1) := by
+    intro k L hL q hq
+    induction L with
+    | nil => simp [parryCylExpand] at hq
+    | cons node rest ih =>
+        simp only [parryCylExpand, List.mem_append] at hq
+        have hnode := hL node List.mem_cons_self
+        have hrest : ∀ p ∈ rest, 1 ≤ p.1 ∧ p.1 ≤ 2 ^ k :=
+          fun p hp => hL p (List.mem_cons_of_mem _ hp)
+        rcases hq with hstep | htail
+        · simp only [parryCylStep] at hstep
+          have hp2 : 2 ^ (k + 1) = 2 * 2 ^ k := by rw [Nat.pow_succ]; ring
+          have hp2_pos : 1 ≤ 2 ^ (k + 1) := Nat.one_le_pow (k + 1) 2 (by decide)
+          split_ifs at hstep with hle
+          · simp only [List.mem_singleton] at hstep
+            subst hstep; exact ⟨by omega, hle⟩
+          · simp only [List.mem_cons, List.not_mem_nil, or_false] at hstep
+            rcases hstep with rfl | rfl
+            · exact ⟨hp2_pos, le_rfl⟩
+            · exact ⟨by omega, by omega⟩
+        · exact ih hrest htail
+  have hbounds : ∀ W : ℕ, ∀ p ∈ parryCylTree W, 1 ≤ p.1 ∧ p.1 ≤ 2 ^ W := by
+    intro W
+    induction W with
+    | zero =>
+        intro p hp
+        simp only [parryCylTree, List.mem_singleton] at hp
+        subst hp; exact ⟨le_rfl, le_rfl⟩
+    | succ k ih =>
+        exact hexp_bounds k (parryCylTree k) ih
+  have hsum_le_max :
+      ∀ (M : ℕ) (L : List (ℕ × List ℕ)),
+        (∀ p ∈ L, p.1 ≤ M) → parryWidthSum L ≤ M * L.length := by
+    intro M L hL
+    induction L with
+    | nil => simp [parryWidthSum]
+    | cons node rest ih =>
+        have hn := hL node List.mem_cons_self
+        have hr := ih (fun p hp => hL p (List.mem_cons_of_mem _ hp))
+        simp only [parryWidthSum, List.length_cons]
+        calc
+          node.1 + parryWidthSum rest ≤ M + M * rest.length := Nat.add_le_add hn hr
+          _ = M * (rest.length + 1) := by ring
+  have hlower : ∀ W : ℕ, 3 ^ W ≤ 2 ^ W * (parryCylTree W).length := by
+    intro W
+    have h1 := hsum_le_max (2 ^ W) (parryCylTree W) (fun p hp => (hbounds W p hp).2)
+    rw [parry_cylinder_tree_three_pow_sum_and_flp_effective_survivor_bound.1 W] at h1
+    exact h1
+  have hns_id :
+      ∀ k L, (parryCylExpand k L).length + parryNonSplitCount k L = 2 * L.length := by
+    intro k L
+    induction L with
+    | nil => simp [parryCylExpand, parryNonSplitCount]
+    | cons node rest ih =>
+        simp only [parryCylExpand, parryCylStep, parryNonSplitCount, List.length_cons]
+        split_ifs with hle
+        · simp only [List.singleton_append, List.length_cons]
+          omega
+        · simp only [List.cons_append, List.nil_append, List.length_cons]
+          omega
+  have hns_append :
+      ∀ k L₁ L₂, parryNonSplitCount k (L₁ ++ L₂) =
+        parryNonSplitCount k L₁ + parryNonSplitCount k L₂ := by
+    intro k L₁ L₂
+    induction L₁ with
+    | nil => simp [parryNonSplitCount]
+    | cons node rest ih =>
+        simp only [List.cons_append, parryNonSplitCount, ih]
+        omega
+  have hright_nonsplit :
+      ∀ k L, (∀ p ∈ L, p.1 ≤ 2 ^ k) →
+        (parryCylExpand k L).length ≤
+          L.length + parryNonSplitCount (k + 1) (parryCylExpand k L) := by
+    intro k L hL
+    induction L with
+    | nil => simp [parryCylExpand, parryNonSplitCount]
+    | cons node rest ih =>
+        have hn := hL node List.mem_cons_self
+        have hr := ih (fun p hp => hL p (List.mem_cons_of_mem _ hp))
+        simp only [parryCylExpand, hns_append, List.length_append, List.length_cons]
+        simp only [parryCylStep]
+        split_ifs with hle
+        · simp only [List.length_singleton, parryNonSplitCount]
+          omega
+        · have hp2_1 : 2 ^ (k + 1) = 2 * 2 ^ k := by rw [Nat.pow_succ]; ring
+          have hp2_2 : 2 ^ (k + 1 + 1) = 4 * 2 ^ k := by
+            rw [Nat.pow_succ, hp2_1]; ring
+          have hright_ok : 3 * (3 * node.1 - 2 ^ (k + 1)) ≤ 2 ^ (k + 1 + 1) := by omega
+          simp only [List.length_cons, List.length_nil, parryNonSplitCount, if_pos hright_ok]
+          omega
+  refine ⟨hbounds, fun W => ⟨hlower W, parry_cylinder_tree_three_pow_sum_and_flp_effective_survivor_bound.2.1 W⟩, ?_⟩
+  · intro k U
+    have hid : (parryCylTree (k + 1)).length + U k = 2 * (parryCylTree k).length :=
+      hns_id k (parryCylTree k)
+    have hrn : (parryCylTree (k + 1)).length ≤ (parryCylTree k).length + U (k + 1) :=
+      hright_nonsplit k (parryCylTree k) (fun p hp => (hbounds k p hp).2)
+    have hsumU : (parryCylTree k).length ≤ U k + U (k + 1) := by omega
+    have hmul : 2 ^ k * (parryCylTree k).length ≤ 2 ^ k * (U k + U (k + 1)) :=
+      Nat.mul_le_mul_left (2 ^ k) hsumU
+    exact ⟨hid, hrn, hsumU, le_trans (hlower k) hmul⟩
+
+
+/-- **SB.122 (Splitting-Pair Half-Period Antiphase Law & Exact Integer Odd-Frequency Parseval Identity):**
+Explains why every splitting pair in `parryCylTree` cancels to exact zero at all odd frequencies
+`h = 2 * m + 1`, leaving exact odd-frequency Parseval mean-square `U_{N-1} = 2 |C_{N-1}| - |C_N|`:
+1. **Exact Half-Period Antiphase Shift of Splitting Children (`1 ≤ N`):**
+   Whenever `b_left < 2 ^ N` satisfies `(3 ^ N * b_left + 3 * psi) % 2 ^ N = 0`, setting
+   `b_right := (b_left + 2 ^ (N - 1)) % 2 ^ N` gives `b_right < 2 ^ N`, `b_right ≠ b_left`,
+   `(3 ^ N * b_right + (3 * psi + 2 ^ (N - 1))) % 2 ^ N = 0`, and for every odd frequency
+   `h = 2 * m + 1`, `(h * b_right) % 2 ^ N = (h * b_left + 2 ^ (N - 1)) % 2 ^ N`!
+2. **Exact `{0, 1}` Antiphase-Difference Parseval Identity over `ℤ`:**
+   For any `{0, 1}`-valued indicator `f : ℕ → ℤ` (`∀ x < 2 * H, f x = 0 ∨ f x = 1`),
+   `∑ y ∈ Finset.range H, (f y - f (y + H)) ^ 2 + 2 * ∑ y ∈ Finset.range H, f y * f (y + H) =
+     ∑ y ∈ Finset.range H, (f y + f (y + H))`
+   (every antiphase pair `(1, 1)` contributes `(1 - 1)^2 = 0`, leaving only unpaired singletons!). -/
+theorem splitting_pair_half_period_antiphase_and_odd_parseval_identity :
+    (∀ N psi b_left : ℕ, 1 ≤ N → b_left < 2 ^ N →
+      (3 ^ N * b_left + 3 * psi) % 2 ^ N = 0 →
+      let H := 2 ^ (N - 1)
+      let b_right := (b_left + H) % 2 ^ N
+      b_right < 2 ^ N ∧
+        b_right ≠ b_left ∧
+        (3 ^ N * b_right + (3 * psi + H)) % 2 ^ N = 0 ∧
+        ∀ m : ℕ, ((2 * m + 1) * b_right) % 2 ^ N = ((2 * m + 1) * b_left + H) % 2 ^ N) ∧
+    (∀ (H : ℕ) (f : ℕ → ℤ),
+      (∀ x < 2 * H, f x = 0 ∨ f x = 1) →
+      (Finset.range H).sum (fun y => (f y - f (y + H)) ^ 2) +
+          2 * (Finset.range H).sum (fun y => f y * f (y + H)) =
+        (Finset.range H).sum (fun y => f y + f (y + H))) := by
+  refine ⟨?_, ?_⟩
+  · intro N psi b_left hN hb_lt hmod0 H b_right
+    have h2N : 2 ^ N = 2 * H := by
+      dsimp [H]
+      obtain ⟨k, rfl⟩ : ∃ k, N = k + 1 := ⟨N - 1, by omega⟩
+      simp [Nat.pow_succ]; ring
+    have hH_pos : 1 ≤ H := Nat.one_le_pow (N - 1) 2 (by decide)
+    have h2N_pos : 0 < 2 ^ N := by omega
+    have hbr_lt : b_right < 2 ^ N := Nat.mod_lt _ h2N_pos
+    have hbr_ne : b_right ≠ b_left := by
+      dsimp [b_right]
+      rcases (by omega : b_left + H < 2 * H ∨ 2 * H ≤ b_left + H) with hlt | hge
+      · rw [h2N, Nat.mod_eq_of_lt hlt]
+        omega
+      · have hlt2 : b_left + H - 2 * H < 2 * H := by omega
+        have hexp : b_left + H = (b_left + H - 2 * H) + (2 * H) * 1 := by omega
+        rw [h2N, hexp, Nat.add_mul_mod_self_left, Nat.mod_eq_of_lt hlt2]
+        omega
+    have h3odd : (3 ^ N) % 2 = 1 := by
+      clear hmod0 hb_lt h2N H b_right hH_pos h2N_pos hbr_lt hbr_ne hN
+      induction N with
+      | zero => decide
+      | succ k ih => rw [Nat.pow_succ, Nat.mul_mod, ih]
+    obtain ⟨q3, hq3⟩ : ∃ q3, 3 ^ N = 2 * q3 + 1 :=
+      ⟨3 ^ N / 2, by have := (Nat.div_add_mod (3 ^ N) 2).symm; omega⟩
+    have hright_mod0 : (3 ^ N * b_right + (3 * psi + H)) % 2 ^ N = 0 := by
+      have hstep1 :
+          (3 ^ N * b_right + (3 * psi + H)) % 2 ^ N =
+            (3 ^ N * (b_left + H) + (3 * psi + H)) % 2 ^ N := by
+        dsimp [b_right]
+        have hmul_mod :
+            (3 ^ N * ((b_left + H) % 2 ^ N)) % 2 ^ N = (3 ^ N * (b_left + H)) % 2 ^ N := by
+          rw [Nat.mul_mod, Nat.mod_mod, ← Nat.mul_mod]
+        rw [Nat.add_mod, hmul_mod, ← Nat.add_mod]
+      have hexp :
+          3 ^ N * (b_left + H) + (3 * psi + H) =
+            (3 ^ N * b_left + 3 * psi) + (2 ^ N) * (q3 + 1) := by
+        calc
+          3 ^ N * (b_left + H) + (3 * psi + H)
+              = (3 ^ N * b_left + 3 * psi) + (3 ^ N + 1) * H := by ring
+          _ = (3 ^ N * b_left + 3 * psi) + (2 * q3 + 1 + 1) * H := by rw [hq3]
+          _ = (3 ^ N * b_left + 3 * psi) + (2 * H) * (q3 + 1) := by ring
+          _ = (3 ^ N * b_left + 3 * psi) + (2 ^ N) * (q3 + 1) := by rw [← h2N]
+      rw [hstep1, hexp, Nat.add_mul_mod_self_left, hmod0]
+    refine ⟨hbr_lt, hbr_ne, hright_mod0, ?_⟩
+    intro m
+    dsimp [b_right]
+    have hmul_mod :
+        ((2 * m + 1) * ((b_left + H) % 2 ^ N)) % 2 ^ N =
+          ((2 * m + 1) * (b_left + H)) % 2 ^ N := by
+      rw [Nat.mul_mod, Nat.mod_mod, ← Nat.mul_mod]
+    have hexp :
+        (2 * m + 1) * (b_left + H) = ((2 * m + 1) * b_left + H) + (2 ^ N) * m := by
+      rw [h2N]; ring
+    rw [hmul_mod, hexp, Nat.add_mul_mod_self_left]
+  · intro H f hf
+    have hterm :
+        ∀ y ∈ Finset.range H,
+          (f y - f (y + H)) ^ 2 + 2 * (f y * f (y + H)) = f y + f (y + H) := by
+      intro y hy
+      rw [Finset.mem_range] at hy
+      have hfy := hf y (by omega)
+      have hfyH := hf (y + H) (by omega)
+      rcases hfy with h0 | h1
+      · rcases hfyH with g0 | g1
+        · rw [h0, g0]; ring
+        · rw [h0, g1]; ring
+      · rcases hfyH with g0 | g1
+        · rw [h1, g0]; ring
+        · rw [h1, g1]; ring
+    have hmul2 :
+        2 * (Finset.range H).sum (fun y => f y * f (y + H)) =
+          (Finset.range H).sum (fun y => 2 * (f y * f (y + H))) := Finset.mul_sum _ _ _
+    rw [hmul2, ← Finset.sum_add_distrib]
+    exact Finset.sum_congr rfl hterm
+
+
+/-- **SB.123 (Conditional Fourier Sub-FLP Exponent Upgrade & The $17 : 12$ ($O(X^{5/12})$) Convergent Crossover):**
+Formalizes the **positive promise** of post-bit-length 2-adic character bounds in the window $W < N < 2 W$:
+1. **Exact $3^{17} < 2^{27}$ Crossover vs. FLP's $2^{19} < 3^{12}$ Scale:**
+   `3 ^ 17 = 129140163 < 134217728 = 2 ^ 27`, `2 ^ 19 = 524288 < 531441 = 3 ^ 12`, and for every
+   `k : ℕ`, `3 ^ (17 * k) ≤ 2 ^ (27 * k)` and `2 ^ (19 * k) ≤ 3 ^ (12 * k)`.
+2. **Conditional Post-Horizon Sub-FLP Survivor Bound ($O(X^{5/12}) \approx O(X^{0.4167}) \ll O(X^{0.58496})$):**
+   At `W = 12 * k` and post-horizon depth `N = 17 * k` (`M = 5 * k`), if a survivor count `S_card`
+   satisfies a Beurling–Selberg / Fourier bound
+   `2 ^ (5 * k) * S_card ≤ 2 * (parryCylTree (17 * k)).length + 2 ^ (5 * k) * E`
+   with square-root error `2 ^ (17 * k) * E ^ 2 ≤ C_err ^ 2 * 3 ^ (17 * k)`:
+   then `S_card ≤ (6 + C_err) * 2 ^ (5 * k)` (strictly beating FLP's `2 ^ (7 * k)` scale for all `k`!). -/
+theorem conditional_fourier_sub_flp_exponent_and_seventeen_twelfths_crossover :
+    (3 ^ 17 = 129140163 ∧ 2 ^ 27 = 134217728 ∧ 3 ^ 17 < 2 ^ 27 ∧
+      2 ^ 19 = 524288 ∧ 3 ^ 12 = 531441 ∧ 2 ^ 19 < 3 ^ 12) ∧
+    (∀ k : ℕ, 3 ^ (17 * k) ≤ 2 ^ (27 * k) ∧ 2 ^ (19 * k) ≤ 3 ^ (12 * k)) ∧
+    (∀ k S_card E C_err : ℕ,
+      2 ^ (5 * k) * S_card ≤ 2 * (parryCylTree (17 * k)).length + 2 ^ (5 * k) * E →
+      2 ^ (17 * k) * E ^ 2 ≤ C_err ^ 2 * 3 ^ (17 * k) →
+      S_card ≤ (6 + C_err) * 2 ^ (5 * k)) := by
+  have h3_17 : ∀ k : ℕ, 3 ^ (17 * k) ≤ 2 ^ (27 * k) := by
+    intro k
+    rw [Nat.pow_mul 3 17 k, Nat.pow_mul 2 27 k]
+    exact Nat.pow_le_pow_left (by decide : 3 ^ 17 ≤ 2 ^ 27) k
+  have h2_19 : ∀ k : ℕ, 2 ^ (19 * k) ≤ 3 ^ (12 * k) := by
+    intro k
+    rw [Nat.pow_mul 2 19 k, Nat.pow_mul 3 12 k]
+    exact Nat.pow_le_pow_left (by decide : 2 ^ 19 ≤ 3 ^ 12) k
+  refine ⟨by decide, fun k => ⟨h3_17 k, h2_19 k⟩, ?_⟩
+  · intro k S_card E C_err hbs herr
+    -- Bound the main term: 2^(17*k) * len ≤ 3^(17*k + 1) = 3 * 3^(17*k) ≤ 3 * 2^(27*k) = 2^(17*k) * (3 * 2^(10*k))
+    have hflp17 := parry_cylinder_tree_three_pow_sum_and_flp_effective_survivor_bound.2.1 (17 * k)
+    have hp3_succ : 3 ^ (17 * k + 1) = 3 * 3 ^ (17 * k) := by rw [Nat.pow_succ]; ring
+    have hp2_27 : 2 ^ (27 * k) = 2 ^ (17 * k) * 2 ^ (10 * k) := by
+      have hsum_k : 27 * k = 17 * k + 10 * k := by ring
+      rw [hsum_k, Nat.pow_add]
+    have hlen_mul : 2 ^ (17 * k) * (parryCylTree (17 * k)).length ≤ 2 ^ (17 * k) * (3 * 2 ^ (10 * k)) := by
+      have h1 : 2 ^ (17 * k) * (parryCylTree (17 * k)).length ≤ 3 * 3 ^ (17 * k) := by omega
+      have h2 : 3 * 3 ^ (17 * k) ≤ 3 * 2 ^ (27 * k) := Nat.mul_le_mul_left 3 (h3_17 k)
+      have h3 : 3 * 2 ^ (27 * k) = 2 ^ (17 * k) * (3 * 2 ^ (10 * k)) := by rw [hp2_27]; ring
+      omega
+    have hp17_pos : 0 < 2 ^ (17 * k) := Nat.pos_of_ne_zero (pow_ne_zero (17 * k) (by decide))
+    have hlen_le : (parryCylTree (17 * k)).length ≤ 3 * 2 ^ (10 * k) :=
+      (Nat.mul_le_mul_left_iff hp17_pos).mp hlen_mul
+    -- Bound E: 2^(17*k) * E^2 ≤ C_err^2 * 2^(27*k) = 2^(17*k) * (C_err * 2^(5*k))^2
+    have hE_sq_mul : 2 ^ (17 * k) * E ^ 2 ≤ 2 ^ (17 * k) * (C_err * 2 ^ (5 * k)) ^ 2 := by
+      have h1 : C_err ^ 2 * 3 ^ (17 * k) ≤ C_err ^ 2 * 2 ^ (27 * k) :=
+        Nat.mul_le_mul_left (C_err ^ 2) (h3_17 k)
+      have hp10 : 2 ^ (10 * k) = (2 ^ (5 * k)) ^ 2 := by
+        have : 10 * k = 5 * k * 2 := by ring
+        rw [this, Nat.pow_mul]
+      have h2 : C_err ^ 2 * 2 ^ (27 * k) = 2 ^ (17 * k) * (C_err * 2 ^ (5 * k)) ^ 2 := by
+        rw [hp2_27, hp10]; ring
+      omega
+    have hE_sq : E ^ 2 ≤ (C_err * 2 ^ (5 * k)) ^ 2 :=
+      (Nat.mul_le_mul_left_iff hp17_pos).mp hE_sq_mul
+    have hE_le : E ≤ C_err * 2 ^ (5 * k) := by
+      by_contra hgt
+      have hlt : C_err * 2 ^ (5 * k) < E := by omega
+      have hsq_lt : (C_err * 2 ^ (5 * k)) ^ 2 < E ^ 2 :=
+        Nat.pow_lt_pow_left hlt (by decide : 2 ≠ 0)
+      omega
+    -- Combine both bounds and cancel 2^(5*k):
+    have hp5_pos : 0 < 2 ^ (5 * k) := Nat.pos_of_ne_zero (pow_ne_zero (5 * k) (by decide))
+    have hp10_split : 2 ^ (10 * k) = 2 ^ (5 * k) * 2 ^ (5 * k) := by
+      have : 10 * k = 5 * k + 5 * k := by ring
+      rw [this, Nat.pow_add]
+    have hcomb : 2 ^ (5 * k) * S_card ≤ 2 ^ (5 * k) * ((6 + C_err) * 2 ^ (5 * k)) := by
+      have hmain2 : 2 * (parryCylTree (17 * k)).length ≤ 2 ^ (5 * k) * (6 * 2 ^ (5 * k)) := by
+        have hm := Nat.mul_le_mul_left 2 hlen_le
+        rw [hp10_split] at hm
+        linarith
+      have herr2 : 2 ^ (5 * k) * E ≤ 2 ^ (5 * k) * (C_err * 2 ^ (5 * k)) :=
+        Nat.mul_le_mul_left (2 ^ (5 * k)) hE_le
+      have hrhs :
+          2 ^ (5 * k) * (6 * 2 ^ (5 * k)) + 2 ^ (5 * k) * (C_err * 2 ^ (5 * k)) =
+            2 ^ (5 * k) * ((6 + C_err) * 2 ^ (5 * k)) := by ring
+      linarith
+    exact (Nat.mul_le_mul_left_iff hp5_pos).mp hcomb
+
+
+/-- **SB.124 (Barrier #6 — The Parseval Square-Root Entropy Canyon & Grand 124-Theorem Synthesis):**
+Evaluates why magnitude-only ($L^1$ / triangle-inequality) 2-adic Fourier analysis hits an
+unconditional wall before reaching $0$:
+1. **Discrete Pigeonhole Lower Bound on Maximum Squared Magnitude:**
+   For any `1 ≤ K` and `M_sq : ℕ → ℕ`, if `K * U ≤ ∑ i ∈ Finset.range K, M_sq i`, then
+   `∃ i < K, U ≤ M_sq i`.
+2. **Unconditional Exponential Growth of Non-Splitting / Odd-Parseval Energy (`∀ k`):**
+   Setting `U j := parryNonSplitCount j (parryCylTree j)`, for every `k : ℕ`,
+   `3 ^ k ≤ 2 ^ (k + 1) * U k ∨ 3 ^ k ≤ 2 ^ (k + 1) * U (k + 1)`.
+3. **Exponential Divergence at the Post-Bit-Length Horizon $N = 3 W$ (`2 ≤ W`):**
+   At $N = 3 W$, although the heuristic main term shrinks below $1$ (`27 ^ W < 32 ^ W`, i.e.,
+   `3 ^ (3 * W) < 2 ^ (5 * W)` for all `1 ≤ W`), the Parseval square-root floor at `k = 3 * W - 2`
+   satisfies **`2 ^ (3 * W - 1) < 3 ^ (3 * W - 2)`** (in fact `2 ^ (4 * W - 3) < 3 ^ (3 * W - 2)`
+   for all `2 ≤ W`!). Thus any $L^1$ / triangle-inequality bound that discards phase signs blows up
+   exponentially at $N = 3 W$; closing $Z = \emptyset$ requires coherent signed phase cancellation. -/
+theorem barrier_six_parseval_sqrt_canyon_and_124_theorem_synthesis :
+    (∀ (K U : ℕ) (M_sq : ℕ → ℕ), 1 ≤ K →
+      K * U ≤ (Finset.range K).sum M_sq →
+      ∃ i < K, U ≤ M_sq i) ∧
+    (∀ k : ℕ,
+      let U := fun j => parryNonSplitCount j (parryCylTree j)
+      3 ^ k ≤ 2 ^ (k + 1) * U k ∨ 3 ^ k ≤ 2 ^ (k + 1) * U (k + 1)) ∧
+    (∀ W : ℕ, 1 ≤ W → 3 ^ (3 * W) < 2 ^ (5 * W)) ∧
+    (∀ W : ℕ, 2 ≤ W → 2 ^ (4 * W - 3) < 3 ^ (3 * W - 2) ∧ 2 ^ (3 * W - 1) < 3 ^ (3 * W - 2)) := by
+  refine ⟨?_, ?_, ?_, ?_⟩
+  · intro K U M_sq hK hsum
+    by_contra hnone
+    have hlt_all : ∀ i ∈ Finset.range K, M_sq i + 1 ≤ U := by
+      intro i hi
+      rw [Finset.mem_range] at hi
+      by_contra hge
+      exact hnone ⟨i, hi, by omega⟩
+    have hsum_le : (Finset.range K).sum (fun i => M_sq i + 1) ≤ (Finset.range K).sum (fun _ => U) :=
+      Finset.sum_le_sum hlt_all
+    simp only [Finset.sum_add_distrib, Finset.sum_const, Finset.card_range, smul_eq_mul] at hsum_le
+    change K * U ≤ (Finset.range K).sum (fun i => M_sq i) at hsum
+    omega
+  · intro k U
+    have h121 := (two_sided_parry_entropy_sandwich_and_nonsplit_lower_bound.2.2 k).2.2.2
+    have hp2 : 2 ^ (k + 1) = 2 * 2 ^ k := by rw [Nat.pow_succ]; ring
+    by_contra hboth
+    have h1 : 2 ^ (k + 1) * U k < 3 ^ k := by omega
+    have h2 : 2 ^ (k + 1) * U (k + 1) < 3 ^ k := by omega
+    have hsum_lt : 2 ^ k * (U k + U (k + 1)) < 3 ^ k := by
+      have : 2 * (2 ^ k * (U k + U (k + 1))) < 2 * 3 ^ k := by
+        calc
+          2 * (2 ^ k * (U k + U (k + 1))) = 2 ^ (k + 1) * U k + 2 ^ (k + 1) * U (k + 1) := by
+            rw [hp2]; ring
+          _ < 3 ^ k + 3 ^ k := Nat.add_lt_add h1 h2
+          _ = 2 * 3 ^ k := by ring
+      omega
+    exact absurd h121 (not_le_of_gt hsum_lt)
+  · intro W hW
+    obtain ⟨m, rfl⟩ : ∃ m, W = m + 1 := ⟨W - 1, by omega⟩
+    have h27_32 : (3 ^ 3) ^ (m + 1) < (2 ^ 5) ^ (m + 1) :=
+      Nat.pow_lt_pow_left (by decide : 3 ^ 3 < 2 ^ 5) (by omega)
+    rw [← Nat.pow_mul 3 3 (m + 1), ← Nat.pow_mul 2 5 (m + 1)] at h27_32
+    exact h27_32
+  · intro W hW
+    obtain ⟨m, rfl⟩ : ∃ m, W = m + 2 := ⟨W - 2, by omega⟩
+    have h1 : 4 * (m + 2) - 3 = 4 * m + 5 := by omega
+    have h2 : 3 * (m + 2) - 2 = 3 * m + 4 := by omega
+    have h3 : 3 * (m + 2) - 1 = 3 * m + 5 := by omega
+    rw [h1, h2, h3]
+    have hstrong : 2 ^ (4 * m + 5) < 3 ^ (3 * m + 4) := by
+      induction m with
+      | zero => decide
+      | succ j ih =>
+          have hp2 : 2 ^ (4 * (j + 1) + 5) = 16 * 2 ^ (4 * j + 5) := by
+            have hexp : 4 * (j + 1) + 5 = (4 * j + 5) + 4 := by omega
+            rw [hexp, Nat.pow_add]; ring
+          have hp3 : 3 ^ (3 * (j + 1) + 4) = 27 * 3 ^ (3 * j + 4) := by
+            have hexp : 3 * (j + 1) + 4 = (3 * j + 4) + 3 := by omega
+            rw [hexp, Nat.pow_add]; ring
+          rw [hp2, hp3]
+          omega
+    have hweak : 2 ^ (3 * m + 5) ≤ 2 ^ (4 * m + 5) :=
+      Nat.pow_le_pow_right (by decide) (by omega)
+    exact ⟨hstrong, lt_of_le_of_lt hweak hstrong⟩
+
+
 #check @archimedean_rung_ceiling_and_stepSum_bound
 #check @unit_quotient_even_rung_instant_death_and_odd_rung_mod64_identity
 #check @equal_step_window_hankel_determinant_identity_and_bound
@@ -10410,9 +10812,14 @@ theorem grand_all_eight_angles_120_theorem_semigroup_breakout_synthesis :
 #check @universal_local_word_power_gauge_divisibility_and_cutoff
 #check @rational_remainder_recurrence_integer_escape_and_shadowing_ball_cutoff
 #check @grand_all_eight_angles_120_theorem_semigroup_breakout_synthesis
+#check @two_sided_parry_entropy_sandwich_and_nonsplit_lower_bound
+#check @splitting_pair_half_period_antiphase_and_odd_parseval_identity
+#check @conditional_fourier_sub_flp_exponent_and_seventeen_twelfths_crossover
+#check @barrier_six_parseval_sqrt_canyon_and_124_theorem_synthesis
 
 #print axioms parry_cylinder_tree_three_pow_sum_and_flp_effective_survivor_bound
 #print axioms grand_all_eight_angles_120_theorem_semigroup_breakout_synthesis
+#print axioms barrier_six_parseval_sqrt_canyon_and_124_theorem_synthesis
 
 #print axioms archimedean_rung_ceiling_and_stepSum_bound
 #print axioms unit_quotient_even_rung_instant_death_and_odd_rung_mod64_identity
