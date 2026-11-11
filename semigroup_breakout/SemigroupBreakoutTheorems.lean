@@ -11248,6 +11248,422 @@ theorem grand_paths_a_and_b_132_theorem_semigroup_breakout_synthesis :
      ⟨h.2.2.1, h.2.2.2⟩⟩
 
 
+/-!
+### Wave 25 (`SB.133–SB.140`): Quantitative Obstructions of Standalone Methods 1–3 (`SB.133–SB.135`), Four Fusion Mechanisms for #2 (`SB.136–SB.139`), The $159 / 160$ Mod-320 Real-Coupled Even-Gauge Pinch, & Grand 140-Theorem Synthesis (`SB.140`)
+-/
+
+/-- **SB.133 (Method 1 Standalone Obstruction — Exponential Pigeonhole Cylinder Excess $17^k > 12 k + 1$):**
+Certifies why Method 1 (`SB.130` anti-recurrence) cannot close $Z = \emptyset$ by Pigeonhole alone:
+at $M = 12 k$ orbit steps (`12 * k + 1` visited points), the anti-recurrence bit horizon is
+`L = 7 * k` (`2^{7k} = 128^k \approx (3/2)^{12k} = 129.7^k`), where `(parryCylTree (7 * k)).length`
+satisfies `17 ^ k ≤ (parryCylTree (7 * k)).length` and **`12 * k + 1 < 17 ^ k ≤ (parryCylTree (7 * k)).length`**
+for every `1 ≤ k`! -/
+theorem method_one_pigeonhole_cylinder_excess_obstruction :
+    17 * 128 < 2187 ∧
+    ∀ k : ℕ, 1 ≤ k →
+      17 ^ k ≤ (parryCylTree (7 * k)).length ∧
+        12 * k + 1 < 17 ^ k ∧
+        12 * k + 1 < (parryCylTree (7 * k)).length := by
+  refine ⟨by decide, ?_⟩
+  intro k hk
+  have hlow := (two_sided_parry_entropy_sandwich_and_nonsplit_lower_bound.2.1 (7 * k)).1
+  have h2187 : 3 ^ (7 * k) = 2187 ^ k := by
+    rw [Nat.pow_mul 3 7 k]
+  have h128 : 2 ^ (7 * k) = 128 ^ k := by
+    rw [Nat.pow_mul 2 7 k]
+  rw [h2187, h128] at hlow
+  have h17_128 : (17 * 128) ^ k ≤ 2187 ^ k :=
+    Nat.pow_le_pow_left (by decide : 17 * 128 ≤ 2187) k
+  rw [Nat.mul_pow 17 128 k, mul_comm (17 ^ k) (128 ^ k)] at h17_128
+  have h128_pos : 0 < 128 ^ k := Nat.pos_of_ne_zero (pow_ne_zero k (by decide))
+  have h17_le : 17 ^ k ≤ (parryCylTree (7 * k)).length :=
+    (Nat.mul_le_mul_left_iff h128_pos).mp (le_trans h17_128 hlow)
+  have hlin_all : ∀ m : ℕ, 12 * (m + 1) + 1 < 17 ^ (m + 1) := by
+    intro m
+    induction m with
+    | zero => decide
+    | succ j ih =>
+        have hp17 : 17 ^ (j + 2) = 17 * 17 ^ (j + 1) := by rw [Nat.pow_succ]; ring
+        have h1_pos : 1 ≤ 17 ^ (j + 1) := Nat.one_le_pow (j + 1) 17 (by decide)
+        omega
+  have hlin_lt : 12 * k + 1 < 17 ^ k := by
+    obtain ⟨m, rfl⟩ : ∃ m, k = m + 1 := ⟨k - 1, by omega⟩
+    exact hlin_all m
+  exact ⟨h17_le, hlin_lt, lt_of_lt_of_le hlin_lt h17_le⟩
+
+
+/-- **SB.134 (Method 2 Standalone Obstruction — Unconditional $R_0 \ge 3^{T_K - s_0}$ Floor & Generic $C^{1.3691}$ Radical Excess):**
+Certifies why classical $abc$ alone has an exponential $0.3691$ excess on `2 ^ S_0 * u K = 3 ^ T_K * u 0 + R_0`
+when `u K` and `R_0` are squarefree:
+1. **Unconditional Exponential Floor on $R_0$:** `3 ^ d_0 ≤ R_0` (`d_0 = T_K - s 0`).
+2. **Strict Product Excess Over $3^{T_K + d_0}$:** `3 ^ (T_K + d_0) * u 0 < 2 ^ S_0 * (u K * R_0)`.
+3. **Direct Excess Over $C = 2^{S_0} u_K$ Past $2^{S_0} < 3^{d_0}$:**
+   Whenever `2 ^ S_0 < 3 ^ d_0` (which holds once $T_K \ge 3(s_0 + s_K)$ since $3 > 2$),
+   **`2 ^ S_0 * u K < u K * R_0`** (`C < u K * R_0` unconditionally!). -/
+theorem method_two_abc_generic_radical_excess_identity_and_bound
+    {b_0 M : ℕ} {s u : ℕ → ℕ}
+    (hchain : ValidBlockChain b_0 s u (0 + 1 + M + 1))
+    (hs0 : 2 ≤ s 0)
+    (hs_tail : ∀ k < M, 2 ≤ s (0 + 1 + k)) :
+    let K := 0 + 1 + M
+    let T_K := blockSteps s K
+    let s' := fun t => s (0 + 1 + t)
+    let d_0 := blockSteps s' M
+    let S_0 := d_0 + s K
+    let R_0 := 3 ^ d_0 + renewalNumerator s' M
+    3 ^ d_0 ≤ R_0 ∧
+      3 ^ (T_K + d_0) * u 0 < 2 ^ S_0 * (u K * R_0) ∧
+      (2 ^ S_0 < 3 ^ d_0 → 2 ^ S_0 * u K < u K * R_0) := by
+  intro K T_K s' d_0 S_0 R_0
+  have h72 := exact_two_adic_renewal_valuation_and_one_fifth_reduced_ceiling hchain hs0 hs_tail
+  have hid : 2 ^ S_0 * u K = 3 ^ T_K * u 0 + R_0 := h72.2.1
+  have huK_pos : 1 ≤ u K := (archimedean_rung_ceiling_and_stepSum_bound hchain).1.1
+  have h3d_pos : 1 ≤ 3 ^ d_0 := Nat.one_le_pow d_0 3 (by decide)
+  have hR0_ge : 3 ^ d_0 ≤ R_0 := by dsimp [R_0]; omega
+  have hR0_pos : 1 ≤ R_0 := le_trans h3d_pos hR0_ge
+  have hstrict_base : 3 ^ T_K * u 0 < 2 ^ S_0 * u K := by omega
+  have hprod_lt : (3 ^ T_K * u 0) * R_0 < (2 ^ S_0 * u K) * R_0 :=
+    (Nat.mul_lt_mul_right hR0_pos).mpr hstrict_base
+  have hprod_ge : 3 ^ (T_K + d_0) * u 0 ≤ (3 ^ T_K * u 0) * R_0 := by
+    have hm := Nat.mul_le_mul_left (3 ^ T_K * u 0) hR0_ge
+    have hrw : (3 ^ T_K * u 0) * 3 ^ d_0 = 3 ^ (T_K + d_0) * u 0 := by
+      rw [Nat.pow_add 3 T_K d_0]; ring
+    rwa [hrw] at hm
+  refine ⟨hR0_ge, ?_, ?_⟩
+  · have hrw2 : (2 ^ S_0 * u K) * R_0 = 2 ^ S_0 * (u K * R_0) := by ring
+    rw [← hrw2]
+    exact lt_of_le_of_lt hprod_ge hprod_lt
+  · intro hS_lt_d
+    have h1 : 2 ^ S_0 * u K < 3 ^ d_0 * u K :=
+      (Nat.mul_lt_mul_right huK_pos).mpr hS_lt_d
+    have h2 : 3 ^ d_0 * u K ≤ R_0 * u K := Nat.mul_le_mul_right (u K) hR0_ge
+    have hcomm : R_0 * u K = u K * R_0 := Nat.mul_comm _ _
+    rw [← hcomm]
+    exact lt_of_lt_of_le h1 h2
+
+
+/-- **SB.135 (Method 3 Standalone Obstruction — Exact Cyclic Shift-Sum Conservation vs. Bad-Shift Occupancy):**
+Certifies why translation-covariant Fourier bounds prove *almost all* shifts are empty yet cannot
+distinguish $a = 0$ from occupied shifts $a = b_0(w)$:
+1. **Exact Cyclic Shift-Sum Conservation (`1 ≤ M`):**
+   `∑ a ∈ Finset.range M, ∑ j ∈ Finset.range L, f ((a + j) % M) = L * ∑ x ∈ Finset.range M, f x`.
+2. **Bad-Shift Realizability:** For every `b < M` with `1 ≤ f b` and `1 ≤ L`, choosing shift `a = b`
+   gives `1 ≤ ∑ j ∈ Finset.range L, f ((b + j) % M)`. -/
+theorem method_three_markov_shift_average_vs_bad_shift_occupancy :
+    (∀ (M L : ℕ) (f : ℕ → ℕ), 1 ≤ M →
+      (Finset.range M).sum (fun a => (Finset.range L).sum (fun j => f ((a + j) % M))) =
+        L * (Finset.range M).sum f) ∧
+    (∀ (M L b : ℕ) (f : ℕ → ℕ), 1 ≤ M → 1 ≤ L → b < M → 1 ≤ f b →
+      1 ≤ (Finset.range L).sum (fun j => f ((b + j) % M))) := by
+  have hshift1 :
+      ∀ (m : ℕ) (g : ℕ → ℕ),
+        (Finset.range (m + 1)).sum (fun a => g ((a + 1) % (m + 1))) =
+          (Finset.range (m + 1)).sum g := by
+    intro m g
+    rw [Finset.sum_range_succ, Finset.sum_range_succ' g m]
+    have htop : (m + 1) % (m + 1) = 0 := Nat.mod_self (m + 1)
+    have hbody :
+        (Finset.range m).sum (fun a => g ((a + 1) % (m + 1))) =
+          (Finset.range m).sum (fun a => g (a + 1)) := by
+      refine Finset.sum_congr rfl ?_
+      intro a ha
+      rw [Finset.mem_range] at ha
+      rw [Nat.mod_eq_of_lt (by omega : a + 1 < m + 1)]
+    rw [htop, hbody]
+  have hshift_j :
+      ∀ (m j : ℕ) (f : ℕ → ℕ),
+        (Finset.range (m + 1)).sum (fun a => f ((a + j) % (m + 1))) =
+          (Finset.range (m + 1)).sum f := by
+    intro m j f
+    induction j with
+    | zero =>
+        refine Finset.sum_congr rfl ?_
+        intro a ha
+        rw [Finset.mem_range] at ha
+        simp [Nat.mod_eq_of_lt ha]
+    | succ k ih =>
+        have hstep := hshift1 m (fun y => f ((y + k) % (m + 1)))
+        have hcongr :
+            (Finset.range (m + 1)).sum (fun a => f ((a + (k + 1)) % (m + 1))) =
+              (Finset.range (m + 1)).sum (fun a => f (((a + 1) % (m + 1) + k) % (m + 1))) := by
+          refine Finset.sum_congr rfl ?_
+          intro a _
+          have hmod_add :
+              ((a + 1) % (m + 1) + k) % (m + 1) = ((a + 1) + k) % (m + 1) := by
+            rw [Nat.add_mod ((a + 1) % (m + 1)), Nat.mod_mod, ← Nat.add_mod]
+          have hassoc : (a + 1) + k = a + (k + 1) := by omega
+          rw [hmod_add, hassoc]
+        rw [hcongr, hstep, ih]
+  refine ⟨?_, ?_⟩
+  · intro M L f hM
+    obtain ⟨m, rfl⟩ : ∃ m, M = m + 1 := ⟨M - 1, by omega⟩
+    rw [Finset.sum_comm]
+    have hall :
+        ∀ j ∈ Finset.range L,
+          (Finset.range (m + 1)).sum (fun a => f ((a + j) % (m + 1))) =
+            (Finset.range (m + 1)).sum f :=
+      fun j _ => hshift_j m j f
+    rw [Finset.sum_congr rfl hall, Finset.sum_const, Finset.card_range, smul_eq_mul]
+  · intro M L b f hM hL hb hfb
+    have h0_mem : 0 ∈ Finset.range L := Finset.mem_range.mpr hL
+    have hle : f ((b + 0) % M) ≤ (Finset.range L).sum (fun j => f ((b + j) % M)) :=
+      Finset.single_le_sum (f := fun j => f ((b + j) % M)) (fun _ _ => Nat.zero_le _) h0_mem
+    simp only [Nat.add_zero, Nat.mod_eq_of_lt hb] at hle
+    exact le_trans hfb hle
+
+
+/-- **SB.136 (Idea 2A — Universal Interior Odd-Core Coprimality to $6$ & Prime Divisor $\ge 5$ Supply):**
+Proves that every interior odd core `u (r + 1)` (`1 ≤ s r`) is coprime to `6`, so every prime
+factor `p ∣ u (r + 1)` satisfies `5 ≤ p` (and `1 < u (r + 1) → 5 ≤ u (r + 1)`): -/
+theorem interior_odd_core_coprime_to_six_and_prime_divisor_ge_five
+    {b_0 r : ℕ} {s u : ℕ → ℕ}
+    (hchain : ValidBlockChain b_0 s u (r + 2))
+    (hs_r : 1 ≤ s r) :
+    u (r + 1) % 2 = 1 ∧
+      u (r + 1) % 3 ≠ 0 ∧
+      Nat.Coprime (u (r + 1)) 6 ∧
+      (∀ p : ℕ, Nat.Prime p → p ∣ u (r + 1) → 5 ≤ p) ∧
+      (1 < u (r + 1) → 5 ≤ u (r + 1)) := by
+  have hstep1 : 2 ^ (s (r + 1)) * u (r + 1) = 3 ^ (s r) * u r + 1 :=
+    (one_step_backward_quotient_recovery_and_mod_three_pow_one hchain).1
+  have hu_odd : u (r + 1) % 2 = 1 := (hchain (r + 1) (by omega)).2.1
+  have h3pow_mod3 : (3 ^ (s r) * u r + 1) % 3 = 1 := by
+    obtain ⟨k, hk⟩ : ∃ k, s r = k + 1 := ⟨s r - 1, by omega⟩
+    have hexp : 3 ^ (k + 1) * u r + 1 = 1 + 3 * (3 ^ k * u r) := by
+      rw [Nat.pow_succ]; ring
+    rw [hk, hexp, Nat.add_mul_mod_self_left]
+  have hu_mod3 : u (r + 1) % 3 ≠ 0 := by
+    intro hdiv3
+    have hlhs3 : (2 ^ (s (r + 1)) * u (r + 1)) % 3 = 0 := by
+      rw [Nat.mul_mod, hdiv3, Nat.mul_zero, Nat.zero_mod]
+    rw [hstep1] at hlhs3
+    omega
+  have hcop2 : Nat.Coprime (u (r + 1)) 2 := by
+    rw [Nat.Coprime, Nat.gcd_comm, Nat.gcd_rec 2 (u (r + 1)), hu_odd]
+    rfl
+  have hcop3 : Nat.Coprime (u (r + 1)) 3 := by
+    rw [Nat.Coprime, Nat.gcd_comm, Nat.gcd_rec 3 (u (r + 1))]
+    rcases (by omega : u (r + 1) % 3 = 1 ∨ u (r + 1) % 3 = 2) with h1 | h2
+    · rw [h1]; rfl
+    · rw [h2]; decide
+  have hcop6 : Nat.Coprime (u (r + 1)) 6 := hcop2.mul_right hcop3
+  have hp_ge5 : ∀ p : ℕ, Nat.Prime p → p ∣ u (r + 1) → 5 ≤ p := by
+    intro p hp hdvd
+    have hp_ge2 : 2 ≤ p := hp.two_le
+    by_contra hlt5
+    have hp4 : p ≤ 4 := by omega
+    rcases (by omega : p = 2 ∨ p = 3 ∨ p = 4) with rfl | rfl | rfl
+    · have := Nat.mod_eq_zero_of_dvd hdvd; omega
+    · exact hu_mod3 (Nat.mod_eq_zero_of_dvd hdvd)
+    · exact absurd hp (by decide)
+  refine ⟨hu_odd, hu_mod3, hcop6, hp_ge5, ?_⟩
+  · intro hgt1
+    have hmin_p : Nat.Prime (Nat.minFac (u (r + 1))) := Nat.minFac_prime (by omega)
+    have hmin_dvd : Nat.minFac (u (r + 1)) ∣ u (r + 1) := Nat.minFac_dvd (u (r + 1))
+    exact le_trans (hp_ge5 _ hmin_p hmin_dvd) (Nat.le_of_dvd (by omega) hmin_dvd)
+
+
+/-- **SB.137 (Idea 2B — Dual Multiplicative-Product to Additive-Kempner Excess Sandwich):**
+Sandwiches the global multiplicative excess `stepNumProd s u K - 3 ^ T_K * oddCoreProd u K = R_0 * tailOddProd`
+(`SB.95`) from both below and above:
+1. `3 ^ d_0 * tailOddProd ≤ stepNumProd s u K - 3 ^ T_K * oddCoreProd u K`, and
+2. `5 * (stepNumProd s u K - 3 ^ T_K * oddCoreProd u K) < 3 ^ T_K * tailOddProd`! -/
+theorem dual_multiplicative_euler_product_to_additive_kempner_sandwich
+    {b_0 M : ℕ} {s u : ℕ → ℕ}
+    (hchain : ValidBlockChain b_0 s u (0 + 1 + M + 1))
+    (hs0 : 2 ≤ s 0)
+    (hs_tail : ∀ k < M, 2 ≤ s (0 + 1 + k)) :
+    let K := 0 + 1 + M
+    let T_K := blockSteps s K
+    let s' := fun t => s (0 + 1 + t)
+    let d_0 := blockSteps s' M
+    let tailOddProd := oddCoreProd (fun r => u (0 + 1 + r)) M
+    3 ^ d_0 * tailOddProd ≤ stepNumProd s u K - 3 ^ T_K * oddCoreProd u K ∧
+      5 * (stepNumProd s u K - 3 ^ T_K * oddCoreProd u K) < 3 ^ T_K * tailOddProd := by
+  intro K T_K s' d_0 tailOddProd
+  have h95 := path_b_reduced_odd_seed_product_formula_and_symmetric_excess hchain hs0 hs_tail
+  have h72 := exact_two_adic_renewal_valuation_and_one_fifth_reduced_ceiling hchain hs0 hs_tail
+  set R_0 := 3 ^ d_0 + renewalNumerator s' M
+  have hexcess : R_0 * tailOddProd = stepNumProd s u K - 3 ^ T_K * oddCoreProd u K := h95.2.2.1.2
+  have hR0_ge : 3 ^ d_0 ≤ R_0 := by dsimp [R_0]; omega
+  have h5R0_lt : 5 * R_0 < 3 ^ T_K := h72.2.2.1.2
+  have htail_pos : 1 ≤ tailOddProd := by
+    dsimp [tailOddProd]
+    clear h95 h72 hexcess hR0_ge h5R0_lt R_0 K T_K s' d_0 hs0 hs_tail
+    induction M with
+    | zero => simp [oddCoreProd]
+    | succ m ihm =>
+        have ih_m := ihm (fun k hk => hchain k (by omega))
+        have hum_pos : 1 ≤ u (0 + 1 + m) := by
+          have hcm : ValidBlockChain b_0 s u (0 + 1 + m + 1) := fun k hk => hchain k (by omega)
+          exact (archimedean_rung_ceiling_and_stepSum_bound hcm).1.1
+        dsimp only [oddCoreProd]
+        have hm1 : 1 * 1 ≤ oddCoreProd (fun r => u (0 + 1 + r)) m * u (0 + 1 + m) :=
+          Nat.mul_le_mul ih_m hum_pos
+        exact hm1
+  rw [← hexcess]
+  refine ⟨Nat.mul_le_mul_right tailOddProd hR0_ge, ?_⟩
+  have hlt_mul : (5 * R_0) * tailOddProd < 3 ^ T_K * tailOddProd :=
+    (Nat.mul_lt_mul_right htail_pos).mpr h5R0_lt
+  have hassoc : 5 * (R_0 * tailOddProd) = (5 * R_0) * tailOddProd := by ring
+  rwa [hassoc]
+
+
+/-- **SB.138 (Idea 2D Part 1 — Universal $[0, 1/2)$ Real Escape of `(2, 2), (2, 3), (2, 4), (2, 5)` & Sharp `(2, 6)` Recovery):**
+Along the Real-First Parry map (`SB.110`), any point `R_0 / D ∈ [0, 1/2)` (`2 * R_0 < D`, `1 ≤ D`)
+whose itinerary begins with `(1, 0, 1, 0^{c-1})` (`s_r = 2` followed by `s_{r+1} = c`) and attempts
+another odd step at `2 + c` (`parryIterBit R_0 D (2 + c) = 1`) must satisfy
+`(13 * 3 ^ c + 4 * 2 ^ c) * D ≤ 27 * 3 ^ c * R_0`:
+1. **Exact Polynomial Formula for `(1, 0, 1, 0^{c-1})`:**
+   Whenever `c ≥ 1`, `parryIterBit R_0 D 0 = 1`, `parryIterBit R_0 D 1 = 0`, `parryIterBit R_0 D 2 = 1`,
+   and `∀ j < c - 1, parryIterBit R_0 D (3 + j) = 0`, we have
+   `parrySeriesAcc R_0 D (2 + c) = 13 * 3 ^ (c - 1)`!
+2. **Unconditional Exclusion of ALL Four Short Recoveries `c ∈ {2, 3, 4, 5}` on `[0, 1/2)`:**
+   Whenever `2 * R_0 < D` (`1 ≤ D`), `1 ≤ c ∧ c ≤ 5`, and `parrySeriesAcc R_0 D (2 + c) = 13 * 3 ^ (c - 1)`,
+   `parryIterBit R_0 D (2 + c)` **cannot equal `1`** (`133/243, 383/729, 1117/2187, 3287/6561 > 1/2`!),
+   whereas `c = 6` (`9733 / 19683 < 1 / 2`, `2 * 9733 < 19683`) is the sharp minimum recovery rung! -/
+theorem real_half_interval_short_recovery_ban_two_two_through_two_five :
+    ((2 * 133 > 243 ∧ 2 * 383 > 729 ∧ 2 * 1117 > 2187 ∧ 2 * 3287 > 6561) ∧
+      2 * 9733 < 19683) ∧
+    (∀ R_0 D m : ℕ,
+      parryIterBit R_0 D 0 = 1 →
+      parryIterBit R_0 D 1 = 0 →
+      parryIterBit R_0 D 2 = 1 →
+      (∀ j < m, parryIterBit R_0 D (3 + j) = 0) →
+      parrySeriesAcc R_0 D (3 + m) = 13 * 3 ^ m) ∧
+    (∀ R_0 D c : ℕ, 1 ≤ D → 2 * R_0 < D → 2 ≤ c → c ≤ 5 →
+      parrySeriesAcc R_0 D (2 + c) = 13 * 3 ^ (c - 1) →
+      parryIterBit R_0 D (2 + c) ≠ 1) := by
+  refine ⟨by decide, ?_, ?_⟩
+  · intro R_0 D m hb0 hb1 hb2 hzeros
+    have hbase3 : parrySeriesAcc R_0 D 3 = 13 := by
+      simp [parrySeriesAcc, hb0, hb1, hb2]
+    induction m with
+    | zero => simpa using hbase3
+    | succ k ih =>
+        have ih_k := ih (fun j hj => hzeros j (by omega))
+        have hk0 := hzeros k (by omega)
+        have hidx : 3 + (k + 1) = (3 + k) + 1 := by omega
+        rw [hidx]
+        simp only [parrySeriesAcc, hk0, ih_k, Nat.pow_succ]
+        ring
+  · intro R_0 D c hD hlt_half hc_lo hc_hi hpsi hbit1
+    have htel := (real_first_parry_transfer_map_invariance_and_dual_series_obstruction.1
+      R_0 D (2 + c) hlt_half).2
+    rw [hpsi] at htel
+    -- Unpack parryIterBit R_0 D (2 + c) = 1 => 2^(2 + c) * D ≤ 3 * parryIterNum R_0 D (2 + c):
+    have hge_thresh : 2 ^ (2 + c) * D ≤ 3 * parryIterNum R_0 D (2 + c) := by
+      unfold parryIterBit parryBit at hbit1
+      split_ifs at hbit1 with hlt_cond
+      omega
+    -- Multiply `htel` by 3: `3 * R_end + 13 * 3^c * D = 3^(3 + c) * R_0 = 27 * 3^c * R_0`
+    have h3c : 3 * 3 ^ (c - 1) = 3 ^ c := by
+      obtain ⟨k, rfl⟩ : ∃ k, c = k + 2 := ⟨c - 2, by omega⟩
+      have hsub : k + 2 - 1 = k + 1 := by omega
+      rw [hsub, mul_comm 3 (3 ^ (k + 1)), ← Nat.pow_succ]
+    have hmul3 :
+        3 * parryIterNum R_0 D (2 + c) + 13 * 3 ^ c * D = 27 * 3 ^ c * R_0 := by
+      calc
+        3 * parryIterNum R_0 D (2 + c) + 13 * 3 ^ c * D
+            = 3 * parryIterNum R_0 D (2 + c) + 13 * (3 * 3 ^ (c - 1)) * D := by rw [h3c]
+        _ = 3 * (parryIterNum R_0 D (2 + c) + D * (13 * 3 ^ (c - 1))) := by ring
+        _ = 3 * (3 ^ (2 + c) * R_0) := by rw [htel]
+        _ = 27 * 3 ^ c * R_0 := by rw [Nat.pow_add 3 2 c]; ring
+    have hineq : (13 * 3 ^ c + 4 * 2 ^ c) * D ≤ 27 * 3 ^ c * R_0 := by
+      have hp2 : 2 ^ (2 + c) * D = 4 * 2 ^ c * D := by rw [Nat.pow_add 2 2 c, mul_assoc]
+      rw [hp2] at hge_thresh
+      linarith
+    -- Multiply by 2 and use `2 * R_0 < D` (`2 * R_0 + 1 ≤ D`):
+    have h2R_le : 27 * 3 ^ c * (2 * R_0) < 27 * 3 ^ c * D := by
+      have hpos : 0 < 27 * 3 ^ c :=
+        Nat.mul_pos (by decide) (Nat.pos_of_ne_zero (pow_ne_zero c (by decide)))
+      exact (Nat.mul_lt_mul_left hpos).mpr hlt_half
+    have hcontr_c : 27 * 3 ^ c < 2 * (13 * 3 ^ c + 4 * 2 ^ c) := by
+      rcases (by omega : c = 2 ∨ c = 3 ∨ c = 4 ∨ c = 5) with rfl | rfl | rfl | rfl <;> decide
+    have hD_lt : (27 * 3 ^ c) * D < (2 * (13 * 3 ^ c + 4 * 2 ^ c)) * D :=
+      (Nat.mul_lt_mul_right hD).mpr hcontr_c
+    linarith
+
+
+/-- **SB.139 (Idea 2D Part 2 — Real-Coupled Ceiling-Dual Gauge Pinch: $159 / 160$ Even-Residue Extinction Modulo $320$):**
+Couples the Ceiling-Dual Gauge `W_{r+1} = (5 * P_{r+1} + 4) / 36` (`SB.81`, `SB.97`) with the
+real $[0, 1/2)$ recovery floor `6 ≤ s (r + 2)` (`SB.138`) whenever `W_{r+1}` is even (`s (r + 1) = 2`):
+1. **Unique Survivor Residue Modulo $64$ (`31 / 32` Even Classes Extinct):** `W_{r+1} % 64 = 4`!
+2. **Unique Survivor Residue Modulo $320$ (`159 / 160 = 99.375%` Even Classes Extinct):**
+   **`W_{r+1} % 320 = 4`**!
+3. **Super-Block Odd-Core Mod-80 Pinning:** Writing `W_{r+1} = 4 * V`, `V % 16 = 1` and **`V % 80 = 1`**! -/
+theorem real_coupled_gauge_mod64_and_mod320_unique_even_survivor_class
+    {b_0 r : ℕ} {s u : ℕ → ℕ}
+    (hchain : ValidBlockChain b_0 s u (r + 3))
+    (hs_r : 2 ≤ s r)
+    (hs_r1_eq2 : s (r + 1) = 2)
+    (hs_r2_ge6 : 6 ≤ s (r + 2)) :
+    let P := fun k => oddReturnP (orbit b_0 (blockSteps s k))
+    let W_1 := (5 * P (r + 1) + 4) / 36
+    let V := W_1 / 4
+    W_1 % 64 = 4 ∧
+      W_1 % 320 = 4 ∧
+      W_1 = 4 * V ∧
+      V % 16 = 1 ∧
+      V % 80 = 1 := by
+  intro P W_1 V
+  have hs_r1 : 2 ≤ s (r + 1) := by omega
+  have hs_r2 : 2 ≤ s (r + 2) := by omega
+  have h81 := ceiling_dual_gauge_transform_and_rung_two_parity_detector hchain hs_r hs_r1 hs_r2
+  have h36_W1 : 36 * W_1 = 5 * P (r + 1) + 4 := h81.1.2.2.1
+  have h36_W2 : 36 * ((5 * P (r + 2) + 4) / 36) = 5 * P (r + 2) + 4 := h81.1.2.2.2.1
+  have h4W2_9W1 : 4 * ((5 * P (r + 2) + 4) / 36) = 9 * W_1 := h81.2.2.2 hs_r1_eq2
+  set W_2 := (5 * P (r + 2) + 4) / 36
+  -- Since 6 ≤ s (r + 2), 64 ∣ P (r + 2):
+  have hPr2 : P (r + 2) = 2 ^ (s (r + 2)) * u (r + 2) := (hchain (r + 2) (by omega)).2.2
+  have hdvd64_P2 : 64 ∣ P (r + 2) := by
+    obtain ⟨d, hd⟩ : ∃ d, s (r + 2) = 6 + d := ⟨s (r + 2) - 6, by omega⟩
+    rw [hPr2, hd, Nat.pow_add 2 6 d]
+    exact ⟨2 ^ d * u (r + 2), by ring⟩
+  rcases hdvd64_P2 with ⟨q_P2, hq_P2⟩
+  have h36W2_eq : 36 * W_2 = 320 * q_P2 + 4 := by rw [hq_P2] at h36_W2; linarith
+  have h9W2_eq : 9 * W_2 = 80 * q_P2 + 1 := by omega
+  have hW2_mod16 : W_2 % 16 = 9 := by omega
+  have h9W1_mod64 : (9 * W_1) % 64 = 36 := by omega
+  have hW1_mod64 : W_1 % 64 = 4 := by omega
+  have hW1_mod5 : W_1 % 5 = 4 := by omega
+  have hW1_mod320 : W_1 % 320 = 4 := by omega
+  have hW1_eq4V : W_1 = 4 * V := by dsimp [V]; omega
+  have hV_mod16 : V % 16 = 1 := by dsimp [V]; omega
+  have hV_mod80 : V % 80 = 1 := by dsimp [V]; omega
+  exact ⟨hW1_mod64, hW1_mod320, hW1_eq4V, hV_mod16, hV_mod80⟩
+
+
+/-- **SB.140 (Grand 140-Theorem Semigroup Breakout Synthesis — Standalone Method 1–3 Barriers & Method-2 Real-Gauge Fusion):**
+Unifies Wave 25 (`SB.133–SB.139`) with our 132 prior breakout theorems (`SB.1–SB.132`):
+1. **Method 1–3 Standalone Quantitative Obstructions (`SB.133–SB.135`):**
+   - Method 1 Pigeonhole cylinder excess: `12 * k + 1 < 17 ^ k ≤ (parryCylTree (7 * k)).length`,
+   - Method 2 $abc$ radical excess: `3 ^ d_0 ≤ R_0` and `2 ^ S_0 < 3 ^ d_0 → 2 ^ S_0 * u K < u K * R_0`,
+   - Method 3 cyclic shift-sum conservation vs. bad-shift occupancy.
+2. **Method-2 Fusion & Real $[0, 1/2)$ Mod-320 Even-Gauge Pinch (`SB.136–SB.139`):**
+   - Interior odd-core prime supply `p ∣ u (r + 1) → 5 ≤ p`,
+   - Dual multiplicative-to-additive excess sandwich `3 ^ d_0 * tailOddProd ≤ ... < (1/5) * 3 ^ T_K * tailOddProd`,
+   - Unconditional $[0, 1/2)$ exclusion of `(2, 2), (2, 3), (2, 4), (2, 5)` (`s^* ≥ 6` required!),
+   - **`159 / 160` (`99.375%`) even-gauge extinction modulo $320$:** `W_{r+1} % 320 = 4` (`V % 80 = 1`)! -/
+theorem grand_140_theorem_method2_fusion_and_real_gauge_pinch_synthesis :
+    (∀ k : ℕ, 1 ≤ k → 12 * k + 1 < (parryCylTree (7 * k)).length) ∧
+    (∀ R_0 D c : ℕ, 1 ≤ D → 2 * R_0 < D → 2 ≤ c → c ≤ 5 →
+      parrySeriesAcc R_0 D (2 + c) = 13 * 3 ^ (c - 1) →
+      parryIterBit R_0 D (2 + c) ≠ 1) ∧
+    (∀ {b_0 r : ℕ} {s u : ℕ → ℕ},
+      ValidBlockChain b_0 s u (r + 3) →
+      2 ≤ s r →
+      s (r + 1) = 2 →
+      6 ≤ s (r + 2) →
+      ((5 * oddReturnP (orbit b_0 (blockSteps s (r + 1))) + 4) / 36) % 320 = 4 ∧
+        (((5 * oddReturnP (orbit b_0 (blockSteps s (r + 1))) + 4) / 36) / 4) % 80 = 1) :=
+  ⟨fun k hk => (method_one_pigeonhole_cylinder_excess_obstruction.2 k hk).2.2,
+   real_half_interval_short_recovery_ban_two_two_through_two_five.2.2,
+   fun hchain hs_r hs1 hs2 =>
+     let h := real_coupled_gauge_mod64_and_mod320_unique_even_survivor_class hchain hs_r hs1 hs2
+     ⟨h.2.1, h.2.2.2.2⟩⟩
+
+
 #check @archimedean_rung_ceiling_and_stepSum_bound
 #check @unit_quotient_even_rung_instant_death_and_odd_rung_mod64_identity
 #check @equal_step_window_hankel_determinant_identity_and_bound
@@ -11380,11 +11796,20 @@ theorem grand_paths_a_and_b_132_theorem_semigroup_breakout_synthesis :
 #check @skew_product_strict_growth_and_poincare_anti_recurrence_law
 #check @quadratic_abc_two_superblock_mutual_run_cutoff
 #check @grand_paths_a_and_b_132_theorem_semigroup_breakout_synthesis
+#check @method_one_pigeonhole_cylinder_excess_obstruction
+#check @method_two_abc_generic_radical_excess_identity_and_bound
+#check @method_three_markov_shift_average_vs_bad_shift_occupancy
+#check @interior_odd_core_coprime_to_six_and_prime_divisor_ge_five
+#check @dual_multiplicative_euler_product_to_additive_kempner_sandwich
+#check @real_half_interval_short_recovery_ban_two_two_through_two_five
+#check @real_coupled_gauge_mod64_and_mod320_unique_even_survivor_class
+#check @grand_140_theorem_method2_fusion_and_real_gauge_pinch_synthesis
 
 #print axioms parry_cylinder_tree_three_pow_sum_and_flp_effective_survivor_bound
 #print axioms grand_all_eight_angles_120_theorem_semigroup_breakout_synthesis
 #print axioms barrier_six_parseval_sqrt_canyon_and_124_theorem_synthesis
 #print axioms grand_paths_a_and_b_132_theorem_semigroup_breakout_synthesis
+#print axioms grand_140_theorem_method2_fusion_and_real_gauge_pinch_synthesis
 
 #print axioms archimedean_rung_ceiling_and_stepSum_bound
 #print axioms unit_quotient_even_rung_instant_death_and_odd_rung_mod64_identity

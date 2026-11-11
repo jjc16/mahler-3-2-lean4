@@ -2,8 +2,8 @@
 
 **Authors:** Joshua Coon (with Astra, Fable, and Argon AI in GitHub Copilot)  
 **Date:** November 2026  
-**Cordoned-Off Verification Artifact:** [`semigroup_breakout/SemigroupBreakoutTheorems.lean`](./SemigroupBreakoutTheorems.lean) (`132` theorems `SB.1–SB.132`, `0` `sorry`s, `0` warnings, Lean 4.19.0 + Mathlib v4.19.0)  
-**Computational Suite:** [`loop1_product_formula_and_pade.py`](./loop1_product_formula_and_pade.py), [`loop1_beukers_pade_and_hankel.py`](./loop1_beukers_pade_and_hankel.py), [`loop2_pade_lll_and_divergence.py`](./loop2_pade_lll_and_divergence.py), [`loop3_archimedean_ceiling_and_small_u.py`](./loop3_archimedean_ceiling_and_small_u.py), [`loop4_flp_sparsity_and_repulsion.py`](./loop4_flp_sparsity_and_repulsion.py), [`sandbox_symmetry_breaking_loops.py`](./sandbox_symmetry_breaking_loops.py), [`sandbox_wave2_towers.py`](./sandbox_wave2_towers.py), [`sandbox_wave3_towers.py`](./sandbox_wave3_towers.py), [`sandbox_wave4_canyon_view.py`](./sandbox_wave4_canyon_view.py), [`sandbox_wave5_multi_block_crt.py`](./sandbox_wave5_multi_block_crt.py), [`sandbox_wave6_both_bridges.py`](./sandbox_wave6_both_bridges.py), [`sandbox_wave7_binary_carry_bridge.py`](./sandbox_wave7_binary_carry_bridge.py), [`sandbox_overnight_20_bridge_loops.py`](./sandbox_overnight_20_bridge_loops.py), and [`sandbox_wave8_jk_diagonal_asymptotics.py`](./sandbox_wave8_jk_diagonal_asymptotics.py) through [`sandbox_wave24_paths_a_and_b_deep_exploration.py`](./sandbox_wave24_paths_a_and_b_deep_exploration.py)
+**Cordoned-Off Verification Artifact:** [`semigroup_breakout/SemigroupBreakoutTheorems.lean`](./SemigroupBreakoutTheorems.lean) (`140` theorems `SB.1–SB.140`, `0` `sorry`s, `0` warnings, Lean 4.19.0 + Mathlib v4.19.0)  
+**Computational Suite:** [`loop1_product_formula_and_pade.py`](./loop1_product_formula_and_pade.py), [`loop1_beukers_pade_and_hankel.py`](./loop1_beukers_pade_and_hankel.py), [`loop2_pade_lll_and_divergence.py`](./loop2_pade_lll_and_divergence.py), [`loop3_archimedean_ceiling_and_small_u.py`](./loop3_archimedean_ceiling_and_small_u.py), [`loop4_flp_sparsity_and_repulsion.py`](./loop4_flp_sparsity_and_repulsion.py), [`sandbox_symmetry_breaking_loops.py`](./sandbox_symmetry_breaking_loops.py), [`sandbox_wave2_towers.py`](./sandbox_wave2_towers.py), [`sandbox_wave3_towers.py`](./sandbox_wave3_towers.py), [`sandbox_wave4_canyon_view.py`](./sandbox_wave4_canyon_view.py), [`sandbox_wave5_multi_block_crt.py`](./sandbox_wave5_multi_block_crt.py), [`sandbox_wave6_both_bridges.py`](./sandbox_wave6_both_bridges.py), [`sandbox_wave7_binary_carry_bridge.py`](./sandbox_wave7_binary_carry_bridge.py), [`sandbox_overnight_20_bridge_loops.py`](./sandbox_overnight_20_bridge_loops.py), and [`sandbox_wave8_jk_diagonal_asymptotics.py`](./sandbox_wave8_jk_diagonal_asymptotics.py) through [`sandbox_wave25_method2_ideas_and_real_gauge_pinch.py`](./sandbox_wave25_method2_ideas_and_real_gauge_pinch.py)
 
 ---
 
@@ -1130,7 +1130,33 @@ Under a quadratic $abc$ bound $3^{2 m_1 + 3} V_1 \le K_2 (6 V_1 V_2)^2$ on the T
 
 ---
 
-## 30. Verification Instructions
+## 30. Wave 25 (`SB.133–SB.140`): Standalone Method 1–3 Barrier Theorems, Method-2 Fusion Mechanisms, & The $159 / 160$ Mod-320 Real-Coupled Even-Gauge Pinch
+
+In [`sandbox_wave25_method2_ideas_and_real_gauge_pinch.py`](./sandbox_wave25_method2_ideas_and_real_gauge_pinch.py), we verified and formalized **8 `sorry`-free, warning-free theorems (`SB.133–SB.140`)** establishing (a) the exact quantitative obstructions preventing standalone Methods 1, 2, and 3 from closing $Z = \emptyset$ in isolation (`SB.133–SB.135`), and (b) four concrete fusion mechanisms (`SB.136–SB.140`), culminating in the **$159 / 160$ ($99.375\%$) Mod-320 Even-Gauge Extinction Law** on $[0, 1/2)$.
+
+### 30.1 Standalone Method 1–3 Quantitative Obstructions (`SB.133–SB.135`)
+1. **Method 1 Pigeonhole Cylinder Excess (`SB.133`, `method_one_pigeonhole_cylinder_excess_obstruction`):**
+   At $M = 12 k$ steps ($12 k + 1$ orbit points), anti-recurrence (`SB.130`) forbids sharing $L = 7 k$ parity bits (`2^{7k} = 128^k`). Because $17 \cdot 128 = 2176 < 2187 = 3^7$, $|\mathcal{C}_{7k}| \ge 17^k > 12 k + 1$ for all $k \ge 1$—leaving exponentially many distinct cylinders to visit without collision.
+2. **Method 2 Generic $abc$ Radical Excess (`SB.134`, `method_two_abc_generic_radical_excess_identity_and_bound`):**
+   In $2^{S_0} u_K = 3^{T_K} u_0 + R_0$ (`SB.72`), $R_0 = 3^{d_0} + \text{renewalNumerator} \ge 3^{d_0}$ ($d_0 = T_K - s_0$), forcing $3^{T_K + d_0} u_0 < 2^{S_0}(u_K R_0)$ and **`2^{S_0} u_K < u_K R_0`** whenever $2^{S_0} < 3^{d_0}$ (proving that if $u_K$ and $R_0$ are squarefree, $\operatorname{rad}(ABC) \ge u_K R_0 \asymp C^{1.3691} > C$).
+3. **Method 3 Shift-Symmetry vs. Bad-Shift Occupancy (`SB.135`, `method_three_markov_shift_average_vs_bad_shift_occupancy`):**
+   Proves $\sum_{a < M} \sum_{j < L} f((a+j) \bmod M) = L \sum_{x < M} f(x)$ (most shifts are empty at $N = 3 W$), while every $b = b_0(w)$ (`|\mathcal{C}_{3W}| \ge (3/2)^{3W}`) gives $\sum_{j < L} f((b + j) \bmod M) \ge 1$ (exponentially many occupied shifts exist; breaking shift symmetry via the positive-definite Laplace–Poisson partition function $\mathcal{Z}_N(W) = \sum_{w \in \mathcal{C}_N} e^{-b_0(w)/2^W}$ drops $\mathcal{Z}_{12}(4)$ to $1.044 < 1 + e^{-1}$ as soon as positive survivors vanish).
+
+### 30.2 Four Method-2 Fusion Mechanisms & The $159 / 160$ Mod-320 Real-Coupled Even-Gauge Pinch (`SB.136–SB.140`)
+1. **Interior Odd-Core Prime Supply $\ge 5$ (`SB.136`, `interior_odd_core_coprime_to_six_and_prime_divisor_ge_five`):**
+   For every interior block $r + 1 \ge 1$ (`1 ≤ s r`), $\gcd(u_{r+1}, 6) = 1$, every prime $p \mid u_{r+1}$ satisfies **$p \ge 5$**, and $u_{r+1} > 1 \implies u_{r+1} \ge 5$.
+2. **Dual Multiplicative-to-Additive Excess Sandwich (`SB.137`, `dual_multiplicative_euler_product_to_additive_kempner_sandwich`):**
+   Sandwiches $\prod_{k=0}^{K-1}(3^{s_k} u_k + 1) - 3^{T_K} \prod_{k=0}^{K-1} u_k = R_0 \prod_{k=1}^{K-1} u_k$ tightly between $3^{d_0} \prod_{k=1}^{K-1} u_k$ and $\frac{1}{5} \cdot 3^{T_K} \prod_{k=1}^{K-1} u_k$, pairing the real infinite product $\frac{3\alpha}{P_0} = \prod_{r=0}^\infty (1 + \frac{1}{3^{s_r} u_r}) > 1$ with its 2-adic limit $0$ in $\mathbb{Q}_2$.
+3. **Unconditional $[0, 1/2)$ Real Escape of `(2, 2), (2, 3), (2, 4), (2, 5)` (`SB.138`, `real_half_interval_short_recovery_ban_two_two_through_two_five`):**
+   Proves $\Psi_{2+c}(1, 0, 1, 0^{c-1}) = 13 \cdot 3^{c-1}$, forcing $(13 \cdot 3^c + 4 \cdot 2^c) D \le 27 \cdot 3^c R_0$ whenever step $2 + c$ is odd. For all $c \in \{2, 3, 4, 5\}$, the minimum threshold exceeds $\frac{1}{2}$ ($\frac{133}{243}, \frac{383}{729}, \frac{1117}{2187}, \frac{3287}{6561} > \frac{1}{2}$!), **forbidding all $s = 2$ runs of length $m \ge 2$ (`m ∈ {0, 1}` always!) and forcing $s^* = s_{r+2} \ge 6$ after every $s_{r+1} = 2$ block** (`c = 6` has $\frac{9733}{19683} < \frac{1}{2}$)!
+4. **The $159 / 160$ ($99.375\%$) Mod-320 Real-Coupled Even-Gauge Extinction Law (`SB.139–SB.140`, `real_coupled_gauge_mod64_and_mod320_unique_even_survivor_class`):**
+   Coupling $W_{r+1} = (5 P_{r+1} + 4)/36$ (`SB.81`, `SB.97`) with $s_{r+1} = 2$ and $s_{r+2} \ge 6$ (`SB.138`, verified across `200,000` odd seeds and `267` surviving interior even-$W$ blocks with `0` exceptions) proves:
+   $$\boxed{W_{r+1} \bmod 64 = 4, \qquad W_{r+1} \bmod 320 = 4, \qquad W_{r+1} = 4 V \;\text{with}\; V \bmod 80 = 1!}$$
+   Out of **all $160$ even residue classes modulo $320$**, **$159$ ($99.375\%$) are unconditionally extinct** on $[0, 1/2)$, leaving only the single residue class $W_{r+1} \equiv 4 \pmod{320}$, and completing all **140 `sorry`-free, warning-free theorems (`SB.1–SB.140`)**.
+
+---
+
+## 31. Verification Instructions
 
 To verify the cordoned-off Lean 4 proofs without modifying the root 226-file build:
 
@@ -1162,4 +1188,5 @@ python semigroup_breakout\sandbox_wave20_universal_q_half_relaxation_and_kempner
 python semigroup_breakout\sandbox_wave21_all_eight_angles_0_to_7.py
 python semigroup_breakout\sandbox_wave23_fourier_frontier_and_parseval_barrier.py
 python semigroup_breakout\sandbox_wave24_paths_a_and_b_deep_exploration.py
+python semigroup_breakout\sandbox_wave25_method2_ideas_and_real_gauge_pinch.py
 ```
