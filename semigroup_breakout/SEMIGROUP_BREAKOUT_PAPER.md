@@ -2,8 +2,8 @@
 
 **Authors:** Joshua Coon (with Astra, Fable, and Argon AI in GitHub Copilot)  
 **Date:** November 2026  
-**Cordoned-Off Verification Artifact:** [`semigroup_breakout/SemigroupBreakoutTheorems.lean`](./SemigroupBreakoutTheorems.lean) (`124` theorems `SB.1–SB.124`, `0` `sorry`s, `0` warnings, Lean 4.19.0 + Mathlib v4.19.0)  
-**Computational Suite:** [`loop1_product_formula_and_pade.py`](./loop1_product_formula_and_pade.py), [`loop1_beukers_pade_and_hankel.py`](./loop1_beukers_pade_and_hankel.py), [`loop2_pade_lll_and_divergence.py`](./loop2_pade_lll_and_divergence.py), [`loop3_archimedean_ceiling_and_small_u.py`](./loop3_archimedean_ceiling_and_small_u.py), [`loop4_flp_sparsity_and_repulsion.py`](./loop4_flp_sparsity_and_repulsion.py), [`sandbox_symmetry_breaking_loops.py`](./sandbox_symmetry_breaking_loops.py), [`sandbox_wave2_towers.py`](./sandbox_wave2_towers.py), [`sandbox_wave3_towers.py`](./sandbox_wave3_towers.py), [`sandbox_wave4_canyon_view.py`](./sandbox_wave4_canyon_view.py), [`sandbox_wave5_multi_block_crt.py`](./sandbox_wave5_multi_block_crt.py), [`sandbox_wave6_both_bridges.py`](./sandbox_wave6_both_bridges.py), [`sandbox_wave7_binary_carry_bridge.py`](./sandbox_wave7_binary_carry_bridge.py), [`sandbox_overnight_20_bridge_loops.py`](./sandbox_overnight_20_bridge_loops.py), and [`sandbox_wave8_jk_diagonal_asymptotics.py`](./sandbox_wave8_jk_diagonal_asymptotics.py) through [`sandbox_wave23_fourier_frontier_and_parseval_barrier.py`](./sandbox_wave23_fourier_frontier_and_parseval_barrier.py)
+**Cordoned-Off Verification Artifact:** [`semigroup_breakout/SemigroupBreakoutTheorems.lean`](./SemigroupBreakoutTheorems.lean) (`132` theorems `SB.1–SB.132`, `0` `sorry`s, `0` warnings, Lean 4.19.0 + Mathlib v4.19.0)  
+**Computational Suite:** [`loop1_product_formula_and_pade.py`](./loop1_product_formula_and_pade.py), [`loop1_beukers_pade_and_hankel.py`](./loop1_beukers_pade_and_hankel.py), [`loop2_pade_lll_and_divergence.py`](./loop2_pade_lll_and_divergence.py), [`loop3_archimedean_ceiling_and_small_u.py`](./loop3_archimedean_ceiling_and_small_u.py), [`loop4_flp_sparsity_and_repulsion.py`](./loop4_flp_sparsity_and_repulsion.py), [`sandbox_symmetry_breaking_loops.py`](./sandbox_symmetry_breaking_loops.py), [`sandbox_wave2_towers.py`](./sandbox_wave2_towers.py), [`sandbox_wave3_towers.py`](./sandbox_wave3_towers.py), [`sandbox_wave4_canyon_view.py`](./sandbox_wave4_canyon_view.py), [`sandbox_wave5_multi_block_crt.py`](./sandbox_wave5_multi_block_crt.py), [`sandbox_wave6_both_bridges.py`](./sandbox_wave6_both_bridges.py), [`sandbox_wave7_binary_carry_bridge.py`](./sandbox_wave7_binary_carry_bridge.py), [`sandbox_overnight_20_bridge_loops.py`](./sandbox_overnight_20_bridge_loops.py), and [`sandbox_wave8_jk_diagonal_asymptotics.py`](./sandbox_wave8_jk_diagonal_asymptotics.py) through [`sandbox_wave24_paths_a_and_b_deep_exploration.py`](./sandbox_wave24_paths_a_and_b_deep_exploration.py)
 
 ---
 
@@ -1092,11 +1092,45 @@ Can taking absolute values $\sum_{h} |\widehat{\mathbf{1}_{[0, 2^W)}}(-h)| \cdot
 | $13$ | $1$ ($b_0=0$) | $1.1797$ | $28.87$ | $-0.1797$ |
 | $15$ | $1$ ($b_0=0$) | $0.6621$ | **$41.48 \uparrow \infty$** | **$+0.3379$** |
 
-Completing all **124 `sorry`-free, warning-free theorems (`SB.1–SB.124`)**.
+---
+
+## 29. Wave 24 (`SB.125–SB.132`): Deep Exploration of Both Post-Parseval Frontiers — Path A (Multiplicative $\langle 3 \rangle$-Coset Flattening) & Path B (3-Point Window Decay, Skew-Product Anti-Recurrence, & Quadratic $abc$ Elimination)
+
+In [`sandbox_wave24_paths_a_and_b_deep_exploration.py`](./sandbox_wave24_paths_a_and_b_deep_exploration.py), we explored both ZFC frontiers identified after Wave 23 and formalized **8 `sorry`-free, warning-free theorems (`SB.125–SB.132`)**.
+
+### 29.1 Path A (`SB.125–SB.127`) — Bourgain–Gamburd Multiplicative $\langle 3 \rangle$-Subgroup Order, Twisted Parry Cocycle, & Exact $\langle 3 \rangle$-Orbit Square-Root Flattening
+1. **Exact $\text{LTE}_2$ Order $2^{K-2}$ & Disjoint $\pm\langle 3 \rangle$ Partition (`SB.125`, `lte2_order_of_three_and_pm_cyclic_partition_of_odd_residues`):**
+   For every $K = m + 4 \ge 4$, $3^{2^{m+1}} \bmod 2^{m+4} = 2^{m+3} + 1 \ne 1$ and $3^{2^{m+2}} \bmod 2^{m+4} = 1$, while $+\langle 3 \rangle \bmod 8 \subseteq \{1, 3\}$ and $-\langle 3 \rangle \bmod 8 \subseteq \{5, 7\}$ are strictly disjoint, partitioning all $2^{K-1}$ odd residues in $(\mathbb{Z}/2^K\mathbb{Z})^\times$ into just two cosets.
+2. **Two-Stage Parry Concatenation Cocycle & $\times 3^{N_1}$ Frequency Rotation (`SB.126`, `two_stage_parry_concatenation_cocycle_and_frequency_rotation`):**
+   Across $N_1 + N_2$ steps, $\Psi_{N_1 + N_2} = 3^{N_2} \Psi_{N_1} + 2^{N_1} \Psi_{N_2}$, and $(3^{N_1} b_{\text{total}}) \bmod 2^{N_1+N_2} = (3^{N_1} b_{\text{pref}} + 2^{N_1} b_{\text{cont}}) \bmod 2^{N_1+N_2}$: varying the prefix step length $N_1$ rotates the continuation frequency along $\langle 3 \rangle \le (\mathbb{Z}/2^{N_2}\mathbb{Z})^\times$!
+3. **Exact $\langle 3 \rangle$-Orbit Parseval Mean Identity (`SB.127`, `conjugate_symmetric_coset_split_and_exact_orbit_mean_identity`):**
+   Because $|\mathcal{S}(2^K - h; K)|^2 = |\mathcal{S}(h; K)|^2$ and $\pm\langle 3 \rangle$ partitions $(\mathbb{Z}/2^K\mathbb{Z})^\times$, **for every individual odd frequency $h_{\text{odd}}$, the average of $|\mathcal{S}(3^t h_{\text{odd}}; K)|^2$ along its $\langle 3 \rangle$-orbit is identically equal to $U_{K-1} = 2|\mathcal{C}_{K-1}| - |\mathcal{C}_K|$** (full $\sqrt{U_{K-1}}$ square-root cancellation along every multiplicative orbit, with empirical 4th-moment kurtosis $\mathbb{E}[|\mathcal{S}|^4]/U^2 \le 5.97$ at $K = 15$!).
+
+### 29.2 Path B1 (`SB.128–SB.129`) — Higher-Order Correlations: 2-Point Divergence $(9/8)^N \to \infty$ vs. 3-Point Decay $(27/32)^N \to 0$ & Global Triple Extinction at $N = 16$
+Replacing 2-point ($L^2$) correlations with **3-point window correlations** crosses an exact critical phase transition:
+- **Theorem SB.128 (`three_point_window_scaling_decay_vs_two_point_divergence`):**
+  - **2-Point Divergence:** $8^N < 9^N \le 4^N |\mathcal{C}_N|^2$ ($|\mathcal{C}_N|^2 / 2^N \ge (9/8)^N \to \infty$).
+  - **3-Point Decay:** $8^N |\mathcal{C}_N|^3 < 27 \cdot 27^N$, and since $4 \cdot 27^9 < 32^9$, at horizon $N = 9 W$ ($W \ge 24$), **$27 \cdot 4^W \cdot 27^{9W} < 32^{9W}$** (driving the 3-point window expectation strictly below $1$!).
+- **Theorem SB.129 (`zero_three_point_window_triples_implies_at_most_one_positive_survivor`):**
+  Whenever a survivor set $S \ni 0$ in $[0, 2^W)$ has **zero** ordered triples $x < y < z$, $|S| \le 2$ and $|S \setminus \{0\}| \le 1$ (at most **one** positive survivor in $[1, 2^W)$—Mahler's 1968 dyadic uniqueness theorem emerging purely from 3-point correlation extinction!). Look at the exact $W = 3$ ($2^W = 8$) census across all $|\mathcal{C}_N|$ cylinders:
+
+| Depth $N$ | Survivors in $[0, 8)$ | All Pairs $0 < y - x < 8$ on $[0, 2^N)$ | Ordered Triples in $[0, 8)$ | **All Triples $0 \le x < y < z, z - x < 8$ on $[0, 2^N)$** | Heuristic $64 (27/32)^N$ |
+|---:|---:|---:|---:|---:|---:|
+| $3$ | $5$ | $10$ | $10$ | $10$ | $38.44$ |
+| $7$ | $3$ | $35$ | $1$ | $17$ | $19.48$ |
+| $11$ | $2$ | $47$ | $0$ | $7$ | $9.87$ |
+| $15$ | $1$ | $70$ | $0$ | $1$ | $5.00$ |
+| **$16$** | **$1$ ($b_0=0$)** | **$72 \uparrow \infty$** | **$0$** | **$0$ (GLOBAL EXTINCTION!)** | **$4.22 \downarrow 0$** |
+
+### 29.3 Path B2 (`SB.130`, `skew_product_strict_growth_and_poincare_anti_recurrence_law`) — Deterministic $\times 2, \times 3$ Skew-Product Poincaré Anti-Recurrence
+On compact $\mathbb{Z}_2 \times [0, 1/2]$, Poincaré recurrence forces arbitrarily close returns. On $\mathbb{N}_{>0} \times [0, 1/2)$, `SB.130` proves $b < \operatorname{step}(b)$ for all $b \ge 1$, $\operatorname{orbit}(b_0, n_1) < \operatorname{orbit}(b_0, n_2)$ for all $n_1 < n_2$, and whenever $n_1 < n_2$ share $L$ future parity bits (`12,935` pairs verified in Python), **$2^L \le \operatorname{orbit}(b_0, n_2) - \operatorname{orbit}(b_0, n_1) < \operatorname{orbit}(b_0, n_2)$**, quantitatively forbidding fast $(\mathbb{Z}_2 \times \mathbb{R})$ returns.
+
+### 29.4 Path B3 (`SB.131–SB.132`, `quadratic_abc_two_superblock_mutual_run_cutoff` & `grand_paths_a_and_b_132_theorem_semigroup_breakout_synthesis`)
+Under a quadratic $abc$ bound $3^{2 m_1 + 3} V_1 \le K_2 (6 V_1 V_2)^2$ on the Two-Superblock Catalan–Pillai unit equation $2^{2 m_2 + 3} V_2 + 1 = 3^{2 m_1 + 3} V_1$ (`SB.115`), `SB.131` eliminates $V_2$ to prove $2^{4 m_2 + 6} < 36 K_2 V_1^3 \cdot 3^{2 m_1 + 3}$ and proves simultaneous explicit cutoffs $3^{2 m_1 + 3} \le 36 K_2 V_{\max}^3$ and $2^{2 m_2 + 3} < 36 K_2 V_{\max}^4$ whenever $V_1, V_2 \le V_{\max}$, completing all **132 `sorry`-free, warning-free theorems (`SB.1–SB.132`)**.
 
 ---
 
-## 29. Verification Instructions
+## 30. Verification Instructions
 
 To verify the cordoned-off Lean 4 proofs without modifying the root 226-file build:
 
@@ -1127,4 +1161,5 @@ python semigroup_breakout\sandbox_wave19_superblock_sieve_and_density.py
 python semigroup_breakout\sandbox_wave20_universal_q_half_relaxation_and_kempner_dichotomy.py
 python semigroup_breakout\sandbox_wave21_all_eight_angles_0_to_7.py
 python semigroup_breakout\sandbox_wave23_fourier_frontier_and_parseval_barrier.py
+python semigroup_breakout\sandbox_wave24_paths_a_and_b_deep_exploration.py
 ```
