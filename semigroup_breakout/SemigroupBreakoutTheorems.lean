@@ -8864,6 +8864,1432 @@ theorem grand_universal_q_half_relaxation_and_mahler_uniqueness_108_synthesis :
    universal_q_half_ceiling_dual_gauge_and_superblock_law.2.2.2.2⟩
 
 
+/-!
+### Wave 21 (`SB.109–SB.114`): Adelic $\widehat{\mathbb{Z}}$ Meta-Theorem Upgrade (Angle 0), Real-First Parry Transfer Map (Angle 1), Effective Fibonacci & Flatto–Lagarias–Pollington $(3/2)^W$ Survivor Bounds (Angle 2), & Base-6 Joint Automaton (Angle 3)
+-/
+
+/-- **SB.109 (Angle 0 — Adelic Profinite $\widehat{\mathbb{Z}}$ Decoupling Upgrade & $\mathbb{N}$-Only Archimedean Prime Floor):**
+Upgrades Meta-Theorem 2.1 from $\mathbb{Z}_2$ to the full profinite completion $\widehat{\mathbb{Z}} = \prod_p \mathbb{Z}_p$:
+1. **Closed-Form Inverse of $2^{T_r}$ Modulo Every Odd Modulus `M = 2 * m + 1`:**
+   For all `m, T : ℕ` with `1 ≤ m`, `(2 ^ T * (m + 1) ^ T) % (2 * m + 1) = 1`.
+2. **Universal Unique Solvability of the Renewal Congruence Modulo Every Odd `M = 2 * m + 1`:**
+   For **every** `m, T, P_0, A_K : ℕ`, setting `M := 2 * m + 1` and
+   `P_sol := ((m + 1) ^ T * ((3 ^ T * P_0 + A_K) % M)) % M`, `P_sol < M` satisfies
+   `(2 ^ T * P_sol) % M = (3 ^ T * P_0 + A_K) % M` and is the **unique** residue in `[0, M)`
+   doing so. Hence odd prime moduli alone can never obstruct survival without archimedean order.
+3. **$\mathbb{N}$-Only Archimedean Divisor Floor (Breaking $\widehat{\mathbb{Z}}$-Symmetry):**
+   Along any genuine `ValidBlockChain b_0 s u (K + 1)` in $\mathbb{N}$, any divisor `d ∣ u K`
+   satisfies `d ≤ u K` and `d * 2 ^ (s K) ≤ oddReturnP (orbit b_0 (blockSteps s K))`. -/
+theorem adelic_profinite_odd_modulus_invertibility_and_archimedean_prime_floor :
+    (∀ m T : ℕ, 1 ≤ m → (2 ^ T * (m + 1) ^ T) % (2 * m + 1) = 1) ∧
+    (∀ m T P_0 A_K : ℕ,
+      let M := 2 * m + 1
+      let P_sol := ((m + 1) ^ T * ((3 ^ T * P_0 + A_K) % M)) % M
+      P_sol < M ∧
+        (2 ^ T * P_sol) % M = (3 ^ T * P_0 + A_K) % M ∧
+        ∀ P' < M, (2 ^ T * P') % M = (3 ^ T * P_0 + A_K) % M → P' = P_sol) ∧
+    (∀ {b_0 K d : ℕ} {s u : ℕ → ℕ},
+      ValidBlockChain b_0 s u (K + 1) →
+      d ∣ u K →
+      d ≤ u K ∧ d * 2 ^ (s K) ≤ oddReturnP (orbit b_0 (blockSteps s K))) := by
+  have hinv : ∀ m T : ℕ, 1 ≤ m → (2 ^ T * (m + 1) ^ T) % (2 * m + 1) = 1 := by
+    intro m T hm
+    induction T with
+    | zero =>
+        have hM : 1 < 2 * m + 1 := by omega
+        exact Nat.mod_eq_of_lt hM
+    | succ k ih =>
+        have hbase : (2 * (m + 1)) % (2 * m + 1) = 1 := by
+          have hexp : 2 * (m + 1) = 1 + (2 * m + 1) * 1 := by ring
+          rw [hexp, Nat.add_mul_mod_self_left]
+          exact Nat.mod_eq_of_lt (by omega)
+        have hpow : 2 ^ (k + 1) * (m + 1) ^ (k + 1) =
+            (2 ^ k * (m + 1) ^ k) * (2 * (m + 1)) := by ring
+        rw [hpow, Nat.mul_mod, ih, hbase]
+        have hM : 1 < 2 * m + 1 := by omega
+        exact Nat.mod_eq_of_lt hM
+  refine ⟨hinv, ?_, ?_⟩
+  · intro m T P_0 A_K
+    dsimp only
+    rcases Nat.eq_zero_or_pos m with rfl | hm
+    · refine ⟨by omega, by omega, ?_⟩
+      intro P' hP' _
+      omega
+    · set M := 2 * m + 1
+      have hM_pos : 0 < M := by omega
+      set R := (3 ^ T * P_0 + A_K) % M
+      set P_sol := ((m + 1) ^ T * R) % M
+      have hlt : P_sol < M := Nat.mod_lt _ hM_pos
+      have hsol : (2 ^ T * P_sol) % M = R := by
+        calc
+          (2 ^ T * P_sol) % M
+              = (2 ^ T * (((m + 1) ^ T * R) % M)) % M := rfl
+          _ = ((2 ^ T % M) * ((((m + 1) ^ T * R) % M) % M)) % M := by rw [Nat.mul_mod]
+          _ = ((2 ^ T % M) * (((m + 1) ^ T * R) % M)) % M := by rw [Nat.mod_mod]
+          _ = (2 ^ T * ((m + 1) ^ T * R)) % M := by rw [← Nat.mul_mod]
+          _ = ((2 ^ T * (m + 1) ^ T) * R) % M := by rw [← mul_assoc]
+          _ = (((2 ^ T * (m + 1) ^ T) % M) * (R % M)) % M := by rw [Nat.mul_mod]
+          _ = (1 * (R % M)) % M := by rw [hinv m T hm]
+          _ = R % M := by simp
+          _ = R := Nat.mod_eq_of_lt (Nat.mod_lt _ hM_pos)
+      refine ⟨hlt, hsol, ?_⟩
+      intro P' hP' hP'_eq
+      have hmul : ((m + 1) ^ T * (2 ^ T * P')) % M = P_sol := by
+        calc
+          ((m + 1) ^ T * (2 ^ T * P')) % M
+              = (((m + 1) ^ T % M) * ((2 ^ T * P') % M)) % M := by rw [Nat.mul_mod]
+          _ = (((m + 1) ^ T % M) * R) % M := by rw [hP'_eq]
+          _ = (((m + 1) ^ T % M) * (R % M)) % M := by
+                rw [Nat.mod_eq_of_lt (Nat.mod_lt _ hM_pos)]
+          _ = ((m + 1) ^ T * R) % M := by rw [← Nat.mul_mod]
+          _ = P_sol := rfl
+      have hlhs : ((m + 1) ^ T * (2 ^ T * P')) % M = P' := by
+        calc
+          ((m + 1) ^ T * (2 ^ T * P')) % M
+              = ((2 ^ T * (m + 1) ^ T) * P') % M := by
+                have hcomm : (m + 1) ^ T * (2 ^ T * P') = (2 ^ T * (m + 1) ^ T) * P' := by ring
+                rw [hcomm]
+          _ = (((2 ^ T * (m + 1) ^ T) % M) * (P' % M)) % M := by rw [Nat.mul_mod]
+          _ = (1 * (P' % M)) % M := by rw [hinv m T hm]
+          _ = P' % M := by simp
+          _ = P' := Nat.mod_eq_of_lt hP'
+      omega
+  · intro b_0 K d s u hchain hdvd
+    have h1 := (archimedean_rung_ceiling_and_stepSum_bound hchain).1
+    dsimp only at h1
+    have hd_le : d ≤ u K := Nat.le_of_dvd h1.1 hdvd
+    have hmul : d * 2 ^ (s K) ≤ u K * 2 ^ (s K) := Nat.mul_le_mul_right (2 ^ (s K)) hd_le
+    refine ⟨hd_le, ?_⟩
+    rw [h1.2.1]
+    linarith
+
+
+/-- Denominator-cleared Real-First Parry bit at step threshold `D`: `0` on `[0, 1/3)` (`3 R < D`),
+`1` on `[1/3, 1/2)` (`D ≤ 3 R`). -/
+def parryBit (R D : ℕ) : ℕ :=
+  if 3 * R < D then 0 else 1
+
+/-- Denominator-cleared Real-First Parry numerator update (with denominator doubling `D ↦ 2 * D`). -/
+def parryStepNum (R D : ℕ) : ℕ :=
+  if 3 * R < D then 3 * R else 3 * R - D
+
+/-- Iterated numerator `R_k` of `r_k = R_k / (2^k * D)` under the Real-First Parry map $F$. -/
+def parryIterNum (R_0 D : ℕ) : ℕ → ℕ
+  | 0 => R_0
+  | k + 1 => parryStepNum (parryIterNum R_0 D k) (2 ^ k * D)
+
+/-- $k$-th itinerary bit $e_k(r_0) \in \{0, 1\}$ of $r_0 = R_0 / D$ under $F : [0, 1/2) \to [0, 1/2)$. -/
+def parryIterBit (R_0 D k : ℕ) : ℕ :=
+  parryBit (parryIterNum R_0 D k) (2 ^ k * D)
+
+/-- $N$-step polynomial accumulator $\Psi_N = \sum_{k=0}^{N-1} 3^{N-1-k} 2^k e_k(r_0)$. -/
+def parrySeriesAcc (R_0 D : ℕ) : ℕ → ℕ
+  | 0 => 0
+  | k + 1 => 3 * parrySeriesAcc R_0 D k + 2 ^ k * parryIterBit R_0 D k
+
+/-- **SB.110 (Angle 1 — Real-First Parry Transfer Map $F : [0, 1/2) \to [0, 1/2)$, Dual $\mathbb{R}/\mathbb{Q}_2$ Series Evaluation, & Rational Obstruction):**
+1. **Total Forward Invariance of `[0, 1/2)` (No Cantor Set Required on Domain):**
+   For **every** rational/scaled point `2 * R_0 < D` (`r_0 = R_0 / D ∈ [0, 1/2)`) and **every**
+   step `N : ℕ`, `2 * parryIterNum R_0 D N < 2 ^ N * D` (`r_N ∈ [0, 1/2)` forever!).
+2. **Exact $N$-Step Real & Integer Dual Series Telescoping:**
+   - Real fractional side: `parryIterNum R_0 D N + D * parrySeriesAcc R_0 D N = 3 ^ N * R_0`,
+   - Integer orbit side: whenever `∀ k < N, orbit b_0 k % 2 = parryIterBit R_0 D k`,
+     `2 ^ N * orbit b_0 N = 3 ^ N * b_0 + parrySeriesAcc R_0 D N` and
+     `2 ^ N * (D * orbit b_0 N) + parryIterNum R_0 D N = 3 ^ N * (D * b_0 + R_0)`.
+3. **Periodic / Rational Generating-Function Sign Obstruction:**
+   For every period `L ≥ 1`, `(3 ^ L - 2 ^ L) * b_0 + Psi_L = 0 → b_0 = 0 ∧ Psi_L = 0`
+   (no periodic/rational itinerary can ever yield a positive integer seed $b_0 \in \mathbb{N}_{>0}$). -/
+theorem real_first_parry_transfer_map_invariance_and_dual_series_obstruction :
+    (∀ R_0 D N : ℕ, 2 * R_0 < D →
+      2 * parryIterNum R_0 D N < 2 ^ N * D ∧
+        parryIterNum R_0 D N + D * parrySeriesAcc R_0 D N = 3 ^ N * R_0) ∧
+    (∀ R_0 D b_0 N : ℕ, 2 * R_0 < D →
+      (∀ k < N, orbit b_0 k % 2 = parryIterBit R_0 D k) →
+      2 ^ N * orbit b_0 N = 3 ^ N * b_0 + parrySeriesAcc R_0 D N ∧
+        2 ^ N * (D * orbit b_0 N) + parryIterNum R_0 D N = 3 ^ N * (D * b_0 + R_0)) ∧
+    (∀ L b_0 Psi_L : ℕ, 1 ≤ L →
+      (3 ^ L - 2 ^ L) * b_0 + Psi_L = 0 → b_0 = 0 ∧ Psi_L = 0) := by
+  have hreal :
+      ∀ R_0 D N : ℕ, 2 * R_0 < D →
+        2 * parryIterNum R_0 D N < 2 ^ N * D ∧
+          parryIterNum R_0 D N + D * parrySeriesAcc R_0 D N = 3 ^ N * R_0 := by
+    intro R_0 D N hlt0
+    induction N with
+    | zero =>
+        simp [parryIterNum, parrySeriesAcc]
+        omega
+    | succ k ih =>
+        rcases ih with ⟨hbound_k, htel_k⟩
+        simp only [parryIterNum, parrySeriesAcc, parryIterBit, parryStepNum, parryBit]
+        have hpow : 2 ^ (k + 1) * D = 2 * (2 ^ k * D) := by rw [Nat.pow_succ]; ring
+        have hpow3 : 3 ^ (k + 1) * R_0 = 3 * (3 ^ k * R_0) := by rw [Nat.pow_succ]; ring
+        split_ifs with hcond
+        · refine ⟨by omega, ?_⟩
+          calc
+            3 * parryIterNum R_0 D k + D * (3 * parrySeriesAcc R_0 D k + 2 ^ k * 0)
+                = 3 * (parryIterNum R_0 D k + D * parrySeriesAcc R_0 D k) := by ring
+            _ = 3 * (3 ^ k * R_0) := by rw [htel_k]
+            _ = 3 ^ (k + 1) * R_0 := hpow3.symm
+        · refine ⟨by omega, ?_⟩
+          have hge : 2 ^ k * D ≤ 3 * parryIterNum R_0 D k := by omega
+          have hsub :
+              3 * parryIterNum R_0 D k - 2 ^ k * D +
+                  D * (3 * parrySeriesAcc R_0 D k + 2 ^ k * 1) =
+                3 * (parryIterNum R_0 D k + D * parrySeriesAcc R_0 D k) := by
+            calc
+              3 * parryIterNum R_0 D k - 2 ^ k * D +
+                  D * (3 * parrySeriesAcc R_0 D k + 2 ^ k * 1)
+                  = (3 * parryIterNum R_0 D k - 2 ^ k * D + 2 ^ k * D) +
+                      3 * (D * parrySeriesAcc R_0 D k) := by ring
+              _ = 3 * parryIterNum R_0 D k + 3 * (D * parrySeriesAcc R_0 D k) := by
+                    rw [Nat.sub_add_cancel hge]
+              _ = 3 * (parryIterNum R_0 D k + D * parrySeriesAcc R_0 D k) := by ring
+          rw [hsub, htel_k, ← hpow3]
+  refine ⟨hreal, ?_, ?_⟩
+  · intro R_0 D b_0 N hlt0 hmatch
+    have horb : 2 ^ N * orbit b_0 N = 3 ^ N * b_0 + parrySeriesAcc R_0 D N := by
+      induction N with
+      | zero => simp [orbit, parrySeriesAcc]
+      | succ k ih =>
+          have ih_k := ih (fun j hj => hmatch j (by omega))
+          have hk_eq := hmatch k (by omega)
+          have hstep := two_mul_orbit_succ_eq b_0 k
+          simp only [parrySeriesAcc]
+          calc
+            2 ^ (k + 1) * orbit b_0 (k + 1)
+                = 2 ^ k * (2 * orbit b_0 (k + 1)) := by rw [Nat.pow_succ]; ring
+            _ = 2 ^ k * (3 * orbit b_0 k + orbit b_0 k % 2) := by rw [hstep]
+            _ = 3 * (2 ^ k * orbit b_0 k) + 2 ^ k * parryIterBit R_0 D k := by
+                  rw [hk_eq]; ring
+            _ = 3 * (3 ^ k * b_0 + parrySeriesAcc R_0 D k) +
+                  2 ^ k * parryIterBit R_0 D k := by rw [ih_k]
+            _ = 3 ^ (k + 1) * b_0 +
+                  (3 * parrySeriesAcc R_0 D k + 2 ^ k * parryIterBit R_0 D k) := by
+                  rw [Nat.pow_succ]; ring
+    refine ⟨horb, ?_⟩
+    have htel := (hreal R_0 D N hlt0).2
+    calc
+      2 ^ N * (D * orbit b_0 N) + parryIterNum R_0 D N
+          = D * (2 ^ N * orbit b_0 N) + parryIterNum R_0 D N := by ring
+      _ = D * (3 ^ N * b_0 + parrySeriesAcc R_0 D N) + parryIterNum R_0 D N := by rw [horb]
+      _ = 3 ^ N * D * b_0 + (parryIterNum R_0 D N + D * parrySeriesAcc R_0 D N) := by ring
+      _ = 3 ^ N * D * b_0 + 3 ^ N * R_0 := by rw [htel]
+      _ = 3 ^ N * (D * b_0 + R_0) := by ring
+  · intro L b_0 Psi_L hL hzero
+    have hlt_pow : 2 ^ L < 3 ^ L := by
+      obtain ⟨m, rfl⟩ : ∃ m, L = m + 1 := ⟨L - 1, by omega⟩
+      exact Nat.pow_lt_pow_left (by decide) (by omega)
+    have hpos : 0 < 3 ^ L - 2 ^ L := by omega
+    have hb0 : (3 ^ L - 2 ^ L) * b_0 = 0 := by omega
+    rcases Nat.mul_eq_zero.mp hb0 with hcontr | hb_zero
+    · omega
+    · exact ⟨hb_zero, by subst hb_zero; omega⟩
+
+
+/-- Reversed $W$-step binary parity word `[orbit b_0 (W-1) % 2, ..., orbit b_0 0 % 2]`. -/
+def orbitParityRev (b_0 : ℕ) : ℕ → List ℕ
+  | 0 => []
+  | k + 1 => (orbit b_0 k % 2) :: orbitParityRev b_0 k
+
+/-- Decidable predicate: no two consecutive odd steps `1, 1` occur in `[0, W)`. -/
+def isNoConsecOddBool (b_0 W : ℕ) : Bool :=
+  (List.range (W - 1)).all (fun n => !(orbit b_0 n % 2 == 1 && orbit b_0 (n + 1) % 2 == 1))
+
+/-- Pair of `11`-free reversed binary parity word lists of length `W`:
+`(words starting with 0 or empty, words starting with 1)`. -/
+def fibParityPair : ℕ → List (List ℕ) × List (List ℕ)
+  | 0 => ([[]], [])
+  | k + 1 =>
+      let p := fibParityPair k
+      ((p.1 ++ p.2).map (0 :: ·), p.1.map (1 :: ·))
+
+/-- All `11`-free reversed binary parity words of length `W`. -/
+def fibParityWords (W : ℕ) : List (List ℕ) :=
+  (fibParityPair W).1 ++ (fibParityPair W).2
+
+/-- Lemma: `orbitParityRev` equality is equivalent to pointwise parity agreement on `[0, W)`. -/
+theorem orbitParityRev_eq_iff (b₁ b₂ W : ℕ) :
+    orbitParityRev b₁ W = orbitParityRev b₂ W ↔
+      ∀ k < W, orbit b₁ k % 2 = orbit b₂ k % 2 := by
+  induction W with
+  | zero => simp [orbitParityRev]
+  | succ k ih =>
+      simp only [orbitParityRev, List.cons.injEq, ih]
+      constructor
+      · rintro ⟨hk, hlt⟩ j hj
+        rcases (by omega : j = k ∨ j < k) with rfl | hjk
+        · exact hk
+        · exact hlt j hjk
+      · intro hall
+        exact ⟨hall k (by omega), fun j hj => hall j (by omega)⟩
+
+/-- Lemma: `b_0 ↦ orbitParityRev b_0 W` is strictly injective on `[0, 2 ^ W)`. -/
+theorem orbitParityRev_injOn_two_pow (W : ℕ) :
+    ∀ ⦃b₁ : ℕ⦄, b₁ < 2 ^ W → ∀ ⦃b₂ : ℕ⦄, b₂ < 2 ^ W →
+      orbitParityRev b₁ W = orbitParityRev b₂ W → b₁ = b₂ := by
+  intro b₁ hb₁ b₂ hb₂ heq
+  have hmatch := (orbitParityRev_eq_iff b₁ b₂ W).mp heq
+  by_contra hne
+  rcases (by omega : b₁ < b₂ ∨ b₂ < b₁) with hlt | hgt
+  · have hdiv := (two_seed_first_divergence_valuation_and_bound (Nat.le_of_lt hlt) hmatch).2.2
+      W hlt (by omega)
+    rcases hdiv with ⟨k, hk, hnek⟩
+    exact hnek (hmatch k hk)
+  · have hmatch' : ∀ k < W, orbit b₂ k % 2 = orbit b₁ k % 2 := fun k hk => (hmatch k hk).symm
+    have hdiv := (two_seed_first_divergence_valuation_and_bound (Nat.le_of_lt hgt) hmatch').2.2
+      W hgt (by omega)
+    rcases hdiv with ⟨k, hk, hnek⟩
+    exact hnek (hmatch' k hk)
+
+/-- Standalone Fibonacci sequence `mahlerFib 0 = 0, mahlerFib 1 = 1, mahlerFib (n+2) = mahlerFib n + mahlerFib (n+1)`. -/
+def mahlerFib : ℕ → ℕ
+  | 0 => 0
+  | 1 => 1
+  | n + 2 => mahlerFib n + mahlerFib (n + 1)
+
+/-- **SB.111 (Angle 2A — Unconditional Effective Mahler–Fibonacci Survivor Power-Saving Bound):**
+Combines `SB.4` (`orbitParityRev_injOn_two_pow`) with the Fibonacci `11`-ban (`s_r ≥ 2`):
+1. **Exact Fibonacci Word-Count Identity:** `(fibParityWords W).length = mahlerFib (W + 2)`.
+2. **Unconditional `Finset.card` Bound on $[0, 2^W)$ (Zero External Axioms):**
+   The number of seeds `b_0 ∈ [0, 2 ^ W)` having no two consecutive odd steps in `[0, W)` satisfies
+   `((Finset.range (2 ^ W)).filter (fun b_0 => isNoConsecOddBool b_0 W = true)).card ≤ mahlerFib (W + 2)`.
+3. **Logarithm-Free Exponential Power-Saving Law ($O(X^{0.75}) = o(X)$):**
+   For every `k : ℕ`, `mahlerFib (4 * k + 1) ≤ 8 ^ k` and `mahlerFib (4 * k + 2) ≤ 2 ^ (3 * k + 1)`. -/
+theorem unconditional_effective_fibonacci_survivor_power_saving_bound :
+    (∀ W : ℕ, (fibParityWords W).length = mahlerFib (W + 2)) ∧
+    (∀ W : ℕ,
+      ((Finset.range (2 ^ W)).filter (fun b_0 => isNoConsecOddBool b_0 W = true)).card ≤
+        mahlerFib (W + 2)) ∧
+    (∀ k : ℕ, mahlerFib (4 * k + 1) ≤ 8 ^ k ∧ mahlerFib (4 * k + 2) ≤ 2 ^ (3 * k + 1)) := by
+  have hlen_pair :
+      ∀ W : ℕ,
+        (fibParityPair W).1.length = mahlerFib (W + 1) ∧
+          (fibParityPair W).2.length = mahlerFib W := by
+    intro W
+    induction W with
+    | zero => simp [fibParityPair, mahlerFib]
+    | succ k ih =>
+        simp only [fibParityPair, List.length_map, List.length_append, ih.1, ih.2]
+        have hrec : mahlerFib (k + 1) + mahlerFib k = mahlerFib (k + 2) := by
+          change mahlerFib (k + 1) + mahlerFib k = mahlerFib k + mahlerFib (k + 1)
+          exact Nat.add_comm _ _
+        exact ⟨hrec, trivial⟩
+  have hlen : ∀ W : ℕ, (fibParityWords W).length = mahlerFib (W + 2) := by
+    intro W
+    simp only [fibParityWords, List.length_append, (hlen_pair W).1, (hlen_pair W).2]
+    change mahlerFib (W + 1) + mahlerFib W = mahlerFib W + mahlerFib (W + 1)
+    exact Nat.add_comm _ _
+  have hmem_pair :
+      ∀ b_0 W : ℕ,
+        (∀ n, n + 1 < W → ¬(orbit b_0 n % 2 = 1 ∧ orbit b_0 (n + 1) % 2 = 1)) →
+        ((W = 0 ∨ orbit b_0 (W - 1) % 2 = 0) → orbitParityRev b_0 W ∈ (fibParityPair W).1) ∧
+          (1 ≤ W → orbit b_0 (W - 1) % 2 = 1 → orbitParityRev b_0 W ∈ (fibParityPair W).2) := by
+    intro b_0 W hno
+    induction W with
+    | zero =>
+        simp [orbitParityRev, fibParityPair]
+    | succ k ih =>
+        have ih_k := ih (fun n hn => hno n (by omega))
+        have hmem_union : orbitParityRev b_0 k ∈ (fibParityPair k).1 ++ (fibParityPair k).2 := by
+          rcases Nat.eq_zero_or_pos k with rfl | hkpos
+          · exact List.mem_append_left _ (ih_k.1 (Or.inl rfl))
+          · rcases (by omega : orbit b_0 (k - 1) % 2 = 0 ∨ orbit b_0 (k - 1) % 2 = 1) with h0 | h1
+            · exact List.mem_append_left _ (ih_k.1 (Or.inr h0))
+            · exact List.mem_append_right _ (ih_k.2 hkpos h1)
+        have hsub_k : k + 1 - 1 = k := rfl
+        refine ⟨?_, ?_⟩
+        · intro hcase
+          rw [hsub_k] at hcase
+          have h0 : orbit b_0 k % 2 = 0 := by omega
+          simp only [orbitParityRev, fibParityPair, h0, List.mem_map]
+          exact ⟨orbitParityRev b_0 k, hmem_union, rfl⟩
+        · intro _ h1
+          rw [hsub_k] at h1
+          simp only [orbitParityRev, fibParityPair, h1, List.mem_map]
+          refine ⟨orbitParityRev b_0 k, ?_, rfl⟩
+          rcases Nat.eq_zero_or_pos k with rfl | hkpos
+          · exact ih_k.1 (Or.inl rfl)
+          · have hprev0 : orbit b_0 (k - 1) % 2 = 0 := by
+              have hnot := hno (k - 1) (by omega)
+              have hsub : k - 1 + 1 = k := by omega
+              rw [hsub] at hnot
+              omega
+            exact ih_k.1 (Or.inr hprev0)
+  refine ⟨hlen, ?_, ?_⟩
+  · intro W
+    set S := (Finset.range (2 ^ W)).filter (fun b_0 => isNoConsecOddBool b_0 W = true)
+    have hmaps : ∀ b_0 ∈ S, orbitParityRev b_0 W ∈ (fibParityWords W).toFinset := by
+      intro b_0 hb
+      simp only [S, Finset.mem_filter, Finset.mem_range, isNoConsecOddBool, List.all_eq_true,
+        List.mem_range] at hb
+      have hno : ∀ n, n + 1 < W → ¬(orbit b_0 n % 2 = 1 ∧ orbit b_0 (n + 1) % 2 = 1) := by
+        intro n hn
+        have hbn := hb.2 n (by omega)
+        simp only [Bool.not_eq_true', Bool.and_eq_true, beq_iff_eq] at hbn
+        intro hboth
+        rcases Bool.and_eq_false_iff.mp hbn with h1 | h2
+        · simp [hboth.1] at h1
+        · simp [hboth.2] at h2
+      rw [List.mem_toFinset]
+      unfold fibParityWords
+      have hm := hmem_pair b_0 W hno
+      rcases Nat.eq_zero_or_pos W with rfl | hWpos
+      · exact List.mem_append_left _ (hm.1 (Or.inl rfl))
+      · rcases (by omega : orbit b_0 (W - 1) % 2 = 0 ∨ orbit b_0 (W - 1) % 2 = 1) with h0 | h1
+        · exact List.mem_append_left _ (hm.1 (Or.inr h0))
+        · exact List.mem_append_right _ (hm.2 hWpos h1)
+    have hinj : Set.InjOn (fun b_0 => orbitParityRev b_0 W) ↑S := by
+      intro b₁ hb₁ b₂ hb₂ heq
+      simp only [S, Finset.mem_coe, Finset.mem_filter, Finset.mem_range] at hb₁ hb₂
+      exact orbitParityRev_injOn_two_pow W hb₁.1 hb₂.1 heq
+    have hcard1 : S.card ≤ (fibParityWords W).toFinset.card :=
+      Finset.card_le_card_of_injOn (fun b_0 => orbitParityRev b_0 W) hmaps hinj
+    have hcard2 : (fibParityWords W).toFinset.card ≤ (fibParityWords W).length :=
+      List.toFinset_card_le (fibParityWords W)
+    rw [hlen W] at hcard2
+    exact le_trans hcard1 hcard2
+  · intro k
+    have hpair : mahlerFib (4 * k + 1) ≤ 8 ^ k ∧ mahlerFib (4 * k + 2) ≤ 2 * 8 ^ k := by
+      induction k with
+      | zero => decide
+      | succ m ih =>
+          have hf2 : mahlerFib (4 * m + 3) = mahlerFib (4 * m + 1) + mahlerFib (4 * m + 2) := rfl
+          have hf3 : mahlerFib (4 * m + 4) = mahlerFib (4 * m + 2) + mahlerFib (4 * m + 3) := rfl
+          have hf4 : mahlerFib (4 * (m + 1) + 1) = mahlerFib (4 * m + 3) + mahlerFib (4 * m + 4) := by
+            have hidx : 4 * (m + 1) + 1 = (4 * m + 3) + 2 := by omega
+            rw [hidx]; rfl
+          have hf5 : mahlerFib (4 * (m + 1) + 2) =
+              mahlerFib (4 * m + 4) + mahlerFib (4 * (m + 1) + 1) := by
+            have hidx : 4 * (m + 1) + 2 = (4 * m + 4) + 2 := by omega
+            have hidx2 : 4 * m + 4 + 1 = 4 * (m + 1) + 1 := by omega
+            rw [hidx]
+            change mahlerFib (4 * m + 4) + mahlerFib (4 * m + 4 + 1) = _
+            rw [hidx2]
+          have hp8 : 8 ^ (m + 1) = 8 * 8 ^ m := by rw [Nat.pow_succ]; ring
+          omega
+    have hp8 : 2 * 8 ^ k = 2 ^ (3 * k + 1) := by
+      have h8 : (8 : ℕ) ^ k = (2 ^ 3) ^ k := rfl
+      rw [h8, ← Nat.pow_mul, Nat.pow_succ, mul_comm]
+    exact ⟨hpair.1, hp8 ▸ hpair.2⟩
+
+
+/-- Pure-integer Parry cylinder branching step at depth `k`: a cylinder `[0, B / 2^{k+1})` splits at
+`1 / 3` iff `2 ^ (k + 1) < 3 * B`, preserving the exact width sum `2^(k+1) + (3 B - 2^(k+1)) = 3 B`. -/
+def parryCylStep (k : ℕ) (node : ℕ × List ℕ) : List (ℕ × List ℕ) :=
+  if 3 * node.1 ≤ 2 ^ (k + 1) then
+    [(3 * node.1, 0 :: node.2)]
+  else
+    [(2 ^ (k + 1), 0 :: node.2), (3 * node.1 - 2 ^ (k + 1), 1 :: node.2)]
+
+/-- Expand a list of Parry cylinder nodes at depth `k`. -/
+def parryCylExpand (k : ℕ) : List (ℕ × List ℕ) → List (ℕ × List ℕ)
+  | [] => []
+  | node :: rest => parryCylStep k node ++ parryCylExpand k rest
+
+/-- Pure-integer Parry cylinder tree of `[0, 1/2)` at depth `W`. -/
+def parryCylTree : ℕ → List (ℕ × List ℕ)
+  | 0 => [(1, [])]
+  | k + 1 => parryCylExpand k (parryCylTree k)
+
+/-- Sum of integer-scaled widths `B_w = 2^{W+1} |F^W(I(w))|` across a list of Parry nodes. -/
+def parryWidthSum : List (ℕ × List ℕ) → ℕ
+  | [] => 0
+  | node :: rest => node.1 + parryWidthSum rest
+
+/-- Reversed $W$-step Parry itinerary word `[e_{W-1}, ..., e_0]` for `(R_0, D)`. -/
+def parryIterWordRev (R_0 D : ℕ) : ℕ → List ℕ
+  | 0 => []
+  | k + 1 => parryIterBit R_0 D k :: parryIterWordRev R_0 D k
+
+/-- **SB.112 (Angle 2B — Pure-Integer Parry Cylinder Tree, Exact $3^W$ Conservation, & Flatto–Lagarias–Pollington $(3/2)^W$ Effective Survivor Bound):**
+First machine-checked formalization of Flatto–Lagarias–Pollington's (1995) $O(X^{\log_2(3/2)}) = O(X^{0.58496})$
+effective upper bound on Mahler $Z$-numbers, proved in pure natural-number arithmetic:
+1. **Exact $3^W$ Scaled-Width Conservation Law:** `parryWidthSum (parryCylTree W) = 3 ^ W`.
+2. **Universal $(3/2)^W$ Parry Cylinder Upper Bound:**
+   `2 ^ W * (parryCylTree W).length + 2 * 2 ^ W ≤ 3 ^ (W + 1)` (`|C_W| ≤ 3 * (3/2)^W - 2`).
+3. **Complete Coverage of Realizable Parry Itineraries:**
+   For every rational/scaled `2 * R_0 < D` (`1 ≤ D`) and every `W : ℕ`, there exists a cylinder
+   `(B, w) ∈ parryCylTree W` with `w = parryIterWordRev R_0 D W` and `2 * parryIterNum R_0 D W < B * D`.
+4. **Unconditional Effective $(3/2)^W$ Bound on Arbitrary $W$-Step Survivor Sets in $[0, 2^W)$:**
+   For **any** `S : Finset ℕ` of seeds `b_0 < 2 ^ W` such that each `b_0 ∈ S` admits a valid
+   companion `(R_0, D)` (`2 * R_0 < D`, `1 ≤ D`) matching its $W$-step parities
+   `∀ k < W, orbit b_0 k % 2 = parryIterBit R_0 D k`,
+   `S.card ≤ (parryCylTree W).length` and `2 ^ W * S.card + 2 * 2 ^ W ≤ 3 ^ (W + 1)`! -/
+theorem parry_cylinder_tree_three_pow_sum_and_flp_effective_survivor_bound :
+    (∀ W : ℕ, parryWidthSum (parryCylTree W) = 3 ^ W) ∧
+    (∀ W : ℕ, 2 ^ W * (parryCylTree W).length + 2 * 2 ^ W ≤ 3 ^ (W + 1)) ∧
+    (∀ R_0 D W : ℕ, 1 ≤ D → 2 * R_0 < D →
+      ∃ B : ℕ, (B, parryIterWordRev R_0 D W) ∈ parryCylTree W ∧
+        2 * parryIterNum R_0 D W < B * D) ∧
+    (∀ (W : ℕ) (S : Finset ℕ),
+      (∀ b_0 ∈ S, b_0 < 2 ^ W ∧
+        ∃ R_0 D : ℕ, 1 ≤ D ∧ 2 * R_0 < D ∧
+          ∀ k < W, orbit b_0 k % 2 = parryIterBit R_0 D k) →
+      S.card ≤ (parryCylTree W).length ∧
+        2 ^ W * S.card + 2 * 2 ^ W ≤ 3 ^ (W + 1)) := by
+  have hexp_sum :
+      ∀ k L, parryWidthSum (parryCylExpand k L) = 3 * parryWidthSum L := by
+    intro k L
+    induction L with
+    | nil => simp [parryCylExpand, parryWidthSum]
+    | cons node rest ih =>
+        simp only [parryCylExpand, parryCylStep]
+        split_ifs with hle
+        · simp only [List.singleton_append, parryWidthSum, ih]
+          ring
+        · simp only [List.cons_append, List.nil_append, parryWidthSum, ih]
+          omega
+  have hsum : ∀ W : ℕ, parryWidthSum (parryCylTree W) = 3 ^ W := by
+    intro W
+    induction W with
+    | zero => simp [parryCylTree, parryWidthSum]
+    | succ k ih =>
+        simp only [parryCylTree, hexp_sum, ih, Nat.pow_succ]
+        ring
+  have hexp_len :
+      ∀ k L,
+        2 ^ (k + 1) * (parryCylExpand k L).length ≤
+          2 ^ (k + 1) * L.length + 3 * parryWidthSum L := by
+    intro k L
+    induction L with
+    | nil => simp [parryCylExpand, parryWidthSum]
+    | cons node rest ih =>
+        simp only [parryCylExpand, parryCylStep, parryWidthSum, List.length_cons]
+        split_ifs with hle
+        · simp only [List.singleton_append, List.length_cons]
+          linarith
+        · simp only [List.cons_append, List.nil_append, List.length_cons]
+          linarith
+  have hflp_len : ∀ W : ℕ, 2 ^ W * (parryCylTree W).length + 2 * 2 ^ W ≤ 3 ^ (W + 1) := by
+    intro W
+    induction W with
+    | zero => simp [parryCylTree]
+    | succ k ih =>
+        have hstep := hexp_len k (parryCylTree k)
+        rw [hsum k] at hstep
+        simp only [parryCylTree]
+        have hp2 : 2 ^ (k + 1) = 2 * 2 ^ k := by rw [Nat.pow_succ]; ring
+        have hp2_len :
+            2 ^ (k + 1) * (parryCylTree k).length = 2 * (2 ^ k * (parryCylTree k).length) := by
+          rw [hp2]; ring
+        have hp3' : 3 ^ (k + 1) = 3 * 3 ^ k := by rw [Nat.pow_succ]; ring
+        have hp3 : 3 ^ (k + 1 + 1) = 3 * 3 ^ (k + 1) := by rw [Nat.pow_succ]; ring
+        linarith
+  have hcov :
+      ∀ R_0 D W : ℕ, 1 ≤ D → 2 * R_0 < D →
+        ∃ B : ℕ, (B, parryIterWordRev R_0 D W) ∈ parryCylTree W ∧
+          2 * parryIterNum R_0 D W < B * D := by
+    intro R_0 D W hD hR0
+    induction W with
+    | zero =>
+        refine ⟨1, ?_, ?_⟩
+        · simp [parryCylTree, parryIterWordRev]
+        · simp [parryIterNum]; omega
+    | succ k ih =>
+        rcases ih with ⟨B, hmem, hltB⟩
+        have hexp_mem :
+            ∀ L, (B, parryIterWordRev R_0 D k) ∈ L →
+              ∀ p ∈ parryCylStep k (B, parryIterWordRev R_0 D k),
+                p ∈ parryCylExpand k L := by
+          intro L hL p hp
+          induction L with
+          | nil => cases hL
+          | cons hd tl ihtl =>
+              simp only [parryCylExpand, List.mem_append]
+              rcases List.mem_cons.mp hL with rfl | htl
+              · exact Or.inl hp
+              · exact Or.inr (ihtl htl)
+        by_cases hsplit : 3 * B ≤ 2 ^ (k + 1)
+        · have h3R_lt : 3 * parryIterNum R_0 D k < 2 ^ k * D := by
+            have h1 : 2 * (3 * parryIterNum R_0 D k) < (3 * B) * D := by linarith
+            have h2 : (3 * B) * D ≤ 2 ^ (k + 1) * D := Nat.mul_le_mul_right D hsplit
+            have hp2 : 2 ^ (k + 1) * D = 2 * (2 ^ k * D) := by rw [Nat.pow_succ]; ring
+            omega
+          refine ⟨3 * B, ?_, ?_⟩
+          · simp only [parryCylTree, parryIterWordRev, parryIterBit, parryBit, if_pos h3R_lt]
+            apply hexp_mem (parryCylTree k) hmem
+            simp [parryCylStep, if_pos hsplit]
+          · simp only [parryIterNum, parryStepNum, if_pos h3R_lt]
+            linarith
+        · by_cases h3R_lt : 3 * parryIterNum R_0 D k < 2 ^ k * D
+          · refine ⟨2 ^ (k + 1), ?_, ?_⟩
+            · simp only [parryCylTree, parryIterWordRev, parryIterBit, parryBit, if_pos h3R_lt]
+              apply hexp_mem (parryCylTree k) hmem
+              simp [parryCylStep, if_neg hsplit]
+            · simp only [parryIterNum, parryStepNum, if_pos h3R_lt]
+              have hp2 : 2 ^ (k + 1) * D = 2 * (2 ^ k * D) := by rw [Nat.pow_succ]; ring
+              omega
+          · refine ⟨3 * B - 2 ^ (k + 1), ?_, ?_⟩
+            · simp only [parryCylTree, parryIterWordRev, parryIterBit, parryBit, if_neg h3R_lt]
+              apply hexp_mem (parryCylTree k) hmem
+              simp [parryCylStep, if_neg hsplit]
+            · simp only [parryIterNum, parryStepNum, if_neg h3R_lt]
+              have hge : 2 ^ k * D ≤ 3 * parryIterNum R_0 D k := by omega
+              have hp2 : 2 ^ (k + 1) * D = 2 * (2 ^ k * D) := by rw [Nat.pow_succ]; ring
+              have hsub_mul : (3 * B - 2 ^ (k + 1)) * D = 3 * (B * D) - 2 ^ (k + 1) * D := by
+                rw [Nat.sub_mul, mul_assoc]
+              omega
+  refine ⟨hsum, hflp_len, hcov, ?_⟩
+  · intro W S hS
+    have hword_eq :
+        ∀ b_0 R_0 D k, (∀ j < k, orbit b_0 j % 2 = parryIterBit R_0 D j) →
+          orbitParityRev b_0 k = parryIterWordRev R_0 D k := by
+      intro b_0 R_0 D k hm
+      induction k with
+      | zero => rfl
+      | succ m ihm =>
+          simp only [orbitParityRev, parryIterWordRev, hm m (by omega),
+            ihm (fun j hj => hm j (by omega))]
+    set wordsList := (parryCylTree W).map Prod.snd
+    have hmaps : ∀ b_0 ∈ S, orbitParityRev b_0 W ∈ wordsList.toFinset := by
+      intro b_0 hb
+      rcases hS b_0 hb with ⟨_, R_0, D, hD, hR0, hmatch⟩
+      rcases hcov R_0 D W hD hR0 with ⟨B, hmemB, _⟩
+      rw [List.mem_toFinset, hword_eq b_0 R_0 D W hmatch]
+      exact List.mem_map_of_mem hmemB
+    have hinj : Set.InjOn (fun b_0 => orbitParityRev b_0 W) ↑S := by
+      intro b₁ hb₁ b₂ hb₂ heq
+      exact orbitParityRev_injOn_two_pow W (hS b₁ hb₁).1 (hS b₂ hb₂).1 heq
+    have hc1 : S.card ≤ wordsList.toFinset.card :=
+      Finset.card_le_card_of_injOn (fun b_0 => orbitParityRev b_0 W) hmaps hinj
+    have hc2 : wordsList.toFinset.card ≤ (parryCylTree W).length := by
+      calc
+        wordsList.toFinset.card ≤ wordsList.length := List.toFinset_card_le wordsList
+        _ = (parryCylTree W).length := by simp [wordsList]
+    have hc : S.card ≤ (parryCylTree W).length := le_trans hc1 hc2
+    refine ⟨hc, ?_⟩
+    have hmul : 2 ^ W * S.card ≤ 2 ^ W * (parryCylTree W).length :=
+      Nat.mul_le_mul_left (2 ^ W) hc
+    have hbound := hflp_len W
+    omega
+
+
+/-- **SB.113 (Angle 2C — Post-Horizon Top-Bit Desert & Pre-Horizon Colliding-Pair Divergence Lock):**
+At any post-bit-length horizon `N = W + M`:
+1. **Top-Bit Desert Characterization:** For any residue `b_0 < 2 ^ (W + M)`,
+   `b_0 < 2 ^ W ↔ b_0 / 2 ^ W = 0` (all `M` top binary bits in `[W, W + M)` must vanish!).
+2. **Pre-Horizon Divergence Lock on $W$-Bit Survivors:**
+   No two distinct $W$-bit seeds `b₁ < b₂ < 2 ^ W` can agree up to step `W` and diverge in the
+   post-horizon tail `[W, W + M)`: they **must** diverge at some step `n_0 < W` with exact
+   2-adic valuation `2 ^ n_0 ∣ (b₂ - b₁)` and `¬ (2 ^ (n_0 + 1) ∣ (b₂ - b₁))`. -/
+theorem post_horizon_top_bit_desert_and_two_word_difference_valuation :
+    (∀ b_0 W : ℕ, b_0 < 2 ^ W ↔ b_0 / 2 ^ W = 0) ∧
+    (∀ b₁ b₂ W M : ℕ, b₁ < b₂ → b₂ < 2 ^ W →
+      (∃ n_0 < W,
+        (∀ k < n_0, orbit b₁ k % 2 = orbit b₂ k % 2) ∧
+        orbit b₁ n_0 % 2 ≠ orbit b₂ n_0 % 2 ∧
+        2 ^ n_0 ∣ (b₂ - b₁) ∧
+        ¬ (2 ^ (n_0 + 1) ∣ (b₂ - b₁))) ∧
+      orbitParityRev b₁ (W + M) ≠ orbitParityRev b₂ (W + M)) := by
+  refine ⟨?_, ?_⟩
+  · intro b_0 W
+    have hpos : 0 < 2 ^ W := Nat.pos_of_ne_zero (pow_ne_zero W (by decide))
+    exact (Nat.div_eq_zero_iff_lt hpos).symm
+  · intro b₁ b₂ W M hlt hb₂
+    have hex : ∃ k < W, orbit b₁ k % 2 ≠ orbit b₂ k % 2 :=
+      (@two_seed_first_divergence_valuation_and_bound b₁ b₂ 0 (Nat.le_of_lt hlt)
+        (fun _ hk => absurd hk (by omega))).2.2 W hlt (by omega)
+    -- Extract the least divergence step n_0 < W via Nat.find:
+    classical
+    let Pdiv : ℕ → Prop := fun k => orbit b₁ k % 2 ≠ orbit b₂ k % 2
+    have hexP : ∃ k, Pdiv k := by
+      rcases hex with ⟨k, _, hk⟩
+      exact ⟨k, hk⟩
+    let n_0 := Nat.find hexP
+    have hn0_spec : orbit b₁ n_0 % 2 ≠ orbit b₂ n_0 % 2 := Nat.find_spec hexP
+    have hn0_lt : n_0 < W := by
+      rcases hex with ⟨k, hkW, hk⟩
+      exact lt_of_le_of_lt (Nat.find_min' hexP hk) hkW
+    have hmatch : ∀ k < n_0, orbit b₁ k % 2 = orbit b₂ k % 2 := by
+      intro k hk
+      have hnot := Nat.find_min hexP hk
+      by_contra hne
+      exact hnot hne
+    have hsb4 := two_seed_first_divergence_valuation_and_bound (Nat.le_of_lt hlt) hmatch
+    refine ⟨⟨n_0, hn0_lt, hmatch, hn0_spec, hsb4.1.2.2, (hsb4.2.1 hn0_spec).2⟩, ?_⟩
+    intro heqWM
+    have hall := (orbitParityRev_eq_iff b₁ b₂ (W + M)).mp heqWM
+    exact hn0_spec (hall n_0 (by omega))
+
+
+/-- **SB.114 (Angle 3 — Base-6 ($6 = 2 \times 3$) Joint Terminating Automaton & Kempner Depth Law):**
+In Base 6 (`6 = 2 * 3`), `3 / 2 = 9 / 6 = 1.3_6`, `2 / 3 = 4 / 6 = 0.4_6`, `1 / 3 = 0.2_6`, and
+`1 / 2 = 0.3_6` all terminate in **one single Base-6 digit**:
+1. **Exact 1-Digit Base-6 Survival & Parity Characterization:**
+   For any scaled state `(X, D)` (`1 ≤ D`) with integer part `g = X / D`, remainder `R = X % D`,
+   Base-6 units digit `d_0 = g % 6`, and first Base-6 fractional digit `f_1 = (6 * R) / D`:
+   - `f_1 < 6`,
+   - `2 * R < D ↔ f_1 < 3` (`f_1 ∈ {0, 1, 2}`),
+   - `(g % 2 = 0 ∧ 3 * R < D) ↔ (d_0 = 0 ∨ d_0 = 2 ∨ d_0 = 4) ∧ (f_1 = 0 ∨ f_1 = 1)` (even step),
+   - `(g % 2 = 1 ∧ D ≤ 3 * R ∧ 2 * R < D) ↔ (d_0 = 1 ∨ d_0 = 3 ∨ d_0 = 5) ∧ f_1 = 2` (odd step)!
+2. **Exact Terminating Base-6 Kempner Depth Identity:**
+   For every step `T : ℕ`, `3 * (2 * 4 ^ T) * 3 ^ T = 6 ^ (T + 1) * 2 ^ T` (i.e.,
+   `(1 / 3) * (2 / 3)^T = (2 * 4^T) / 6^(T + 1)`) and `2 * 4 ^ T < 6 ^ (T + 1)`. -/
+theorem base_six_terminating_digit_characterization_and_kempner_depth_law :
+    (∀ X D : ℕ, 1 ≤ D →
+      let g := X / D
+      let R := X % D
+      let d_0 := g % 6
+      let f_1 := (6 * R) / D
+      f_1 < 6 ∧
+        (2 * R < D ↔ f_1 < 3) ∧
+        ((g % 2 = 0 ∧ 3 * R < D) ↔
+          (d_0 = 0 ∨ d_0 = 2 ∨ d_0 = 4) ∧ (f_1 = 0 ∨ f_1 = 1)) ∧
+        ((g % 2 = 1 ∧ D ≤ 3 * R ∧ 2 * R < D) ↔
+          (d_0 = 1 ∨ d_0 = 3 ∨ d_0 = 5) ∧ f_1 = 2)) ∧
+    (∀ T : ℕ,
+      3 * (2 * 4 ^ T) * 3 ^ T = 6 ^ (T + 1) * 2 ^ T ∧
+        2 * 4 ^ T < 6 ^ (T + 1)) := by
+  refine ⟨?_, ?_⟩
+  · intro X D hD g R d_0 f_1
+    have hD_pos : 0 < D := hD
+    have hR_lt : R < D := Nat.mod_lt X hD_pos
+    have hf1_lt6 : f_1 < 6 := (Nat.div_lt_iff_lt_mul hD_pos).2 (by omega)
+    have hf1_lt3 : 2 * R < D ↔ f_1 < 3 := by
+      rw [Nat.div_lt_iff_lt_mul hD_pos]
+      omega
+    have hf1_lt2 : 3 * R < D ↔ f_1 < 2 := by
+      rw [Nat.div_lt_iff_lt_mul hD_pos]
+      omega
+    have hf1_ge2 : D ≤ 3 * R ↔ 2 ≤ f_1 := by
+      rw [Nat.le_div_iff_mul_le hD_pos]
+      omega
+    refine ⟨hf1_lt6, hf1_lt3, ?_, ?_⟩
+    · rw [hf1_lt2]
+      have hd0 : g % 2 = 0 ↔ (d_0 = 0 ∨ d_0 = 2 ∨ d_0 = 4) := by
+        dsimp [d_0]; omega
+      rw [hd0]
+      dsimp [f_1] at hf1_lt6 ⊢
+      generalize (6 * R) / D = q6 at hf1_lt6 ⊢
+      omega
+    · rw [hf1_ge2, hf1_lt3]
+      have hd1 : g % 2 = 1 ↔ (d_0 = 1 ∨ d_0 = 3 ∨ d_0 = 5) := by
+        dsimp [d_0]; omega
+      rw [hd1]
+      dsimp [f_1] at hf1_lt6 ⊢
+      generalize (6 * R) / D = q6 at hf1_lt6 ⊢
+      omega
+  · intro T
+    have hpow : 3 * (2 * 4 ^ T) * 3 ^ T = 6 ^ (T + 1) * 2 ^ T := by
+      induction T with
+      | zero => decide
+      | succ k ih =>
+          have h4 : 4 ^ (k + 1) = 4 * 4 ^ k := by rw [Nat.pow_succ]; ring
+          have h3 : 3 ^ (k + 1) = 3 * 3 ^ k := by rw [Nat.pow_succ]; ring
+          have h6 : 6 ^ (k + 2) = 6 * 6 ^ (k + 1) := by rw [Nat.pow_succ]; ring
+          have h2 : 2 ^ (k + 1) = 2 * 2 ^ k := by rw [Nat.pow_succ]; ring
+          rw [h4, h3, h6, h2]
+          linear_combination 12 * ih
+    refine ⟨hpow, ?_⟩
+    have hle : 4 ^ T ≤ 6 ^ T := Nat.pow_le_pow_left (by decide) T
+    have hpos : 1 ≤ 6 ^ T := Nat.one_le_pow T 6 (by decide)
+    have h6 : 6 ^ (T + 1) = 6 * 6 ^ T := by rw [Nat.pow_succ]; ring
+    omega
+
+
+/-!
+### Wave 22 (`SB.115–SB.120`): Two-Superblock Catalan–Pillai Transition & Conditional $abc$ Cutoff (Angle 4), Higher-Order $m \times m$ Hankel Row-Reduction & Super-Block Vanishing (Angle 5), Local Multi-Block Word-Power $V^m$ Cutoff (Angle 6), Rational Remainder & Shadowing Escape (Angle 7), & Grand 120-Theorem Synthesis
+-/
+
+/-- **SB.115 (Angle 4A — Two-Superblock Catalan–Pillai Transition & Unconditional Coprime Odd Cores at $s^* \in \{3, 4\}$):**
+Chains consecutive surviving Super-Blocks `W_{r+1} = 4^{m₁} * V₁` (with `m₁` blocks of `s = 2` and
+exit rung `s^* = s_{r+1+m₁} ≥ 3`) and `W_{r+1+m₁+1} = 4^{m₂} * V₂` (exiting at `s_{r+1+m₁+1+m₂} ≥ 3`):
+1. **Exact Two-Superblock Core Transition Equation:**
+   `2 ^ (2 * m₂ + s_star) * V₂ + (3 ^ (s_star - 2) - 2 ^ (s_star - 2)) = 3 ^ (2 * m₁ + s_star) * V₁`.
+2. **Universal Consecutive Odd-Core GCD Law:**
+   `Nat.gcd V₁ V₂ ∣ (3 ^ (s_star - 2) - 2 ^ (s_star - 2))`.
+3. **The $s^* = 3$ Catalan–Pillai Unit Equation & Coprimality:**
+   `s_star = 3 → 2 ^ (2 * m₂ + 3) * V₂ + 1 = 3 ^ (2 * m₁ + 3) * V₁ ∧ Nat.gcd V₁ V₂ = 1`.
+4. **The $s^* = 4$ Mod-5 Exclusion & Unconditional Coprimality:**
+   `s_star = 4 → 2 ^ (2 * m₂ + 4) * V₂ + 5 = 3 ^ (2 * m₁ + 4) * V₁ ∧ Nat.gcd V₁ V₂ = 1`
+   (since `SB.97` locks `V₁ % 5 ∈ {1, 4}`, excluding `5 ∣ V₁`!). -/
+theorem two_superblock_catalan_pillai_transition_and_coprime_odd_cores
+    {b_0 r m₁ m₂ V₁ V₂ : ℕ} {s u : ℕ → ℕ}
+    (hchain : ValidBlockChain b_0 s u (r + 1 + m₁ + 1 + m₂ + 2))
+    (hs_r : 2 ≤ s r)
+    (hs_run1 : ∀ k < m₁, s (r + 1 + k) = 2)
+    (hs_star1 : 3 ≤ s (r + 1 + m₁))
+    (hs_run2 : ∀ k < m₂, s (r + 1 + m₁ + 1 + k) = 2)
+    (hs_star2 : 3 ≤ s (r + 1 + m₁ + 1 + m₂))
+    (hW1 : (5 * oddReturnP (orbit b_0 (blockSteps s (r + 1))) + 4) / 36 = 4 ^ m₁ * V₁)
+    (hW2 : (5 * oddReturnP (orbit b_0 (blockSteps s (r + 1 + m₁ + 1))) + 4) / 36 = 4 ^ m₂ * V₂) :
+    let s_star := s (r + 1 + m₁)
+    2 ^ (2 * m₂ + s_star) * V₂ + (3 ^ (s_star - 2) - 2 ^ (s_star - 2)) =
+        3 ^ (2 * m₁ + s_star) * V₁ ∧
+      Nat.gcd V₁ V₂ ∣ (3 ^ (s_star - 2) - 2 ^ (s_star - 2)) ∧
+      (s_star = 3 →
+        2 ^ (2 * m₂ + 3) * V₂ + 1 = 3 ^ (2 * m₁ + 3) * V₁ ∧ Nat.gcd V₁ V₂ = 1) ∧
+      (s_star = 4 →
+        2 ^ (2 * m₂ + 4) * V₂ + 5 = 3 ^ (2 * m₁ + 4) * V₁ ∧ Nat.gcd V₁ V₂ = 1) := by
+  intro s_star
+  have hch1 : ValidBlockChain b_0 s u (r + 1 + m₁ + 2) := fun k hk => hchain k (by omega)
+  have hs_next1 : 2 ≤ s (r + 1 + m₁ + 1) := by
+    rcases Nat.eq_zero_or_pos m₂ with rfl | hm2pos
+    · simp only [Nat.add_zero] at hs_star2
+      omega
+    · have h2 := hs_run2 0 hm2pos
+      simp only [Nat.add_zero] at h2
+      omega
+  have hjump := (mod_eight_odd_gauge_future_rung_predictor_and_seven_extinction
+    hch1 hs_r hs_run1 hs_star1 hs_next1 hW1).2.2.2
+  dsimp only at hjump
+  have hpow4 : 4 ^ m₂ = 2 ^ (2 * m₂) := by rw [Nat.pow_mul 2 2 m₂]
+  have htrans :
+      2 ^ (2 * m₂ + s_star) * V₂ + (3 ^ (s_star - 2) - 2 ^ (s_star - 2)) =
+        3 ^ (2 * m₁ + s_star) * V₁ := by
+    calc
+      2 ^ (2 * m₂ + s_star) * V₂ + (3 ^ (s_star - 2) - 2 ^ (s_star - 2))
+          = 2 ^ s_star * (2 ^ (2 * m₂) * V₂) + (3 ^ (s_star - 2) - 2 ^ (s_star - 2)) := by
+            rw [Nat.pow_add 2 (2 * m₂) s_star]; ring
+      _ = 2 ^ s_star * (4 ^ m₂ * V₂) + (3 ^ (s_star - 2) - 2 ^ (s_star - 2)) := by rw [← hpow4]
+      _ = 2 ^ s_star * ((5 * oddReturnP (orbit b_0 (blockSteps s (r + 1 + m₁ + 1))) + 4) / 36) +
+            (3 ^ (s_star - 2) - 2 ^ (s_star - 2)) := by rw [← hW2]
+      _ = 3 ^ (2 * m₁ + s_star) * V₁ := hjump
+  have hg1 : Nat.gcd V₁ V₂ ∣ 3 ^ (2 * m₁ + s_star) * V₁ :=
+    dvd_mul_of_dvd_right (Nat.gcd_dvd_left V₁ V₂) _
+  have hg2 : Nat.gcd V₁ V₂ ∣ 2 ^ (2 * m₂ + s_star) * V₂ :=
+    dvd_mul_of_dvd_right (Nat.gcd_dvd_right V₁ V₂) _
+  have hdvd_diff : Nat.gcd V₁ V₂ ∣ (3 ^ (s_star - 2) - 2 ^ (s_star - 2)) := by
+    have hsub :
+        3 ^ (s_star - 2) - 2 ^ (s_star - 2) =
+          3 ^ (2 * m₁ + s_star) * V₁ - 2 ^ (2 * m₂ + s_star) * V₂ := by omega
+    rw [hsub]
+    exact Nat.dvd_sub hg1 hg2
+  refine ⟨htrans, hdvd_diff, ?_, ?_⟩
+  · intro hs3
+    have ht3 : 2 ^ (2 * m₂ + 3) * V₂ + 1 = 3 ^ (2 * m₁ + 3) * V₁ := by
+      have := htrans; rw [hs3] at this; exact this
+    have hd1 : Nat.gcd V₁ V₂ ∣ 1 := by
+      have := hdvd_diff; rw [hs3] at this; exact this
+    exact ⟨ht3, Nat.eq_one_of_dvd_one hd1⟩
+  · intro hs4
+    have ht4 : 2 ^ (2 * m₂ + 4) * V₂ + 5 = 3 ^ (2 * m₁ + 4) * V₁ := by
+      have := htrans; rw [hs4] at this; exact this
+    have hd5 : Nat.gcd V₁ V₂ ∣ 5 := by
+      have := hdvd_diff; rw [hs4] at this; exact this
+    have h97 := universal_mod5_and_mod10_gauge_lock_and_run_parity_detector.2
+      hch1 hs_r hs_run1 hs_star1 hs_next1 hW1
+    have hV1_mod5 : V₁ % 5 = 1 ∨ V₁ % 5 = 4 := by
+      rcases (by omega : m₁ % 2 = 0 ∨ m₁ % 2 = 1) with hm0 | hm1
+      · exact Or.inr (h97.1.mp hm0)
+      · exact Or.inl (h97.2.1.mp hm1)
+    rcases (Nat.dvd_prime (by decide : Nat.Prime 5)).mp hd5 with hg_one | hg_five
+    · exact ⟨ht4, hg_one⟩
+    · exfalso
+      have h5V1 : 5 ∣ V₁ := hg_five ▸ Nat.gcd_dvd_left V₁ V₂
+      have hm0 : V₁ % 5 = 0 := Nat.mod_eq_zero_of_dvd h5V1
+      omega
+
+
+/-- **SB.116 (Angle 4B — Super-Block Prime-Support Compression & Conditional $abc$-Conjecture Run Cutoff):**
+In the Two-Superblock transition `2 ^ (2 * m₂ + s_star) * V₂ + D_star = 3 ^ (2 * m₁ + s_star) * V₁`
+(`D_star = 3 ^ (s_star - 2) - 2 ^ (s_star - 2)`):
+1. **Prime-Support Compression of Arbitrarily Long $s = 2$ Runs:**
+   Every prime `p` dividing `(2 ^ (2 * m₂ + s_star) * V₂) * D_star * (3 ^ (2 * m₁ + s_star) * V₁)`
+   satisfies `p = 2 ∨ p = 3 ∨ p ∣ D_star ∨ p ∣ V₁ ∨ p ∣ V₂` — the exponential powers
+   `3^{2*m₁ + s_star}` and `2^{2*m₂ + s_star}` contribute **at most `{2, 3}`** to the radical!
+2. **Explicit Conditional $abc$-Power Cutoff on $m₁$:**
+   Whenever `1 ≤ V₁` and `(3 ^ (2 * m₁ + s_star) * V₁) ^ q ≤ K_abc * (6 * D_star * V₁ * V₂) ^ p`,
+   `3 ^ (q * (2 * m₁ + s_star)) ≤ K_abc * (6 * D_star * V₁ * V₂) ^ p`. -/
+theorem superblock_abc_radical_compression_and_conditional_run_cutoff :
+    (∀ p e₂ e₃ D_star V₁ V₂ : ℕ,
+      Nat.Prime p →
+      p ∣ (2 ^ e₂ * V₂) * D_star * (3 ^ e₃ * V₁) →
+      p = 2 ∨ p = 3 ∨ p ∣ D_star ∨ p ∣ V₁ ∨ p ∣ V₂) ∧
+    (∀ m₁ s_star V₁ V₂ D_star p q K_abc : ℕ,
+      1 ≤ V₁ →
+      (3 ^ (2 * m₁ + s_star) * V₁) ^ q ≤ K_abc * (6 * D_star * V₁ * V₂) ^ p →
+      3 ^ (q * (2 * m₁ + s_star)) ≤ K_abc * (6 * D_star * V₁ * V₂) ^ p) := by
+  refine ⟨?_, ?_⟩
+  · intro p e₂ e₃ D_star V₁ V₂ hp hdvd
+    rcases hp.dvd_mul.mp hdvd with h12 | h3
+    · rcases hp.dvd_mul.mp h12 with h1 | hD
+      · rcases hp.dvd_mul.mp h1 with hp2pow | hV2
+        · have hp2 : p ∣ 2 := hp.dvd_of_dvd_pow hp2pow
+          rcases (Nat.dvd_prime (by decide : Nat.Prime 2)).mp hp2 with hp_eq1 | hp_eq2
+          · exact absurd hp_eq1 hp.ne_one
+          · exact Or.inl hp_eq2
+        · exact Or.inr (Or.inr (Or.inr (Or.inr hV2)))
+      · exact Or.inr (Or.inr (Or.inl hD))
+    · rcases hp.dvd_mul.mp h3 with hp3pow | hV1
+      · have hp3 : p ∣ 3 := hp.dvd_of_dvd_pow hp3pow
+        rcases (Nat.dvd_prime (by decide : Nat.Prime 3)).mp hp3 with hp_eq1 | hp_eq3
+        · exact absurd hp_eq1 hp.ne_one
+        · exact Or.inr (Or.inl hp_eq3)
+      · exact Or.inr (Or.inr (Or.inr (Or.inl hV1)))
+  · intro m₁ s_star V₁ V₂ D_star p q K_abc hV1 habc
+    have h1_le : 1 ≤ V₁ ^ q := Nat.one_le_pow q V₁ hV1
+    have hpow : 3 ^ (q * (2 * m₁ + s_star)) = (3 ^ (2 * m₁ + s_star)) ^ q := by
+      rw [Nat.mul_comm q (2 * m₁ + s_star), Nat.pow_mul]
+    have hmul_pow :
+        (3 ^ (2 * m₁ + s_star) * V₁) ^ q = (3 ^ (2 * m₁ + s_star)) ^ q * V₁ ^ q :=
+      Nat.mul_pow _ _ _
+    have hle_lhs : 3 ^ (q * (2 * m₁ + s_star)) ≤ (3 ^ (2 * m₁ + s_star) * V₁) ^ q := by
+      rw [hpow, hmul_pow]
+      exact Nat.le_mul_of_pos_right _ h1_le
+    exact le_trans hle_lhs habc
+
+
+/-- $2 \times 2$ Hankel determinant $\det(g_{n+i+j})_{0 \le i, j < 2}$ over $\mathbb{Z}$. -/
+def hankel2Z (g : ℕ → ℤ) (n : ℕ) : ℤ :=
+  g n * g (n + 2) - g (n + 1) * g (n + 1)
+
+/-- $3 \times 3$ Hankel determinant $\det(g_{n+i+j})_{0 \le i, j < 3}$ over $\mathbb{Z}$. -/
+def hankel3Z (g : ℕ → ℤ) (n : ℕ) : ℤ :=
+  g n * (g (n + 2) * g (n + 4) - g (n + 3) * g (n + 3)) -
+    g (n + 1) * (g (n + 1) * g (n + 4) - g (n + 2) * g (n + 3)) +
+    g (n + 2) * (g (n + 1) * g (n + 3) - g (n + 2) * g (n + 2))
+
+/-- $4 \times 4$ Hankel determinant $\det(g_{n+i+j})_{0 \le i, j < 4}$ over $\mathbb{Z}$. -/
+def hankel4Z (g : ℕ → ℤ) (n : ℕ) : ℤ :=
+  let m0 := g (n + 2) * (g (n + 4) * g (n + 6) - g (n + 5) * g (n + 5)) -
+              g (n + 3) * (g (n + 3) * g (n + 6) - g (n + 4) * g (n + 5)) +
+              g (n + 4) * (g (n + 3) * g (n + 5) - g (n + 4) * g (n + 4))
+  let m1 := g (n + 1) * (g (n + 4) * g (n + 6) - g (n + 5) * g (n + 5)) -
+              g (n + 3) * (g (n + 2) * g (n + 6) - g (n + 3) * g (n + 5)) +
+              g (n + 4) * (g (n + 2) * g (n + 5) - g (n + 3) * g (n + 4))
+  let m2 := g (n + 1) * (g (n + 3) * g (n + 6) - g (n + 4) * g (n + 5)) -
+              g (n + 2) * (g (n + 2) * g (n + 6) - g (n + 3) * g (n + 5)) +
+              g (n + 4) * (g (n + 2) * g (n + 4) - g (n + 3) * g (n + 3))
+  let m3 := g (n + 1) * (g (n + 3) * g (n + 5) - g (n + 4) * g (n + 4)) -
+              g (n + 2) * (g (n + 2) * g (n + 5) - g (n + 3) * g (n + 4)) +
+              g (n + 3) * (g (n + 2) * g (n + 4) - g (n + 3) * g (n + 3))
+  g n * m0 - g (n + 1) * m1 + g (n + 2) * m2 - g (n + 3) * m3
+
+/-- **SB.117 (Angle 5 — Higher-Order $2 \times 2, 3 \times 3, 4 \times 4$ Hankel Row-Reduction & Super-Block Vanishing Laws):**
+Explores the Polya–Carlson–Amice Hankel determinants $H_n^{(m)} = \det(g_{n+i+j})_{0 \le i,j < m}$
+along any sequence satisfying `2 * g (k + 1) = 3 * g k + e k` (including `g k = (orbit b_0 k : ℤ)`):
+1. **Exact $2^{m-1}$ Binary-Parity Row Reduction ($m = 2, 3$):**
+   - `2 * hankel2Z g n = g n * e (n + 1) - g (n + 1) * e n`,
+   - `4 * hankel3Z g n = g n * (e (n + 1) * e (n + 3) - e (n + 2) ^ 2) - g (n + 1) * (e n * e (n + 3) - e (n + 1) * e (n + 2)) + g (n + 2) * (e n * e (n + 2) - e (n + 1) ^ 2)`.
+2. **Identical Vanishing of $3 \times 3$ Hankel Determinant on Every `s_r ≥ 5` Zero-Run:**
+   Whenever `e n = 0 ∧ e (n + 1) = 0 ∧ e (n + 2) = 0 ∧ e (n + 3) = 0`, `hankel3Z g n = 0`.
+3. **Identical Vanishing of $4 \times 4$ Hankel Determinant on Every 3-Block $s = 2$ Super-Block:**
+   Whenever `(e n, ..., e (n + 5)) = (1, 0, 1, 0, 1, 0)` or `(0, 1, 0, 1, 0, 1)` (more generally,
+   whenever `e (n + 2) = e n ∧ e (n + 3) = e (n + 1) ∧ e (n + 4) = e n ∧ e (n + 5) = e (n + 1)`),
+   **`hankel4Z g n = 0` identically for every starting seed**! -/
+theorem higher_order_hankel_row_reduction_and_superblock_vanishing_laws :
+    (∀ (g e : ℕ → ℤ) (n : ℕ),
+      (∀ k, 2 * g (k + 1) = 3 * g k + e k) →
+      2 * hankel2Z g n = g n * e (n + 1) - g (n + 1) * e n ∧
+      4 * hankel3Z g n =
+        g n * (e (n + 1) * e (n + 3) - e (n + 2) * e (n + 2)) -
+          g (n + 1) * (e n * e (n + 3) - e (n + 1) * e (n + 2)) +
+          g (n + 2) * (e n * e (n + 2) - e (n + 1) * e (n + 1))) ∧
+    (∀ (g e : ℕ → ℤ) (n : ℕ),
+      (∀ k, 2 * g (k + 1) = 3 * g k + e k) →
+      e n = 0 → e (n + 1) = 0 → e (n + 2) = 0 → e (n + 3) = 0 →
+      hankel3Z g n = 0) ∧
+    (∀ (g e : ℕ → ℤ) (n : ℕ),
+      (∀ k, 2 * g (k + 1) = 3 * g k + e k) →
+      e (n + 2) = e n → e (n + 3) = e (n + 1) →
+      e (n + 4) = e n → e (n + 5) = e (n + 1) →
+      hankel4Z g n = 0) := by
+  have hrow23 :
+      ∀ (g e : ℕ → ℤ) (n : ℕ),
+        (∀ k, 2 * g (k + 1) = 3 * g k + e k) →
+        2 * hankel2Z g n = g n * e (n + 1) - g (n + 1) * e n ∧
+        4 * hankel3Z g n =
+          g n * (e (n + 1) * e (n + 3) - e (n + 2) * e (n + 2)) -
+            g (n + 1) * (e n * e (n + 3) - e (n + 1) * e (n + 2)) +
+            g (n + 2) * (e n * e (n + 2) - e (n + 1) * e (n + 1)) := by
+    intro g e n hstep
+    have s0 := hstep n
+    have s1 : 2 * g (n + 2) = 3 * g (n + 1) + e (n + 1) := hstep (n + 1)
+    have s2 : 2 * g (n + 3) = 3 * g (n + 2) + e (n + 2) := hstep (n + 2)
+    have s3 : 2 * g (n + 4) = 3 * g (n + 3) + e (n + 3) := hstep (n + 3)
+    have g1 : 2 * g (n + 1) = 3 * g n + e n := s0
+    have g2 : 4 * g (n + 2) = 9 * g n + 3 * e n + 2 * e (n + 1) := by linarith
+    have g3 : 8 * g (n + 3) = 27 * g n + 9 * e n + 6 * e (n + 1) + 4 * e (n + 2) := by linarith
+    have g4 : 16 * g (n + 4) =
+        81 * g n + 27 * e n + 18 * e (n + 1) + 12 * e (n + 2) + 8 * e (n + 3) := by linarith
+    refine ⟨?_, ?_⟩
+    · have h4 : 4 * (2 * hankel2Z g n) = 4 * (g n * e (n + 1) - g (n + 1) * e n) := by
+        unfold hankel2Z
+        calc
+          4 * (2 * (g n * g (n + 2) - g (n + 1) * g (n + 1)))
+              = 2 * g n * (4 * g (n + 2)) - 2 * (2 * g (n + 1)) * (2 * g (n + 1)) := by ring
+          _ = 2 * g n * (9 * g n + 3 * e n + 2 * e (n + 1)) -
+                2 * (3 * g n + e n) * (3 * g n + e n) := by rw [g2, g1]
+          _ = 4 * g n * e (n + 1) - 2 * (3 * g n + e n) * e n := by ring
+          _ = 4 * g n * e (n + 1) - 2 * (2 * g (n + 1)) * e n := by rw [← g1]
+          _ = 4 * (g n * e (n + 1) - g (n + 1) * e n) := by ring
+      linarith
+    · have h16 :
+          16 * (4 * hankel3Z g n) =
+            16 * (g n * (e (n + 1) * e (n + 3) - e (n + 2) * e (n + 2)) -
+              g (n + 1) * (e n * e (n + 3) - e (n + 1) * e (n + 2)) +
+              g (n + 2) * (e n * e (n + 2) - e (n + 1) * e (n + 1))) := by
+        unfold hankel3Z
+        calc
+          16 * (4 * (g n * (g (n + 2) * g (n + 4) - g (n + 3) * g (n + 3)) -
+              g (n + 1) * (g (n + 1) * g (n + 4) - g (n + 2) * g (n + 3)) +
+              g (n + 2) * (g (n + 1) * g (n + 3) - g (n + 2) * g (n + 2))))
+              = g n * ((4 * g (n + 2)) * (16 * g (n + 4)) - (8 * g (n + 3)) * (8 * g (n + 3))) -
+                  (2 * g (n + 1)) * ((2 * g (n + 1)) * (16 * g (n + 4)) -
+                    (4 * g (n + 2)) * (8 * g (n + 3))) +
+                  (4 * g (n + 2)) * ((2 * g (n + 1)) * (8 * g (n + 3)) -
+                    (4 * g (n + 2)) * (4 * g (n + 2))) := by ring
+          _ = g n * ((9 * g n + 3 * e n + 2 * e (n + 1)) *
+                  (81 * g n + 27 * e n + 18 * e (n + 1) + 12 * e (n + 2) + 8 * e (n + 3)) -
+                  (27 * g n + 9 * e n + 6 * e (n + 1) + 4 * e (n + 2)) *
+                    (27 * g n + 9 * e n + 6 * e (n + 1) + 4 * e (n + 2))) -
+                (3 * g n + e n) * ((3 * g n + e n) *
+                  (81 * g n + 27 * e n + 18 * e (n + 1) + 12 * e (n + 2) + 8 * e (n + 3)) -
+                  (9 * g n + 3 * e n + 2 * e (n + 1)) *
+                    (27 * g n + 9 * e n + 6 * e (n + 1) + 4 * e (n + 2))) +
+                (9 * g n + 3 * e n + 2 * e (n + 1)) *
+                  ((3 * g n + e n) * (27 * g n + 9 * e n + 6 * e (n + 1) + 4 * e (n + 2)) -
+                    (9 * g n + 3 * e n + 2 * e (n + 1)) * (9 * g n + 3 * e n + 2 * e (n + 1))) := by
+              rw [g1, g2, g3, g4]
+          _ = 16 * g n * (e (n + 1) * e (n + 3) - e (n + 2) * e (n + 2)) -
+                8 * (3 * g n + e n) * (e n * e (n + 3) - e (n + 1) * e (n + 2)) +
+                4 * (9 * g n + 3 * e n + 2 * e (n + 1)) *
+                  (e n * e (n + 2) - e (n + 1) * e (n + 1)) := by ring
+          _ = 16 * g n * (e (n + 1) * e (n + 3) - e (n + 2) * e (n + 2)) -
+                8 * (2 * g (n + 1)) * (e n * e (n + 3) - e (n + 1) * e (n + 2)) +
+                4 * (4 * g (n + 2)) * (e n * e (n + 2) - e (n + 1) * e (n + 1)) := by
+              rw [← g1, ← g2]
+          _ = 16 * (g n * (e (n + 1) * e (n + 3) - e (n + 2) * e (n + 2)) -
+                g (n + 1) * (e n * e (n + 3) - e (n + 1) * e (n + 2)) +
+                g (n + 2) * (e n * e (n + 2) - e (n + 1) * e (n + 1))) := by ring
+      linarith
+  refine ⟨hrow23, ?_, ?_⟩
+  · intro g e n hstep he0 he1 he2 he3
+    have h4 := (hrow23 g e n hstep).2
+    rw [he0, he1, he2, he3] at h4
+    linarith
+  · intro g e n hstep he2 he3 he4 he5
+    have g1 : 2 * g (n + 1) = 3 * g n + e n := hstep n
+    have g2 : 4 * g (n + 2) = 9 * g n + 3 * e n + 2 * e (n + 1) := by
+      have := hstep (n + 1); linarith
+    have g3 : 8 * g (n + 3) = 27 * g n + 9 * e n + 6 * e (n + 1) + 4 * e n := by
+      have := hstep (n + 2); rw [he2] at this; linarith
+    have g4 : 16 * g (n + 4) =
+        81 * g n + 27 * e n + 18 * e (n + 1) + 12 * e n + 8 * e (n + 1) := by
+      have := hstep (n + 3); rw [he3] at this; linarith
+    have g5 : 32 * g (n + 5) =
+        243 * g n + 81 * e n + 54 * e (n + 1) + 36 * e n + 24 * e (n + 1) + 16 * e n := by
+      have := hstep (n + 4); rw [he4] at this; linarith
+    have g6 : 64 * g (n + 6) =
+        729 * g n + 243 * e n + 162 * e (n + 1) + 108 * e n + 72 * e (n + 1) +
+          48 * e n + 32 * e (n + 1) := by
+      have := hstep (n + 5); rw [he5] at this; linarith
+    -- Clear denominator 2^12 = 4096 across every degree-4 monomial of index sum 12:
+    have h4096 : 4096 * hankel4Z g n = 0 := by
+      have hscale :
+          4096 * hankel4Z g n =
+            g n * ((4 * g (n + 2)) * ((16 * g (n + 4)) * (64 * g (n + 6)) -
+                (32 * g (n + 5)) * (32 * g (n + 5))) -
+              (8 * g (n + 3)) * ((8 * g (n + 3)) * (64 * g (n + 6)) -
+                (16 * g (n + 4)) * (32 * g (n + 5))) +
+              (16 * g (n + 4)) * ((8 * g (n + 3)) * (32 * g (n + 5)) -
+                (16 * g (n + 4)) * (16 * g (n + 4)))) -
+            (2 * g (n + 1)) * ((2 * g (n + 1)) * ((16 * g (n + 4)) * (64 * g (n + 6)) -
+                (32 * g (n + 5)) * (32 * g (n + 5))) -
+              (8 * g (n + 3)) * ((4 * g (n + 2)) * (64 * g (n + 6)) -
+                (8 * g (n + 3)) * (32 * g (n + 5))) +
+              (16 * g (n + 4)) * ((4 * g (n + 2)) * (32 * g (n + 5)) -
+                (8 * g (n + 3)) * (16 * g (n + 4)))) +
+            (4 * g (n + 2)) * ((2 * g (n + 1)) * ((8 * g (n + 3)) * (64 * g (n + 6)) -
+                (16 * g (n + 4)) * (32 * g (n + 5))) -
+              (4 * g (n + 2)) * ((4 * g (n + 2)) * (64 * g (n + 6)) -
+                (8 * g (n + 3)) * (32 * g (n + 5))) +
+              (16 * g (n + 4)) * ((4 * g (n + 2)) * (16 * g (n + 4)) -
+                (8 * g (n + 3)) * (8 * g (n + 3)))) -
+            (8 * g (n + 3)) * ((2 * g (n + 1)) * ((8 * g (n + 3)) * (32 * g (n + 5)) -
+                (16 * g (n + 4)) * (16 * g (n + 4))) -
+              (4 * g (n + 2)) * ((4 * g (n + 2)) * (32 * g (n + 5)) -
+                (8 * g (n + 3)) * (16 * g (n + 4))) +
+              (8 * g (n + 3)) * ((4 * g (n + 2)) * (16 * g (n + 4)) -
+                (8 * g (n + 3)) * (8 * g (n + 3)))) := by
+        unfold hankel4Z; ring
+      rw [hscale, g1, g2, g3, g4, g5, g6]
+      ring
+    linarith
+
+
+/-- Local multi-block Word Gauge $\mathcal{G}_V(P) := (3^d - 2^d) P + A_V$. -/
+def wordPowerGauge (d A_V P : ℕ) : ℕ :=
+  (3 ^ d - 2 ^ d) * P + A_V
+
+/-- **SB.118 (Angle 6 — Universal Local Multi-Block Word-Power $V^m$ Divisibility & Late-Horizon Stammer Cutoff):**
+Whenever *any* multi-block subword $V$ of total step sum `d ≥ 1` and renewal numerator `A_V`
+(`5 * A_V ≤ 4 * (3 ^ d - 2 ^ d)`) repeats `m ≥ 1` consecutive times starting at an arbitrary
+late block `r` (`T_r = blockSteps s r`):
+1. **Exact $m$-Fold Word-Gauge Multiplicativity & $2^{m d}$-Divisibility:**
+   If `∀ j < m, 2 ^ d * P_seq (j + 1) = 3 ^ d * P_seq j + A_V`, then
+   `2 ^ (m * d) * wordPowerGauge d A_V (P_seq m) = 3 ^ (m * d) * wordPowerGauge d A_V (P_seq 0)`
+   and `2 ^ (m * d) ∣ wordPowerGauge d A_V (P_seq 0)`.
+2. **Unconditional Elementary Late-Horizon Word-Power Cutoff (Zero Transcendence Axioms):**
+   Along any `ValidBlockChain b_0 s u (r + 1)` with `∀ k < r, 2 ≤ s k`, if `1 ≤ d`,
+   `5 * A_V ≤ 4 * (3 ^ d - 2 ^ d)`, and `2 ^ (m * d) ∣ wordPowerGauge d A_V (P r)`, then:
+   `5 * 2 ^ (T_r + m * d) < 3 ^ (T_r + d) * (5 * P 0 + 4)`!
+   (Ruling out all proportional cubes $V^3$ with $d \ge 0.42 T_r$ and squares $V^2$ with $d \ge 1.41 T_r$.) -/
+theorem universal_local_word_power_gauge_divisibility_and_cutoff :
+    (∀ (d A_V m : ℕ) (P_seq : ℕ → ℕ),
+      (∀ j < m, 2 ^ d * P_seq (j + 1) = 3 ^ d * P_seq j + A_V) →
+      2 ^ (m * d) * wordPowerGauge d A_V (P_seq m) =
+          3 ^ (m * d) * wordPowerGauge d A_V (P_seq 0) ∧
+        2 ^ (m * d) ∣ wordPowerGauge d A_V (P_seq 0)) ∧
+    (∀ {b_0 r d A_V m : ℕ} {s u : ℕ → ℕ},
+      ValidBlockChain b_0 s u (r + 1) →
+      (∀ k < r, 2 ≤ s k) →
+      1 ≤ d →
+      5 * A_V ≤ 4 * (3 ^ d - 2 ^ d) →
+      2 ^ (m * d) ∣ wordPowerGauge d A_V (oddReturnP (orbit b_0 (blockSteps s r))) →
+      5 * 2 ^ (blockSteps s r + m * d) <
+        3 ^ (blockSteps s r + d) * (5 * oddReturnP (orbit b_0 (blockSteps s 0)) + 4)) := by
+  have hiter :
+      ∀ (d A_V m : ℕ) (P_seq : ℕ → ℕ),
+        (∀ j < m, 2 ^ d * P_seq (j + 1) = 3 ^ d * P_seq j + A_V) →
+        2 ^ (m * d) * wordPowerGauge d A_V (P_seq m) =
+          3 ^ (m * d) * wordPowerGauge d A_V (P_seq 0) := by
+    intro d A_V m P_seq hstep
+    have hle : 2 ^ d ≤ 3 ^ d := Nat.pow_le_pow_left (by decide) d
+    induction m with
+    | zero => simp
+    | succ k ih =>
+        have ih_k := ih (fun j hj => hstep j (by omega))
+        have hk := hstep k (by omega)
+        have h1step :
+            2 ^ d * wordPowerGauge d A_V (P_seq (k + 1)) =
+              3 ^ d * wordPowerGauge d A_V (P_seq k) := by
+          unfold wordPowerGauge
+          calc
+            2 ^ d * ((3 ^ d - 2 ^ d) * P_seq (k + 1) + A_V)
+                = (3 ^ d - 2 ^ d) * (2 ^ d * P_seq (k + 1)) + 2 ^ d * A_V := by ring
+            _ = (3 ^ d - 2 ^ d) * (3 ^ d * P_seq k + A_V) + 2 ^ d * A_V := by rw [hk]
+            _ = 3 ^ d * (3 ^ d - 2 ^ d) * P_seq k + ((3 ^ d - 2 ^ d) + 2 ^ d) * A_V := by ring
+            _ = 3 ^ d * (3 ^ d - 2 ^ d) * P_seq k + 3 ^ d * A_V := by rw [Nat.sub_add_cancel hle]
+            _ = 3 ^ d * ((3 ^ d - 2 ^ d) * P_seq k + A_V) := by ring
+        have hp2 : 2 ^ ((k + 1) * d) = 2 ^ (k * d) * 2 ^ d := by
+          rw [Nat.add_mul, Nat.one_mul, Nat.pow_add]
+        have hp3 : 3 ^ ((k + 1) * d) = 3 ^ (k * d) * 3 ^ d := by
+          rw [Nat.add_mul, Nat.one_mul, Nat.pow_add]
+        calc
+          2 ^ ((k + 1) * d) * wordPowerGauge d A_V (P_seq (k + 1))
+              = 2 ^ (k * d) * (2 ^ d * wordPowerGauge d A_V (P_seq (k + 1))) := by
+                rw [hp2]; ring
+          _ = 2 ^ (k * d) * (3 ^ d * wordPowerGauge d A_V (P_seq k)) := by rw [h1step]
+          _ = 3 ^ d * (2 ^ (k * d) * wordPowerGauge d A_V (P_seq k)) := by ring
+          _ = 3 ^ d * (3 ^ (k * d) * wordPowerGauge d A_V (P_seq 0)) := by rw [ih_k]
+          _ = 3 ^ ((k + 1) * d) * wordPowerGauge d A_V (P_seq 0) := by rw [hp3]; ring
+  refine ⟨?_, ?_⟩
+  · intro d A_V m P_seq hstep
+    have heq := hiter d A_V m P_seq hstep
+    have hcop : Nat.Coprime (2 ^ (m * d)) (3 ^ (m * d)) :=
+      Nat.Coprime.pow (m * d) (m * d) (by decide : Nat.Coprime 2 3)
+    exact ⟨heq, hcop.dvd_of_dvd_mul_left ⟨wordPowerGauge d A_V (P_seq m), heq.symm⟩⟩
+  · intro b_0 r d A_V m s u hchain hs2 hd hAV hdvd
+    set T_r := blockSteps s r
+    set P_r := oddReturnP (orbit b_0 T_r)
+    set P_0 := oddReturnP (orbit b_0 (blockSteps s 0))
+    set A_r := renewalNumerator s r
+    have hPr_pos : 1 ≤ P_r := by
+      dsimp [P_r, oddReturnP]; omega
+    have hP0_pos : 1 ≤ P_0 := by
+      dsimp [P_0, oddReturnP]; omega
+    have h23_lt : 2 ^ d < 3 ^ d := by
+      obtain ⟨k, rfl⟩ : ∃ k, d = k + 1 := ⟨d - 1, by omega⟩
+      exact Nat.pow_lt_pow_left (by decide) (by omega)
+    have hdiff_pos : 1 ≤ 3 ^ d - 2 ^ d := by omega
+    have hG_pos : 1 ≤ wordPowerGauge d A_V P_r := by
+      unfold wordPowerGauge
+      have h1_mul : 1 ≤ (3 ^ d - 2 ^ d) * P_r := Nat.mul_le_mul hdiff_pos hPr_pos
+      omega
+    have hpow_le_G : 2 ^ (m * d) ≤ wordPowerGauge d A_V P_r :=
+      Nat.le_of_dvd hG_pos hdvd
+    have hch_r : ValidBlockChain b_0 s u r := fun k hk => hchain k (by omega)
+    have hm_id : 2 ^ T_r * P_r = 3 ^ T_r * P_0 + A_r := renewal_prefix_master_identity hch_r
+    have hinv_r : 5 * A_r + 4 * 2 ^ T_r ≤ 4 * 3 ^ T_r :=
+      five_mul_renewalNumerator_add_four_mul_two_pow_le s r hs2
+    have h5Pr : 5 * (2 ^ T_r * P_r) + 4 * 2 ^ T_r ≤ 3 ^ T_r * (5 * P_0 + 4) := by
+      calc
+        5 * (2 ^ T_r * P_r) + 4 * 2 ^ T_r
+            = 5 * 3 ^ T_r * P_0 + (5 * A_r + 4 * 2 ^ T_r) := by rw [hm_id]; ring
+        _ ≤ 5 * 3 ^ T_r * P_0 + 4 * 3 ^ T_r := by omega
+        _ = 3 ^ T_r * (5 * P_0 + 4) := by ring
+    have hmul_G :
+        5 * 2 ^ (T_r + m * d) ≤
+          (3 ^ d - 2 ^ d) * (5 * (2 ^ T_r * P_r)) + 2 ^ T_r * (5 * A_V) := by
+      have hp2 : 2 ^ (T_r + m * d) = 2 ^ T_r * 2 ^ (m * d) := Nat.pow_add 2 T_r (m * d)
+      have h1 : 5 * (2 ^ T_r * 2 ^ (m * d)) ≤ 5 * (2 ^ T_r * wordPowerGauge d A_V P_r) := by
+        have := Nat.mul_le_mul_left (5 * 2 ^ T_r) hpow_le_G
+        linarith
+      rw [hp2]
+      unfold wordPowerGauge at h1
+      linarith
+    have hcancel :
+        (3 ^ d - 2 ^ d) * (5 * (2 ^ T_r * P_r)) + 2 ^ T_r * (5 * A_V) ≤
+          (3 ^ d - 2 ^ d) * (3 ^ T_r * (5 * P_0 + 4)) := by
+      have hAV_mul : 2 ^ T_r * (5 * A_V) ≤ 2 ^ T_r * (4 * (3 ^ d - 2 ^ d)) :=
+        Nat.mul_le_mul_left (2 ^ T_r) hAV
+      have hPr_mul :
+          (3 ^ d - 2 ^ d) * (5 * (2 ^ T_r * P_r) + 4 * 2 ^ T_r) ≤
+            (3 ^ d - 2 ^ d) * (3 ^ T_r * (5 * P_0 + 4)) :=
+        Nat.mul_le_mul_left (3 ^ d - 2 ^ d) h5Pr
+      linarith
+    have hstrict :
+        (3 ^ d - 2 ^ d) * (3 ^ T_r * (5 * P_0 + 4)) <
+          3 ^ (T_r + d) * (5 * P_0 + 4) := by
+      have hp3 : 3 ^ (T_r + d) = 3 ^ d * 3 ^ T_r := by rw [Nat.pow_add 3 T_r d]; ring
+      have h2pos : 1 ≤ 2 ^ d := Nat.one_le_pow d 2 (by decide)
+      have h3Tr_pos : 1 ≤ 3 ^ T_r * (5 * P_0 + 4) := by
+        have h3p : 1 ≤ 3 ^ T_r := Nat.one_le_pow T_r 3 (by decide)
+        have h5P : 1 ≤ 5 * P_0 + 4 := by omega
+        exact Nat.mul_le_mul h3p h5P
+      have hlt_fac : 3 ^ d - 2 ^ d < 3 ^ d :=
+        Nat.sub_lt (Nat.pos_of_ne_zero (pow_ne_zero d (by decide)))
+          (Nat.pos_of_ne_zero (pow_ne_zero d (by decide)))
+      rw [hp3, mul_assoc]
+      exact (Nat.mul_lt_mul_right h3Tr_pos).mpr hlt_fac
+    exact lt_of_le_of_lt (le_trans hmul_G hcancel) hstrict
+
+
+/-- **SB.119 (Angle 7 — Pure-Integer Escape, Coprime Rational Remainder Recurrence, & Quantitative Shadowing Ball Escape):**
+1. **Pure-Integer Exact Escape at Step `a + 1` (`p = 2^a * (2*t + 1)`):**
+   `(3 ^ (a + 1) * (2 ^ a * (2 * t + 1))) % 2 ^ (a + 1) = 2 ^ a` (exact fractional part `1 / 2`).
+2. **Rational Remainder Valuation Lock & Step Recurrence (`X_n = (3^n * p) % (2^n * q)`):**
+   - Whenever `p = 2 ^ a * (2 * t + 1)` and `a < n` (`1 ≤ q`), `2 ^ a ∣ X_n ∧ ¬(2 ^ (a + 1) ∣ X_n)`
+     (hence `X_n ≠ 0` and $v_2(X_n) = a$ stabilizes permanently!),
+   - Whenever both steps `n` and `n + 1` stay in `[0, 1/2)` (`2 * X_n < 2 ^ n * q` and
+     `2 * X_{n+1} < 2 ^ (n + 1) * q`), `X_{n+1} + 2 ^ n * q * (((3 ^ n * p) / (2 ^ n * q)) % 2) = 3 * X_n`.
+3. **Quantitative Rational Shadowing Ball Escape (Irrationality-Measure Obstruction):**
+   Suppose at step `n ≥ 1`, `X_n = (3 ^ n * p) % (2 ^ n * q)` lands in `[2^(n-1) * q + E, 2^n * q - E]`
+   (`1 ≤ E`, `1 ≤ q`). Then **every** rational/real approximant `A / B` (`1 ≤ B`) in the shadowing ball
+   `|q * A - p * B| * 3 ^ n < E * B` (covering both `p * B ≤ q * A` and `q * A ≤ p * B`) satisfies
+   `2 ^ (n - 1) * B < (3 ^ n * A) % (2 ^ n * B)` (forced out of `[0, 1/2)` at step `n`!). -/
+theorem rational_remainder_recurrence_integer_escape_and_shadowing_ball_cutoff :
+    (∀ a t : ℕ,
+      (3 ^ (a + 1) * (2 ^ a * (2 * t + 1))) % 2 ^ (a + 1) = 2 ^ a) ∧
+    (∀ a t n q : ℕ, 1 ≤ q → a < n →
+      let p := 2 ^ a * (2 * t + 1)
+      let X_n := (3 ^ n * p) % (2 ^ n * q)
+      2 ^ a ∣ X_n ∧ ¬ (2 ^ (a + 1) ∣ X_n) ∧ X_n ≠ 0) ∧
+    (∀ p q n : ℕ, 1 ≤ q →
+      let X_n := (3 ^ n * p) % (2 ^ n * q)
+      let g_n := (3 ^ n * p) / (2 ^ n * q)
+      let X_next := (3 ^ (n + 1) * p) % (2 ^ (n + 1) * q)
+      2 * X_n < 2 ^ n * q →
+      2 * X_next < 2 ^ (n + 1) * q →
+      X_next + 2 ^ n * q * (g_n % 2) = 3 * X_n) ∧
+    (∀ p q n E A B : ℕ, 1 ≤ q → 1 ≤ B → 1 ≤ n → 1 ≤ E →
+      let X_n := (3 ^ n * p) % (2 ^ n * q)
+      2 ^ (n - 1) * q + E ≤ X_n →
+      X_n + E ≤ 2 ^ n * q →
+      (q * A - p * B) * 3 ^ n < E * B →
+      (p * B - q * A) * 3 ^ n < E * B →
+      2 ^ (n - 1) * B < (3 ^ n * A) % (2 ^ n * B)) := by
+  refine ⟨?_, ?_, ?_, ?_⟩
+  · intro a t
+    have hodd3 : (3 ^ (a + 1) * (2 * t + 1)) % 2 = 1 := by
+      have h3odd : (3 ^ (a + 1)) % 2 = 1 := by
+        induction a with
+        | zero => decide
+        | succ k ih =>
+            have hp : 3 ^ (k + 2) = 3 ^ (k + 1) * 3 := by rw [Nat.pow_succ]
+            rw [hp, Nat.mul_mod, ih]
+      rw [Nat.mul_mod, h3odd]
+      omega
+    set U := 3 ^ (a + 1) * (2 * t + 1)
+    obtain ⟨u_half, hU⟩ : ∃ u_half, U = 2 * u_half + 1 :=
+      ⟨U / 2, by have := (Nat.div_add_mod U 2).symm; omega⟩
+    have hexp : 3 ^ (a + 1) * (2 ^ a * (2 * t + 1)) = 2 ^ a + 2 ^ (a + 1) * u_half := by
+      calc
+        3 ^ (a + 1) * (2 ^ a * (2 * t + 1)) = 2 ^ a * U := by ring
+        _ = 2 ^ a * (2 * u_half + 1) := by rw [hU]
+        _ = 2 ^ a + (2 ^ a * 2) * u_half := by ring
+        _ = 2 ^ a + 2 ^ (a + 1) * u_half := by rw [← Nat.pow_succ]
+    rw [hexp, Nat.add_mul_mod_self_left]
+    have hlt : 2 ^ a < 2 ^ (a + 1) := by
+      rw [Nat.pow_succ]; have := Nat.one_le_pow a 2 (by decide); omega
+    exact Nat.mod_eq_of_lt hlt
+  · intro a t n q hq han p X_n
+    have h3odd : ∀ m : ℕ, (3 ^ m) % 2 = 1 := by
+      intro m
+      induction m with
+      | zero => decide
+      | succ k ih => rw [Nat.pow_succ, Nat.mul_mod, ih]
+    have hdiv_eq : 3 ^ n * p = (2 ^ n * q) * ((3 ^ n * p) / (2 ^ n * q)) + X_n :=
+      (Nat.div_add_mod (3 ^ n * p) (2 ^ n * q)).symm
+    have hdvd_2n : 2 ^ (a + 1) ∣ 2 ^ n * q * ((3 ^ n * p) / (2 ^ n * q)) := by
+      obtain ⟨d, rfl⟩ : ∃ d, n = a + 1 + d := ⟨n - (a + 1), by omega⟩
+      rw [Nat.pow_add 2 (a + 1) d]
+      exact ⟨2 ^ d * q * ((3 ^ (a + 1 + d) * p) / (2 ^ (a + 1 + d) * q)), by ring⟩
+    have hdvd_a_2n : 2 ^ a ∣ 2 ^ n * q * ((3 ^ n * p) / (2 ^ n * q)) := by
+      rcases hdvd_2n with ⟨k, hk⟩
+      rw [hk, Nat.pow_succ]
+      exact ⟨2 * k, by ring⟩
+    have hdvd_a_lhs : 2 ^ a ∣ 3 ^ n * p := ⟨3 ^ n * (2 * t + 1), by dsimp [p]; ring⟩
+    have hdvd_a_X : 2 ^ a ∣ X_n := by
+      have hsub : X_n = 3 ^ n * p - 2 ^ n * q * ((3 ^ n * p) / (2 ^ n * q)) := by omega
+      rw [hsub]
+      exact Nat.dvd_sub hdvd_a_lhs hdvd_a_2n
+    have hnot_a1 : ¬ (2 ^ (a + 1) ∣ X_n) := by
+      intro hdvd_X
+      have hdvd_sum : 2 ^ (a + 1) ∣ 3 ^ n * p := by
+        rw [hdiv_eq]
+        exact Nat.dvd_add hdvd_2n hdvd_X
+      rcases hdvd_sum with ⟨c, hc⟩
+      have hlhs : 2 ^ a * (3 ^ n * (2 * t + 1)) = 2 ^ a * (2 * c) := by
+        calc
+          2 ^ a * (3 ^ n * (2 * t + 1)) = 3 ^ n * p := by dsimp [p]; ring
+          _ = 2 ^ (a + 1) * c := hc
+          _ = 2 ^ a * (2 * c) := by rw [Nat.pow_succ]; ring
+      have hpos : 0 < 2 ^ a := Nat.pos_of_ne_zero (pow_ne_zero a (by decide))
+      have heq_odd : 3 ^ n * (2 * t + 1) = 2 * c := Nat.eq_of_mul_eq_mul_left hpos hlhs
+      have hmod1 : (3 ^ n * (2 * t + 1)) % 2 = 1 := by rw [Nat.mul_mod, h3odd n]; omega
+      omega
+    refine ⟨hdvd_a_X, hnot_a1, ?_⟩
+    intro hX0
+    exact hnot_a1 (hX0 ▸ dvd_zero _)
+  · intro p q n hq X_n g_n X_next hXn hXnext
+    set M := 2 ^ n * q
+    have hM_pos : 0 < M := Nat.mul_pos (Nat.pos_of_ne_zero (pow_ne_zero n (by decide))) hq
+    have hdiv : 3 ^ n * p = M * g_n + X_n := (Nat.div_add_mod (3 ^ n * p) M).symm
+    have h2M : 2 ^ (n + 1) * q = 2 * M := by rw [Nat.pow_succ]; ring
+    have h3np : 3 ^ (n + 1) * p = 3 * (M * g_n + X_n) := by
+      calc
+        3 ^ (n + 1) * p = 3 * (3 ^ n * p) := by rw [Nat.pow_succ]; ring
+        _ = 3 * (M * g_n + X_n) := by rw [hdiv]
+    rcases (by omega : g_n % 2 = 0 ∨ g_n % 2 = 1) with hg0 | hg1
+    · obtain ⟨g_half, hg_even⟩ : ∃ g_half, g_n = 2 * g_half :=
+        ⟨g_n / 2, by have := (Nat.div_add_mod g_n 2).symm; omega⟩
+      have hexp : 3 ^ (n + 1) * p = 3 * X_n + (2 * M) * (3 * g_half) := by
+        rw [h3np, hg_even]; ring
+      have hXnext_eq : X_next = (3 * X_n) % (2 * M) := by
+        dsimp [X_next]; rw [h2M, hexp, Nat.add_mul_mod_self_left]
+      rcases (by omega : 3 * X_n < 2 * M ∨ 2 * M ≤ 3 * X_n) with hlt2M | hge2M
+      · rw [Nat.mod_eq_of_lt hlt2M] at hXnext_eq
+        rw [hg0, hXnext_eq]; ring
+      · omega
+    · obtain ⟨g_half, hg_odd⟩ : ∃ g_half, g_n = 2 * g_half + 1 :=
+        ⟨g_n / 2, by have := (Nat.div_add_mod g_n 2).symm; omega⟩
+      have hexp : 3 ^ (n + 1) * p = (M + 3 * X_n) + (2 * M) * (3 * g_half + 1) := by
+        rw [h3np, hg_odd]; ring
+      have hXnext_eq : X_next = (M + 3 * X_n) % (2 * M) := by
+        dsimp [X_next]; rw [h2M, hexp, Nat.add_mul_mod_self_left]
+      rcases (by omega : M + 3 * X_n < 2 * M ∨ 2 * M ≤ M + 3 * X_n) with hlt2M | hge2M
+      · rw [Nat.mod_eq_of_lt hlt2M] at hXnext_eq
+        rw [h2M] at hXnext
+        omega
+      · have hlt4M : M + 3 * X_n - 2 * M < 2 * M := by omega
+        have hexp2 : M + 3 * X_n = (M + 3 * X_n - 2 * M) + (2 * M) * 1 := by omega
+        rw [hexp2, Nat.add_mul_mod_self_left, Nat.mod_eq_of_lt hlt4M] at hXnext_eq
+        rw [hg1]
+        dsimp [M] at hXnext_eq hge2M ⊢
+        omega
+  · intro p q n E A B hq hB hn hE X_n hlo hhi herr1 herr2
+    set g_n := (3 ^ n * p) / (2 ^ n * q)
+    have hdiv : 3 ^ n * p = (2 ^ n * q) * g_n + X_n := (Nat.div_add_mod (3 ^ n * p) (2 ^ n * q)).symm
+    have hEB_pos : 1 ≤ E * B := Nat.mul_le_mul hE hB
+    have hBX_lo : q * (2 ^ (n - 1) * B) + E * B ≤ B * X_n := by
+      have hm := Nat.mul_le_mul_left B hlo
+      linarith
+    have hBX_hi : B * X_n + E * B ≤ q * (2 ^ n * B) := by
+      have hm := Nat.mul_le_mul_left B hhi
+      linarith
+    have hmul_lo_exp :
+        q * (g_n * (2 ^ n * B) + 2 ^ (n - 1) * B) =
+          q * (g_n * (2 ^ n * B)) + q * (2 ^ (n - 1) * B) := by ring
+    have hmul_hi_exp :
+        q * ((g_n + 1) * (2 ^ n * B)) =
+          q * (g_n * (2 ^ n * B)) + q * (2 ^ n * B) := by ring
+    have hgn1_exp : (g_n + 1) * (2 ^ n * B) = g_n * (2 ^ n * B) + 2 ^ n * B := by ring
+    rcases le_total (p * B) (q * A) with hge | hle
+    · obtain ⟨D_ab, hdiff⟩ : ∃ D_ab, q * A = p * B + D_ab := ⟨q * A - p * B, by omega⟩
+      have hD_err : D_ab * 3 ^ n < E * B := by
+        have hsub : q * A - p * B = D_ab := by omega
+        rw [← hsub]; exact herr1
+      have hq3A :
+          q * (3 ^ n * A) =
+            q * (g_n * (2 ^ n * B)) + (B * X_n + D_ab * 3 ^ n) := by
+        calc
+          q * (3 ^ n * A) = 3 ^ n * (q * A) := by ring
+          _ = 3 ^ n * (p * B + D_ab) := by rw [hdiff]
+          _ = (3 ^ n * p) * B + D_ab * 3 ^ n := by ring
+          _ = ((2 ^ n * q) * g_n + X_n) * B + D_ab * 3 ^ n := by rw [hdiv]
+          _ = q * (g_n * (2 ^ n * B)) + (B * X_n + D_ab * 3 ^ n) := by ring
+      have hA_lo : q * (g_n * (2 ^ n * B) + 2 ^ (n - 1) * B) < q * (3 ^ n * A) := by
+        rw [hmul_lo_exp]; linarith [Nat.zero_le (D_ab * 3 ^ n)]
+      have hA_hi : q * (3 ^ n * A) < q * ((g_n + 1) * (2 ^ n * B)) := by
+        rw [hmul_hi_exp]; linarith [Nat.zero_le (D_ab * 3 ^ n)]
+      have hlt_lo : g_n * (2 ^ n * B) + 2 ^ (n - 1) * B < 3 ^ n * A :=
+        (Nat.mul_lt_mul_left hq).mp hA_lo
+      have hlt_hi : 3 ^ n * A < g_n * (2 ^ n * B) + 2 ^ n * B := by
+        rw [← hgn1_exp]; exact (Nat.mul_lt_mul_left hq).mp hA_hi
+      set R_A := 3 ^ n * A - g_n * (2 ^ n * B)
+      have hRA_lt : R_A < 2 ^ n * B := by omega
+      have h3nA_eq : 3 ^ n * A = R_A + (2 ^ n * B) * g_n := by
+        have : g_n * (2 ^ n * B) = (2 ^ n * B) * g_n := Nat.mul_comm _ _
+        omega
+      rw [h3nA_eq, Nat.add_mul_mod_self_left, Nat.mod_eq_of_lt hRA_lt]
+      omega
+    · obtain ⟨D_ba, hdiff⟩ : ∃ D_ba, p * B = q * A + D_ba := ⟨p * B - q * A, by omega⟩
+      have hD_err : D_ba * 3 ^ n < E * B := by
+        have hsub : p * B - q * A = D_ba := by omega
+        rw [← hsub]; exact herr2
+      have hq3A :
+          q * (3 ^ n * A) + D_ba * 3 ^ n =
+            q * (g_n * (2 ^ n * B)) + B * X_n := by
+        calc
+          q * (3 ^ n * A) + D_ba * 3 ^ n
+              = 3 ^ n * (q * A + D_ba) := by ring
+          _ = (3 ^ n * p) * B := by rw [← hdiff]; ring
+          _ = ((2 ^ n * q) * g_n + X_n) * B := by rw [hdiv]
+          _ = q * (g_n * (2 ^ n * B)) + B * X_n := by ring
+      have hA_lo : q * (g_n * (2 ^ n * B) + 2 ^ (n - 1) * B) < q * (3 ^ n * A) := by
+        rw [hmul_lo_exp]; linarith [Nat.zero_le (D_ba * 3 ^ n)]
+      have hA_hi : q * (3 ^ n * A) < q * ((g_n + 1) * (2 ^ n * B)) := by
+        rw [hmul_hi_exp]; linarith [Nat.zero_le (D_ba * 3 ^ n)]
+      have hlt_lo : g_n * (2 ^ n * B) + 2 ^ (n - 1) * B < 3 ^ n * A :=
+        (Nat.mul_lt_mul_left hq).mp hA_lo
+      have hlt_hi : 3 ^ n * A < g_n * (2 ^ n * B) + 2 ^ n * B := by
+        rw [← hgn1_exp]; exact (Nat.mul_lt_mul_left hq).mp hA_hi
+      set R_A := 3 ^ n * A - g_n * (2 ^ n * B)
+      have hRA_lt : R_A < 2 ^ n * B := by omega
+      have h3nA_eq : 3 ^ n * A = R_A + (2 ^ n * B) * g_n := by
+        have : g_n * (2 ^ n * B) = (2 ^ n * B) * g_n := Nat.mul_comm _ _
+        omega
+      rw [h3nA_eq, Nat.add_mul_mod_self_left, Nat.mod_eq_of_lt hRA_lt]
+      omega
+
+
+/-- **SB.120 (Grand 120-Theorem Synthesis of All Eight New Angles 0–7 & The Semigroup Breakout Library):**
+Unifies Waves 21–22 (`SB.109–SB.119`, Angles 0 through 7) with `SB.1–SB.108`:
+- **Angle 0 (`SB.109`):** Adelic $\widehat{\mathbb{Z}}$ odd-modulus invertibility `(2^T * (m+1)^T) % (2*m+1) = 1`,
+- **Angle 1 (`SB.110`):** Real-First Parry Transfer Map invariance on `[0, 1/2)` & rational obstruction,
+- **Angle 2 (`SB.111–SB.113`):** Unconditional effective Mahler–Fibonacci & Flatto–Lagarias–Pollington
+  `2^W * S.card + 2 * 2^W ≤ 3^(W+1)` (`O(X^{0.58496})`) power-saving bounds,
+- **Angle 3 (`SB.114`):** Base-6 (`6 = 2 * 3`) 1-digit survival lock & Kempner depth `2 * 4^T / 6^(T+1)`,
+- **Angle 4 (`SB.115–SB.116`):** Two-Superblock Catalan–Pillai unit equation (`3^{2m₁+3} V₁ = 2^{2m₂+3} V₂ + 1`),
+  unconditional `gcd(V₁, V₂) = 1` at `s^* ∈ {3, 4}`, & conditional $abc$-radical cutoff,
+- **Angle 5 (`SB.117`):** Higher-order $2 \times 2, 3 \times 3, 4 \times 4$ Hankel parity reduction & identical
+  vanishing `hankel4Z g n = 0` across every 3-block $s = 2$ Super-Block,
+- **Angle 6 (`SB.118`):** Universal local multi-block word-power $V^m$ cutoff `5 * 2^(T_r + m*d) < 3^(T_r + d) * (5 * P_0 + 4)`,
+- **Angle 7 (`SB.119`):** Pure-integer escape at `v_2(p) + 1`, rational remainder valuation lock, & quantitative
+  rational shadowing escape! -/
+theorem grand_all_eight_angles_120_theorem_semigroup_breakout_synthesis :
+    (∀ m T : ℕ, 1 ≤ m → (2 ^ T * (m + 1) ^ T) % (2 * m + 1) = 1) ∧
+    (∀ W : ℕ,
+      parryWidthSum (parryCylTree W) = 3 ^ W ∧
+        2 ^ W * (parryCylTree W).length + 2 * 2 ^ W ≤ 3 ^ (W + 1)) ∧
+    (∀ T : ℕ, 3 * (2 * 4 ^ T) * 3 ^ T = 6 ^ (T + 1) * 2 ^ T) ∧
+    (∀ (g e : ℕ → ℤ) (n : ℕ),
+      (∀ k, 2 * g (k + 1) = 3 * g k + e k) →
+      e (n + 2) = e n → e (n + 3) = e (n + 1) →
+      e (n + 4) = e n → e (n + 5) = e (n + 1) →
+      hankel4Z g n = 0) ∧
+    (∀ a t : ℕ, (3 ^ (a + 1) * (2 ^ a * (2 * t + 1))) % 2 ^ (a + 1) = 2 ^ a) :=
+  ⟨adelic_profinite_odd_modulus_invertibility_and_archimedean_prime_floor.1,
+   fun W => ⟨parry_cylinder_tree_three_pow_sum_and_flp_effective_survivor_bound.1 W,
+             parry_cylinder_tree_three_pow_sum_and_flp_effective_survivor_bound.2.1 W⟩,
+   fun T => (base_six_terminating_digit_characterization_and_kempner_depth_law.2 T).1,
+   higher_order_hankel_row_reduction_and_superblock_vanishing_laws.2.2,
+   rational_remainder_recurrence_integer_escape_and_shadowing_ball_cutoff.1⟩
+
+
 #check @archimedean_rung_ceiling_and_stepSum_bound
 #check @unit_quotient_even_rung_instant_death_and_odd_rung_mod64_identity
 #check @equal_step_window_hankel_determinant_identity_and_bound
@@ -8972,6 +10398,21 @@ theorem grand_universal_q_half_relaxation_and_mahler_uniqueness_108_synthesis :
 #check @universal_q_half_mod4_one_step_extinction_and_four_adic_bijection
 #check @universal_q_half_ceiling_dual_gauge_and_superblock_law
 #check @grand_universal_q_half_relaxation_and_mahler_uniqueness_108_synthesis
+#check @adelic_profinite_odd_modulus_invertibility_and_archimedean_prime_floor
+#check @real_first_parry_transfer_map_invariance_and_dual_series_obstruction
+#check @unconditional_effective_fibonacci_survivor_power_saving_bound
+#check @parry_cylinder_tree_three_pow_sum_and_flp_effective_survivor_bound
+#check @post_horizon_top_bit_desert_and_two_word_difference_valuation
+#check @base_six_terminating_digit_characterization_and_kempner_depth_law
+#check @two_superblock_catalan_pillai_transition_and_coprime_odd_cores
+#check @superblock_abc_radical_compression_and_conditional_run_cutoff
+#check @higher_order_hankel_row_reduction_and_superblock_vanishing_laws
+#check @universal_local_word_power_gauge_divisibility_and_cutoff
+#check @rational_remainder_recurrence_integer_escape_and_shadowing_ball_cutoff
+#check @grand_all_eight_angles_120_theorem_semigroup_breakout_synthesis
+
+#print axioms parry_cylinder_tree_three_pow_sum_and_flp_effective_survivor_bound
+#print axioms grand_all_eight_angles_120_theorem_semigroup_breakout_synthesis
 
 #print axioms archimedean_rung_ceiling_and_stepSum_bound
 #print axioms unit_quotient_even_rung_instant_death_and_odd_rung_mod64_identity

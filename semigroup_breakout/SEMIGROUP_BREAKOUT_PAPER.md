@@ -2,8 +2,8 @@
 
 **Authors:** Joshua Coon (with Astra, Fable, and Argon AI in GitHub Copilot)  
 **Date:** November 2026  
-**Cordoned-Off Verification Artifact:** [`semigroup_breakout/SemigroupBreakoutTheorems.lean`](./SemigroupBreakoutTheorems.lean) (`0` `sorry`s, `0` warnings, Lean 4.19.0 + Mathlib v4.19.0)  
-**Computational Suite:** [`loop1_product_formula_and_pade.py`](./loop1_product_formula_and_pade.py), [`loop1_beukers_pade_and_hankel.py`](./loop1_beukers_pade_and_hankel.py), [`loop2_pade_lll_and_divergence.py`](./loop2_pade_lll_and_divergence.py), [`loop3_archimedean_ceiling_and_small_u.py`](./loop3_archimedean_ceiling_and_small_u.py), [`loop4_flp_sparsity_and_repulsion.py`](./loop4_flp_sparsity_and_repulsion.py), [`sandbox_symmetry_breaking_loops.py`](./sandbox_symmetry_breaking_loops.py), [`sandbox_wave2_towers.py`](./sandbox_wave2_towers.py), [`sandbox_wave3_towers.py`](./sandbox_wave3_towers.py), [`sandbox_wave4_canyon_view.py`](./sandbox_wave4_canyon_view.py), [`sandbox_wave5_multi_block_crt.py`](./sandbox_wave5_multi_block_crt.py), [`sandbox_wave6_both_bridges.py`](./sandbox_wave6_both_bridges.py), [`sandbox_wave7_binary_carry_bridge.py`](./sandbox_wave7_binary_carry_bridge.py), [`sandbox_overnight_20_bridge_loops.py`](./sandbox_overnight_20_bridge_loops.py)
+**Cordoned-Off Verification Artifact:** [`semigroup_breakout/SemigroupBreakoutTheorems.lean`](./SemigroupBreakoutTheorems.lean) (`120` theorems `SB.1–SB.120`, `0` `sorry`s, `0` warnings, Lean 4.19.0 + Mathlib v4.19.0)  
+**Computational Suite:** [`loop1_product_formula_and_pade.py`](./loop1_product_formula_and_pade.py), [`loop1_beukers_pade_and_hankel.py`](./loop1_beukers_pade_and_hankel.py), [`loop2_pade_lll_and_divergence.py`](./loop2_pade_lll_and_divergence.py), [`loop3_archimedean_ceiling_and_small_u.py`](./loop3_archimedean_ceiling_and_small_u.py), [`loop4_flp_sparsity_and_repulsion.py`](./loop4_flp_sparsity_and_repulsion.py), [`sandbox_symmetry_breaking_loops.py`](./sandbox_symmetry_breaking_loops.py), [`sandbox_wave2_towers.py`](./sandbox_wave2_towers.py), [`sandbox_wave3_towers.py`](./sandbox_wave3_towers.py), [`sandbox_wave4_canyon_view.py`](./sandbox_wave4_canyon_view.py), [`sandbox_wave5_multi_block_crt.py`](./sandbox_wave5_multi_block_crt.py), [`sandbox_wave6_both_bridges.py`](./sandbox_wave6_both_bridges.py), [`sandbox_wave7_binary_carry_bridge.py`](./sandbox_wave7_binary_carry_bridge.py), [`sandbox_overnight_20_bridge_loops.py`](./sandbox_overnight_20_bridge_loops.py), and [`sandbox_wave8_jk_diagonal_asymptotics.py`](./sandbox_wave8_jk_diagonal_asymptotics.py) through [`sandbox_wave21_all_eight_angles_0_to_7.py`](./sandbox_wave21_all_eight_angles_0_to_7.py)
 
 ---
 
@@ -987,7 +987,68 @@ Generalizes the Waves 14–15 Ceiling-Dual Gauge and Super-Block Renormalization
 
 ---
 
-## 27. Verification Instructions
+## 27. Waves 21 & 22 (`SB.109–SB.120`): Exploring All Eight Unconsidered Angles (Angles 0–7) — Adelic $\widehat{\mathbb{Z}}$ Decoupling, Real-First Parry Transfer, Flatto–Lagarias–Pollington $(3/2)^W$ Survivor Bounds, Base-6 Automaton, Two-Superblock Catalan–Pillai, Higher-Order Hankel Vanishing, Local Word-Powers $V^m$, & Rational Shadowing
+
+In [`sandbox_wave21_all_eight_angles_0_to_7.py`](./sandbox_wave21_all_eight_angles_0_to_7.py), we audited the entire proof architecture for blind spots and formalized **12 `sorry`-free, warning-free theorems (`SB.109–SB.120`)** covering all eight newly identified angles (`0` through `7`).
+
+### 27.1 Angle 0 (`SB.109`, `adelic_profinite_odd_modulus_invertibility_and_archimedean_prime_floor`) — Upgrading Meta-Theorem 2.1 from $\mathbb{Z}_2$ to All of $\widehat{\mathbb{Z}} = \prod_p \mathbb{Z}_p$
+1. **Closed-Form Inverse Modulo Every Odd Modulus $M = 2 m + 1$:** Because $2(m + 1) = (2m + 1) + 1 \equiv 1 \pmod{2m+1}$, $(2^T (m + 1)^T) \bmod (2m + 1) = 1$ for every $m \ge 1$ and $T \ge 0$.
+2. **Universal Unique Solvability Across All Odd Moduli:** For **every** $m, T, P_0, A_K \in \mathbb{N}$, $P_{\text{sol}} = ((m+1)^T ((3^T P_0 + A_K) \bmod M)) \bmod M$ is the **unique** residue in $[0, M)$ solving $(2^T P_{\text{sol}}) \bmod M = (3^T P_0 + A_K) \bmod M$. Thus Mahler's conjecture is false across the **entire profinite/adelic ring $\widehat{\mathbb{Z}} \times \mathbb{R}$**: odd prime moduli gain teeth **only** when coupled to $\mathbb{N}$-specific archimedean order, such as $d \mid u_K \implies d \le u_K \land d \cdot 2^{s_K} \le P_K$.
+
+### 27.2 Angle 1 (`SB.110`, `real_first_parry_transfer_map_invariance_and_dual_series_obstruction`) — The Real-First Parry Transfer Map $\mathcal{B} : [0, 1/2) \to \mathbb{Z}_2$
+Reversing direction from integer seeds to the connected interval $[0, 1/2)$ eliminates the Cantor set on the domain completely:
+1. **Total Forward Invariance of $[0, 1/2)$:** Under the single-valued Parry map $F(r) = \frac{3}{2} r$ on $[0, 1/3)$ and $\frac{3}{2} r - \frac{1}{2}$ on $[1/3, 1/2)$, **every** scaled point $2 R_0 < D$ satisfies $2 R_N < 2^N D$ for all $N \ge 0$.
+2. **Dual $\mathbb{R}/\mathbb{Q}_2$ Series Telescoping & Periodic Sign Obstruction:** With $\Psi_N = \sum_{k=0}^{N-1} 3^{N-1-k} 2^k e_k(r_0)$, $R_N + D \Psi_N = 3^N R_0$ (real side) and $2^N g_N = 3^N b_0 + \Psi_N$ (integer side), while $(3^L - 2^L) b_0 + \Psi_L = 0 \implies b_0 = 0 \land \Psi_L = 0$ ($L \ge 1$).
+
+### 27.3 Angle 2 (`SB.111–SB.113`) — First Formalization of Mahler–Fibonacci & Flatto–Lagarias–Pollington $(3/2)^W$ Effective Power-Saving Survivor Bounds + 2-Adic Fourier Equidistribution
+Combining `SB.4` (`orbitParityRev_injOn_two_pow`) with pure-integer tree enumerations yields unconditional, zero-axiom upper bounds on the number of surviving seeds in $[0, 2^W)$:
+- **Theorem SB.111 (`unconditional_effective_fibonacci_survivor_power_saving_bound`):** `#survivors(< 2^W) ≤ mahlerFib (W + 2)` with logarithm-free power saving `mahlerFib (4k + 1) ≤ 8^k` and `mahlerFib (4k + 2) ≤ 2^(3k + 1)` ($O(X^{0.75}) = o(X)$).
+- **Theorem SB.112 (`parry_cylinder_tree_three_pow_sum_and_flp_effective_survivor_bound`):** Constructs the pure-integer Parry cylinder tree `parryCylTree W` ($B_w = 2^{W+1} |F^W(I(w))| \in \mathbb{N}$), proves **exact $3^W$ width conservation** (`parryWidthSum (parryCylTree W) = 3 ^ W`), and establishes **Flatto–Lagarias–Pollington's (1995) world-record effective bound** on $W$-step Mahler survivors in $[0, 2^W)$:
+  $$\boxed{2^W \cdot |\mathcal{S}_W| + 2 \cdot 2^W \;\le\; 3^{W+1} \qquad \Big(|\mathcal{S}_W| \le 3\cdot (3/2)^W - 2 = O\big(X^{\log_2(3/2)}\big) \approx O\big(X^{0.58496}\big)\Big)!}$$
+- **Theorem SB.113 (`post_horizon_top_bit_desert_and_two_word_difference_valuation`):** Proves `b_0 < 2^W ↔ b_0 / 2^W = 0` and proves that any two distinct $W$-bit survivors $b_1 < b_2 < 2^W$ must diverge strictly before step $W$ ($n_0 = v_2(b_2 - b_1) < W$), never in a post-horizon tail $[W, W + M)$.
+
+| Bit-Horizon $W$ | Exact $W$-Step Survivors $< 2^W$ | Parry Cylinders $|\mathcal{C}_W|$ | Fibonacci $F_{W+2}$ | $2 \cdot (3/2)^W$ | Max 2-Adic Fourier Ratio $\max_{1 \le h \le 15} \frac{|S(h)|}{|\mathcal{C}_W|}$ |
+|---:|---:|---:|---:|---:|---:|
+| $2$ | $3$ | $3$ | $3$ | $4.50$ | $0.3333$ |
+| $4$ | $8$ | $8$ | $8$ | $10.12$ | $0.3953$ |
+| $6$ | $18$ | $18$ | $21$ | $22.78$ | $0.3821$ |
+| $8$ | $40$ | $40$ | $55$ | $51.26$ | $0.2029$ |
+| $10$ | $90$ | $90$ | $144$ | $115.33$ | $0.1093$ |
+| $12$ | $201$ | $201$ | $377$ | $259.49$ | $0.1131$ |
+| $14$ | $452$ | $452$ | $987$ | $583.86$ | $0.0411$ |
+| $16$ | $1{,}018$ | $1{,}018$ | $2{,}584$ | $1{,}313.68$ | $0.0552$ |
+
+### 27.4 Angle 3 (`SB.114`, `base_six_terminating_digit_characterization_and_kempner_depth_law`) — Base-6 ($6 = 2 \times 3$) Joint Terminating Automaton
+In Base 6, $\frac{3}{2} = 1.3_6$, $\frac{2}{3} = 0.4_6$, $\frac{1}{3} = 0.2_6$, and $\frac{1}{2} = 0.3_6$ all terminate in **one single Base-6 digit**:
+- Survival $r < 1/2$ is equivalent to first Base-6 fractional digit $f_1 \in \{0, 1, 2\}$; even steps satisfy $d_0 \in \{0, 2, 4\} \land f_1 \in \{0, 1\}$, while odd steps satisfy $d_0 \in \{1, 3, 5\} \land f_1 = 2$!
+- Every Kempner term terminates at exact Base-6 depth $T + 1$: $\frac{1}{3}(2/3)^T = \frac{2 \cdot 4^T}{6^{T+1}}$ (`3 * (2 * 4^T) * 3^T = 6^(T+1) * 2^T`).
+
+### 27.5 Angle 4 (`SB.115–SB.116`) — Two-Superblock Catalan–Pillai Unit Equation, Unconditional Coprimality at $s^* \in \{3, 4\}$, & Conditional $abc$ Cutoff
+Chaining consecutive surviving Super-Blocks $W_{r+1} = 4^{m_1} V_1$ (exit $s^* \ge 3$) and $W_{r+1+m_1+1} = 4^{m_2} V_2$ (`4,165` $s^*=3$ and `2,073` $s^*=4$ transitions verified in Python, max $abc$-quality $1.3176$):
+- **Theorem SB.115 (`two_superblock_catalan_pillai_transition_and_coprime_odd_cores`):**
+  $$\boxed{2^{2 m_2 + s^*} V_2 + \big(3^{s^* - 2} - 2^{s^* - 2}\big) \;=\; 3^{2 m_1 + s^*} V_1, \qquad \gcd(V_1, V_2) \;\Big|\; \big(3^{s^* - 2} - 2^{s^* - 2}\big),}$$
+  collapsing at $s^* = 3$ to the **Catalan–Pillai unit equation** $3^{2 m_1 + 3} V_1 = 2^{2 m_2 + 3} V_2 + 1$ with $\gcd(V_1, V_2) = 1$, and proving **unconditional coprimality $\gcd(V_1, V_2) = 1$ at $s^* = 4$ as well** (since $V_1 \bmod 5 \in \{1, 4\}$ by `SB.97` excludes $5 \mid V_1$!).
+- **Theorem SB.116 (`superblock_abc_radical_compression_and_conditional_run_cutoff`):** Proves every prime $p \mid (2^{e_2} V_2) D^* (3^{e_3} V_1)$ lies in $\{2, 3\} \cup \{p \mid D^* V_1 V_2\}$, compressing arbitrarily large $s = 2$ powers $3^{2m_1}$ and $2^{2m_2}$ into $\{2, 3\}$ and bounding $3^{q(2m_1 + s^*)}$ under any polynomial $abc$ hypothesis.
+
+### 27.6 Angle 5 (`SB.117`, `higher_order_hankel_row_reduction_and_superblock_vanishing_laws`) — Higher-Order $2 \times 2, 3 \times 3, 4 \times 4$ Hankel Row Reduction & Super-Block Vanishing
+Along any sequence satisfying $2 g_{k+1} = 3 g_k + e_k$ ($G(z) = \sum g_n z^n \in \mathbb{Z}[[z]]$ sits on the Polya–Carlson–Amice capacity boundary $R_\infty \cdot R_2 = 1$):
+- $2 H_n^{(2)}$ and $4 H_n^{(3)}$ reduce rows $1 \dots m-1$ to pure quadratic polynomials in $e_n, \dots, e_{n+2m-3}$,
+- $H_n^{(3)} = 0$ identically on every 4-zero run $(e_n, \dots, e_{n+3}) = (0, 0, 0, 0)$ ($s_r \ge 5$), and
+- **$H_n^{(4)} = 0$ identically on every 3-block $s = 2$ Super-Block** (`(1, 0, 1, 0, 1, 0)` or `(0, 1, 0, 1, 0, 1)`), for **every** starting seed!
+
+### 27.7 Angle 6 (`SB.118`, `universal_local_word_power_gauge_divisibility_and_cutoff`) — Universal Local Multi-Block Word-Power $V^m$ Cutoff
+For *any* multi-block word $V$ of step sum $d \ge 1$ and numerator $A_V$ ($5 A_V \le 4(3^d - 2^d)$) repeating $m \ge 1$ times starting at an arbitrary late horizon $T_r$ (`9,114` local word powers verified in genuine orbits):
+$$\boxed{2^{m d} \;\Big|\; \big((3^d - 2^d) P_r + A_V\big) \qquad\text{and}\qquad 5 \cdot 2^{T_r + m d} \;<\; 3^{T_r + d}(5 P_0 + 4),}$$
+unconditionally ruling out proportional cubes $V^3$ ($d \ge 0.42 T_r$) and large local squares $V^2$ ($d \ge 1.41 T_r$) without any transcendence axiom.
+
+### 27.8 Angle 7 (`SB.119`, `rational_remainder_recurrence_integer_escape_and_shadowing_ball_cutoff`) & Grand 120-Theorem Synthesis (`SB.120`)
+1. **Pure-Integer Exact Escape:** Every positive integer $p = 2^a (2t + 1)$ hits exact fractional part $\frac{1}{2}$ at step $a + 1$ (`(3^(a+1) * p) % 2^(a+1) = 2^a`).
+2. **Rational Remainder Valuation Lock & Step Recurrence:** For $X_n = (3^n p) \bmod (2^n q)$ and $n > a = v_2(p)$, $2^a \mid X_n \land 2^{a+1} \nmid X_n$ ($X_n \ne 0$), and $X_{n+1} + 2^n q (g_n \bmod 2) = 3 X_n$ across surviving steps.
+3. **Quantitative Rational Shadowing Escape (`9,844` shadowing balls verified):** Whenever $X_n \in [2^{n-1} q + E,\, 2^n q - E]$ ($E \ge 1$), **every** candidate $A / B$ satisfying $|q A - p B| \cdot 3^n < E B$ satisfies $2^{n-1} B < (3^n A) \bmod (2^n B)$ (forced out of $[0, 1/2)$ at step $n$!), completing all **120 `sorry`-free, warning-free theorems (`SB.1–SB.120`)**.
+
+---
+
+## 28. Verification Instructions
 
 To verify the cordoned-off Lean 4 proofs without modifying the root 226-file build:
 
@@ -1016,4 +1077,5 @@ python semigroup_breakout\sandbox_wave17_path_a_and_path_b.py
 python semigroup_breakout\sandbox_wave18_mod40_and_multibase_tower.py
 python semigroup_breakout\sandbox_wave19_superblock_sieve_and_density.py
 python semigroup_breakout\sandbox_wave20_universal_q_half_relaxation_and_kempner_dichotomy.py
+python semigroup_breakout\sandbox_wave21_all_eight_angles_0_to_7.py
 ```
