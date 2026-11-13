@@ -4,7 +4,7 @@ import SubCeilingKneadingAutomatonAndGrandSynthesis54
 # Semigroup Breakout Campaign — Cordoned-Off Lean 4 Verification of $\mathbb{Z}_2$-Symmetry-Breaking Generators
 
 This standalone module lives in `semigroup_breakout/` (cordoned off from the 226-file bottom-up
-corpus in the repository root) and formalizes the five core theorems discovered during the
+corpus in the repository root) and formalizes the 154 verified theorems (`SB.1–SB.154`) of the
 **Semigroup Breakout Campaign** (`SEMIGROUP_BREAKOUT_PAPER.md`):
 
 1. **Theorem SB.1 (`archimedean_rung_ceiling_and_stepSum_bound`) — The Global Archimedean Rung Ceiling**:
@@ -9301,9 +9301,9 @@ def parryIterWordRev (R_0 D : ℕ) : ℕ → List ℕ
   | 0 => []
   | k + 1 => parryIterBit R_0 D k :: parryIterWordRev R_0 D k
 
-/-- **SB.112 (Angle 2B — Pure-Integer Parry Cylinder Tree, Exact $3^W$ Conservation, & Flatto–Lagarias–Pollington $(3/2)^W$ Effective Survivor Bound):**
-First machine-checked formalization of Flatto–Lagarias–Pollington's (1995) $O(X^{\log_2(3/2)}) = O(X^{0.58496})$
-effective upper bound on Mahler $Z$-numbers, proved in pure natural-number arithmetic:
+/-- **SB.112 (Angle 2B — Pure-Integer Parry Cylinder Tree, Exact $3^W$ Conservation, & Rational-Companion $(3/2)^W$ Survivor Bound):**
+Formalizes the combinatorial Parry cylinder core underlying Flatto's (1992) / Flatto–Lagarias–Pollington's (1995)
+$O(X^{\log_2(3/2)}) = O(X^{0.58496})$ bound in pure natural-number arithmetic (bridged to real $Z$-numbers over `ℝ` in `SB.153`):
 1. **Exact $3^W$ Scaled-Width Conservation Law:** `parryWidthSum (parryCylTree W) = 3 ^ W`.
 2. **Universal $(3/2)^W$ Parry Cylinder Upper Bound:**
    `2 ^ W * (parryCylTree W).length + 2 * 2 ^ W ≤ 3 ^ (W + 1)` (`|C_W| ≤ 3 * (3/2)^W - 2`).
@@ -9925,7 +9925,8 @@ late block `r` (`T_r = blockSteps s r`):
    Along any `ValidBlockChain b_0 s u (r + 1)` with `∀ k < r, 2 ≤ s k`, if `1 ≤ d`,
    `5 * A_V ≤ 4 * (3 ^ d - 2 ^ d)`, and `2 ^ (m * d) ∣ wordPowerGauge d A_V (P r)`, then:
    `5 * 2 ^ (T_r + m * d) < 3 ^ (T_r + d) * (5 * P 0 + 4)`!
-   (Ruling out all proportional cubes $V^3$ with $d \ge 0.42 T_r$ and squares $V^2$ with $d \ge 1.41 T_r$.) -/
+   (Retaining the seed-dependent factor `5 * P 0 + 4`: once `T_r` is past the seed horizon `5 * P 0 + 4 ≤ 2 ^ (ε * T_r)`,
+   this rules out proportional cubes $V^3$ with $d \ge (0.42 + \varepsilon) T_r$ and squares $V^2$ with $d \ge (1.41 + 3\varepsilon) T_r$.) -/
 theorem universal_local_word_power_gauge_divisibility_and_cutoff :
     (∀ (d A_V m : ℕ) (P_seq : ℕ → ℕ),
       (∀ j < m, 2 ^ d * P_seq (j + 1) = 3 ^ d * P_seq j + A_V) →
@@ -11292,9 +11293,9 @@ theorem method_one_pigeonhole_cylinder_excess_obstruction :
   exact ⟨h17_le, hlin_lt, lt_of_lt_of_le hlin_lt h17_le⟩
 
 
-/-- **SB.134 (Method 2 Standalone Obstruction — Unconditional $R_0 \ge 3^{T_K - s_0}$ Floor & Generic $C^{1.3691}$ Radical Excess):**
-Certifies why classical $abc$ alone has an exponential $0.3691$ excess on `2 ^ S_0 * u K = 3 ^ T_K * u 0 + R_0`
-when `u K` and `R_0` are squarefree:
+/-- **SB.134 (Method 2 Standalone Obstruction — Unconditional $R_0 \ge 3^{T_K - s_0}$ Floor & Product Excess):**
+Certifies why classical $abc$ alone faces an exponential product excess on `2 ^ S_0 * u K = 3 ^ T_K * u 0 + R_0`
+(yielding a $C^{1.3691}$-scale radical when `u K` and `R_0` are squarefree and coprime):
 1. **Unconditional Exponential Floor on $R_0$:** `3 ^ d_0 ≤ R_0` (`d_0 = T_K - s 0`).
 2. **Strict Product Excess Over $3^{T_K + d_0}$:** `3 ^ (T_K + d_0) * u 0 < 2 ^ S_0 * (u K * R_0)`.
 3. **Direct Excess Over $C = 2^{S_0} u_K$ Past $2^{S_0} < 3^{d_0}$:**
@@ -11518,12 +11519,12 @@ another odd step at `2 + c` (`parryIterBit R_0 D (2 + c) = 1`) must satisfy
    Whenever `c ≥ 1`, `parryIterBit R_0 D 0 = 1`, `parryIterBit R_0 D 1 = 0`, `parryIterBit R_0 D 2 = 1`,
    and `∀ j < c - 1, parryIterBit R_0 D (3 + j) = 0`, we have
    `parrySeriesAcc R_0 D (2 + c) = 13 * 3 ^ (c - 1)`!
-2. **Unconditional Exclusion of ALL Four Short Recoveries `c ∈ {2, 3, 4, 5}` on `[0, 1/2)`:**
+2. **Unconditional Exclusion of ALL Five Short Recoveries `c ∈ {1, 2, 3, 4, 5}` on `[0, 1/2)`:**
    Whenever `2 * R_0 < D` (`1 ≤ D`), `1 ≤ c ∧ c ≤ 5`, and `parrySeriesAcc R_0 D (2 + c) = 13 * 3 ^ (c - 1)`,
-   `parryIterBit R_0 D (2 + c)` **cannot equal `1`** (`133/243, 383/729, 1117/2187, 3287/6561 > 1/2`!),
-   whereas `c = 6` (`9733 / 19683 < 1 / 2`, `2 * 9733 < 19683`) is the sharp minimum recovery rung! -/
+   `parryIterBit R_0 D (2 + c)` **cannot equal `1`** (`47/81, 133/243, 383/729, 1117/2187, 3287/6561 > 1/2`),
+   whereas `c = 6` (`9733 / 19683 < 1 / 2`, `2 * 9733 < 19683`) is the sharp minimum recovery rung. -/
 theorem real_half_interval_short_recovery_ban_two_two_through_two_five :
-    ((2 * 133 > 243 ∧ 2 * 383 > 729 ∧ 2 * 1117 > 2187 ∧ 2 * 3287 > 6561) ∧
+    ((2 * 47 > 81 ∧ 2 * 133 > 243 ∧ 2 * 383 > 729 ∧ 2 * 1117 > 2187 ∧ 2 * 3287 > 6561) ∧
       2 * 9733 < 19683) ∧
     (∀ R_0 D m : ℕ,
       parryIterBit R_0 D 0 = 1 →
@@ -11531,7 +11532,7 @@ theorem real_half_interval_short_recovery_ban_two_two_through_two_five :
       parryIterBit R_0 D 2 = 1 →
       (∀ j < m, parryIterBit R_0 D (3 + j) = 0) →
       parrySeriesAcc R_0 D (3 + m) = 13 * 3 ^ m) ∧
-    (∀ R_0 D c : ℕ, 1 ≤ D → 2 * R_0 < D → 2 ≤ c → c ≤ 5 →
+    (∀ R_0 D c : ℕ, 1 ≤ D → 2 * R_0 < D → 1 ≤ c → c ≤ 5 →
       parrySeriesAcc R_0 D (2 + c) = 13 * 3 ^ (c - 1) →
       parryIterBit R_0 D (2 + c) ≠ 1) := by
   refine ⟨by decide, ?_, ?_⟩
@@ -11558,9 +11559,9 @@ theorem real_half_interval_short_recovery_ban_two_two_through_two_five :
       omega
     -- Multiply `htel` by 3: `3 * R_end + 13 * 3^c * D = 3^(3 + c) * R_0 = 27 * 3^c * R_0`
     have h3c : 3 * 3 ^ (c - 1) = 3 ^ c := by
-      obtain ⟨k, rfl⟩ : ∃ k, c = k + 2 := ⟨c - 2, by omega⟩
-      have hsub : k + 2 - 1 = k + 1 := by omega
-      rw [hsub, mul_comm 3 (3 ^ (k + 1)), ← Nat.pow_succ]
+      obtain ⟨k, rfl⟩ : ∃ k, c = k + 1 := ⟨c - 1, by omega⟩
+      have hsub : k + 1 - 1 = k := by omega
+      rw [hsub, mul_comm 3 (3 ^ k), ← Nat.pow_succ]
     have hmul3 :
         3 * parryIterNum R_0 D (2 + c) + 13 * 3 ^ c * D = 27 * 3 ^ c * R_0 := by
       calc
@@ -11579,7 +11580,7 @@ theorem real_half_interval_short_recovery_ban_two_two_through_two_five :
         Nat.mul_pos (by decide) (Nat.pos_of_ne_zero (pow_ne_zero c (by decide)))
       exact (Nat.mul_lt_mul_left hpos).mpr hlt_half
     have hcontr_c : 27 * 3 ^ c < 2 * (13 * 3 ^ c + 4 * 2 ^ c) := by
-      rcases (by omega : c = 2 ∨ c = 3 ∨ c = 4 ∨ c = 5) with rfl | rfl | rfl | rfl <;> decide
+      rcases (by omega : c = 1 ∨ c = 2 ∨ c = 3 ∨ c = 4 ∨ c = 5) with rfl | rfl | rfl | rfl | rfl <;> decide
     have hD_lt : (27 * 3 ^ c) * D < (2 * (13 * 3 ^ c + 4 * 2 ^ c)) * D :=
       (Nat.mul_lt_mul_right hD).mpr hcontr_c
     linarith
@@ -11647,7 +11648,7 @@ Unifies Wave 25 (`SB.133–SB.139`) with our 132 prior breakout theorems (`SB.1�
    - **`159 / 160` (`99.375%`) even-gauge extinction modulo $320$:** `W_{r+1} % 320 = 4` (`V % 80 = 1`)! -/
 theorem grand_140_theorem_method2_fusion_and_real_gauge_pinch_synthesis :
     (∀ k : ℕ, 1 ≤ k → 12 * k + 1 < (parryCylTree (7 * k)).length) ∧
-    (∀ R_0 D c : ℕ, 1 ≤ D → 2 * R_0 < D → 2 ≤ c → c ≤ 5 →
+    (∀ R_0 D c : ℕ, 1 ≤ D → 2 * R_0 < D → 1 ≤ c → c ≤ 5 →
       parrySeriesAcc R_0 D (2 + c) = 13 * 3 ^ (c - 1) →
       parryIterBit R_0 D (2 + c) ≠ 1) ∧
     (∀ {b_0 r : ℕ} {s u : ℕ → ℕ},
@@ -12062,13 +12063,14 @@ theorem multi_scale_phase_non_concentration_and_three_adic_debt_law :
     rwa [hL] at hle
 
 
-/-- **SB.144 (Move 1D — The $8 : 7$ Pointwise Spectral-Gap Reduction Strictly Beating FLP's $O(X^{0.58496})$):**
-Proves that any pointwise odd-frequency contraction at rate $\Lambda = 7 / 5 = 1.40 < 1.50$ (`\rho = 14 / 15 < 1`,
-conservative relative to our $N = 300$ Hensel rate $\rho \approx 0.9556 \iff \Lambda \approx 1.433$)
-strictly beats Flatto–Lagarias–Pollington's `(parryCylTree (7 * k)).length ≥ 17 ^ k` scale at `W = 7 * k, N = 8 * k`:
+/-- **SB.144 (Move 1D — Conditional $8 : 7$ Pointwise Spectral-Gap Reduction Below Flatto's $(3/2)^W$ Scale):**
+Proves that if a counting bound `2^k S_card ≤ |C_{8k}| + 2^k E` is paired with an error contraction
+at rate $\Lambda = 7 / 5 = 1.40 < 1.50$ (`\rho = 14 / 15 < 1`; note that $7/5 = 1.40$ is a sharper target than
+the empirical $N = 300$ Hensel rate $\Lambda \approx 1.433$, which would require a closer $N/W \approx 1.07$ split),
+it strictly beats `SB.133`'s `(parryCylTree (7 * k)).length ≥ 17 ^ k` lower bound at `W = 7 * k, N = 8 * k`:
 1. `3 ^ 8 < 13 * 2 ^ 9`, `7 ^ 8 < 15 * 5 ^ 8`, and `∀ k ≥ 1, 15 ^ k < 17 ^ k ∧ 17 ^ k ≤ (parryCylTree (7 * k)).length`.
 2. Whenever `2 ^ k * S_card ≤ (parryCylTree (8 * k)).length + 2 ^ k * E` and `5 ^ (8 * k) * E ≤ C_0 * 7 ^ (8 * k)`,
-   **`S_card ≤ 3 * 13 ^ k + C_0 * 15 ^ k`** ($O(X^{\log 15 / (7 \log 2)}) \approx O(X^{0.5581}) \ll O(X^{0.58496})$)! -/
+   **`S_card ≤ 3 * 13 ^ k + C_0 * 15 ^ k`** ($O(X^{\log_2(15) / 7}) \approx O(X^{0.55813}) \ll O(X^{0.58496})$). -/
 theorem pointwise_spectral_gap_to_unconditional_sub_flp_survivor_exponent :
     (3 ^ 8 < 13 * 2 ^ 9 ∧ 7 ^ 8 < 15 * 5 ^ 8) ∧
     (∀ k : ℕ, 1 ≤ k → 15 ^ k < 17 ^ k ∧ 17 ^ k ≤ (parryCylTree (7 * k)).length) ∧
@@ -12406,9 +12408,10 @@ theorem origin_laplace_partition_two_way_mahler_threshold_equivalence :
       omega
 
 
-/-- **SB.147 (Move 2C — Strict Discrete Poisson Kernel Real-Part Positivity $> 1 / 2$):**
-Proves over `ℤ` that the Fourier multiplier $\widehat{K}(-h) = \frac{1 - r^M}{1 - r e^{-2\pi i h / M}}$
-of the Origin Laplace–Poisson Kernel has **strictly positive real part $> 1 / 2$** at every frequency:
+/-- **SB.147 (Move 2C — Strict Discrete Poisson Kernel Core Real-Part Positivity $> 1 / 2$):**
+Proves over `ℤ` that the normalized Poisson denominator core $\frac{1}{1 - (r/D) e^{-2\pi i h / M}}$
+(`0 ≤ r < D`, `C / D = \cos \theta \in [-1, 1]`) has **strictly positive real part $> 1 / 2$** at every frequency
+(so $\operatorname{Re}\widehat{K}(-h) = (1 - (r/D)^M)\operatorname{Re}\frac{1}{1 - (r/D) e^{-2\pi i h / M}} > \frac{1 - (r/D)^M}{2} > 0$):
 for all integers `r, D, C : ℤ` with `0 ≤ r`, `r < D`, and `-D ≤ C ∧ C ≤ D` (`C / D = cos θ ∈ [-1, 1]`):
 1. `0 < D ^ 2 - 2 * r * C + r ^ 2`, and
 2. **`D ^ 2 - 2 * r * C + r ^ 2 < 2 * (D ^ 2 - r * C)`**
@@ -12465,6 +12468,627 @@ theorem grand_148_theorem_moves_1_and_2_kneading_and_laplace_synthesis :
    origin_laplace_partition_two_way_mahler_threshold_equivalence.1,
    fun r D C hr0 hrD hClo hChi =>
      (discrete_poisson_kernel_strict_real_part_positivity r D C hr0 hrD hClo hChi).2⟩
+
+
+/-!
+### Capstone Wave 27 (`SB.149–SB.152`): Exact $(N + 1)$ Width-Class Rank Compression of `parryCylTree`, Upward Hensel Phase Dichotomy & Barrier #7 Rogue-Reset Uniqueness, Dyadic Frequency Factorization, & Grand 152-Theorem Capstone Synthesis
+-/
+
+/-- **SB.149 (Exact $(N + 1)$ Width-Class Bijection & Rank Compression of `parryCylTree N`):**
+Although `(parryCylTree N).length` grows exponentially as $\Theta((3/2)^N)$, the distinct scaled
+cylinder widths occurring in `parryCylTree N` collapse to **exact cardinality $N + 1$**:
+1. **Universal Oddness of `kneadingSpineB r`:** `∀ r : ℕ, 1 ≤ kneadingSpineB r ∧ kneadingSpineB r % 2 = 1`.
+2. **Exact Finset Bijection with Spine Shifts:**
+   `((parryCylTree N).map Prod.fst).toFinset = (Finset.range (N + 1)).image (fun r => 2 ^ (N - r) * kneadingSpineB r)`.
+3. **Exact Linear Cardinality (`∀ N`):**
+   **`((parryCylTree N).map Prod.fst).toFinset.card = N + 1`**!
+   (Compressing the $(3/2)^{N_1}$-branch two-stage continuation operator to exact rank $N_1 + 1$.) -/
+theorem parry_cylinder_tree_exact_n_plus_one_width_class_compression :
+    (∀ r : ℕ, 1 ≤ kneadingSpineB r ∧ kneadingSpineB r % 2 = 1) ∧
+    (∀ N : ℕ,
+      ((parryCylTree N).map Prod.fst).toFinset =
+        (Finset.range (N + 1)).image (fun r => 2 ^ (N - r) * kneadingSpineB r) ∧
+      ((parryCylTree N).map Prod.fst).toFinset.card = N + 1) := by
+  have hsp_odd : ∀ r : ℕ, 1 ≤ kneadingSpineB r ∧ kneadingSpineB r % 2 = 1 := by
+    intro r
+    induction r with
+    | zero => decide
+    | succ k ih =>
+        rcases ih with ⟨hpos, hodd⟩
+        have hp2_even : 2 ^ (k + 1) % 2 = 0 := by
+          rw [Nat.pow_succ]; omega
+        simp only [kneadingSpineB]
+        split_ifs with hle
+        · exact ⟨by omega, by omega⟩
+        · refine ⟨by omega, ?_⟩
+          have hge : 2 ^ (k + 1) ≤ 3 * kneadingSpineB k := by omega
+          omega
+  have hexp_mem :
+      ∀ d (p : ℕ × List ℕ) (L : List (ℕ × List ℕ)),
+        p ∈ L → ∀ q ∈ parryCylStep d p, q ∈ parryCylExpand d L := by
+    intro d p L hp q hq
+    induction L with
+    | nil => cases hp
+    | cons hd tl ih =>
+        simp only [parryCylExpand, List.mem_append]
+        rcases List.mem_cons.mp hp with rfl | htl
+        · exact Or.inl hq
+        · exact Or.inr (ih htl)
+  have hexp_inv :
+      ∀ d (q : ℕ × List ℕ) (L : List (ℕ × List ℕ)),
+        q ∈ parryCylExpand d L → ∃ p ∈ L, q ∈ parryCylStep d p := by
+    intro d q L hq
+    induction L with
+    | nil => simp [parryCylExpand] at hq
+    | cons hd tl ih =>
+        simp only [parryCylExpand, List.mem_append] at hq
+        rcases hq with h1 | h2
+        · exact ⟨hd, List.mem_cons_self, h1⟩
+        · rcases ih h2 with ⟨p, hp, hqp⟩
+          exact ⟨p, List.mem_cons_of_mem _ hp, hqp⟩
+  have hset_eq :
+      ∀ N : ℕ,
+        ((parryCylTree N).map Prod.fst).toFinset =
+          (Finset.range (N + 1)).image (fun r => 2 ^ (N - r) * kneadingSpineB r) := by
+    intro N
+    induction N with
+    | zero => decide
+    | succ k ih =>
+        ext B_next
+        simp only [List.mem_toFinset, List.mem_map, Finset.mem_image, Finset.mem_range]
+        constructor
+        · rintro ⟨q, hq_tree, rfl⟩
+          simp only [parryCylTree] at hq_tree
+          rcases hexp_inv k q (parryCylTree k) hq_tree with ⟨p, hp_tree, hq_step⟩
+          have hp_in : p.1 ∈ ((parryCylTree k).map Prod.fst).toFinset := by
+            rw [List.mem_toFinset, List.mem_map]
+            exact ⟨p, hp_tree, rfl⟩
+          rw [ih, Finset.mem_image] at hp_in
+          rcases hp_in with ⟨r, hr_mem, hp_eq⟩
+          rw [Finset.mem_range] at hr_mem
+          have hp_pow : 2 ^ (k + 1) = 2 ^ (k - r) * 2 ^ (r + 1) := by
+            have : k + 1 = (k - r) + (r + 1) := by omega
+            conv_lhs => rw [this, Nat.pow_add]
+          have hp_pos : 0 < 2 ^ (k - r) := Nat.pos_of_ne_zero (pow_ne_zero (k - r) (by decide))
+          have h3p : 3 * p.1 = 2 ^ (k - r) * (3 * kneadingSpineB r) := by
+            rw [← hp_eq]; ring
+          have hcond_iff : 3 * p.1 ≤ 2 ^ (k + 1) ↔ 3 * kneadingSpineB r ≤ 2 ^ (r + 1) := by
+            rw [h3p, hp_pow]
+            exact Nat.mul_le_mul_left_iff hp_pos
+          have hsub_idx : k + 1 - (r + 1) = k - r := by omega
+          by_cases hc : 3 * kneadingSpineB r ≤ 2 ^ (r + 1)
+          · have hc' : 3 * p.1 ≤ 2 ^ (k + 1) := hcond_iff.mpr hc
+            simp only [parryCylStep, if_pos hc', List.mem_singleton] at hq_step
+            refine ⟨r + 1, by omega, ?_⟩
+            rw [hq_step, hsub_idx, h3p]
+            simp [kneadingSpineB, if_pos hc]
+          · have hc' : ¬(3 * p.1 ≤ 2 ^ (k + 1)) := fun h => hc (hcond_iff.mp h)
+            simp only [parryCylStep, if_neg hc', List.mem_cons, List.not_mem_nil, or_false] at hq_step
+            rcases hq_step with hleft | hright
+            · refine ⟨0, by omega, ?_⟩
+              rw [hleft]
+              simp [kneadingSpineB]
+            · refine ⟨r + 1, by omega, ?_⟩
+              rw [hright, hsub_idx, h3p, hp_pow, ← Nat.mul_sub_left_distrib]
+              simp [kneadingSpineB, if_neg hc]
+        · rintro ⟨r', hr'_lt, rfl⟩
+          rcases Nat.eq_zero_or_pos r' with rfl | hr'_pos
+          · -- `r' = 0`: produced as left child of `r = 0` (`p.1 = 2 ^ k`) at level `k`!
+            have h0_in : 2 ^ k * kneadingSpineB 0 ∈ ((parryCylTree k).map Prod.fst).toFinset := by
+              rw [ih, Finset.mem_image]
+              exact ⟨0, Finset.mem_range.mpr (by omega), by simp⟩
+            rw [List.mem_toFinset, List.mem_map] at h0_in
+            rcases h0_in with ⟨p, hp_tree, hp_fst⟩
+            simp only [kneadingSpineB, Nat.mul_one] at hp_fst
+            have hsplit0 : ¬(3 * p.1 ≤ 2 ^ (k + 1)) := by
+              rw [hp_fst, Nat.pow_succ]
+              have : 1 ≤ 2 ^ k := Nat.one_le_pow k 2 (by decide)
+              omega
+            refine ⟨(2 ^ (k + 1), 0 :: p.2), ?_, by simp [kneadingSpineB]⟩
+            simp only [parryCylTree]
+            apply hexp_mem k p (parryCylTree k) hp_tree
+            simp [parryCylStep, if_neg hsplit0]
+          · -- `r' = r + 1` (`r ≤ k`): produced by `2^(k - r) * kneadingSpineB r` at level `k`!
+            obtain ⟨r, rfl⟩ : ∃ r, r' = r + 1 := ⟨r' - 1, by omega⟩
+            have hr_in :
+                2 ^ (k - r) * kneadingSpineB r ∈ ((parryCylTree k).map Prod.fst).toFinset := by
+              rw [ih, Finset.mem_image]
+              exact ⟨r, Finset.mem_range.mpr (by omega), rfl⟩
+            rw [List.mem_toFinset, List.mem_map] at hr_in
+            rcases hr_in with ⟨p, hp_tree, hp_fst⟩
+            have hp_pow : 2 ^ (k + 1) = 2 ^ (k - r) * 2 ^ (r + 1) := by
+              have : k + 1 = (k - r) + (r + 1) := by omega
+              conv_lhs => rw [this, Nat.pow_add]
+            have hp_pos : 0 < 2 ^ (k - r) := Nat.pos_of_ne_zero (pow_ne_zero (k - r) (by decide))
+            have h3p : 3 * p.1 = 2 ^ (k - r) * (3 * kneadingSpineB r) := by
+              rw [hp_fst]; ring
+            have hcond_iff : 3 * p.1 ≤ 2 ^ (k + 1) ↔ 3 * kneadingSpineB r ≤ 2 ^ (r + 1) := by
+              rw [h3p, hp_pow]
+              exact Nat.mul_le_mul_left_iff hp_pos
+            have hsub_idx : k + 1 - (r + 1) = k - r := by omega
+            rw [hsub_idx]
+            by_cases hc : 3 * kneadingSpineB r ≤ 2 ^ (r + 1)
+            · have hc' : 3 * p.1 ≤ 2 ^ (k + 1) := hcond_iff.mpr hc
+              refine ⟨(3 * p.1, 0 :: p.2), ?_, ?_⟩
+              · simp only [parryCylTree]
+                apply hexp_mem k p (parryCylTree k) hp_tree
+                simp [parryCylStep, if_pos hc']
+              · simp [h3p, kneadingSpineB, if_pos hc]
+            · have hc' : ¬(3 * p.1 ≤ 2 ^ (k + 1)) := fun h => hc (hcond_iff.mp h)
+              refine ⟨(3 * p.1 - 2 ^ (k + 1), 1 :: p.2), ?_, ?_⟩
+              · simp only [parryCylTree]
+                apply hexp_mem k p (parryCylTree k) hp_tree
+                simp [parryCylStep, if_neg hc']
+              · simp [h3p, hp_pow, ← Nat.mul_sub_left_distrib, kneadingSpineB, if_neg hc]
+  refine ⟨hsp_odd, ?_⟩
+  intro N
+  refine ⟨hset_eq N, ?_⟩
+  rw [hset_eq N]
+  have hno_lt :
+      ∀ a b : ℕ, a < b → b < N + 1 →
+        2 ^ (N - a) * kneadingSpineB a ≠ 2 ^ (N - b) * kneadingSpineB b := by
+    intro a b hlt hbN heq
+    set d := b - a
+    have hd_pos : 1 ≤ d := by omega
+    have hidx : N - a = (N - b) + d := by omega
+    have hp_split : 2 ^ (N - a) * kneadingSpineB a =
+        2 ^ (N - b) * (2 ^ d * kneadingSpineB a) := by
+      rw [hidx, Nat.pow_add]; ring
+    rw [hp_split] at heq
+    have hp_pos : 0 < 2 ^ (N - b) := Nat.pos_of_ne_zero (pow_ne_zero (N - b) (by decide))
+    have heq_odd : 2 ^ d * kneadingSpineB a = kneadingSpineB b :=
+      Nat.eq_of_mul_eq_mul_left hp_pos heq
+    have hlhs_even : (2 ^ d * kneadingSpineB a) % 2 = 0 := by
+      obtain ⟨m, hm⟩ : ∃ m, d = m + 1 := ⟨d - 1, by omega⟩
+      have hexp : 2 ^ (m + 1) * kneadingSpineB a = 2 * (2 ^ m * kneadingSpineB a) := by
+        rw [Nat.pow_succ]; ring
+      rw [hm, hexp, Nat.mul_mod_right]
+    have hrhs_odd : kneadingSpineB b % 2 = 1 := (hsp_odd b).2
+    omega
+  have hinj : Set.InjOn (fun r => 2 ^ (N - r) * kneadingSpineB r) ↑(Finset.range (N + 1)) := by
+    intro r₁ hr₁ r₂ hr₂ heq
+    simp only [Finset.mem_coe, Finset.mem_range] at hr₁ hr₂
+    dsimp only at heq
+    rcases lt_trichotomy r₁ r₂ with h12 | h_eq | h21
+    · exact False.elim (hno_lt r₁ r₂ h12 hr₂ heq)
+    · exact h_eq
+    · exact False.elim (hno_lt r₂ r₁ h21 hr₁ heq.symm)
+  rw [Finset.card_image_of_injOn hinj, Finset.card_range]
+
+
+/-- **SB.150 (Upward Hensel Phase-Step Dichotomy & Barrier #7 Rogue-Reset Uniqueness Per Quotient $q$):**
+Formalizes the exact upward Hensel phase transition `y_{k+1} % 2^k = (3 * y_k) % 2^k` and isolates
+**Barrier #7** (bridging $\langle 3 \rangle$-coset cancellation to short-interval / pointwise bounds):
+1. **Upward Hensel Phase Dichotomy (`1 ≤ k`):**
+   For any `1 ≤ y_k < 2 ^ k` and `1 ≤ y_{k+1} < 2 ^ (k + 1)` with `y_{k+1} % 2 ^ k = (3 * y_k) % 2 ^ k`,
+   setting `d_k := min y_k (2 ^ k - y_k)` and `d_{k+1} := min y_{k+1} (2 ^ (k + 1) - y_{k+1})`,
+   **either** `8 * d_k ≥ 2 ^ k ∨ 8 * d_{k+1} ≥ 2 ^ (k + 1)` (at least one endpoint is a good $\ge 1/8$
+   phase step!), **or** **`d_{k+1} = 3 * d_k`**!
+2. **Barrier #7 At-Most-One-Rogue-$d$-Per-$q$ Uniqueness:**
+   Whenever `2 * R ≤ 3 ^ A` (in `ℤ`), for each quotient `q : ℤ`, **at most one** integer `d : ℤ`
+   can satisfy `|3 ^ A * d - q * 2 ^ K| < R` (`d₁ = d₂`, bounding total rogue resets across
+   `1 ≤ q < 3^g` to `< 3^g` even before invoking Ridout/Subspace!). -/
+theorem upward_hensel_phase_step_dichotomy_and_barrier7_rogue_reset_law :
+    (∀ k y_k y_next : ℕ,
+      1 ≤ k →
+      1 ≤ y_k → y_k < 2 ^ k →
+      1 ≤ y_next → y_next < 2 ^ (k + 1) →
+      y_next % 2 ^ k = (3 * y_k) % 2 ^ k →
+      let d_k := min y_k (2 ^ k - y_k)
+      let d_next := min y_next (2 ^ (k + 1) - y_next)
+      8 * d_k ≥ 2 ^ k ∨ 8 * d_next ≥ 2 ^ (k + 1) ∨ d_next = 3 * d_k) ∧
+    (∀ (A K : ℕ) (R q d₁ d₂ : ℤ),
+      2 * R ≤ (3 : ℤ) ^ A →
+      |((3 : ℤ) ^ A) * d₁ - q * ((2 : ℤ) ^ K)| < R →
+      |((3 : ℤ) ^ A) * d₂ - q * ((2 : ℤ) ^ K)| < R →
+      d₁ = d₂) := by
+  refine ⟨?_, ?_⟩
+  · intro k y_k y_next hk hyk_lo hyk_hi hyn_lo hyn_hi hcongr d_k d_next
+    by_cases h1 : 8 * d_k ≥ 2 ^ k
+    · exact Or.inl h1
+    · by_cases h2 : 8 * d_next ≥ 2 ^ (k + 1)
+      · exact Or.inr (Or.inl h2)
+      · right; right
+        have hp2 : 2 ^ (k + 1) = 2 * 2 ^ k := by rw [Nat.pow_succ]; ring
+        have hsmall : d_next + 3 ^ 1 * d_k < 2 ^ (k + 1 - 1) := by
+          have hsub : k + 1 - 1 = k := rfl
+          rw [hsub]
+          omega
+        have hcongr1 : (3 ^ 1 * y_k) % 2 ^ (k + 1 - 1) = y_next % 2 ^ (k + 1 - 1) := by
+          simpa using hcongr.symm
+        have h143 := multi_scale_phase_non_concentration_and_three_adic_debt_law.1
+          (k + 1) 1 y_next y_k (by decide) (by omega) hyn_lo hyn_hi hyk_lo
+          (by simpa using hyk_hi) hcongr1 hsmall
+        simpa using h143
+  · intro A K R q d₁ d₂ h2R h1 h2
+    by_contra hne
+    have h1_bounds := abs_lt.mp h1
+    have h2_bounds := abs_lt.mp h2
+    have h3A_pos : (0 : ℤ) < (3 : ℤ) ^ A := pow_pos (by decide) A
+    rcases lt_trichotomy d₁ d₂ with hlt | heq | hgt
+    · have hd_ge1 : 1 ≤ d₂ - d₁ := by omega
+      have hmul : (3 : ℤ) ^ A * 1 ≤ (3 : ℤ) ^ A * (d₂ - d₁) :=
+        mul_le_mul_of_nonneg_left hd_ge1 (le_of_lt h3A_pos)
+      linarith
+    · exact hne heq
+    · have hd_ge1 : 1 ≤ d₁ - d₂ := by omega
+      have hmul : (3 : ℤ) ^ A * 1 ≤ (3 : ℤ) ^ A * (d₁ - d₂) :=
+        mul_le_mul_of_nonneg_left hd_ge1 (le_of_lt h3A_pos)
+      linarith
+
+
+/-- **SB.151 (Dyadic Non-Zero Frequency Factorization & High-2-Power Box Annihilation on $\mathbb{Z}/2^N\mathbb{Z}$):**
+Completes the exact harmonic decomposition of `[0, 2^W)` inside $\mathbb{Z}/2^N\mathbb{Z}$ (`W ≤ N`):
+1. **High-$2$-Power Full-Period Box Annihilation (`2 ^ (N - W) ∣ h`):**
+   Whenever `1 ≤ h ∧ h < 2 ^ N` and `2 ^ (N - W) ∣ h`, `(h * 2 ^ W) % 2 ^ N = 0` while `h % 2 ^ N ≠ 0`
+   (so $h$ completes a non-zero integer number of full periods across $[0, 2^W)$ and vanishes identically!).
+2. **Active Non-Zero Dyadic Frequency Factorization (`¬(2 ^ (N - W) ∣ h)`):**
+   Every active frequency `1 ≤ h ∧ h < 2 ^ N` with `¬(2 ^ (N - W) ∣ h)` factors into
+   `h = 2 ^ v * h_odd` with `v < N - W`, `h_odd % 2 = 1`, and `h_odd < 2 ^ (N - v)`! -/
+theorem dyadic_frequency_factorization_and_box_high_power_vanishing :
+    (∀ W N h : ℕ, W ≤ N → 1 ≤ h → h < 2 ^ N →
+      2 ^ (N - W) ∣ h →
+      (h * 2 ^ W) % 2 ^ N = 0 ∧ h % 2 ^ N ≠ 0) ∧
+    (∀ W N h : ℕ, W ≤ N → 1 ≤ h → h < 2 ^ N →
+      ¬ (2 ^ (N - W) ∣ h) →
+      ∃ v h_odd : ℕ,
+        v < N - W ∧ h_odd % 2 = 1 ∧ h_odd < 2 ^ (N - v) ∧ h = 2 ^ v * h_odd) := by
+  have hfactor2 :
+      ∀ n : ℕ, 1 ≤ n → ∃ v u : ℕ, u % 2 = 1 ∧ n = 2 ^ v * u := by
+    intro n
+    induction n using Nat.strong_induction_on with
+    | h m ih =>
+        intro hm
+        rcases (by omega : m % 2 = 1 ∨ m % 2 = 0) with hodd | heven
+        · exact ⟨0, m, hodd, by simp⟩
+        · have hm2 : 1 ≤ m / 2 := by omega
+          have hlt : m / 2 < m := Nat.div_lt_self hm (by decide)
+          rcases ih (m / 2) hlt hm2 with ⟨v, u, hu_odd, hmu⟩
+          refine ⟨v + 1, u, hu_odd, ?_⟩
+          have hd := (Nat.div_add_mod m 2).symm
+          rw [heven, Nat.add_zero, hmu] at hd
+          rw [Nat.pow_succ]
+          linarith
+  refine ⟨?_, ?_⟩
+  · intro W N h hWN hh_lo hh_hi ⟨k, hk⟩
+    have hpN : 2 ^ N = 2 ^ (N - W) * 2 ^ W := by
+      have : N = (N - W) + W := by omega
+      conv_lhs => rw [this, Nat.pow_add]
+    have hmul0 : (h * 2 ^ W) % 2 ^ N = 0 := by
+      have hexp : h * 2 ^ W = 2 ^ N * k := by rw [hk, hpN]; ring
+      rw [hexp, Nat.mul_mod_right]
+    have hne0 : h % 2 ^ N ≠ 0 := by
+      rw [Nat.mod_eq_of_lt hh_hi]
+      omega
+    exact ⟨hmul0, hne0⟩
+  · intro W N h hWN hh_lo hh_hi hnot_dvd
+    rcases hfactor2 h hh_lo with ⟨v, h_odd, hodd, hfac⟩
+    have hv_lt : v < N - W := by
+      by_contra hv_ge
+      have hd : N - W ≤ v := by omega
+      have hdvd : 2 ^ (N - W) ∣ h := by
+        rw [hfac]
+        have hv_eq : v = (N - W) + (v - (N - W)) := by omega
+        rw [hv_eq, Nat.pow_add]
+        exact ⟨2 ^ (v - (N - W)) * h_odd, by ring⟩
+      exact hnot_dvd hdvd
+    have hvN : v < N := by omega
+    have hhodd_lt : h_odd < 2 ^ (N - v) := by
+      have hpN : 2 ^ N = 2 ^ v * 2 ^ (N - v) := by
+        have : N = v + (N - v) := by omega
+        conv_lhs => rw [this, Nat.pow_add]
+      rw [hfac, hpN] at hh_hi
+      have hpv_pos : 0 < 2 ^ v := Nat.pos_of_ne_zero (pow_ne_zero v (by decide))
+      exact (Nat.mul_lt_mul_left hpv_pos).mp hh_hi
+    exact ⟨v, h_odd, hv_lt, hodd, hhodd_lt, hfac⟩
+
+
+/-- **SB.152 (Grand 152-Theorem Mahler Semigroup Breakout Capstone Synthesis):**
+The complete machine-checked capstone synthesis of `SemigroupBreakoutTheorems.lean` (`SB.1–SB.152`),
+uniting:
+1. **Exact $(N + 1)$ Width-Class Rank Compression (`SB.149`):**
+   `((parryCylTree N).map Prod.fst).toFinset.card = N + 1` for every `N : ℕ`,
+2. **Exact Parry Kneading Spine Renewal (`SB.141`):**
+   `(parryCylTree N).length = 1 + ∑_{j < N, split(j)} (parryCylTree (N - 1 - j)).length`,
+3. **Unconditional Flatto–Lagarias–Pollington $(3/2)^W$ Effective Survivor Bound (`SB.112`, `SB.121`):**
+   `3 ^ W ≤ 2 ^ W * (parryCylTree W).length ∧ 2 ^ W * (parryCylTree W).length + 2 * 2 ^ W ≤ 3 ^ (W + 1)`,
+4. **The $159 / 160$ ($99.375\%$) Mod-320 Real-Coupled Even-Gauge Pinch (`SB.138–SB.139`):**
+   `W_{r+1} % 320 = 4` (`V % 80 = 1`) whenever `s_{r+1} = 2` survives $[0, 1/2)$ recovery (`s_{r+2} ≥ 6`),
+5. **Two-Way $4 / 3$ Origin Laplace–Poisson Equivalence (`SB.145–SB.146`) & Complete 7-Barrier Map (`SB.109, SB.124, SB.133–SB.135, SB.150`)**! -/
+theorem grand_152_theorem_mahler_semigroup_breakout_capstone_synthesis :
+    (∀ N : ℕ,
+      ((parryCylTree N).map Prod.fst).toFinset.card = N + 1 ∧
+      (parryCylTree N).length =
+        1 + (Finset.range N).sum (fun j =>
+          if 2 ^ (j + 1) < 3 * kneadingSpineB j then
+            (parryCylTree (N - 1 - j)).length
+          else 0) ∧
+      3 ^ N ≤ 2 ^ N * (parryCylTree N).length ∧
+      2 ^ N * (parryCylTree N).length + 2 * 2 ^ N ≤ 3 ^ (N + 1)) ∧
+    (∀ {b_0 r : ℕ} {s u : ℕ → ℕ},
+      ValidBlockChain b_0 s u (r + 3) →
+      2 ≤ s r →
+      s (r + 1) = 2 →
+      6 ≤ s (r + 2) →
+      ((5 * oddReturnP (orbit b_0 (blockSteps s (r + 1))) + 4) / 36) % 320 = 4) ∧
+    (∀ (A K : ℕ) (R q d₁ d₂ : ℤ),
+      2 * R ≤ (3 : ℤ) ^ A →
+      |((3 : ℤ) ^ A) * d₁ - q * ((2 : ℤ) ^ K)| < R →
+      |((3 : ℤ) ^ A) * d₂ - q * ((2 : ℤ) ^ K)| < R →
+      d₁ = d₂) :=
+  ⟨fun N =>
+     ⟨(parry_cylinder_tree_exact_n_plus_one_width_class_compression.2 N).2,
+      parry_kneading_spine_renewal_decomposition_of_cylinder_counts.1 N,
+      (two_sided_parry_entropy_sandwich_and_nonsplit_lower_bound.2.1 N).1,
+      (two_sided_parry_entropy_sandwich_and_nonsplit_lower_bound.2.1 N).2⟩,
+   fun hchain hs_r hs1 hs2 =>
+     (real_coupled_gauge_mod64_and_mod320_unique_even_survivor_class hchain hs_r hs1 hs2).2.1,
+   upward_hensel_phase_step_dichotomy_and_barrier7_rogue_reset_law.2⟩
+
+
+/-- **SB.153 (Full Real-Number `ℝ` Bridge — Mahler's Uniqueness Lemma, Real `ValidCompanionUpTo` Parry Coverage, & Flatto's $3(3/2)^W - 2$ Real $Z$-Number Bound):**
+Completes the machine-checked `ℝ` bridge from `SB.112`'s natural-number Parry cylinder tree to genuine real Mahler $Z$-numbers:
+1. **Mahler's Real $Z$-Number Uniqueness Lemma (`ValidCompanionForever b_0 α → ValidCompanionForever b_0 β → α = β`):**
+   At most one real $Z$-number can lie in any unit interval $[b_0, b_0 + 1)$.
+2. **Direct Real `ValidCompanionUpTo` Coverage in `parryCylTree W`:**
+   For every `b_0, W : ℕ` and `α : ℝ` satisfying `ValidCompanionUpTo b_0 α W`, there exists a cylinder
+   `(B, orbitParityRev b_0 W) ∈ parryCylTree W` with `(2 : ℝ) ^ (W + 1) * fracPart b_0 α W < (B : ℝ)`.
+3. **Unconditional Real $Z$-Number Set Bound on `[0, X)` (`X ≤ 2^W`, Flatto 1992 / FLP 1995):**
+   For **every** `W : ℕ`, `X : ℝ` with `X ≤ (2 : ℝ) ^ W`, and **every** finite set `Z_set : Finset ℝ` of real Mahler
+   $Z$-numbers in `[0, X)` (`∀ α ∈ Z_set, 0 ≤ α ∧ α < X ∧ ∀ n : ℕ, Int.fract (α * (3 / 2 : ℝ) ^ n) < 1 / 2`),
+   `Z_set.card ≤ (parryCylTree W).length` and `2 ^ W * Z_set.card + 2 * 2 ^ W ≤ 3 ^ (W + 1)`. -/
+theorem real_z_number_uniqueness_parry_cylinder_bridge_and_flatto_bound :
+    (∀ (b_0 : ℕ) (α β : ℝ),
+      ValidCompanionForever b_0 α → ValidCompanionForever b_0 β → α = β) ∧
+    (∀ (b_0 W : ℕ) (α : ℝ),
+      ValidCompanionUpTo b_0 α W →
+      ∃ B : ℕ, (B, orbitParityRev b_0 W) ∈ parryCylTree W ∧
+        (2 : ℝ) ^ (W + 1) * fracPart b_0 α W < (B : ℝ)) ∧
+    (∀ (W : ℕ) (X : ℝ) (Z_set : Finset ℝ),
+      X ≤ (2 : ℝ) ^ W →
+      (∀ α ∈ Z_set, 0 ≤ α ∧ α < X ∧ ∀ n : ℕ, Int.fract (α * (3 / 2 : ℝ) ^ n) < 1 / 2) →
+      Z_set.card ≤ (parryCylTree W).length ∧
+        2 ^ W * Z_set.card + 2 * 2 ^ W ≤ 3 ^ (W + 1)) := by
+  have hbern : ∀ n : ℕ, 1 + (n : ℝ) / 2 ≤ (3 / 2 : ℝ) ^ n := by
+    intro n
+    induction n with
+    | zero => norm_num
+    | succ k ih =>
+        have hk0 : (0 : ℝ) ≤ (k : ℝ) / 4 := by positivity
+        rw [pow_succ, Nat.cast_succ]
+        linarith
+  have huniq :
+      ∀ (b_0 : ℕ) (α β : ℝ),
+        ValidCompanionForever b_0 α → ValidCompanionForever b_0 β → α = β := by
+    intro b_0 α β hα hβ
+    by_contra hne
+    have hpos : 0 < |α - β| := abs_pos.mpr (sub_ne_zero.mpr hne)
+    obtain ⟨n, hn⟩ := exists_nat_gt (1 / |α - β|)
+    have h1 : 1 / |α - β| * |α - β| < (n : ℝ) * |α - β| :=
+      mul_lt_mul_of_pos_right hn hpos
+    rw [one_div_mul_cancel (ne_of_gt hpos)] at h1
+    have hαn := (validCompanionAt_iff_fracPart b_0 α n).mp (hα n)
+    have hβn := (validCompanionAt_iff_fracPart b_0 β n).mp (hβ n)
+    have hdiff :
+        fracPart b_0 α n - fracPart b_0 β n = (α - β) * (3 / 2 : ℝ) ^ n := by
+      unfold fracPart; ring
+    have habs_lt : |(α - β) * (3 / 2 : ℝ) ^ n| < 1 / 2 := by
+      rw [← hdiff]
+      exact abs_lt.mpr ⟨by linarith, by linarith⟩
+    have hp_pos : (0 : ℝ) < (3 / 2 : ℝ) ^ n := by positivity
+    rw [abs_mul, abs_of_pos hp_pos] at habs_lt
+    have hgrow : |α - β| * (1 + (n : ℝ) / 2) ≤ |α - β| * (3 / 2 : ℝ) ^ n :=
+      mul_le_mul_of_nonneg_left (hbern n) (le_of_lt hpos)
+    linarith
+  have hexp_mem :
+      ∀ k B w L, (B, w) ∈ L →
+        ∀ p ∈ parryCylStep k (B, w), p ∈ parryCylExpand k L := by
+    intro k B w L hL p hp
+    induction L with
+    | nil => cases hL
+    | cons hd tl ihtl =>
+        simp only [parryCylExpand, List.mem_append]
+        rcases List.mem_cons.mp hL with rfl | htl
+        · exact Or.inl hp
+        · exact Or.inr (ihtl htl)
+  have hcov_real :
+      ∀ (b_0 W : ℕ) (α : ℝ),
+        ValidCompanionUpTo b_0 α W →
+        ∀ k ≤ W,
+          ∃ B : ℕ, (B, orbitParityRev b_0 k) ∈ parryCylTree k ∧
+            (2 : ℝ) ^ (k + 1) * fracPart b_0 α k < (B : ℝ) := by
+    intro b_0 W α hup k
+    induction k with
+    | zero =>
+        intro _
+        refine ⟨1, by simp [parryCylTree, orbitParityRev], ?_⟩
+        have hr0 := (validCompanionAt_iff_fracPart b_0 α 0).mp (hup 0 (Nat.zero_le W))
+        norm_num
+        linarith
+    | succ m ih =>
+        intro hmW
+        rcases ih (by omega) with ⟨B, hmem, hltB⟩
+        have hrm := (validCompanionAt_iff_fracPart b_0 α m).mp (hup m (by omega))
+        have hrm1 := (validCompanionAt_iff_fracPart b_0 α (m + 1)).mp (hup (m + 1) hmW)
+        have hsucc := fracPart_succ b_0 α m
+        have hp2 : (2 : ℝ) ^ (m + 1 + 1) = 2 * (2 : ℝ) ^ (m + 1) := by rw [pow_succ]; ring
+        by_cases hsplit : 3 * B ≤ 2 ^ (m + 1)
+        · have hsplit_r : 3 * (B : ℝ) ≤ (2 : ℝ) ^ (m + 1) := by exact_mod_cast hsplit
+          have hpar0 : orbit b_0 m % 2 = 0 := by
+            rcases (by omega : orbit b_0 m % 2 = 0 ∨ orbit b_0 m % 2 = 1) with h0 | h1
+            · exact h0
+            · exfalso
+              rw [h1] at hsucc
+              norm_num at hsucc
+              have hge1 : 1 ≤ 3 * fracPart b_0 α m := by linarith
+              have hp_pos : (0 : ℝ) < (2 : ℝ) ^ (m + 1) := by positivity
+              nlinarith
+          rw [hpar0] at hsucc
+          norm_num at hsucc
+          refine ⟨3 * B, ?_, ?_⟩
+          · simp only [parryCylTree, orbitParityRev, hpar0]
+            apply hexp_mem m B (orbitParityRev b_0 m) (parryCylTree m) hmem
+            simp [parryCylStep, if_pos hsplit]
+          · push_cast
+            rw [hp2, hsucc]
+            linarith
+        · rcases (by omega : orbit b_0 m % 2 = 0 ∨ orbit b_0 m % 2 = 1) with h0 | h1
+          · refine ⟨2 ^ (m + 1), ?_, ?_⟩
+            · simp only [parryCylTree, orbitParityRev, h0]
+              apply hexp_mem m B (orbitParityRev b_0 m) (parryCylTree m) hmem
+              simp [parryCylStep, if_neg hsplit]
+            · push_cast
+              rw [hp2]
+              have hp_pos : (0 : ℝ) < (2 : ℝ) ^ (m + 1) := by positivity
+              nlinarith
+          · rw [h1] at hsucc
+            norm_num at hsucc
+            refine ⟨3 * B - 2 ^ (m + 1), ?_, ?_⟩
+            · simp only [parryCylTree, orbitParityRev, h1]
+              apply hexp_mem m B (orbitParityRev b_0 m) (parryCylTree m) hmem
+              simp [parryCylStep, if_neg hsplit]
+            · have hcast_sub :
+                  ((3 * B - 2 ^ (m + 1) : ℕ) : ℝ) = 3 * (B : ℝ) - (2 : ℝ) ^ (m + 1) := by
+                rw [Nat.cast_sub (by omega)]
+                push_cast; ring_nf
+              rw [hcast_sub, hp2, hsucc]
+              linarith
+  refine ⟨huniq, fun b_0 W α hup => hcov_real b_0 W α hup W le_rfl, ?_⟩
+  · intro W X Z_set hX hZ
+    set f : ℝ → List ℕ := fun α => orbitParityRev (Int.toNat ⌊α⌋) W
+    set wordsList := (parryCylTree W).map Prod.snd
+    have hseed_props :
+        ∀ α ∈ Z_set,
+          Int.toNat ⌊α⌋ < 2 ^ W ∧ ValidCompanionForever (Int.toNat ⌊α⌋) α := by
+      intro α hα
+      rcases hZ α hα with ⟨hα0, hαX, hfr⟩
+      have hαW : α < (2 : ℝ) ^ W := lt_of_lt_of_le hαX hX
+      have hfl_nonneg : 0 ≤ ⌊α⌋ := Int.floor_nonneg.mpr hα0
+      have hfl_cast : ((Int.toNat ⌊α⌋ : ℕ) : ℤ) = ⌊α⌋ := Int.toNat_of_nonneg hfl_nonneg
+      have hfl_lt_int : ⌊α⌋ < ((2 ^ W : ℕ) : ℤ) := by
+        rw [Int.floor_lt]
+        push_cast
+        exact hαW
+      have hb_lt : Int.toNat ⌊α⌋ < 2 ^ W := by omega
+      have hforever : ValidCompanionForever (Int.toNat ⌊α⌋) α :=
+        (validCompanionForever_iff_floor_and_forall_fract_lt_half _ α).mpr ⟨hfl_cast.symm, hfr⟩
+      exact ⟨hb_lt, hforever⟩
+    have hmaps : ∀ α ∈ Z_set, f α ∈ wordsList.toFinset := by
+      intro α hα
+      have hupW : ValidCompanionUpTo (Int.toNat ⌊α⌋) α W :=
+        (validCompanionForever_iff_forall_upTo _ α).mp (hseed_props α hα).2 W
+      rcases hcov_real (Int.toNat ⌊α⌋) W α hupW W le_rfl with ⟨B, hmem, _⟩
+      rw [List.mem_toFinset]
+      exact List.mem_map.mpr ⟨(B, f α), hmem, rfl⟩
+    have hinj : Set.InjOn f ↑Z_set := by
+      intro α hα β hβ heq
+      simp only [Finset.mem_coe] at hα hβ
+      have hb_eq : Int.toNat ⌊α⌋ = Int.toNat ⌊β⌋ :=
+        orbitParityRev_injOn_two_pow W (hseed_props α hα).1 (hseed_props β hβ).1 heq
+      have hβ_same : ValidCompanionForever (Int.toNat ⌊α⌋) β := by
+        rw [hb_eq]
+        exact (hseed_props β hβ).2
+      exact huniq (Int.toNat ⌊α⌋) α β (hseed_props α hα).2 hβ_same
+    have hcard1 : Z_set.card ≤ wordsList.toFinset.card :=
+      Finset.card_le_card_of_injOn f hmaps hinj
+    have hcard2 : wordsList.toFinset.card ≤ wordsList.length :=
+      List.toFinset_card_le wordsList
+    have hlen_eq : wordsList.length = (parryCylTree W).length := List.length_map Prod.snd
+    have hle_len : Z_set.card ≤ (parryCylTree W).length := by omega
+    have hflp := parry_cylinder_tree_three_pow_sum_and_flp_effective_survivor_bound.2.1 W
+    have hmul : 2 ^ W * Z_set.card ≤ 2 ^ W * (parryCylTree W).length :=
+      Nat.mul_le_mul_left (2 ^ W) hle_len
+    exact ⟨hle_len, by omega⟩
+
+
+/-- **SB.154 (Unconditional Real-Companion Mod-320 Even-Gauge Pinch — Deriving `6 ≤ s (r + 2)` Directly Over `ℝ`):**
+Discharges the `6 ≤ s (r + 2)` premise of `SB.139` directly from existence of a real companion
+`ValidCompanionUpTo b_0 α (blockSteps s (r + 3) + 1)` (hence a fortiori for any `ValidCompanionForever b_0 α`):
+along any `ValidBlockChain b_0 s u (r + 3)` with `2 ≤ s r` and `s (r + 1) = 2`, real fractional survival
+automatically forces `6 ≤ s (r + 2)`, `W_{r+1} % 64 = 4`, **`W_{r+1} % 320 = 4`** (`159 / 160 = 99.375%`
+of all even residue classes eliminated), and `V % 80 = 1`. -/
+theorem unconditional_real_companion_mod320_even_gauge_pinch
+    {b_0 r : ℕ} {s u : ℕ → ℕ} {α : ℝ}
+    (hchain : ValidBlockChain b_0 s u (r + 3))
+    (hcomp : ValidCompanionUpTo b_0 α (blockSteps s (r + 3) + 1))
+    (hs_r : 2 ≤ s r)
+    (hs_r1_eq2 : s (r + 1) = 2) :
+    let P := fun k => oddReturnP (orbit b_0 (blockSteps s k))
+    let W_1 := (5 * P (r + 1) + 4) / 36
+    let V := W_1 / 4
+    6 ≤ s (r + 2) ∧
+      W_1 % 64 = 4 ∧
+      W_1 % 320 = 4 ∧
+      W_1 = 4 * V ∧
+      V % 80 = 1 := by
+  intro P W_1 V
+  have hshift :
+      ∀ T n : ℕ,
+        fracPart b_0 α (T + n) = fracPart (orbit b_0 T) (α * (3 / 2 : ℝ) ^ T) n := by
+    intro T n
+    unfold fracPart
+    rw [pow_add, orbit_add]
+    ring
+  set T₁ := blockSteps s (r + 1)
+  set T₂ := blockSteps s (r + 2)
+  set c := s (r + 2)
+  set T₃ := blockSteps s (r + 3)
+  have hT₂_eq : T₂ = T₁ + 2 := by
+    change blockSteps s (r + 1) + s (r + 1) = T₁ + 2
+    rw [hs_r1_eq2]
+  have hT₃_eq : T₃ = T₂ + c := rfl
+  have hb1 := hchain (r + 1) (by omega)
+  have hb2 := hchain (r + 2) (by omega)
+  have hr1_bounds := (validCompanionAt_iff_fracPart b_0 α T₁).mp (hcomp T₁ (by omega))
+  have hr3_next_bounds :=
+    (validCompanionAt_iff_fracPart b_0 α (T₃ + 1)).mp (hcomp (T₃ + 1) le_rfl)
+  -- Step 1: Across block `r + 1` (`s (r + 1) = 2`), `fracPart b_0 α T₂ < 3 / 8`
+  have hdecomp1 : 3 * orbit b_0 T₁ + 1 = 2 ^ 2 * u (r + 1) := by
+    have h := hb1.2.2
+    rwa [hs_r1_eq2] at h
+  have hfp2 : fracPart b_0 α T₂ = (9 / 4 : ℝ) * (fracPart b_0 α T₁ - 1 / 3) := by
+    rw [hT₂_eq, hshift T₁ 2, fracPart_odd_block (by decide : 1 ≤ 2) hdecomp1]
+    have h0 : fracPart (orbit b_0 T₁) (α * (3 / 2 : ℝ) ^ T₁) 0 = fracPart b_0 α T₁ := by
+      simpa using (hshift T₁ 0).symm
+    rw [h0]
+    norm_num
+  have hr2_lt : fracPart b_0 α T₂ < 3 / 8 := by linarith [hr1_bounds.2, hfp2]
+  -- Step 2: Across block `r + 2` (`c = s (r + 2)`), `fracPart b_0 α T₃ < (3 / 2)^c / 24`
+  have hfp3 : fracPart b_0 α T₃ = (3 / 2 : ℝ) ^ c * (fracPart b_0 α T₂ - 1 / 3) := by
+    rw [hT₃_eq, hshift T₂ c, fracPart_odd_block hb2.1 hb2.2.2]
+    have h0 : fracPart (orbit b_0 T₂) (α * (3 / 2 : ℝ) ^ T₂) 0 = fracPart b_0 α T₂ := by
+      simpa using (hshift T₂ 0).symm
+    rw [h0]
+  have hp32_pos : (0 : ℝ) < (3 / 2 : ℝ) ^ c := by positivity
+  have hr3_lt : fracPart b_0 α T₃ < (3 / 2 : ℝ) ^ c * (1 / 24) := by
+    have hsub_lt : fracPart b_0 α T₂ - 1 / 3 < 1 / 24 := by linarith
+    nlinarith
+  -- Step 3: At `T₃`, `orbit b_0 T₃` is odd, so survival at `T₃ + 1` forces `1 / 3 ≤ fracPart b_0 α T₃`
+  have hodd3 : orbit b_0 T₃ % 2 = 1 := by
+    rw [hT₃_eq, orbit_add]
+    exact orbit_odd_block_return_odd hb2.1 hb2.2.1 hb2.2.2
+  have hsucc3 := fracPart_succ b_0 α T₃
+  rw [hodd3] at hsucc3
+  norm_num at hsucc3
+  have hr3_ge : (1 / 3 : ℝ) ≤ fracPart b_0 α T₃ := by linarith [hr3_next_bounds.1, hsucc3]
+  -- Step 4: Deduce `8 * 2 ^ c < 3 ^ c`, hence `6 ≤ c`
+  have hpow_div : (3 / 2 : ℝ) ^ c * (2 : ℝ) ^ c = (3 : ℝ) ^ c := by
+    rw [← mul_pow]; norm_num
+  have hp2c_pos : (0 : ℝ) < (2 : ℝ) ^ c := by positivity
+  have h8_lt_real : 8 * (2 : ℝ) ^ c < (3 : ℝ) ^ c := by
+    have hlt_frac : (1 / 3 : ℝ) < (3 / 2 : ℝ) ^ c * (1 / 24) := lt_of_le_of_lt hr3_ge hr3_lt
+    have hmul24 : (8 : ℝ) < (3 / 2 : ℝ) ^ c := by linarith
+    have hm := mul_lt_mul_of_pos_right hmul24 hp2c_pos
+    rwa [hpow_div] at hm
+  have h8_lt_nat : 8 * 2 ^ c < 3 ^ c := by exact_mod_cast h8_lt_real
+  have hc_ge6 : 6 ≤ c := by
+    by_contra hlt6
+    have hc_ge1 : 1 ≤ c := hb2.1
+    rcases (by omega : c = 1 ∨ c = 2 ∨ c = 3 ∨ c = 4 ∨ c = 5) with h | h | h | h | h <;>
+      (rw [h] at h8_lt_nat; norm_num at h8_lt_nat)
+  have h139 :=
+    real_coupled_gauge_mod64_and_mod320_unique_even_survivor_class hchain hs_r hs_r1_eq2 hc_ge6
+  exact ⟨hc_ge6, h139.1, h139.2.1, h139.2.2.1, h139.2.2.2.2⟩
 
 
 #check @archimedean_rung_ceiling_and_stepSum_bound
@@ -12615,6 +13239,12 @@ theorem grand_148_theorem_moves_1_and_2_kneading_and_laplace_synthesis :
 #check @origin_laplace_partition_two_way_mahler_threshold_equivalence
 #check @discrete_poisson_kernel_strict_real_part_positivity
 #check @grand_148_theorem_moves_1_and_2_kneading_and_laplace_synthesis
+#check @parry_cylinder_tree_exact_n_plus_one_width_class_compression
+#check @upward_hensel_phase_step_dichotomy_and_barrier7_rogue_reset_law
+#check @dyadic_frequency_factorization_and_box_high_power_vanishing
+#check @grand_152_theorem_mahler_semigroup_breakout_capstone_synthesis
+#check @real_z_number_uniqueness_parry_cylinder_bridge_and_flatto_bound
+#check @unconditional_real_companion_mod320_even_gauge_pinch
 
 #print axioms parry_cylinder_tree_three_pow_sum_and_flp_effective_survivor_bound
 #print axioms grand_all_eight_angles_120_theorem_semigroup_breakout_synthesis
@@ -12622,6 +13252,9 @@ theorem grand_148_theorem_moves_1_and_2_kneading_and_laplace_synthesis :
 #print axioms grand_paths_a_and_b_132_theorem_semigroup_breakout_synthesis
 #print axioms grand_140_theorem_method2_fusion_and_real_gauge_pinch_synthesis
 #print axioms grand_148_theorem_moves_1_and_2_kneading_and_laplace_synthesis
+#print axioms grand_152_theorem_mahler_semigroup_breakout_capstone_synthesis
+#print axioms real_z_number_uniqueness_parry_cylinder_bridge_and_flatto_bound
+#print axioms unconditional_real_companion_mod320_even_gauge_pinch
 
 #print axioms archimedean_rung_ceiling_and_stepSum_bound
 #print axioms unit_quotient_even_rung_instant_death_and_odd_rung_mod64_identity
