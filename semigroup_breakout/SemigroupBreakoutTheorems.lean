@@ -4,7 +4,7 @@ import SubCeilingKneadingAutomatonAndGrandSynthesis54
 # Semigroup Breakout Campaign — Cordoned-Off Lean 4 Verification of $\mathbb{Z}_2$-Symmetry-Breaking Generators
 
 This standalone module lives in `semigroup_breakout/` (cordoned off from the 226-file bottom-up
-corpus in the repository root) and formalizes the 154 verified theorems (`SB.1–SB.154`) of the
+corpus in the repository root) and formalizes the 158 verified theorems (`SB.1–SB.158`) of the
 **Semigroup Breakout Campaign** (`SEMIGROUP_BREAKOUT_PAPER.md`):
 
 1. **Theorem SB.1 (`archimedean_rung_ceiling_and_stepSum_bound`) — The Global Archimedean Rung Ceiling**:
@@ -13091,6 +13091,811 @@ theorem unconditional_real_companion_mod320_even_gauge_pinch
   exact ⟨hc_ge6, h139.1, h139.2.1, h139.2.2.1, h139.2.2.2.2⟩
 
 
+/-!
+### Wave 28 (`SB.155–SB.158`): End-to-End Real Reduction to the Mod-4 Ceiling Game, 2D Witt / Binary-Carry Full-Adder Jet Linearization, & Barrier #8 (Base-Bit Nullstellensatz Sparsity and Single-Gate Carry Blindness)
+-/
+
+/-- Pure recursive check for whether `orbit b_0 n % 4 = 3` occurs at some step `n < M`. -/
+def hitsMod4ThreeBefore (b_0 : ℕ) : ℕ → Bool
+  | 0 => false
+  | m + 1 => (b_0 % 4 == 3) || hitsMod4ThreeBefore ((3 * b_0 + b_0 % 2) / 2) m
+
+/-- Equivalence between `hitsMod4ThreeBefore` and an explicit step witness `n < M`. -/
+theorem hitsMod4ThreeBefore_eq_true_iff (b_0 M : ℕ) :
+    hitsMod4ThreeBefore b_0 M = true ↔ ∃ n < M, orbit b_0 n % 4 = 3 := by
+  induction M generalizing b_0 with
+  | zero =>
+      simp [hitsMod4ThreeBefore]
+  | succ m ih =>
+      have hstep : (3 * b_0 + b_0 % 2) / 2 = orbit b_0 1 := by
+        have h2 := two_mul_orbit_succ_eq b_0 0
+        change 2 * orbit b_0 1 = 3 * b_0 + b_0 % 2 at h2
+        omega
+      simp only [hitsMod4ThreeBefore, Bool.or_eq_true, beq_iff_eq, hstep, ih]
+      constructor
+      · rintro (h0 | ⟨k, hkm, hk3⟩)
+        · exact ⟨0, Nat.zero_lt_succ m, h0⟩
+        · refine ⟨k + 1, Nat.succ_lt_succ hkm, ?_⟩
+          have hadd : orbit b_0 (1 + k) = orbit (orbit b_0 1) k := orbit_add b_0 1 k
+          have hcomm : 1 + k = k + 1 := Nat.add_comm 1 k
+          rwa [← hcomm, hadd]
+      · rintro ⟨n, hn, hn3⟩
+        rcases n with _ | k
+        · exact Or.inl hn3
+        · right
+          refine ⟨k, by omega, ?_⟩
+          have hadd : orbit b_0 (1 + k) = orbit (orbit b_0 1) k := orbit_add b_0 1 k
+          have hcomm : k + 1 = 1 + k := Nat.add_comm k 1
+          rwa [hcomm, hadd] at hn3
+
+/-- **SB.155 (End-to-End Real-`ℝ` Reduction of Mahler's $3/2$ Conjecture to the Mod-4 Ceiling Game & Certified Minimal Extinction Horizons):**
+Strips away `ℝ` and infinite Parry tails across **all** `α > 0` (including `0 < α < 1` via
+Archimedean geometric rescaling `1 ≤ α * (3 / 2)^k`):
+1. **Mod-4 vs. Quadratic Adjacent-Odd Equivalence:**
+   `∀ b_0 n : ℕ, orbit b_0 n % 4 = 3 ↔ (orbit b_0 n % 2) * (orbit b_0 (n + 1) % 2) = 1`.
+2. **Local Two-Step Real Fractional Obstruction:**
+   `∀ (b_0 n : ℕ) (α : ℝ), ValidCompanionUpTo b_0 α (n + 2) → orbit b_0 n % 4 ≠ 3`
+   (hitting `3 mod 4` forces `fracPart b_0 α (n + 1) < 1 / 4` at step `n + 1` while `orbit b_0 (n + 1)`
+   is odd, which requires `1 / 3 ≤ fracPart b_0 α (n + 1)` at step `n + 2`).
+3. **Global End-to-End Real Reduction Over All `0 < α`:**
+   `(∀ b_0 : ℕ, 1 ≤ b_0 → ∃ n : ℕ, orbit b_0 n % 4 = 3) → ∀ α : ℝ, 0 < α → ∃ N : ℕ, (1 / 2 : ℝ) ≤ Int.fract (α * (3 / 2 : ℝ) ^ N)`.
+4. **Certified Exact Minimal Extinction Horizons $N^*(W)$:**
+   Every seed `1 ≤ b_0 < 2 ^ W` hits `orbit b_0 n % 4 = 3` at some `n < M` for `(W, M) ∈ {(2, 3), (3, 11), (4, 22), (6, 24)}`,
+   with sharpness witnesses `b_0 = 1` (`n < 2`), `b_0 = 4` (`n < 10`), `b_0 = 13` (`n < 21`), and `b_0 = 53` (`n < 23`). -/
+theorem end_to_end_real_reduction_to_mod4_ceiling_game_and_extinction_horizons :
+    (∀ b_0 n : ℕ,
+      orbit b_0 n % 4 = 3 ↔ (orbit b_0 n % 2) * (orbit b_0 (n + 1) % 2) = 1) ∧
+    (∀ (b_0 n : ℕ) (α : ℝ),
+      ValidCompanionUpTo b_0 α (n + 2) → orbit b_0 n % 4 ≠ 3) ∧
+    ((∀ b_0 : ℕ, 1 ≤ b_0 → ∃ n : ℕ, orbit b_0 n % 4 = 3) →
+      ∀ α : ℝ, 0 < α → ∃ N : ℕ, (1 / 2 : ℝ) ≤ Int.fract (α * (3 / 2 : ℝ) ^ N)) ∧
+    ((∀ b_0 : ℕ, 1 ≤ b_0 → b_0 < 2 ^ 2 → ∃ n < 3, orbit b_0 n % 4 = 3) ∧
+      (∀ n < 2, orbit 1 n % 4 ≠ 3) ∧
+      (∀ b_0 : ℕ, 1 ≤ b_0 → b_0 < 2 ^ 3 → ∃ n < 11, orbit b_0 n % 4 = 3) ∧
+      (∀ n < 10, orbit 4 n % 4 ≠ 3) ∧
+      (∀ b_0 : ℕ, 1 ≤ b_0 → b_0 < 2 ^ 4 → ∃ n < 22, orbit b_0 n % 4 = 3) ∧
+      (∀ n < 21, orbit 13 n % 4 ≠ 3) ∧
+      (∀ b_0 : ℕ, 1 ≤ b_0 → b_0 < 2 ^ 6 → ∃ n < 24, orbit b_0 n % 4 = 3) ∧
+      (∀ n < 23, orbit 53 n % 4 ≠ 3)) := by
+  have hmod4_iff :
+      ∀ b_0 n : ℕ,
+        orbit b_0 n % 4 = 3 ↔ (orbit b_0 n % 2) * (orbit b_0 (n + 1) % 2) = 1 := by
+    intro b_0 n
+    have hstep := two_mul_orbit_succ_eq b_0 n
+    have hpar :
+        (orbit b_0 n % 2) * (orbit b_0 (n + 1) % 2) = 1 ↔
+          orbit b_0 n % 2 = 1 ∧ orbit b_0 (n + 1) % 2 = 1 := by
+      rcases (by omega : orbit b_0 n % 2 = 0 ∨ orbit b_0 n % 2 = 1) with h0 | h1
+      · rcases (by omega : orbit b_0 (n + 1) % 2 = 0 ∨ orbit b_0 (n + 1) % 2 = 1) with g0 | g1
+        · simp [h0, g0]
+        · simp [h0, g1]
+      · rcases (by omega : orbit b_0 (n + 1) % 2 = 0 ∨ orbit b_0 (n + 1) % 2 = 1) with g0 | g1
+        · simp [h1, g0]
+        · simp [h1, g1]
+    rw [hpar]
+    omega
+  have hno_mod4_real :
+      ∀ (b_0 n : ℕ) (α : ℝ),
+        ValidCompanionUpTo b_0 α (n + 2) → orbit b_0 n % 4 ≠ 3 := by
+    intro b_0 n α hup h3
+    have hstep := two_mul_orbit_succ_eq b_0 n
+    have hodd0 : orbit b_0 n % 2 = 1 := by omega
+    have hodd1 : orbit b_0 (n + 1) % 2 = 1 := by omega
+    have hb0 := (validCompanionAt_iff_fracPart b_0 α n).mp (hup n (by omega))
+    have hb2 := (validCompanionAt_iff_fracPart b_0 α (n + 2)).mp (hup (n + 2) le_rfl)
+    have hs0 := fracPart_succ b_0 α n
+    have hs1 := fracPart_succ b_0 α (n + 1)
+    rw [hodd0] at hs0
+    rw [hodd1] at hs1
+    norm_num at hs0 hs1
+    linarith
+  refine ⟨hmod4_iff, hno_mod4_real, ?_, ?_⟩
+  · intro hall α hα
+    by_contra hnot
+    have hlt_all : ∀ N : ℕ, Int.fract (α * (3 / 2 : ℝ) ^ N) < 1 / 2 :=
+      fun N => lt_of_not_ge fun hge => hnot ⟨N, hge⟩
+    have hbern : ∀ k : ℕ, (1 : ℝ) + (k : ℝ) * (1 / 2) ≤ (3 / 2 : ℝ) ^ k := by
+      intro k
+      induction k with
+      | zero => norm_num
+      | succ m ih =>
+          have hnonneg : (0 : ℝ) ≤ (m : ℝ) * (1 / 2) := by positivity
+          calc
+            (1 : ℝ) + ((m + 1 : ℕ) : ℝ) * (1 / 2)
+                = (1 + (m : ℝ) * (1 / 2)) + 1 / 2 := by push_cast; ring
+            _ ≤ (1 + (m : ℝ) * (1 / 2)) * (3 / 2) := by linarith
+            _ ≤ (3 / 2 : ℝ) ^ m * (3 / 2) :=
+                mul_le_mul_of_nonneg_right ih (by norm_num)
+            _ = (3 / 2 : ℝ) ^ (m + 1) := by rw [pow_succ]
+    have hdiv_nonneg : (0 : ℝ) ≤ 2 / α := by positivity
+    have hfl_nonneg : 0 ≤ ⌊2 / α⌋ := Int.floor_nonneg.mpr hdiv_nonneg
+    set k : ℕ := Int.toNat ⌊2 / α⌋ + 1
+    have hk_int : ⌊2 / α⌋ < ((k : ℕ) : ℤ) := by
+      have hcast : ((Int.toNat ⌊2 / α⌋ : ℕ) : ℤ) = ⌊2 / α⌋ := Int.toNat_of_nonneg hfl_nonneg
+      omega
+    have hk_real : 2 / α < (k : ℝ) := by
+      have hlt_cast : 2 / α < (((k : ℕ) : ℤ) : ℝ) := (Int.floor_lt).mp hk_int
+      simpa using hlt_cast
+    have h2_lt : (2 : ℝ) < α * (k : ℝ) := by
+      have hm := mul_lt_mul_of_pos_left hk_real hα
+      have hcancel : α * (2 / α) = 2 := by field_simp
+      linarith
+    set α' : ℝ := α * (3 / 2 : ℝ) ^ k
+    have hα'_ge1 : (1 : ℝ) ≤ α' := by
+      have h1 : (1 : ℝ) ≤ α * (1 + (k : ℝ) * (1 / 2)) := by linarith
+      have h2 : α * (1 + (k : ℝ) * (1 / 2)) ≤ α * (3 / 2 : ℝ) ^ k :=
+        mul_le_mul_of_nonneg_left (hbern k) (le_of_lt hα)
+      exact le_trans h1 h2
+    have hfl'_ge1 : (1 : ℤ) ≤ ⌊α'⌋ := Int.le_floor.mpr (by norm_num; exact hα'_ge1)
+    set b_0 : ℕ := Int.toNat ⌊α'⌋
+    have hb0_cast : ((b_0 : ℕ) : ℤ) = ⌊α'⌋ := Int.toNat_of_nonneg (by omega)
+    have hb0_ge1 : 1 ≤ b_0 := by omega
+    have hfr' : ∀ m : ℕ, Int.fract (α' * (3 / 2 : ℝ) ^ m) < 1 / 2 := by
+      intro m
+      have hpow : α' * (3 / 2 : ℝ) ^ m = α * (3 / 2 : ℝ) ^ (k + m) := by
+        dsimp [α']
+        rw [pow_add]
+        ring
+      rw [hpow]
+      exact hlt_all (k + m)
+    have hforever : ValidCompanionForever b_0 α' :=
+      (validCompanionForever_iff_floor_and_forall_fract_lt_half b_0 α').mpr ⟨hb0_cast.symm, hfr'⟩
+    rcases hall b_0 hb0_ge1 with ⟨n, hn3⟩
+    have hup : ValidCompanionUpTo b_0 α' (n + 2) :=
+      (validCompanionForever_iff_forall_upTo b_0 α').mp hforever (n + 2)
+    exact hno_mod4_real b_0 n α' hup hn3
+  · have hcheck :
+        ∀ W M : ℕ,
+          ((List.range (2 ^ W)).all (fun b => (b == 0) || hitsMod4ThreeBefore b M)) = true →
+          ∀ b_0 : ℕ, 1 ≤ b_0 → b_0 < 2 ^ W → ∃ n < M, orbit b_0 n % 4 = 3 := by
+      intro W M hall_true b_0 hb1 hblt
+      have hmem : b_0 ∈ List.range (2 ^ W) := List.mem_range.mpr hblt
+      have hb_ok := List.all_eq_true.mp hall_true b_0 hmem
+      simp only [Bool.or_eq_true, beq_iff_eq] at hb_ok
+      rcases hb_ok with rfl | hhit
+      · omega
+      · exact (hitsMod4ThreeBefore_eq_true_iff b_0 M).mp hhit
+    have hsurv :
+        ∀ b_0 M : ℕ, hitsMod4ThreeBefore b_0 M = false → ∀ n < M, orbit b_0 n % 4 ≠ 3 := by
+      intro b_0 M hfalse n hn h3
+      have htrue : hitsMod4ThreeBefore b_0 M = true :=
+        (hitsMod4ThreeBefore_eq_true_iff b_0 M).mpr ⟨n, hn, h3⟩
+      rw [hfalse] at htrue
+      cases htrue
+    have hw2 : ((List.range (2 ^ 2)).all (fun b => (b == 0) || hitsMod4ThreeBefore b 3)) = true := by
+      decide
+    have hw3 : ((List.range (2 ^ 3)).all (fun b => (b == 0) || hitsMod4ThreeBefore b 11)) = true := by
+      decide
+    have hw4 : ((List.range (2 ^ 4)).all (fun b => (b == 0) || hitsMod4ThreeBefore b 22)) = true := by
+      decide
+    have hw6 : ((List.range (2 ^ 6)).all (fun b => (b == 0) || hitsMod4ThreeBefore b 24)) = true := by
+      decide
+    have hs1 : hitsMod4ThreeBefore 1 2 = false := by decide
+    have hs4 : hitsMod4ThreeBefore 4 10 = false := by decide
+    have hs13 : hitsMod4ThreeBefore 13 21 = false := by decide
+    have hs53 : hitsMod4ThreeBefore 53 23 = false := by decide
+    exact ⟨hcheck 2 3 hw2, hsurv 1 2 hs1, hcheck 3 11 hw3, hsurv 4 10 hs4,
+      hcheck 4 22 hw4, hsurv 13 21 hs13, hcheck 6 24 hw6, hsurv 53 23 hs53⟩
+
+
+/-- Binary bit `k` of a natural number `x`: `(x / 2 ^ k) % 2`. -/
+def jetBit (x k : ℕ) : ℕ := (x / 2 ^ k) % 2
+
+/-- Ripple-carry bit into position `k` for the binary full-adder step `b + b / 2 + b % 2`. -/
+def jetCarryAux (b : ℕ) : ℕ → ℕ
+  | 0 => b % 2
+  | k + 1 => (jetBit b k + jetBit b (k + 1) + jetCarryAux b k) / 2
+
+/-- Ripple-carry bit at step `n`, bit-plane `k` along `orbit b_0 n`. -/
+def jetCarry (b_0 n k : ℕ) : ℕ := jetCarryAux (orbit b_0 n) k
+
+/-- Degree-2 running-OR chain `z_{j+1} = z_j + u_j - z_j * u_j` over `ℤ`. -/
+def jetRunOrZ (u : ℕ → ℤ) : ℕ → ℤ
+  | 0 => 0
+  | j + 1 => jetRunOrZ u j + u j - jetRunOrZ u j * u j
+
+/-- **SB.156 (Exact 2D Witt / Binary-Carry Full-Adder Jet Linearization & Degree-2 Running-OR Positivity):**
+Lifts the 1D ceiling map `orbit b_0 (n + 1) = ⌈3 * orbit b_0 n / 2⌉` to its 2D base-2 Witt /
+binary-carry jet table `β_{n, k} = jetBit (orbit b_0 n) k ∈ {0, 1}` and `c_{n, k} = jetCarry b_0 n k ∈ {0, 1}`:
+1. **Global Full-Adder Decomposition:**
+   `orbit b_0 (n + 1) = orbit b_0 n + orbit b_0 n / 2 + jetBit (orbit b_0 n) 0`.
+2. **Bottom-Plane Shift & Carry Lock (`β_{n+1, 0} = β_{n, 1}` and `c_{n, 0} = c_{n, 1} = β_{n, 0}`):**
+   At every step `n`, the next parity bit equals bit `1` of `orbit b_0 n` unconditionally.
+3. **Exact Degree-1 Linear Full-Adder Lattice Across All `(n, k)`:**
+   `jetBit (orbit b_0 n) k < 2 ∧ jetCarry b_0 n k < 2` and
+   `jetBit (orbit b_0 (n + 1)) k + 2 * jetCarry b_0 n (k + 1) = jetBit (orbit b_0 n) k + jetBit (orbit b_0 n) (k + 1) + jetCarry b_0 n k`.
+4. **Degree-2 Running-OR Positivity on Finite-Width Prefixes:**
+   For any binary bit vector `u : ℕ → ℤ` (`∀ j < W, u j = 0 ∨ u j = 1`),
+   `jetRunOrZ u W ∈ {0, 1}` and
+   `jetRunOrZ u W = 1 ↔ (1 ≤ ∑ j ∈ Finset.range W, u j * 2 ^ j ∧ ∑ j ∈ Finset.range W, u j * 2 ^ j < 2 ^ W)`
+   (when combined with finite width `b_0 = ∑_{j < W} u_j 2^j`, this excludes both `b_0 = 0` and non-integer 2-adic tails in degree `≤ 2`). -/
+theorem witt_binary_carry_full_adder_jet_linearization_and_positivity_chain :
+    (∀ b_0 n : ℕ,
+      orbit b_0 (n + 1) = orbit b_0 n + orbit b_0 n / 2 + jetBit (orbit b_0 n) 0) ∧
+    (∀ b_0 n : ℕ,
+      jetCarry b_0 n 0 = jetBit (orbit b_0 n) 0 ∧
+        jetCarry b_0 n 1 = jetBit (orbit b_0 n) 0 ∧
+        jetBit (orbit b_0 (n + 1)) 0 = jetBit (orbit b_0 n) 1) ∧
+    (∀ b_0 n k : ℕ,
+      jetBit (orbit b_0 n) k < 2 ∧
+        jetCarry b_0 n k < 2 ∧
+        jetBit (orbit b_0 (n + 1)) k + 2 * jetCarry b_0 n (k + 1) =
+          jetBit (orbit b_0 n) k + jetBit (orbit b_0 n) (k + 1) + jetCarry b_0 n k) ∧
+    (∀ (W : ℕ) (u : ℕ → ℤ),
+      (∀ j < W, u j = 0 ∨ u j = 1) →
+      (jetRunOrZ u W = 0 ∨ jetRunOrZ u W = 1) ∧
+        (jetRunOrZ u W = 1 ↔
+          1 ≤ (Finset.range W).sum (fun j => u j * (2 : ℤ) ^ j) ∧
+            (Finset.range W).sum (fun j => u j * (2 : ℤ) ^ j) < (2 : ℤ) ^ W)) := by
+  have hglob :
+      ∀ b_0 n : ℕ,
+        orbit b_0 (n + 1) = orbit b_0 n + orbit b_0 n / 2 + jetBit (orbit b_0 n) 0 := by
+    intro b_0 n
+    have h2 := two_mul_orbit_succ_eq b_0 n
+    set x := orbit b_0 n
+    set y := orbit b_0 (n + 1)
+    unfold jetBit
+    simp only [Nat.pow_zero, Nat.div_one]
+    omega
+  have hcarry_lt2 : ∀ b k : ℕ, jetCarryAux b k < 2 := by
+    intro b k
+    induction k with
+    | zero =>
+        simp only [jetCarryAux]
+        omega
+    | succ m ih =>
+        simp only [jetCarryAux]
+        unfold jetBit
+        generalize jetCarryAux b m = c at ih ⊢
+        generalize b / 2 ^ m = q0
+        generalize b / 2 ^ (m + 1) = q1
+        omega
+  have hquot_inv :
+      ∀ b k : ℕ,
+        (b + b / 2 + b % 2) / 2 ^ k = b / 2 ^ k + b / 2 ^ (k + 1) + jetCarryAux b k := by
+    intro b k
+    induction k with
+    | zero =>
+        simp [jetCarryAux]
+    | succ m ih =>
+        have hdiv_step : ∀ x r : ℕ, x / 2 ^ (r + 1) = (x / 2 ^ r) / 2 := by
+          intro x r
+          rw [Nat.pow_succ, ← Nat.div_div_eq_div_mul]
+        rw [hdiv_step (b + b / 2 + b % 2) m, ih]
+        simp only [jetCarryAux]
+        unfold jetBit
+        rw [hdiv_step b (m + 1), hdiv_step b m]
+        generalize jetCarryAux b m = c
+        generalize b / 2 ^ m = q0
+        set q1 := q0 / 2
+        have hq0_eq : 2 * q1 + q0 % 2 = q0 := Nat.div_add_mod q0 2
+        omega
+  refine ⟨hglob, ?_, ?_, ?_⟩
+  · intro b_0 n
+    have h2 := two_mul_orbit_succ_eq b_0 n
+    dsimp [jetCarry, jetCarryAux, jetBit]
+    generalize orbit b_0 n = x at h2 ⊢
+    generalize orbit b_0 (n + 1) = y at h2 ⊢
+    set q := x / 2
+    have hx_eq : 2 * q + x % 2 = x := Nat.div_add_mod x 2
+    omega
+  · intro b_0 n k
+    set b := orbit b_0 n
+    have hbit_lt : jetBit b k < 2 := by
+      unfold jetBit
+      generalize b / 2 ^ k = q0
+      omega
+    have hc_lt : jetCarry b_0 n k < 2 := hcarry_lt2 b k
+    refine ⟨hbit_lt, hc_lt, ?_⟩
+    have hnext_eq : orbit b_0 (n + 1) = b + b / 2 + b % 2 := by
+      have hg := hglob b_0 n
+      unfold jetBit at hg
+      simp only [Nat.pow_zero, Nat.div_one] at hg
+      exact hg
+    rw [hnext_eq]
+    unfold jetCarry
+    change ((b + b / 2 + b % 2) / 2 ^ k) % 2 + 2 * jetCarryAux b (k + 1) =
+      jetBit b k + jetBit b (k + 1) + jetCarryAux b k
+    rw [hquot_inv b k]
+    simp only [jetCarryAux]
+    unfold jetBit
+    have hc_k : jetCarryAux b k < 2 := hcarry_lt2 b k
+    generalize jetCarryAux b k = c at hc_k ⊢
+    generalize b / 2 ^ k = q0
+    generalize b / 2 ^ (k + 1) = q1
+    omega
+  · intro W u hu
+    have hind :
+        ∀ m ≤ W,
+          (jetRunOrZ u m = 0 ∨ jetRunOrZ u m = 1) ∧
+            (0 ≤ (Finset.range m).sum (fun j => u j * (2 : ℤ) ^ j)) ∧
+            ((Finset.range m).sum (fun j => u j * (2 : ℤ) ^ j) < (2 : ℤ) ^ m) ∧
+            (jetRunOrZ u m = 1 ↔ 1 ≤ (Finset.range m).sum (fun j => u j * (2 : ℤ) ^ j)) := by
+      intro m hmW
+      induction m with
+      | zero =>
+          simp [jetRunOrZ]
+      | succ r ih =>
+          rcases ih (by omega) with ⟨hor_r, hsum_ge0, hsum_lt, hiff_r⟩
+          have hur : u r = 0 ∨ u r = 1 := hu r (by omega)
+          have hp2_pos : (1 : ℤ) ≤ (2 : ℤ) ^ r := one_le_pow₀ (by norm_num)
+          have hp2_succ : (2 : ℤ) ^ (r + 1) = 2 * (2 : ℤ) ^ r := by rw [pow_succ]; ring
+          rw [Finset.sum_range_succ, jetRunOrZ, hp2_succ]
+          generalize (Finset.range r).sum (fun j => u j * (2 : ℤ) ^ j) = S_r at hsum_ge0 hsum_lt hiff_r ⊢
+          generalize (2 : ℤ) ^ r = P_r at hp2_pos hsum_lt ⊢
+          rcases hor_r with hz0 | hz1 <;> rcases hur with hu0 | hu1
+          · have hsum0 : S_r = 0 := by
+              have hnot1 : ¬ (1 ≤ S_r) := by
+                rw [← hiff_r, hz0]; decide
+              omega
+            rw [hz0, hu0, hsum0]
+            omega
+          · rw [hz0, hu1]
+            omega
+          · have hge1 : 1 ≤ S_r := hiff_r.mp hz1
+            rw [hz1, hu0]
+            omega
+          · have hge1 : 1 ≤ S_r := hiff_r.mp hz1
+            rw [hz1, hu1]
+            omega
+    rcases hind W le_rfl with ⟨hor_W, _, hlt_W, hiff_W⟩
+    refine ⟨hor_W, ?_⟩
+    constructor
+    · intro h1
+      exact ⟨hiff_W.mp h1, hlt_W⟩
+    · rintro ⟨hge1, _⟩
+      exact hiff_W.mpr hge1
+
+
+/-- Indicator point `1_A : ℕ → ℤ` of a finite subset `A : Finset ℕ` inside the Boolean hypercube. -/
+def boolCubePt (A : Finset ℕ) : ℕ → ℤ := fun j => if j ∈ A then 1 else 0
+
+/-- Multilinear monomial `∏_{j ∈ T} u_j` evaluated at `u : ℕ → ℤ`. -/
+def multilinearMono (T : Finset ℕ) (u : ℕ → ℤ) : ℤ := T.prod (fun j => u j)
+
+/-- Restricted Möbius / alternating-parity functional `Λ_S(F) = ∑_{A ⊆ S} (-1)^|A| F(1_A)`. -/
+def mobiusParityFunctional (S : Finset ℕ) (F : (ℕ → ℤ) → ℤ) : ℤ :=
+  S.powerset.sum (fun A => (-1 : ℤ) ^ A.card * F (boolCubePt A))
+
+/-- **SB.157 (Barrier #8A — Unconditional Base-Bit Nullstellensatz Degree-$W$ & $(2^W - 1)$-Monomial Sparsity Lower Bound):**
+Formalizes the **algebraic / proof-complexity twin** of Parseval Barrier #6 (`SB.124`):
+because `b_0 = 0` (`A = ∅`) satisfies every homogeneous/dynamic Mahler or no-`11` constraint
+(`g_i(0) = 0`), any unlifted polynomial combination `F(u) = ∑_i Q_i(u) g_i(u)` refuting all nonzero
+$W$-bit integers (`1 ≤ b_0 < 2 ^ W`, i.e., every nonempty `A ⊆ range W`) must satisfy `F(0) = 0`
+and `F(1_A) = 1` for all nonempty `A ⊆ range W`:
+1. **Exact Möbius Monomial Extraction (`∀ S T : Finset ℕ`):**
+   `mobiusParityFunctional S (multilinearMono T) = if T = S then (-1 : ℤ) ^ S.card else 0`.
+2. **Universal `-1` Obstruction Across All $2^W - 1$ Nonempty Subsets:**
+   Whenever `F (boolCubePt ∅) = 0` and `∀ A ⊆ Finset.range W, A.Nonempty → F (boolCubePt A) = 1`,
+   every nonempty `S ⊆ Finset.range W` satisfies `mobiusParityFunctional S F = -1`.
+3. **Unconditional Degree $\ge W$ & Sparsity $\ge 2^W - 1$ Theorem (All `1 ≤ W`):**
+   For **any** multilinear polynomial `P(u) = ∑_{T ∈ supp} coeff(T) * multilinearMono T u` agreeing
+   with `F` on `{0, 1}^W`:
+   - Every nonempty `S ⊆ Finset.range W` satisfies `S ∈ supp` and `(-1 : ℤ) ^ S.card * coeff S = -1`
+     (`coeff S = (-1)^(|S|+1) ≠ 0`),
+   - The full-width degree-$W$ monomial `Finset.range W` (`(Finset.range W).card = W`) belongs to `supp`
+     (so no multilinear representation of degree `< W` agrees with `F` on `{0, 1}^W`), and
+   - **`2 ^ W - 1 ≤ supp.card`** (every normalized multilinear representation has monomial size `≥ 2^W - 1`). -/
+theorem barrier8a_unlifted_base_bits_nullstellensatz_degree_and_sparsity_bound :
+    (∀ S T : Finset ℕ,
+      mobiusParityFunctional S (multilinearMono T) =
+        if T = S then (-1 : ℤ) ^ S.card else 0) ∧
+    (∀ (W : ℕ) (F : (ℕ → ℤ) → ℤ),
+      F (boolCubePt ∅) = 0 →
+      (∀ A : Finset ℕ, A ⊆ Finset.range W → A.Nonempty → F (boolCubePt A) = 1) →
+      ∀ S : Finset ℕ, S ⊆ Finset.range W → S.Nonempty → mobiusParityFunctional S F = -1) ∧
+    (∀ (W : ℕ), 1 ≤ W →
+      ∀ (supp : Finset (Finset ℕ)) (coeff : Finset ℕ → ℤ) (F : (ℕ → ℤ) → ℤ),
+        F (boolCubePt ∅) = 0 →
+        (∀ A : Finset ℕ, A ⊆ Finset.range W → A.Nonempty → F (boolCubePt A) = 1) →
+        (∀ A : Finset ℕ, A ⊆ Finset.range W →
+          supp.sum (fun T => coeff T * multilinearMono T (boolCubePt A)) = F (boolCubePt A)) →
+        (∀ S : Finset ℕ, S ⊆ Finset.range W → S.Nonempty →
+          S ∈ supp ∧ (-1 : ℤ) ^ S.card * coeff S = -1 ∧ coeff S ≠ 0) ∧
+          Finset.range W ∈ supp ∧
+          (Finset.range W).card = W ∧
+          2 ^ W - 1 ≤ supp.card) := by
+  have hmono_eval :
+      ∀ T A : Finset ℕ, multilinearMono T (boolCubePt A) = if T ⊆ A then 1 else 0 := by
+    intro T A
+    unfold multilinearMono boolCubePt
+    by_cases hTA : T ⊆ A
+    · rw [if_pos hTA]
+      apply Finset.prod_eq_one
+      intro x hx
+      exact if_pos (hTA hx)
+    · rw [if_neg hTA]
+      have hex : ∃ x ∈ T, x ∉ A := Finset.not_subset.mp hTA
+      rcases hex with ⟨x, hxT, hxA⟩
+      exact Finset.prod_eq_zero hxT (if_neg hxA)
+  have hortho :
+      ∀ S T : Finset ℕ,
+        mobiusParityFunctional S (multilinearMono T) =
+          if T = S then (-1 : ℤ) ^ S.card else 0 := by
+    intro S
+    induction S using Finset.induction_on with
+    | empty =>
+        intro T
+        unfold mobiusParityFunctional
+        simp only [Finset.powerset_empty, Finset.sum_singleton, Finset.card_empty, pow_zero, one_mul]
+        rw [hmono_eval T ∅]
+        by_cases hT : T = ∅
+        · subst hT; simp
+        · have hnot : ¬ (T ⊆ ∅) := by
+            intro hsub
+            exact hT (Finset.subset_empty.mp hsub)
+          simp [hT, hnot]
+    | @insert a B haB ih =>
+        intro T
+        unfold mobiusParityFunctional
+        rw [Finset.powerset_insert, Finset.sum_union (by
+          rw [Finset.disjoint_left]
+          intro X hX1 hX2
+          rcases Finset.mem_image.mp hX2 with ⟨Y, _, rfl⟩
+          have haX : a ∈ insert a Y := Finset.mem_insert_self a Y
+          have hXB : insert a Y ⊆ B := Finset.mem_powerset.mp hX1
+          exact haB (hXB haX))]
+        rw [Finset.sum_image (by
+          intro X hX Y hY heq
+          have haX : a ∉ X := fun h => haB (Finset.mem_powerset.mp hX h)
+          have haY : a ∉ Y := fun h => haB (Finset.mem_powerset.mp hY h)
+          have h1 : (insert a X).erase a = X := Finset.erase_insert haX
+          have h2 : (insert a Y).erase a = Y := Finset.erase_insert haY
+          rw [← h1, ← h2, heq])]
+        by_cases haT : a ∈ T
+        · have hleft0 :
+              B.powerset.sum (fun A => (-1 : ℤ) ^ A.card * multilinearMono T (boolCubePt A)) = 0 := by
+            apply Finset.sum_eq_zero
+            intro A hA
+            have haA : a ∉ A := fun h => haB (Finset.mem_powerset.mp hA h)
+            have hnot : ¬ (T ⊆ A) := fun hsub => haA (hsub haT)
+            rw [hmono_eval T A, if_neg hnot, mul_zero]
+          have hright :
+              B.powerset.sum (fun A =>
+                (-1 : ℤ) ^ (insert a A).card * multilinearMono T (boolCubePt (insert a A))) =
+                - mobiusParityFunctional B (multilinearMono (T.erase a)) := by
+            unfold mobiusParityFunctional
+            rw [← Finset.sum_neg_distrib]
+            apply Finset.sum_congr rfl
+            intro A hA
+            have haA : a ∉ A := fun h => haB (Finset.mem_powerset.mp hA h)
+            rw [Finset.card_insert_of_not_mem haA, pow_succ]
+            have hsub_iff : T ⊆ insert a A ↔ T.erase a ⊆ A := by
+              constructor
+              · intro hsub x hx
+                rcases Finset.mem_erase.mp hx with ⟨hne, hxT⟩
+                rcases Finset.mem_insert.mp (hsub hxT) with rfl | hxA
+                · exact absurd rfl hne
+                · exact hxA
+              · intro hsub x hxT
+                by_cases hxa : x = a
+                · subst hxa; exact Finset.mem_insert_self x A
+                · exact Finset.mem_insert_of_mem (hsub (Finset.mem_erase.mpr ⟨hxa, hxT⟩))
+            rw [hmono_eval T (insert a A), hmono_eval (T.erase a) A]
+            by_cases hE : T.erase a ⊆ A
+            · rw [if_pos (hsub_iff.mpr hE), if_pos hE]; ring
+            · have hnE : ¬ (T ⊆ insert a A) := fun h => hE (hsub_iff.mp h)
+              rw [if_neg hnE, if_neg hE]; ring
+          rw [hleft0, zero_add, hright, ih (T.erase a)]
+          have heq_iff : T.erase a = B ↔ T = insert a B := by
+            constructor
+            · intro hEB
+              rw [← hEB, Finset.insert_erase haT]
+            · intro hT_eq
+              rw [hT_eq, Finset.erase_insert haB]
+          by_cases hTB : T = insert a B
+          · rw [if_pos (heq_iff.mpr hTB), if_pos hTB, Finset.card_insert_of_not_mem haB, pow_succ]
+            ring
+          · have hnEB : T.erase a ≠ B := fun h => hTB (heq_iff.mp h)
+            rw [if_neg hnEB, if_neg hTB, neg_zero]
+        · have hcancel :
+              B.powerset.sum (fun A => (-1 : ℤ) ^ A.card * multilinearMono T (boolCubePt A)) +
+                B.powerset.sum (fun A =>
+                  (-1 : ℤ) ^ (insert a A).card * multilinearMono T (boolCubePt (insert a A))) = 0 := by
+            rw [← Finset.sum_add_distrib]
+            apply Finset.sum_eq_zero
+            intro A hA
+            have haA : a ∉ A := fun h => haB (Finset.mem_powerset.mp hA h)
+            rw [Finset.card_insert_of_not_mem haA, pow_succ]
+            have hsub_same : T ⊆ insert a A ↔ T ⊆ A := by
+              constructor
+              · intro hsub x hxT
+                rcases Finset.mem_insert.mp (hsub hxT) with rfl | hxA
+                · exact absurd hxT haT
+                · exact hxA
+              · intro hsub x hxT
+                exact Finset.mem_insert_of_mem (hsub hxT)
+            rw [hmono_eval T A, hmono_eval T (insert a A)]
+            by_cases hTA : T ⊆ A
+            · rw [if_pos hTA, if_pos (hsub_same.mpr hTA)]; ring
+            · have hnTA : ¬ (T ⊆ insert a A) := fun h => hTA (hsub_same.mp h)
+              rw [if_neg hTA, if_neg hnTA]; ring
+          have hne_ins : T ≠ insert a B := by
+            intro heq
+            rw [heq] at haT
+            exact haT (Finset.mem_insert_self a B)
+          rw [hcancel, if_neg hne_ins]
+  have hmob_F :
+      ∀ (W : ℕ) (F : (ℕ → ℤ) → ℤ),
+        F (boolCubePt ∅) = 0 →
+        (∀ A : Finset ℕ, A ⊆ Finset.range W → A.Nonempty → F (boolCubePt A) = 1) →
+        ∀ S : Finset ℕ, S ⊆ Finset.range W → S.Nonempty → mobiusParityFunctional S F = -1 := by
+    intro W F hF0 hF1 S hSW hS_ne
+    have hsum_zero : S.powerset.sum (fun A => (-1 : ℤ) ^ A.card) = 0 := by
+      have h0 := hortho S ∅
+      have hne : (∅ : Finset ℕ) ≠ S := hS_ne.ne_empty.symm
+      rw [if_neg hne] at h0
+      unfold mobiusParityFunctional multilinearMono at h0
+      simpa using h0
+    unfold mobiusParityFunctional
+    have hsplit :
+        S.powerset.sum (fun A => (-1 : ℤ) ^ A.card * F (boolCubePt A)) =
+          S.powerset.sum (fun A => (-1 : ℤ) ^ A.card) - 1 := by
+      have hempty_mem : (∅ : Finset ℕ) ∈ S.powerset := Finset.mem_powerset.mpr (Finset.empty_subset S)
+      rw [← Finset.add_sum_erase _ _ hempty_mem]
+      have hsum_er :
+          (S.powerset.erase ∅).sum (fun A => (-1 : ℤ) ^ A.card * F (boolCubePt A)) =
+            (S.powerset.erase ∅).sum (fun A => (-1 : ℤ) ^ A.card) := by
+        apply Finset.sum_congr rfl
+        intro A hA
+        rcases Finset.mem_erase.mp hA with ⟨hAne, hApow⟩
+        have hAS : A ⊆ S := Finset.mem_powerset.mp hApow
+        have hAW : A ⊆ Finset.range W := Finset.Subset.trans hAS hSW
+        rw [hF1 A hAW (Finset.nonempty_iff_ne_empty.mpr hAne), mul_one]
+      have htot_er :
+          S.powerset.sum (fun A => (-1 : ℤ) ^ A.card) =
+            1 + (S.powerset.erase ∅).sum (fun A => (-1 : ℤ) ^ A.card) := by
+        have h := (Finset.add_sum_erase S.powerset (fun A => (-1 : ℤ) ^ A.card) hempty_mem).symm
+        simp only [Finset.card_empty, pow_zero] at h
+        exact h
+      rw [hF0, mul_zero, zero_add, hsum_er]
+      linarith
+    linarith
+  refine ⟨hortho, hmob_F, ?_⟩
+  · intro W hW supp coeff F hF0 hF1 hagree
+    have hS_in :
+        ∀ S : Finset ℕ, S ⊆ Finset.range W → S.Nonempty →
+          S ∈ supp ∧ (-1 : ℤ) ^ S.card * coeff S = -1 ∧ coeff S ≠ 0 := by
+      intro S hSW hSne
+      have hlhs :
+          mobiusParityFunctional S F =
+            supp.sum (fun T => coeff T * mobiusParityFunctional S (multilinearMono T)) := by
+        unfold mobiusParityFunctional
+        have hcongr :
+            S.powerset.sum (fun A => (-1 : ℤ) ^ A.card * F (boolCubePt A)) =
+              S.powerset.sum (fun A =>
+                (-1 : ℤ) ^ A.card * supp.sum (fun T => coeff T * multilinearMono T (boolCubePt A))) := by
+          apply Finset.sum_congr rfl
+          intro A hA
+          have hAW : A ⊆ Finset.range W :=
+            Finset.Subset.trans (Finset.mem_powerset.mp hA) hSW
+          rw [hagree A hAW]
+        rw [hcongr]
+        trans S.powerset.sum (fun A =>
+            supp.sum (fun T => coeff T * ((-1 : ℤ) ^ A.card * multilinearMono T (boolCubePt A))))
+        · apply Finset.sum_congr rfl
+          intro A _
+          rw [Finset.mul_sum]
+          apply Finset.sum_congr rfl
+          intro T _
+          ring
+        · rw [Finset.sum_comm]
+          apply Finset.sum_congr rfl
+          intro T _
+          rw [← Finset.mul_sum]
+      have hm1 : mobiusParityFunctional S F = -1 := hmob_F W F hF0 hF1 S hSW hSne
+      rw [hm1] at hlhs
+      by_cases hmem : S ∈ supp
+      · have hcollapse :
+            supp.sum (fun T => coeff T * mobiusParityFunctional S (multilinearMono T)) =
+              coeff S * (-1 : ℤ) ^ S.card := by
+          rw [← Finset.add_sum_erase _ _ hmem, hortho S S, if_pos rfl]
+          have hrest0 :
+              (supp.erase S).sum (fun T => coeff T * mobiusParityFunctional S (multilinearMono T)) = 0 := by
+            apply Finset.sum_eq_zero
+            intro T hT
+            have hne : T ≠ S := (Finset.mem_erase.mp hT).1
+            rw [hortho S T, if_neg hne, mul_zero]
+          rw [hrest0, add_zero]
+        rw [hcollapse] at hlhs
+        have hprod : (-1 : ℤ) ^ S.card * coeff S = -1 := by linarith
+        have hnz : coeff S ≠ 0 := by
+          intro hc0
+          rw [hc0, mul_zero] at hprod
+          norm_num at hprod
+        exact ⟨hmem, hprod, hnz⟩
+      · exfalso
+        have hall0 :
+            supp.sum (fun T => coeff T * mobiusParityFunctional S (multilinearMono T)) = 0 := by
+          apply Finset.sum_eq_zero
+          intro T hT
+          have hne : T ≠ S := fun heq => hmem (heq ▸ hT)
+          rw [hortho S T, if_neg hne, mul_zero]
+        rw [hall0] at hlhs
+        norm_num at hlhs
+    have hrange_ne : (Finset.range W).Nonempty := Finset.nonempty_range_iff.mpr (by omega)
+    have htop := (hS_in (Finset.range W) Finset.Subset.rfl hrange_ne).1
+    have hcard_range : (Finset.range W).card = W := Finset.card_range W
+    have hsub_supp : (Finset.range W).powerset.erase ∅ ⊆ supp := by
+      intro S hS
+      rcases Finset.mem_erase.mp hS with ⟨hSne, hSpow⟩
+      exact (hS_in S (Finset.mem_powerset.mp hSpow) (Finset.nonempty_iff_ne_empty.mpr hSne)).1
+    have hcard_le : ((Finset.range W).powerset.erase ∅).card ≤ supp.card :=
+      Finset.card_le_card hsub_supp
+    have hempty_in : (∅ : Finset ℕ) ∈ (Finset.range W).powerset :=
+      Finset.mem_powerset.mpr (Finset.empty_subset _)
+    have hcard_er :
+        ((Finset.range W).powerset.erase ∅).card = (Finset.range W).powerset.card - 1 :=
+      Finset.card_erase_of_mem hempty_in
+    rw [Finset.card_powerset, hcard_range] at hcard_er
+    exact ⟨hS_in, htop, hcard_range, by omega⟩
+
+
+/-- Explicit 4-point signed Boolean measure `ℰ(F) = -3 F(0,0,0,1) - 3 F(0,0,1,0) + 6 F(0,1,0,1) + 2 F(0,1,1,0)`
+annihilating all degree-`≤ 2` combinations of the full-adder carry gate `x - y - 2 u + 2 v = 0`. -/
+def carryGateSignedMeasure (F : ℤ → ℤ → ℤ → ℤ → ℤ) : ℤ :=
+  -3 * F 0 0 0 1 - 3 * F 0 0 1 0 + 6 * F 0 1 0 1 + 2 * F 0 1 1 0
+
+/-- **SB.158 (Barrier #8B — Single-Gate Degree-2 Carry Blindness vs. Cubic Carry-Splitting Identity & 158-Theorem Capstone Synthesis):**
+Isolates and formalizes the single-gate algebraic mechanism behind the lifted carry-jet degree bounds
+(`d_lift(1) = 3` and `d_lift(2) = 4` computed over `ℚ` in `sandbox_wave28_carry_jet_lift_and_barrier8.py`):
+1. **Degree-2 Blindness of the Isolated Full-Adder Carry Gate (`x - y - 2 u + 2 v = 0`):**
+   For **any** Boolean-ideal multipliers `Q_x, Q_y, Q_u, Q_v` (of arbitrary degree) and **any**
+   degree-`≤ 1` linear multiplier `L_0 + L_x x + L_y y + L_u u + L_v v`, let
+   `P(x, y, u, v) = Q_x*(x^2 - x) + Q_y*(y^2 - y) + Q_u*(u^2 - u) + Q_v*(v^2 - v) + (L_0 + L_x*x + L_y*y + L_u*u + L_v*v)*(x - y - 2*u + 2*v)`.
+   Then `carryGateSignedMeasure P = 0` identically, whereas `carryGateSignedMeasure (fun _ _ _ _ => 1) = 2`,
+   `carryGateSignedMeasure (fun _ _ u v => u - v) = -4`, `carryGateSignedMeasure (fun x y _ _ => x - y) = -8`,
+   and `carryGateSignedMeasure (fun _ _ u v => (u - v)^2) = 2`—so for **every** nonzero integer `k ≠ 0`,
+   no degree-`≤ 2` combination of the isolated gate can derive `k * 1`, `k * (u - v)` (`β_{n,0} - c_{n,1}`),
+   `k * (x - y)` (`β_{n+1,0} - β_{n,1}`), or `k * (u - v)^2`.
+2. **Exact Cubic (Degree-3) Carry-Splitting Nullstellensatz Identity Over `ℤ`:**
+   At degree `3`, with `A = x - y` and `B = u - v`,
+   `((A^2 + 2*A*B + 4*B^2 - 1)*(x - y - 2*u + 2*v)) - (x - 3*y + 1)*(x^2 - x) + (y - 3*x + 1)*(y^2 - y) + 8*(u - 3*v + 1)*(u^2 - u) - 8*(v - 3*u + 1)*(v^2 - v) = -6*(u - v)`,
+   forcing `u = v` and `x = y` over `ℤ` for every Boolean solution.
+3. **Algebraic Inconsistency of the $W = 1$ (`b_0 = 1`) 3-Step 2D Carry-Jet Polynomial Ideal Over `ℤ`:**
+   Every integer solution to the $W = 1$, $M = 3$ quadratic carry-jet polynomial system is refuted purely
+   from its polynomial equations (`False`).
+4. **Grand 158-Theorem Semigroup Breakout & Eight-Barrier Synthesis:**
+   Unites the Real-`ℝ` bridges (`SB.153–SB.154`) and Wave 28 (`SB.155–SB.158`). -/
+theorem barrier8b_carry_jet_cubic_splitting_pseudo_moment_obstruction_and_158_synthesis :
+    (∀ (Qx Qy Qu Qv : ℤ → ℤ → ℤ → ℤ → ℤ) (L0 Lx Ly Lu Lv : ℤ),
+      let P : ℤ → ℤ → ℤ → ℤ → ℤ := fun x y u v =>
+        Qx x y u v * (x ^ 2 - x) + Qy x y u v * (y ^ 2 - y) +
+          Qu x y u v * (u ^ 2 - u) + Qv x y u v * (v ^ 2 - v) +
+          (L0 + Lx * x + Ly * y + Lu * u + Lv * v) * (x - y - 2 * u + 2 * v)
+      carryGateSignedMeasure P = 0 ∧
+        carryGateSignedMeasure (fun _ _ _ _ => 1) = 2 ∧
+        carryGateSignedMeasure (fun _ _ u v => u - v) = -4 ∧
+        carryGateSignedMeasure (fun x y _ _ => x - y) = -8 ∧
+        carryGateSignedMeasure (fun _ _ u v => (u - v) ^ 2) = 2 ∧
+        (∀ k : ℤ, k ≠ 0 →
+          (¬ ∀ x y u v : ℤ, P x y u v = k) ∧
+            (¬ ∀ x y u v : ℤ, P x y u v = k * (u - v)) ∧
+            (¬ ∀ x y u v : ℤ, P x y u v = k * (x - y)) ∧
+            (¬ ∀ x y u v : ℤ, P x y u v = k * (u - v) ^ 2))) ∧
+    (∀ x y u v : ℤ,
+      let A := x - y
+      let B := u - v
+      (((A ^ 2 + 2 * A * B + 4 * B ^ 2 - 1) * (x - y - 2 * u + 2 * v) -
+          (x - 3 * y + 1) * (x ^ 2 - x) +
+          (y - 3 * x + 1) * (y ^ 2 - y) +
+          8 * (u - 3 * v + 1) * (u ^ 2 - u) -
+          8 * (v - 3 * u + 1) * (v ^ 2 - v)) = -6 * (u - v)) ∧
+        (x ^ 2 - x = 0 → y ^ 2 - y = 0 → u ^ 2 - u = 0 → v ^ 2 - v = 0 →
+          x - y - 2 * u + 2 * v = 0 → u = v ∧ x = y)) ∧
+    (∀ (b00 b10 b11 b20 b21 b30 c01 c11 c21 : ℤ),
+      b00 = 1 →
+      b10 ^ 2 - b10 = 0 → b11 ^ 2 - b11 = 0 →
+      b20 ^ 2 - b20 = 0 → b21 ^ 2 - b21 = 0 → b30 ^ 2 - b30 = 0 →
+      c01 ^ 2 - c01 = 0 → c11 ^ 2 - c11 = 0 → c21 ^ 2 - c21 = 0 →
+      b10 + 2 * c01 - 2 * b00 = 0 →
+      b11 - c01 = 0 →
+      b20 + 2 * c11 - 2 * b10 - b11 = 0 →
+      b21 - b11 - c11 = 0 →
+      b30 + 2 * c21 - 2 * b20 - b21 = 0 →
+      b00 * b10 = 0 → b10 * b20 = 0 → b20 * b30 = 0 →
+      False) ∧
+    ((∀ (b_0 : ℕ) (α β : ℝ), ValidCompanionForever b_0 α → ValidCompanionForever b_0 β → α = β) ∧
+      ((∀ b_0 : ℕ, 1 ≤ b_0 → ∃ n : ℕ, orbit b_0 n % 4 = 3) →
+        ∀ α : ℝ, 0 < α → ∃ N : ℕ, (1 / 2 : ℝ) ≤ Int.fract (α * (3 / 2 : ℝ) ^ N)) ∧
+      (∀ b_0 n k : ℕ,
+        jetBit (orbit b_0 (n + 1)) k + 2 * jetCarry b_0 n (k + 1) =
+          jetBit (orbit b_0 n) k + jetBit (orbit b_0 n) (k + 1) + jetCarry b_0 n k) ∧
+      (∀ S T : Finset ℕ,
+        mobiusParityFunctional S (multilinearMono T) =
+          if T = S then (-1 : ℤ) ^ S.card else 0)) := by
+  have hcubic :
+      ∀ x y u v : ℤ,
+        ((x - y) ^ 2 + 2 * (x - y) * (u - v) + 4 * (u - v) ^ 2 - 1) * (x - y - 2 * u + 2 * v) -
+          (x - 3 * y + 1) * (x ^ 2 - x) +
+          (y - 3 * x + 1) * (y ^ 2 - y) +
+          8 * (u - 3 * v + 1) * (u ^ 2 - u) -
+          8 * (v - 3 * u + 1) * (v ^ 2 - v) = -6 * (u - v) := by
+    intro x y u v
+    ring
+  have hsplit :
+      ∀ x y u v : ℤ,
+        x ^ 2 - x = 0 → y ^ 2 - y = 0 → u ^ 2 - u = 0 → v ^ 2 - v = 0 →
+        x - y - 2 * u + 2 * v = 0 → u = v ∧ x = y := by
+    intro x y u v hx hy hu hv hg
+    have hc := hcubic x y u v
+    rw [hx, hy, hu, hv, hg] at hc
+    simp only [mul_zero, add_zero, sub_zero] at hc
+    have huv : u = v := by omega
+    exact ⟨huv, by omega⟩
+  refine ⟨?_, ?_, ?_, ?_⟩
+  · intro Qx Qy Qu Qv L0 Lx Ly Lu Lv P
+    have hP0 : carryGateSignedMeasure P = 0 := by
+      unfold carryGateSignedMeasure
+      dsimp [P]
+      ring
+    have h1 : carryGateSignedMeasure (fun _ _ _ _ => 1) = 2 := by
+      unfold carryGateSignedMeasure; norm_num
+    have huv : carryGateSignedMeasure (fun _ _ u v => u - v) = -4 := by
+      unfold carryGateSignedMeasure; norm_num
+    have hxy : carryGateSignedMeasure (fun x y _ _ => x - y) = -8 := by
+      unfold carryGateSignedMeasure; norm_num
+    have huv2 : carryGateSignedMeasure (fun _ _ u v => (u - v) ^ 2) = 2 := by
+      unfold carryGateSignedMeasure; norm_num
+    refine ⟨hP0, h1, huv, hxy, huv2, ?_⟩
+    intro k hk
+    refine ⟨?_, ?_, ?_, ?_⟩
+    · intro hall
+      have p1 := hall 0 0 0 1
+      have p2 := hall 0 0 1 0
+      have p3 := hall 0 1 0 1
+      have p4 := hall 0 1 1 0
+      have hm : -3 * P 0 0 0 1 - 3 * P 0 0 1 0 + 6 * P 0 1 0 1 + 2 * P 0 1 1 0 = 0 := hP0
+      have hk0 : 2 * k = 0 := by linarith
+      omega
+    · intro hall
+      have p1 := hall 0 0 0 1
+      have p2 := hall 0 0 1 0
+      have p3 := hall 0 1 0 1
+      have p4 := hall 0 1 1 0
+      have hm : -3 * P 0 0 0 1 - 3 * P 0 0 1 0 + 6 * P 0 1 0 1 + 2 * P 0 1 1 0 = 0 := hP0
+      have hk0 : -4 * k = 0 := by linarith
+      omega
+    · intro hall
+      have p1 := hall 0 0 0 1
+      have p2 := hall 0 0 1 0
+      have p3 := hall 0 1 0 1
+      have p4 := hall 0 1 1 0
+      have hm : -3 * P 0 0 0 1 - 3 * P 0 0 1 0 + 6 * P 0 1 0 1 + 2 * P 0 1 1 0 = 0 := hP0
+      have hk0 : -8 * k = 0 := by linarith
+      omega
+    · intro hall
+      have p1 := hall 0 0 0 1
+      have p2 := hall 0 0 1 0
+      have p3 := hall 0 1 0 1
+      have p4 := hall 0 1 1 0
+      have hm : -3 * P 0 0 0 1 - 3 * P 0 0 1 0 + 6 * P 0 1 0 1 + 2 * P 0 1 1 0 = 0 := hP0
+      have hk0 : 2 * k = 0 := by linarith
+      omega
+  · intro x y u v
+    exact ⟨hcubic x y u v, hsplit x y u v⟩
+  · intro b00 b10 b11 b20 b21 b30 c01 c11 c21 hb00
+      hb10 hb11 hb20 hb21 hb30 hc01 hc11 hc21
+      hfa00 hfa01 hfa10 hfa11 hfa20 _ _ hno2
+    have hb00_bool : b00 ^ 2 - b00 = 0 := by rw [hb00]; norm_num
+    have h0_split := hsplit b10 0 b00 c01 hb10 (by norm_num) hb00_bool hc01 (by linarith)
+    have hb10_val : b10 = 0 := h0_split.2
+    have hc01_val : c01 = 1 := by linarith [h0_split.1, hb00]
+    have hb11_val : b11 = 1 := by linarith [hfa01, hc01_val]
+    have h1_split := hsplit b20 b11 b10 c11 hb20 hb11 hb10 hc11 (by linarith)
+    have hb20_val : b20 = 1 := by linarith [h1_split.2, hb11_val]
+    have hc11_val : c11 = 0 := by linarith [h1_split.1, hb10_val]
+    have hb21_val : b21 = 1 := by linarith [hfa11, hb11_val, hc11_val]
+    have h2_split := hsplit b30 b21 b20 c21 hb30 hb21 hb20 hc21 (by linarith)
+    have hb30_val : b30 = 1 := by linarith [h2_split.2, hb21_val]
+    rw [hb20_val, hb30_val] at hno2
+    norm_num at hno2
+  · exact ⟨real_z_number_uniqueness_parry_cylinder_bridge_and_flatto_bound.1,
+      end_to_end_real_reduction_to_mod4_ceiling_game_and_extinction_horizons.2.2.1,
+      fun b_0 n k => (witt_binary_carry_full_adder_jet_linearization_and_positivity_chain.2.2.1 b_0 n k).2.2,
+      barrier8a_unlifted_base_bits_nullstellensatz_degree_and_sparsity_bound.1⟩
+
+
 #check @archimedean_rung_ceiling_and_stepSum_bound
 #check @unit_quotient_even_rung_instant_death_and_odd_rung_mod64_identity
 #check @equal_step_window_hankel_determinant_identity_and_bound
@@ -13245,6 +14050,10 @@ theorem unconditional_real_companion_mod320_even_gauge_pinch
 #check @grand_152_theorem_mahler_semigroup_breakout_capstone_synthesis
 #check @real_z_number_uniqueness_parry_cylinder_bridge_and_flatto_bound
 #check @unconditional_real_companion_mod320_even_gauge_pinch
+#check @end_to_end_real_reduction_to_mod4_ceiling_game_and_extinction_horizons
+#check @witt_binary_carry_full_adder_jet_linearization_and_positivity_chain
+#check @barrier8a_unlifted_base_bits_nullstellensatz_degree_and_sparsity_bound
+#check @barrier8b_carry_jet_cubic_splitting_pseudo_moment_obstruction_and_158_synthesis
 
 #print axioms parry_cylinder_tree_three_pow_sum_and_flp_effective_survivor_bound
 #print axioms grand_all_eight_angles_120_theorem_semigroup_breakout_synthesis
@@ -13255,6 +14064,10 @@ theorem unconditional_real_companion_mod320_even_gauge_pinch
 #print axioms grand_152_theorem_mahler_semigroup_breakout_capstone_synthesis
 #print axioms real_z_number_uniqueness_parry_cylinder_bridge_and_flatto_bound
 #print axioms unconditional_real_companion_mod320_even_gauge_pinch
+#print axioms end_to_end_real_reduction_to_mod4_ceiling_game_and_extinction_horizons
+#print axioms witt_binary_carry_full_adder_jet_linearization_and_positivity_chain
+#print axioms barrier8a_unlifted_base_bits_nullstellensatz_degree_and_sparsity_bound
+#print axioms barrier8b_carry_jet_cubic_splitting_pseudo_moment_obstruction_and_158_synthesis
 
 #print axioms archimedean_rung_ceiling_and_stepSum_bound
 #print axioms unit_quotient_even_rung_instant_death_and_odd_rung_mod64_identity
