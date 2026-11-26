@@ -4,7 +4,7 @@ import SubCeilingKneadingAutomatonAndGrandSynthesis54
 # Semigroup Breakout Campaign — Cordoned-Off Lean 4 Verification of $\mathbb{Z}_2$-Symmetry-Breaking Generators
 
 This standalone module lives in `semigroup_breakout/` (cordoned off from the 226-file bottom-up
-corpus in the repository root) and formalizes the 158 verified theorems (`SB.1–SB.158`) of the
+corpus in the repository root) and formalizes the 160 verified theorems (`SB.1–SB.160`) of the
 **Semigroup Breakout Campaign** (`SEMIGROUP_BREAKOUT_PAPER.md`):
 
 1. **Theorem SB.1 (`archimedean_rung_ceiling_and_stepSum_bound`) — The Global Archimedean Rung Ceiling**:
@@ -13896,6 +13896,325 @@ theorem barrier8b_carry_jet_cubic_splitting_pseudo_moment_obstruction_and_158_sy
       barrier8a_unlifted_base_bits_nullstellensatz_degree_and_sparsity_bound.1⟩
 
 
+/-!
+### Wave 29 (`SB.159–SB.160`): Bit-Cut Matrix Product State (MPS) Entanglement Arch & Barrier #9 (Sunflower / Strassen Multi-Copy Tensor-Rank Obstruction via Anti-Diagonal Singleton Explosion)
+-/
+
+/-- **SB.159 (Bit-Cut Affine Carry Transport, Continuation Phase Bijection, & MPS Entanglement Arch Bounds):**
+Analyzes bipartite bit-plane cuts `b_0 = r + 2 ^ k * m` (`r < 2 ^ k`, `m < 2 ^ (W - k)`) across the
+2D binary-carry grid:
+1. **Unconditional Prefix Parity Invariance & Step-$k$ Affine Carry Transport:**
+   For all `r, k, m : ℕ`, `orbitParityRev (r + 2 ^ k * m) k = orbitParityRev r k` and
+   `orbit (r + 2 ^ k * m) k = orbit r k + 3 ^ k * m`.
+2. **Exact Continuation Phase Bijection Modulo $2^d$:**
+   For all `x₀, k, d : ℕ`, the high-bit phase map `m ↦ (x₀ + 3 ^ k * m) % 2 ^ d` bijects
+   `Finset.range (2 ^ d)` onto `Finset.range (2 ^ d)`.
+3. **MPS Active-Row / Active-Column Entanglement Arch Bounds (`no-11` and Real Parry $[0, 1/2)$):**
+   For any `k ≤ N` and `k ≤ W`:
+   - The active `no-11` low-bit row set
+     `activeFibRows = (Finset.range (2 ^ k)).filter (fun r => ∃ m < 2 ^ (W - k), isNoConsecOddBool (r + 2 ^ k * m) N = true)`
+     and active column set `activeFibCols ⊆ Finset.range (2 ^ (W - k))` satisfy
+     `activeFibRows.card ≤ mahlerFib (k + 2)` and
+     `min activeFibRows.card activeFibCols.card ≤ min (mahlerFib (k + 2)) (2 ^ (W - k))`.
+   - For any set `activeParryRows ⊆ Finset.range (2 ^ k)` of low-bit prefixes admitting a surviving
+     real companion `ValidCompanionUpTo (r + 2 ^ k * m) α N` (`m < 2 ^ (W - k)`),
+     `activeParryRows.card ≤ (parryCylTree k).length` and
+     `2 ^ k * activeParryRows.card + 2 * 2 ^ k ≤ 3 ^ (k + 1)`. -/
+theorem bit_cut_affine_carry_transport_and_mps_arch_support_bounds :
+    (∀ r k m : ℕ,
+      orbitParityRev (r + 2 ^ k * m) k = orbitParityRev r k ∧
+        orbit (r + 2 ^ k * m) k = orbit r k + 3 ^ k * m) ∧
+    (∀ x₀ k d : ℕ,
+      (Finset.range (2 ^ d)).image (fun m => (x₀ + 3 ^ k * m) % 2 ^ d) =
+        Finset.range (2 ^ d)) ∧
+    (∀ k W N : ℕ, k ≤ N → k ≤ W →
+      let activeRows :=
+        (Finset.range (2 ^ k)).filter
+          (fun r => ((List.range (2 ^ (W - k))).any (fun m => isNoConsecOddBool (r + 2 ^ k * m) N)) = true)
+      let activeCols :=
+        (Finset.range (2 ^ (W - k))).filter
+          (fun m => ((List.range (2 ^ k)).any (fun r => isNoConsecOddBool (r + 2 ^ k * m) N)) = true)
+      activeRows.card ≤ mahlerFib (k + 2) ∧
+        min activeRows.card activeCols.card ≤ min (mahlerFib (k + 2)) (2 ^ (W - k))) ∧
+    (∀ (k W N : ℕ) (activeParryRows : Finset ℕ),
+      k ≤ N →
+      activeParryRows ⊆ Finset.range (2 ^ k) →
+      (∀ r ∈ activeParryRows, ∃ m < 2 ^ (W - k), ∃ α : ℝ, ValidCompanionUpTo (r + 2 ^ k * m) α N) →
+      activeParryRows.card ≤ (parryCylTree k).length ∧
+        2 ^ k * activeParryRows.card + 2 * 2 ^ k ≤ 3 ^ (k + 1)) := by
+  have horb_shift :
+      ∀ r k m j : ℕ, j ≤ k →
+        orbit (r + 2 ^ k * m) j = orbit r j + 3 ^ j * (2 ^ (k - j) * m) := by
+    intro r k m j
+    induction j with
+    | zero =>
+        intro _
+        simp [orbit]
+    | succ s ih =>
+        intro hsk
+        have hs_le : s ≤ k := by omega
+        have ih_s := ih hs_le
+        have hexp : k - s = (k - (s + 1)) + 1 := by omega
+        have hp2 : 2 ^ (k - s) * m = 2 * (2 ^ (k - (s + 1)) * m) := by
+          rw [hexp, Nat.pow_succ]
+          ring
+        have hpar : orbit (r + 2 ^ k * m) s % 2 = orbit r s % 2 := by
+          rw [ih_s, hp2]
+          have heven : 3 ^ s * (2 * (2 ^ (k - (s + 1)) * m)) = (3 ^ s * (2 ^ (k - (s + 1)) * m)) * 2 := by ring
+          rw [heven, Nat.add_mul_mod_self_right]
+        have hstep1 := two_mul_orbit_succ_eq (r + 2 ^ k * m) s
+        have hstep2 := two_mul_orbit_succ_eq r s
+        rw [hpar, ih_s, hp2] at hstep1
+        have hmul2 :
+            2 * orbit (r + 2 ^ k * m) (s + 1) =
+              2 * (orbit r (s + 1) + 3 ^ (s + 1) * (2 ^ (k - (s + 1)) * m)) := by
+          have hp3 : 3 * (3 ^ s * (2 * (2 ^ (k - (s + 1)) * m))) =
+              2 * (3 ^ (s + 1) * (2 ^ (k - (s + 1)) * m)) := by
+            rw [Nat.pow_succ]
+            ring
+          linarith
+        omega
+  have htransport :
+      ∀ r k m : ℕ,
+        orbitParityRev (r + 2 ^ k * m) k = orbitParityRev r k ∧
+          orbit (r + 2 ^ k * m) k = orbit r k + 3 ^ k * m := by
+    intro r k m
+    refine ⟨?_, ?_⟩
+    · rw [orbitParityRev_eq_iff]
+      intro j hjk
+      have hj := horb_shift r k m j (by omega)
+      set e := k - j - 1
+      have hexp : k - j = e + 1 := by omega
+      have hp2 : 3 ^ j * (2 ^ (k - j) * m) = (3 ^ j * (2 ^ e * m)) * 2 := by
+        rw [hexp, Nat.pow_succ]
+        ring
+      rw [hj, hp2, Nat.add_mul_mod_self_right]
+    · have hk := horb_shift r k m k le_rfl
+      simp only [Nat.sub_self, Nat.pow_zero, one_mul] at hk
+      exact hk
+  refine ⟨htransport, ?_, ?_, ?_⟩
+  · intro x₀ k d
+    set f : ℕ → ℕ := fun m => (x₀ + 3 ^ k * m) % 2 ^ d
+    have hsub : (Finset.range (2 ^ d)).image f ⊆ Finset.range (2 ^ d) := by
+      intro y hy
+      rcases Finset.mem_image.mp hy with ⟨m, _, rfl⟩
+      rw [Finset.mem_range]
+      exact Nat.mod_lt _ (Nat.pos_of_ne_zero (pow_ne_zero d (by decide)))
+    have hinj : Set.InjOn f ↑(Finset.range (2 ^ d)) := by
+      intro m₁ hm₁ m₂ hm₂ heq
+      simp only [Finset.mem_coe, Finset.mem_range] at hm₁ hm₂
+      have hcop : Nat.Coprime (2 ^ d) (3 ^ k) :=
+        ((by decide : Nat.Coprime 2 3).pow_left d).pow_right k
+      rcases lt_trichotomy m₁ m₂ with hlt | rfl | hgt
+      · have hdvd_diff : 2 ^ d ∣ ((x₀ + 3 ^ k * m₂) - (x₀ + 3 ^ k * m₁)) := by
+          have hle_x : x₀ + 3 ^ k * m₁ ≤ x₀ + 3 ^ k * m₂ := by
+            have hm_le : 3 ^ k * m₁ ≤ 3 ^ k * m₂ := Nat.mul_le_mul_left (3 ^ k) (Nat.le_of_lt hlt)
+            omega
+          exact (Nat.modEq_iff_dvd' hle_x).mp heq
+        have hfactor : (x₀ + 3 ^ k * m₂) - (x₀ + 3 ^ k * m₁) = 3 ^ k * (m₂ - m₁) := by
+          have hm_le : 3 ^ k * m₁ ≤ 3 ^ k * m₂ := Nat.mul_le_mul_left (3 ^ k) (Nat.le_of_lt hlt)
+          have h1 : (x₀ + 3 ^ k * m₂) - (x₀ + 3 ^ k * m₁) = 3 ^ k * m₂ - 3 ^ k * m₁ := by omega
+          rw [h1, ← Nat.mul_sub_left_distrib]
+        rw [hfactor] at hdvd_diff
+        have hdvd_m : 2 ^ d ∣ (m₂ - m₁) := hcop.dvd_of_dvd_mul_left hdvd_diff
+        have hge : 2 ^ d ≤ m₂ - m₁ := Nat.le_of_dvd (by omega) hdvd_m
+        omega
+      · rfl
+      · have hdvd_diff : 2 ^ d ∣ ((x₀ + 3 ^ k * m₁) - (x₀ + 3 ^ k * m₂)) := by
+          have hle_x : x₀ + 3 ^ k * m₂ ≤ x₀ + 3 ^ k * m₁ := by
+            have hm_le : 3 ^ k * m₂ ≤ 3 ^ k * m₁ := Nat.mul_le_mul_left (3 ^ k) (Nat.le_of_lt hgt)
+            omega
+          exact (Nat.modEq_iff_dvd' hle_x).mp heq.symm
+        have hfactor : (x₀ + 3 ^ k * m₁) - (x₀ + 3 ^ k * m₂) = 3 ^ k * (m₁ - m₂) := by
+          have hm_le : 3 ^ k * m₂ ≤ 3 ^ k * m₁ := Nat.mul_le_mul_left (3 ^ k) (Nat.le_of_lt hgt)
+          have h1 : (x₀ + 3 ^ k * m₁) - (x₀ + 3 ^ k * m₂) = 3 ^ k * m₁ - 3 ^ k * m₂ := by omega
+          rw [h1, ← Nat.mul_sub_left_distrib]
+        rw [hfactor] at hdvd_diff
+        have hdvd_m : 2 ^ d ∣ (m₁ - m₂) := hcop.dvd_of_dvd_mul_left hdvd_diff
+        have hge : 2 ^ d ≤ m₁ - m₂ := Nat.le_of_dvd (by omega) hdvd_m
+        omega
+    apply Finset.eq_of_subset_of_card_le hsub
+    rw [Finset.card_image_of_injOn hinj]
+  · intro k W N hkN _ activeRows activeCols
+    have hsub_fib :
+        activeRows ⊆ (Finset.range (2 ^ k)).filter (fun r => isNoConsecOddBool r k = true) := by
+      intro r hr
+      simp only [activeRows, Finset.mem_filter, Finset.mem_range, List.any_eq_true,
+        List.mem_range] at hr ⊢
+      rcases hr with ⟨hr_lt, m, _, hsurvN⟩
+      refine ⟨hr_lt, ?_⟩
+      simp only [isNoConsecOddBool, List.all_eq_true, List.mem_range] at hsurvN ⊢
+      intro n hn
+      have hnN : n < N - 1 := by omega
+      have hpair := hsurvN n hnN
+      have hpar_eq := (orbitParityRev_eq_iff (r + 2 ^ k * m) r k).mp (htransport r k m).1
+      have hp0 : orbit (r + 2 ^ k * m) n % 2 = orbit r n % 2 := hpar_eq n (by omega)
+      have hp1 : orbit (r + 2 ^ k * m) (n + 1) % 2 = orbit r (n + 1) % 2 := hpar_eq (n + 1) (by omega)
+      rwa [hp0, hp1] at hpair
+    have hcard_r : activeRows.card ≤ mahlerFib (k + 2) :=
+      le_trans (Finset.card_le_card hsub_fib)
+        (unconditional_effective_fibonacci_survivor_power_saving_bound.2.1 k)
+    have hcard_c : activeCols.card ≤ 2 ^ (W - k) := by
+      calc
+        activeCols.card ≤ (Finset.range (2 ^ (W - k))).card :=
+          Finset.card_filter_le _ _
+        _ = 2 ^ (W - k) := Finset.card_range _
+    exact ⟨hcard_r, min_le_min hcard_r hcard_c⟩
+  · intro k W N activeParryRows hkN hsub_range hact
+    set wordsList := (parryCylTree k).map Prod.snd
+    have hmaps : ∀ r ∈ activeParryRows, orbitParityRev r k ∈ wordsList.toFinset := by
+      intro r hr
+      rcases hact r hr with ⟨m, _, α, hupN⟩
+      have hupk : ValidCompanionUpTo (r + 2 ^ k * m) α k := fun j hj => hupN j (by omega)
+      rcases real_z_number_uniqueness_parry_cylinder_bridge_and_flatto_bound.2.1
+          (r + 2 ^ k * m) k α hupk with ⟨B, hmemB, _⟩
+      rw [(htransport r k m).1] at hmemB
+      rw [List.mem_toFinset]
+      exact List.mem_map.mpr ⟨(B, orbitParityRev r k), hmemB, rfl⟩
+    have hinj : Set.InjOn (fun r => orbitParityRev r k) ↑activeParryRows := by
+      intro r₁ hr₁ r₂ hr₂ heq
+      exact orbitParityRev_injOn_two_pow k
+        (Finset.mem_range.mp (hsub_range hr₁))
+        (Finset.mem_range.mp (hsub_range hr₂)) heq
+    have hc1 : activeParryRows.card ≤ wordsList.toFinset.card :=
+      Finset.card_le_card_of_injOn _ hmaps hinj
+    have hc2 : wordsList.toFinset.card ≤ (parryCylTree k).length := by
+      calc
+        wordsList.toFinset.card ≤ wordsList.length := List.toFinset_card_le wordsList
+        _ = (parryCylTree k).length := List.length_map Prod.snd
+    have hle_len : activeParryRows.card ≤ (parryCylTree k).length := le_trans hc1 hc2
+    have hflp := parry_cylinder_tree_three_pow_sum_and_flp_effective_survivor_bound.2.1 k
+    have hmul : 2 ^ k * activeParryRows.card ≤ 2 ^ k * (parryCylTree k).length :=
+      Nat.mul_le_mul_left (2 ^ k) hle_len
+    exact ⟨hle_len, by omega⟩
+
+
+/-- **SB.160 (Barrier #9 — Anti-Diagonal Singleton Carry Flattening-Rank Explosion vs. Carry-Free Kronecker Rank & Selected 160-Theorem Synthesis):**
+Formalizes the additive-sum flattening-rank obstruction showing why direct additive multi-copy
+splittings (`b_0 = x_1 + ⋯ + x_r` on unrestricted or `[0, 2^W)` legs with `z_min < 2^W`) cannot
+imitate carry-free Sunflower / Kronecker rank-1 diagonal embeddings at the `1 → 0` threshold:
+1. **Universal Unit-Triangular Anti-Diagonal Minor & $(z_{\min} + 1)$-Row Linear Independence Over Any `CommRing`:**
+   For **any** commutative ring `R`, any function `f : ℕ → R`, and any `z_min : ℕ`
+   satisfying `f z_min = 1` and `∀ z < z_min, f z = 0` (holding for the indicator `f = 1_S` of **every**
+   nonempty survivor set `S ⊆ ℕ` with minimum `z_min`, including a positive **singleton** `S = {z_min}` with `z_min ≥ 1`;
+   note that in the trivial ring `c x = 0` holds vacuously, while over any nontrivial ring `R`—and as matrix/flattening
+   rank `≥ z_min + 1` over any field `F`, including `ℚ`, `ℝ`, `ℂ`, and `ZMod p`—all `z_min + 1` rows on `[0, z_min]` are independent):
+   - Under column reversal `y = z_min - j`, the `(z_min + 1) × (z_min + 1)` additive carry matrix
+     `A_{i, j} = f(i + (z_min - j))` (`0 ≤ i, j ≤ z_min`) is **unit lower-triangular**
+     (`i = j → A_{i, j} = 1` and `i < j → A_{i, j} = 0`), and
+   - Its `z_min + 1` rows satisfy `(∀ y ≤ z_min, ∑ x ∈ range (z_min + 1), c x * f (x + y) = 0) → ∀ x ≤ z_min, c x = 0`.
+2. **Three-Copy (`r = 3`) Flattening Inheritance:**
+   For the 3-leg additive carry tensor `T(x, y, w) = f(x + y + w)`, any `R`-linear dependence across leg `x`
+   vanishing for all `y, w ≤ z_min` forces `∀ x ≤ z_min, c x = 0` (via slicing at `w = 0`; higher-order `r ≥ 4`
+   follows analogously by slicing `x_3 = ⋯ = x_r = 0`).
+3. **Rank-1 Carry-Free Kronecker Singleton Contrast:**
+   Without carries (coordinate-matching model), a singleton indicator `K(x, y) = δ_{x = w*} δ_{y = w*}` over `ℤ`
+   factors as the rank-1 outer product `u(x) * u(y)` (`u t = if t = w* then 1 else 0`), whereas on `[0, 2^W)^2`
+   with `1 ≤ z* < 2^W`, the additive-carry singleton `H(x, y) = δ_{x + y = z*}` has `z* + 1` linearly independent rows.
+4. **Selected Capstone Synthesis:**
+   Pairs step-`k` affine carry transport (`SB.159.1`), integer singleton `(z* + 1)`-row independence (`SB.160.1`),
+   and the unconditional real `Z`-number `parryCylTree` bound (`SB.153.3`). -/
+theorem barrier9_antidiagonal_singleton_tensor_rank_explosion_and_160_synthesis :
+    (∀ (R : Type) [CommRing R] (f : ℕ → R) (z_min : ℕ),
+      f z_min = 1 →
+      (∀ z < z_min, f z = 0) →
+      (∀ i j : ℕ, i ≤ z_min → j ≤ z_min →
+        (i = j → f (i + (z_min - j)) = 1) ∧
+          (i < j → f (i + (z_min - j)) = 0)) ∧
+      (∀ c : ℕ → R,
+        (∀ y ≤ z_min, (Finset.range (z_min + 1)).sum (fun x => c x * f (x + y)) = 0) →
+        ∀ x ≤ z_min, c x = 0)) ∧
+    (∀ (R : Type) [CommRing R] (f : ℕ → R) (z_min : ℕ),
+      f z_min = 1 →
+      (∀ z < z_min, f z = 0) →
+      ∀ c : ℕ → R,
+        (∀ y ≤ z_min, ∀ w ≤ z_min,
+          (Finset.range (z_min + 1)).sum (fun x => c x * f (x + y + w)) = 0) →
+        ∀ x ≤ z_min, c x = 0) ∧
+    (∀ w_star x y : ℕ,
+      (if x = w_star ∧ y = w_star then (1 : ℤ) else 0) =
+        (if x = w_star then (1 : ℤ) else 0) * (if y = w_star then (1 : ℤ) else 0)) ∧
+    ((∀ r k m : ℕ, orbit (r + 2 ^ k * m) k = orbit r k + 3 ^ k * m) ∧
+      (∀ (z_star : ℕ) (c : ℕ → ℤ),
+        (∀ y ≤ z_star,
+          (Finset.range (z_star + 1)).sum
+            (fun x => c x * (if x + y = z_star then (1 : ℤ) else 0)) = 0) →
+        ∀ x ≤ z_star, c x = 0) ∧
+      (∀ (W : ℕ) (X : ℝ) (Z_set : Finset ℝ),
+        X ≤ (2 : ℝ) ^ W →
+        (∀ α ∈ Z_set, 0 ≤ α ∧ α < X ∧ ∀ n : ℕ, Int.fract (α * (3 / 2 : ℝ) ^ n) < 1 / 2) →
+        Z_set.card ≤ (parryCylTree W).length ∧
+          2 ^ W * Z_set.card + 2 * 2 ^ W ≤ 3 ^ (W + 1))) := by
+  have hunit_indep :
+      ∀ (R : Type) [CommRing R] (f : ℕ → R) (z_min : ℕ),
+        f z_min = 1 →
+        (∀ z < z_min, f z = 0) →
+        (∀ i j : ℕ, i ≤ z_min → j ≤ z_min →
+          (i = j → f (i + (z_min - j)) = 1) ∧
+            (i < j → f (i + (z_min - j)) = 0)) ∧
+        (∀ c : ℕ → R,
+          (∀ y ≤ z_min, (Finset.range (z_min + 1)).sum (fun x => c x * f (x + y)) = 0) →
+          ∀ x ≤ z_min, c x = 0) := by
+    intro R _ f z_min hf1 hf0
+    refine ⟨?_, ?_⟩
+    · intro i j hi hj
+      refine ⟨?_, ?_⟩
+      · rintro rfl
+        have hadd : i + (z_min - i) = z_min := by omega
+        rw [hadd, hf1]
+      · intro hij
+        exact hf0 (i + (z_min - j)) (by omega)
+    · intro c hsum
+      have hind_d : ∀ d : ℕ, d ≤ z_min → c (z_min - d) = 0 := by
+        intro d
+        induction d using Nat.strong_induction_on with
+        | h d ih =>
+            intro hd
+            have h0 := hsum d hd
+            have hmem : z_min - d ∈ Finset.range (z_min + 1) :=
+              Finset.mem_range.mpr (by omega)
+            rw [← Finset.add_sum_erase _ _ hmem] at h0
+            have hdiag : c (z_min - d) * f (z_min - d + d) = c (z_min - d) := by
+              have hadd : z_min - d + d = z_min := by omega
+              rw [hadd, hf1, mul_one]
+            have hrest :
+                ((Finset.range (z_min + 1)).erase (z_min - d)).sum
+                  (fun x => c x * f (x + d)) = 0 := by
+              apply Finset.sum_eq_zero
+              intro x hx
+              rcases Finset.mem_erase.mp hx with ⟨hx_ne, hx_rg⟩
+              have hx_le : x ≤ z_min := by
+                have hlt := Finset.mem_range.mp hx_rg
+                omega
+              rcases lt_or_gt_of_ne hx_ne with hlt_x | hgt_x
+              · rw [hf0 (x + d) (by omega), mul_zero]
+              · have hm_lt : z_min - x < d := by omega
+                have hm_le : z_min - x ≤ z_min := by omega
+                have hcx0 : c (z_min - (z_min - x)) = 0 := ih (z_min - x) hm_lt hm_le
+                have hsub_sub : z_min - (z_min - x) = x := by omega
+                rw [hsub_sub] at hcx0
+                rw [hcx0, zero_mul]
+            rw [hdiag, hrest, add_zero] at h0
+            exact h0
+      intro x hx
+      have hd0 := hind_d (z_min - x) (by omega)
+      have hsub_x : z_min - (z_min - x) = x := by omega
+      rwa [hsub_x] at hd0
+  refine ⟨hunit_indep, ?_, ?_, ?_⟩
+  · intro R _ f z_min hf1 hf0 c hsum3
+    apply (hunit_indep R f z_min hf1 hf0).2 c
+    intro y hy
+    have h0 := hsum3 y hy 0 (Nat.zero_le z_min)
+    simpa only [Nat.add_zero] using h0
+  · intro w_star x y
+    by_cases hx : x = w_star <;> by_cases hy : y = w_star <;> simp [hx, hy]
+  · refine ⟨fun r k m => (bit_cut_affine_carry_transport_and_mps_arch_support_bounds.1 r k m).2, ?_,
+      real_z_number_uniqueness_parry_cylinder_bridge_and_flatto_bound.2.2⟩
+    intro z_star c hsum_z
+    exact (hunit_indep ℤ (fun z => if z = z_star then (1 : ℤ) else 0) z_star
+      (if_pos rfl) (fun z hz => if_neg (by omega))).2 c hsum_z
+
+
 #check @archimedean_rung_ceiling_and_stepSum_bound
 #check @unit_quotient_even_rung_instant_death_and_odd_rung_mod64_identity
 #check @equal_step_window_hankel_determinant_identity_and_bound
@@ -14054,6 +14373,8 @@ theorem barrier8b_carry_jet_cubic_splitting_pseudo_moment_obstruction_and_158_sy
 #check @witt_binary_carry_full_adder_jet_linearization_and_positivity_chain
 #check @barrier8a_unlifted_base_bits_nullstellensatz_degree_and_sparsity_bound
 #check @barrier8b_carry_jet_cubic_splitting_pseudo_moment_obstruction_and_158_synthesis
+#check @bit_cut_affine_carry_transport_and_mps_arch_support_bounds
+#check @barrier9_antidiagonal_singleton_tensor_rank_explosion_and_160_synthesis
 
 #print axioms parry_cylinder_tree_three_pow_sum_and_flp_effective_survivor_bound
 #print axioms grand_all_eight_angles_120_theorem_semigroup_breakout_synthesis
@@ -14068,6 +14389,8 @@ theorem barrier8b_carry_jet_cubic_splitting_pseudo_moment_obstruction_and_158_sy
 #print axioms witt_binary_carry_full_adder_jet_linearization_and_positivity_chain
 #print axioms barrier8a_unlifted_base_bits_nullstellensatz_degree_and_sparsity_bound
 #print axioms barrier8b_carry_jet_cubic_splitting_pseudo_moment_obstruction_and_158_synthesis
+#print axioms bit_cut_affine_carry_transport_and_mps_arch_support_bounds
+#print axioms barrier9_antidiagonal_singleton_tensor_rank_explosion_and_160_synthesis
 
 #print axioms archimedean_rung_ceiling_and_stepSum_bound
 #print axioms unit_quotient_even_rung_instant_death_and_odd_rung_mod64_identity
